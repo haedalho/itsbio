@@ -4,7 +4,7 @@ export default function Home() {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white border-b">
         <div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-4">
-          <div className="font-bold text-xl">it&apos;s bio</div>
+          <div className="font-bold text-xl">itsbio</div>
 
           <nav className="hidden md:flex gap-4 text-sm text-slate-600">
             <a href="#">Products</a>
@@ -22,7 +22,12 @@ export default function Home() {
               placeholder="Search by Product Name, Catalog No..."
             />
             <button className="rounded-full bg-blue-700 text-white px-4 py-2 text-sm font-semibold">
-              Request a Quote
+              <a
+                href="/quote"
+                className="rounded-full bg-blue-700 text-white px-4 py-2 text-sm font-semibold"
+              >
+                Request a Quote
+              </a>
             </button>
           </div>
         </div>
@@ -106,4 +111,5 @@ export default function Home() {
       </section>
     </main>
   );
+  
 }
