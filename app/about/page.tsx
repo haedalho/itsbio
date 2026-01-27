@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Breadcrumb from "@/components/site/Breadcrumb";
 
 const HIGHLIGHTS = [
   { title: "Fast, clear quotations", desc: "견적·납기 정보를 빠르게 정리해 드립니다." },
@@ -89,7 +90,9 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
-
+      <div className="mx-auto max-w-6xl px-4 mt-6 flex justify-end">
+        <Breadcrumb />
+      </div>
       {/* CONTENT */}
       <section className="mx-auto max-w-6xl px-6 pb-16 pt-10 md:pt-12">
         {/* Intro line (no big boxed card) */}

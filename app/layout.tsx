@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
 import Header from "@/components/site/Header";
 import NeedAssistance from "@/components/site/NeedAssistance";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const pretendard = localFont({
+  src: "./fonts/PretendardVariable.woff2", // ✅ 파일 위치에 맞게 조정
+  variable: "--font-pretendard",
+  display: "swap",
+  weight: "45 920", // variable weight range (예시)
 });
 
 export const metadata: Metadata = {
@@ -23,7 +20,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body
+        className={`${pretendard.variable} antialiased text-[17px] leading-relaxed`}
+      >
         <div style={{ ["--header-h" as any]: "56px" }}>
           <Header />
           {children}
