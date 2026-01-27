@@ -24,12 +24,3 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
-
-/* SnapPage 스크롤바 숨김 */
-.snap-scroll::-webkit-scrollbar { width: 0; height: 0; }
-.snap-scroll { scrollbar-width: none; }
-
-html, body {
-  height: 100%;
-  overflow: hidden; /* 바깥 스크롤 차단 */
-}
