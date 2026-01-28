@@ -265,9 +265,232 @@ function useClickOutside<T extends HTMLElement>(onOutside: () => void) {
   return ref;
 }
 
-function ArrowBullet() {
+function normalizeBrandKey(label: string) {
+  return label
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .replace(/[^a-z0-9]/g, "");
+}
+
+type BrandTheme = {
+  headerBg: string;
+  headerText: string;
+  accentText: string;
+  accentTextHover: string;
+  accentBorderHover: string;
+  ring: string;
+  dotActive: string;
+  dotInactive: string;
+  bulletBorder: string; // e.g. "border-l-orange-500"
+  pillBorder: string;
+  pillText: string;
+  pillHoverBg: string;
+  arrowText: string;
+};
+
+const BRAND_THEMES: Record<string, BrandTheme> = {
+  // abm 오렌지 그대로
+  abm: {
+    headerBg: "bg-orange-600",
+    headerText: "text-white",
+    accentText: "text-orange-700",
+    accentTextHover: "hover:text-orange-700",
+    accentBorderHover: "hover:border-orange-200",
+    ring: "ring-orange-200",
+    dotActive: "bg-orange-600",
+    dotInactive: "bg-slate-300",
+    bulletBorder: "border-l-orange-500",
+    pillBorder: "border-orange-200",
+    pillText: "text-orange-700",
+    pillHoverBg: "hover:bg-orange-50",
+    arrowText: "text-orange-600",
+  },
+
+  // Kent Scientific Product Categories 파란색
+  kentscientifics: {
+    headerBg: "bg-blue-600",
+    headerText: "text-white",
+    accentText: "text-blue-700",
+    accentTextHover: "hover:text-blue-700",
+    accentBorderHover: "hover:border-blue-200",
+    ring: "ring-blue-200",
+    dotActive: "bg-blue-600",
+    dotInactive: "bg-slate-300",
+    bulletBorder: "border-l-blue-500",
+    pillBorder: "border-blue-200",
+    pillText: "text-blue-700",
+    pillHoverBg: "hover:bg-blue-50",
+    arrowText: "text-blue-600",
+  },
+
+  // itschem 약한 붉은색
+  itschem: {
+    headerBg: "bg-rose-500",
+    headerText: "text-white",
+    accentText: "text-rose-700",
+    accentTextHover: "hover:text-rose-700",
+    accentBorderHover: "hover:border-rose-200",
+    ring: "ring-rose-200",
+    dotActive: "bg-rose-500",
+    dotInactive: "bg-slate-300",
+    bulletBorder: "border-l-rose-500",
+    pillBorder: "border-rose-200",
+    pillText: "text-rose-700",
+    pillHoverBg: "hover:bg-rose-50",
+    arrowText: "text-rose-600",
+  },
+
+  // aims 하늘색
+  aims: {
+    headerBg: "bg-sky-600",
+    headerText: "text-white",
+    accentText: "text-sky-700",
+    accentTextHover: "hover:text-sky-700",
+    accentBorderHover: "hover:border-sky-200",
+    ring: "ring-sky-200",
+    dotActive: "bg-sky-600",
+    dotInactive: "bg-slate-300",
+    bulletBorder: "border-l-sky-500",
+    pillBorder: "border-sky-200",
+    pillText: "text-sky-700",
+    pillHoverBg: "hover:bg-sky-50",
+    arrowText: "text-sky-600",
+  },
+
+  // seedburo 녹색
+  seedburo: {
+    headerBg: "bg-green-600",
+    headerText: "text-white",
+    accentText: "text-green-700",
+    accentTextHover: "hover:text-green-700",
+    accentBorderHover: "hover:border-green-200",
+    ring: "ring-green-200",
+    dotActive: "bg-green-600",
+    dotInactive: "bg-slate-300",
+    bulletBorder: "border-l-green-500",
+    pillBorder: "border-green-200",
+    pillText: "text-green-700",
+    pillHoverBg: "hover:bg-green-50",
+    arrowText: "text-green-600",
+  },
+
+  // BIOplastics 노란색
+  bioplastics: {
+    headerBg: "bg-yellow-400",
+    headerText: "text-slate-900",
+    accentText: "text-yellow-700",
+    accentTextHover: "hover:text-yellow-700",
+    accentBorderHover: "hover:border-yellow-200",
+    ring: "ring-yellow-200",
+    dotActive: "bg-yellow-400",
+    dotInactive: "bg-slate-300",
+    bulletBorder: "border-l-yellow-500",
+    pillBorder: "border-yellow-200",
+    pillText: "text-yellow-700",
+    pillHoverBg: "hover:bg-yellow-50",
+    arrowText: "text-yellow-700",
+  },
+
+  // Cleaver Scientific 보라색
+  cleaverscientific: {
+    headerBg: "bg-purple-600",
+    headerText: "text-white",
+    accentText: "text-purple-700",
+    accentTextHover: "hover:text-purple-700",
+    accentBorderHover: "hover:border-purple-200",
+    ring: "ring-purple-200",
+    dotActive: "bg-purple-600",
+    dotInactive: "bg-slate-300",
+    bulletBorder: "border-l-purple-500",
+    pillBorder: "border-purple-200",
+    pillText: "text-purple-700",
+    pillHoverBg: "hover:bg-purple-50",
+    arrowText: "text-purple-600",
+  },
+
+  // cellfree 짙은 파란색
+  cellfreesciences: {
+    headerBg: "bg-blue-900",
+    headerText: "text-white",
+    accentText: "text-blue-800",
+    accentTextHover: "hover:text-blue-800",
+    accentBorderHover: "hover:border-blue-200",
+    ring: "ring-blue-200",
+    dotActive: "bg-blue-900",
+    dotInactive: "bg-slate-300",
+    bulletBorder: "border-l-blue-700",
+    pillBorder: "border-blue-200",
+    pillText: "text-blue-800",
+    pillHoverBg: "hover:bg-blue-50",
+    arrowText: "text-blue-800",
+  },
+
+  // PLAS LABS 검정색
+  plaslabs: {
+    headerBg: "bg-slate-900",
+    headerText: "text-white",
+    accentText: "text-slate-900",
+    accentTextHover: "hover:text-slate-900",
+    accentBorderHover: "hover:border-slate-300",
+    ring: "ring-slate-200",
+    dotActive: "bg-slate-900",
+    dotInactive: "bg-slate-300",
+    bulletBorder: "border-l-slate-900",
+    pillBorder: "border-slate-200",
+    pillText: "text-slate-900",
+    pillHoverBg: "hover:bg-slate-50",
+    arrowText: "text-slate-900",
+  },
+
+  // AffinityImmuno 좀 더 밝은 하늘색
+  affinityimmuno: {
+    headerBg: "bg-sky-400",
+    headerText: "text-slate-900",
+    accentText: "text-sky-700",
+    accentTextHover: "hover:text-sky-700",
+    accentBorderHover: "hover:border-sky-200",
+    ring: "ring-sky-200",
+    dotActive: "bg-sky-400",
+    dotInactive: "bg-slate-300",
+    bulletBorder: "border-l-sky-500",
+    pillBorder: "border-sky-200",
+    pillText: "text-sky-700",
+    pillHoverBg: "hover:bg-sky-50",
+    arrowText: "text-sky-700",
+  },
+
+  // DoGen 검붉은색
+  dogen: {
+    headerBg: "bg-red-900",
+    headerText: "text-white",
+    accentText: "text-red-800",
+    accentTextHover: "hover:text-red-800",
+    accentBorderHover: "hover:border-red-200",
+    ring: "ring-red-200",
+    dotActive: "bg-red-900",
+    dotInactive: "bg-slate-300",
+    bulletBorder: "border-l-red-700",
+    pillBorder: "border-red-200",
+    pillText: "text-red-800",
+    pillHoverBg: "hover:bg-red-50",
+    arrowText: "text-red-800",
+  },
+};
+
+function getBrandTheme(label: string): BrandTheme {
+  const key = normalizeBrandKey(label);
+  return BRAND_THEMES[key] ?? BRAND_THEMES.abm;
+}
+
+function ArrowBullet({ borderClass }: { borderClass: string }) {
   return (
-    <span className="mt-[6px] inline-block h-0 w-0 border-y-[4px] border-y-transparent border-l-[6px] border-l-orange-500" />
+    <span
+      className={[
+        "mt-[6px] inline-block h-0 w-0",
+        "border-y-[4px] border-y-transparent border-l-[6px]",
+        borderClass,
+      ].join(" ")}
+    />
   );
 }
 
@@ -279,6 +502,8 @@ export default function ProductsMegaMenu() {
   const activeBrand = useMemo(() => MENU[activeBrandIdx] ?? MENU[0], [activeBrandIdx]);
   const categories = activeBrand.children ?? [];
   const isSectioned = categories.some((c) => (c.children?.length ?? 0) > 0);
+
+  const theme = useMemo(() => getBrandTheme(activeBrand.label), [activeBrand.label]);
 
   // hover 끊김(아래로 이동하면 사라짐) 방지
   const closeTimer = useRef<number | null>(null);
@@ -314,8 +539,14 @@ export default function ProductsMegaMenu() {
       {open && (
         <div className="absolute left-0 top-full pt-3 z-50">
           <div className="w-[min(1200px,calc(100vw-2rem))] max-h-[calc(100vh-5.25rem)] overflow-hidden rounded-2xl border bg-white shadow-2xl">
-            {/* 상단 오렌지 바 */}
-            <div className="flex items-center justify-between gap-3 bg-orange-600 px-5 py-3 text-white">
+            {/* 상단 바 (브랜드별 색상) */}
+            <div
+              className={[
+                "flex items-center justify-between gap-3 px-5 py-3",
+                theme.headerBg,
+                theme.headerText,
+              ].join(" ")}
+            >
               <div className="min-w-0 text-sm font-semibold">
                 <span className="opacity-90">Products</span>
                 <span className="opacity-80"> / </span>
@@ -343,6 +574,8 @@ export default function ProductsMegaMenu() {
                   <ul className="space-y-1">
                     {MENU.map((b, i) => {
                       const active = i === activeBrandIdx;
+                      const bTheme = getBrandTheme(b.label);
+
                       return (
                         <li key={b.href} className="min-w-0">
                           <button
@@ -351,7 +584,7 @@ export default function ProductsMegaMenu() {
                               "w-full min-w-0 rounded-xl px-3 py-2 text-left text-sm transition",
                               "flex items-center gap-2",
                               active
-                                ? "bg-white shadow-sm ring-1 ring-orange-200"
+                                ? ["bg-white shadow-sm ring-1", bTheme.ring].join(" ")
                                 : "hover:bg-white hover:shadow-sm",
                             ].join(" ")}
                             onMouseEnter={() => setActiveBrandIdx(i)}
@@ -361,7 +594,7 @@ export default function ProductsMegaMenu() {
                             <span
                               className={[
                                 "h-2 w-2 shrink-0 rounded-full",
-                                active ? "bg-orange-600" : "bg-slate-300",
+                                active ? bTheme.dotActive : bTheme.dotInactive,
                               ].join(" ")}
                             />
                             <span
@@ -382,7 +615,12 @@ export default function ProductsMegaMenu() {
                   <div className="mt-3 px-2">
                     <Link
                       href="/products"
-                      className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white px-4 py-2 text-sm font-semibold text-orange-700 hover:bg-orange-50"
+                      className={[
+                        "inline-flex items-center gap-2 rounded-full border bg-white px-4 py-2 text-sm font-semibold",
+                        theme.pillBorder,
+                        theme.pillText,
+                        theme.pillHoverBg,
+                      ].join(" ")}
                       onClick={() => setOpen(false)}
                     >
                       All products →
@@ -391,24 +629,32 @@ export default function ProductsMegaMenu() {
                 </div>
               </div>
 
-              {/* RIGHT: Sections */}
+              {/* RIGHT */}
               <div className="min-w-0 overflow-x-hidden p-5">
                 <div className="max-h-[calc(100vh-11.5rem)] overflow-y-auto pr-2">
                   {isSectioned ? (
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
                       {categories.map((cat) => (
                         <div key={cat.href} className="min-w-0">
-                          {/* ✅ 제목(카테고리)은 '헤더 박스'로만: 아래 리스트를 덮지 않음 */}
+                          {/* 섹션 타이틀 카드 (브랜드별 hover 컬러) */}
                           <Link
                             href={cat.href}
                             target="_blank"
                             rel="noreferrer"
-                            className="group flex min-w-0 items-center justify-between gap-3 rounded-xl border bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm hover:border-orange-200"
+                            className={[
+                              "group flex min-w-0 items-center justify-between gap-3 rounded-xl border bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm",
+                              theme.accentBorderHover,
+                            ].join(" ")}
                             onClick={() => setOpen(false)}
                             title={cat.label}
                           >
                             <span className="min-w-0 truncate">{cat.label}</span>
-                            <span className="shrink-0 text-orange-600 transition group-hover:translate-x-0.5">
+                            <span
+                              className={[
+                                "shrink-0 transition group-hover:translate-x-0.5",
+                                theme.arrowText,
+                              ].join(" ")}
+                            >
                               →
                             </span>
                           </Link>
@@ -416,21 +662,24 @@ export default function ProductsMegaMenu() {
                           <ul className="mt-3 space-y-2">
                             {(cat.children ?? []).map((it) => (
                               <li key={it.href} className="min-w-0">
-                                {/* 2뎁스 아이템 */}
+                                {/* 2뎁스 */}
                                 <Link
                                   href={it.href}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="flex min-w-0 items-start gap-2 text-sm text-slate-700 hover:text-orange-700"
+                                  className={[
+                                    "flex min-w-0 items-start gap-2 text-sm text-slate-700",
+                                    theme.accentTextHover,
+                                  ].join(" ")}
                                   onClick={() => setOpen(false)}
                                 >
-                                  <ArrowBullet />
+                                  <ArrowBullet borderClass={theme.bulletBorder} />
                                   <span className="min-w-0 break-words whitespace-normal leading-5">
                                     {it.label}
                                   </span>
                                 </Link>
 
-                                {/* 3뎁스(예: Cell Types 아래 Primary Cells 등) */}
+                                {/* 3뎁스 */}
                                 {it.children?.length ? (
                                   <ul className="mt-2 space-y-1 pl-4">
                                     {it.children.map((ch) => (
@@ -439,7 +688,10 @@ export default function ProductsMegaMenu() {
                                           href={ch.href}
                                           target="_blank"
                                           rel="noreferrer"
-                                          className="flex min-w-0 items-start gap-2 text-sm text-slate-600 hover:text-orange-700"
+                                          className={[
+                                            "flex min-w-0 items-start gap-2 text-sm text-slate-600",
+                                            theme.accentTextHover,
+                                          ].join(" ")}
                                           onClick={() => setOpen(false)}
                                         >
                                           <span className="mt-[7px] inline-block h-1 w-1 shrink-0 rounded-full bg-slate-300" />
@@ -458,7 +710,7 @@ export default function ProductsMegaMenu() {
                       ))}
                     </div>
                   ) : (
-                    // 섹션 구조 없는 브랜드(예: Kent, SeedBuro 등): 그리드 링크
+                    // 섹션 구조 없는 브랜드: 그리드 링크
                     <div className="grid grid-cols-1 gap-x-10 gap-y-3 md:grid-cols-2 lg:grid-cols-3">
                       {categories.map((c) => (
                         <Link
@@ -466,20 +718,19 @@ export default function ProductsMegaMenu() {
                           href={c.href}
                           target="_blank"
                           rel="noreferrer"
-                          className="flex min-w-0 items-start gap-2 text-sm text-slate-700 hover:text-orange-700"
+                          className={[
+                            "flex min-w-0 items-start gap-2 text-sm text-slate-700",
+                            theme.accentTextHover,
+                          ].join(" ")}
                           onClick={() => setOpen(false)}
                         >
-                          <ArrowBullet />
+                          <ArrowBullet borderClass={theme.bulletBorder} />
                           <span className="min-w-0 break-words whitespace-normal leading-5">
                             {c.label}
                           </span>
                         </Link>
                       ))}
-                      {!categories.length && (
-                        <div className="text-sm text-slate-500">
-                          No items.
-                        </div>
-                      )}
+                      {!categories.length && <div className="text-sm text-slate-500">No items.</div>}
                     </div>
                   )}
 
@@ -487,14 +738,14 @@ export default function ProductsMegaMenu() {
                   <div className="mt-6 flex flex-wrap gap-3 border-t pt-4">
                     <Link
                       href="/quote"
-                      className="text-sm font-semibold text-slate-700 hover:text-orange-700 hover:underline"
+                      className={["text-sm font-semibold text-slate-700", theme.accentTextHover, "hover:underline"].join(" ")}
                       onClick={() => setOpen(false)}
                     >
                       Request a Quote →
                     </Link>
                     <Link
                       href="/resources"
-                      className="text-sm font-semibold text-slate-700 hover:text-orange-700 hover:underline"
+                      className={["text-sm font-semibold text-slate-700", theme.accentTextHover, "hover:underline"].join(" ")}
                       onClick={() => setOpen(false)}
                     >
                       Resources →
