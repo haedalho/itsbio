@@ -31,7 +31,6 @@ export default function Header() {
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-  // 모바일 메뉴 열렸을 때 body 스크롤 잠금
   useEffect(() => {
     if (!mobileOpen) return;
     const prev = document.body.style.overflow;
@@ -68,12 +67,11 @@ export default function Header() {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-6 text-base text-slate-600 md:flex">
+          {/* ✅ Products: hover=mega, click=/product (로직은 ProductsMegaMenu 안에서 처리) */}
           <ProductsMegaMenu />
+
           <Link href="/promotions" className="hover:text-slate-900">
             Promotions
-          </Link>
-          <Link href="/resources" className="hover:text-slate-900">
-            Resources
           </Link>
           <Link href="/notice" className="hover:text-slate-900">
             Notice
@@ -104,14 +102,12 @@ export default function Header() {
       {/* Mobile drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-[60] md:hidden">
-          {/* ✅ Backdrop: 흰색 반투명 + 블러 (검은 배경 싫으면 이게 훨씬 깔끔) */}
           <div
             className="absolute inset-0 bg-white/70 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
             aria-hidden="true"
           />
 
-          {/* Panel */}
           <div
             ref={panelRef}
             className="absolute left-0 top-0 h-full w-[min(86vw,360px)] bg-white shadow-2xl ring-1 ring-black/10"
@@ -137,7 +133,6 @@ export default function Header() {
                 placeholder="Search by Product Name, Catalog No..."
               />
 
-              {/* ✅ Products가 이상해 보이면: 맨 위를 강조/통일 */}
               <nav className="mt-4 space-y-1">
                 <Link
                   href="/products"

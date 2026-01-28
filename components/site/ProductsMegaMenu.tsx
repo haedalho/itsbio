@@ -506,15 +506,16 @@ export default function ProductsMegaMenu() {
 
   return (
     <div ref={ref} className="relative" onMouseEnter={safeOpen} onMouseLeave={safeClose}>
-      <button
-        type="button"
+      <Link
+        href="/products"
         className="inline-flex items-center gap-1 hover:text-slate-900"
         aria-haspopup="true"
         aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
+        onMouseEnter={safeOpen}
+        onFocus={safeOpen}
       >
-        Products <span className={`transition ${open ? "rotate-180" : ""}`}>▾</span>
-      </button>
+        Products <span className={`text-xs opacity-70 transition ${open ? "rotate-180" : ""}`}>▾</span>
+      </Link>
 
       {open && (
         <div className="absolute left-0 top-full z-50 pt-3">

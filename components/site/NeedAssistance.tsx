@@ -8,7 +8,6 @@ const QUICK_LINKS = [
     items: [
       { label: "Products", href: "/products" },
       { label: "Promotions", href: "/promotions" },
-      { label: "Resources", href: "/resources" },
       { label: "Notice", href: "/notice" },
     ],
   },
@@ -186,12 +185,7 @@ export default function NeedAssistance() {
                   />
                 </div>
 
-                <Select
-                  placeholder="Research stage"
-                  value={form.stage}
-                  onChange={(v) => setForm((p) => ({ ...p, stage: v }))}
-                  options={["Research", "Development", "Pilot", "Manufacturing", "Other"]}
-                />
+                
 
                 <Select
                   placeholder="Message type"
