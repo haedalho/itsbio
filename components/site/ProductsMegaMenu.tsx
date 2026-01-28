@@ -132,7 +132,6 @@ const MENU: MenuItem[] = [
       { label: "Research CRO Custom Services", href: "http://itsbio.co.kr/?page_id=2306" },
     ],
   },
-
   {
     label: "KentScientifics",
     href: "http://itsbio.co.kr/?page_id=347",
@@ -149,9 +148,7 @@ const MENU: MenuItem[] = [
       { label: "Feeding Needles", href: "http://itsbio.co.kr/?page_id=3183" },
     ],
   },
-
   { label: "ITSChem", href: "http://itsbio.co.kr/?page_id=656" },
-
   {
     label: "AIMS",
     href: "http://itsbio.co.kr/?page_id=392",
@@ -160,7 +157,6 @@ const MENU: MenuItem[] = [
       { label: "AIMS Accessories", href: "http://itsbio.co.kr/?page_id=3975" },
     ],
   },
-
   {
     label: "SeedBuro",
     href: "http://itsbio.co.kr/?page_id=350",
@@ -179,7 +175,6 @@ const MENU: MenuItem[] = [
       { label: "Grain and Seed Cleaners", href: "http://itsbio.co.kr/?page_id=11513" },
     ],
   },
-
   {
     label: "BIOplastics",
     href: "http://itsbio.co.kr/?page_id=355",
@@ -191,7 +186,6 @@ const MENU: MenuItem[] = [
       { label: "Cap strips, mats & Seals", href: "http://itsbio.co.kr/?page_id=17761" },
     ],
   },
-
   {
     label: "Cleaver Scientific",
     href: "http://itsbio.co.kr/?page_id=3308",
@@ -203,7 +197,6 @@ const MENU: MenuItem[] = [
       { label: "Gel Documentation", href: "http://itsbio.co.kr/?page_id=4931" },
     ],
   },
-
   {
     label: "CellFree Sciences",
     href: "http://itsbio.co.kr/?page_id=3298",
@@ -213,7 +206,6 @@ const MENU: MenuItem[] = [
       { label: "Reagents", href: "http://itsbio.co.kr/?page_id=5299" },
     ],
   },
-
   {
     label: "PlasLabs",
     href: "http://itsbio.co.kr/?page_id=360",
@@ -230,7 +222,6 @@ const MENU: MenuItem[] = [
       { label: "Stream Tables", href: "http://itsbio.co.kr/?page_id=18118" },
     ],
   },
-
   {
     label: "Affinityimmuno",
     href: "http://itsbio.co.kr/?page_id=7450",
@@ -241,7 +232,6 @@ const MENU: MenuItem[] = [
       { label: "IgEasY", href: "http://itsbio.co.kr/?page_id=7881" },
     ],
   },
-
   {
     label: "DoGen",
     href: "http://itsbio.co.kr/?page_id=13492",
@@ -266,34 +256,35 @@ function useClickOutside<T extends HTMLElement>(onOutside: () => void) {
 }
 
 function normalizeBrandKey(label: string) {
-  return label
-    .toLowerCase()
-    .replace(/\s+/g, "")
-    .replace(/[^a-z0-9]/g, "");
+  return label.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
 }
 
 type BrandTheme = {
-  headerBg: string;
+  headerGradientFrom: string; // e.g. "from-orange-600"
+  headerGradientTo: string;   // e.g. "to-orange-500"
   headerText: string;
-  accentText: string;
+
   accentTextHover: string;
   accentBorderHover: string;
   ring: string;
+
   dotActive: string;
   dotInactive: string;
-  bulletBorder: string; // e.g. "border-l-orange-500"
+
+  bulletBorder: string;
+
   pillBorder: string;
   pillText: string;
   pillHoverBg: string;
+
   arrowText: string;
 };
 
 const BRAND_THEMES: Record<string, BrandTheme> = {
-  // abm 오렌지 그대로
   abm: {
-    headerBg: "bg-orange-600",
+    headerGradientFrom: "from-orange-600",
+    headerGradientTo: "to-orange-500",
     headerText: "text-white",
-    accentText: "text-orange-700",
     accentTextHover: "hover:text-orange-700",
     accentBorderHover: "hover:border-orange-200",
     ring: "ring-orange-200",
@@ -306,11 +297,10 @@ const BRAND_THEMES: Record<string, BrandTheme> = {
     arrowText: "text-orange-600",
   },
 
-  // Kent Scientific Product Categories 파란색
   kentscientifics: {
-    headerBg: "bg-blue-600",
+    headerGradientFrom: "from-blue-700",
+    headerGradientTo: "to-blue-500",
     headerText: "text-white",
-    accentText: "text-blue-700",
     accentTextHover: "hover:text-blue-700",
     accentBorderHover: "hover:border-blue-200",
     ring: "ring-blue-200",
@@ -323,11 +313,10 @@ const BRAND_THEMES: Record<string, BrandTheme> = {
     arrowText: "text-blue-600",
   },
 
-  // itschem 약한 붉은색
   itschem: {
-    headerBg: "bg-rose-500",
+    headerGradientFrom: "from-rose-600",
+    headerGradientTo: "to-rose-400",
     headerText: "text-white",
-    accentText: "text-rose-700",
     accentTextHover: "hover:text-rose-700",
     accentBorderHover: "hover:border-rose-200",
     ring: "ring-rose-200",
@@ -340,11 +329,10 @@ const BRAND_THEMES: Record<string, BrandTheme> = {
     arrowText: "text-rose-600",
   },
 
-  // aims 하늘색
   aims: {
-    headerBg: "bg-sky-600",
+    headerGradientFrom: "from-sky-700",
+    headerGradientTo: "to-sky-500",
     headerText: "text-white",
-    accentText: "text-sky-700",
     accentTextHover: "hover:text-sky-700",
     accentBorderHover: "hover:border-sky-200",
     ring: "ring-sky-200",
@@ -357,11 +345,10 @@ const BRAND_THEMES: Record<string, BrandTheme> = {
     arrowText: "text-sky-600",
   },
 
-  // seedburo 녹색
   seedburo: {
-    headerBg: "bg-green-600",
+    headerGradientFrom: "from-green-700",
+    headerGradientTo: "to-green-500",
     headerText: "text-white",
-    accentText: "text-green-700",
     accentTextHover: "hover:text-green-700",
     accentBorderHover: "hover:border-green-200",
     ring: "ring-green-200",
@@ -374,11 +361,10 @@ const BRAND_THEMES: Record<string, BrandTheme> = {
     arrowText: "text-green-600",
   },
 
-  // BIOplastics 노란색
   bioplastics: {
-    headerBg: "bg-yellow-400",
+    headerGradientFrom: "from-yellow-400",
+    headerGradientTo: "to-amber-300",
     headerText: "text-slate-900",
-    accentText: "text-yellow-700",
     accentTextHover: "hover:text-yellow-700",
     accentBorderHover: "hover:border-yellow-200",
     ring: "ring-yellow-200",
@@ -391,11 +377,10 @@ const BRAND_THEMES: Record<string, BrandTheme> = {
     arrowText: "text-yellow-700",
   },
 
-  // Cleaver Scientific 보라색
   cleaverscientific: {
-    headerBg: "bg-purple-600",
+    headerGradientFrom: "from-purple-700",
+    headerGradientTo: "to-purple-500",
     headerText: "text-white",
-    accentText: "text-purple-700",
     accentTextHover: "hover:text-purple-700",
     accentBorderHover: "hover:border-purple-200",
     ring: "ring-purple-200",
@@ -408,11 +393,10 @@ const BRAND_THEMES: Record<string, BrandTheme> = {
     arrowText: "text-purple-600",
   },
 
-  // cellfree 짙은 파란색
   cellfreesciences: {
-    headerBg: "bg-blue-900",
+    headerGradientFrom: "from-blue-950",
+    headerGradientTo: "to-blue-700",
     headerText: "text-white",
-    accentText: "text-blue-800",
     accentTextHover: "hover:text-blue-800",
     accentBorderHover: "hover:border-blue-200",
     ring: "ring-blue-200",
@@ -425,11 +409,10 @@ const BRAND_THEMES: Record<string, BrandTheme> = {
     arrowText: "text-blue-800",
   },
 
-  // PLAS LABS 검정색
   plaslabs: {
-    headerBg: "bg-slate-900",
+    headerGradientFrom: "from-slate-950",
+    headerGradientTo: "to-slate-700",
     headerText: "text-white",
-    accentText: "text-slate-900",
     accentTextHover: "hover:text-slate-900",
     accentBorderHover: "hover:border-slate-300",
     ring: "ring-slate-200",
@@ -442,11 +425,10 @@ const BRAND_THEMES: Record<string, BrandTheme> = {
     arrowText: "text-slate-900",
   },
 
-  // AffinityImmuno 좀 더 밝은 하늘색
   affinityimmuno: {
-    headerBg: "bg-sky-400",
+    headerGradientFrom: "from-sky-500",
+    headerGradientTo: "to-cyan-300",
     headerText: "text-slate-900",
-    accentText: "text-sky-700",
     accentTextHover: "hover:text-sky-700",
     accentBorderHover: "hover:border-sky-200",
     ring: "ring-sky-200",
@@ -459,11 +441,10 @@ const BRAND_THEMES: Record<string, BrandTheme> = {
     arrowText: "text-sky-700",
   },
 
-  // DoGen 검붉은색
   dogen: {
-    headerBg: "bg-red-900",
+    headerGradientFrom: "from-red-950",
+    headerGradientTo: "to-red-700",
     headerText: "text-white",
-    accentText: "text-red-800",
     accentTextHover: "hover:text-red-800",
     accentBorderHover: "hover:border-red-200",
     ring: "ring-red-200",
@@ -502,10 +483,9 @@ export default function ProductsMegaMenu() {
   const activeBrand = useMemo(() => MENU[activeBrandIdx] ?? MENU[0], [activeBrandIdx]);
   const categories = activeBrand.children ?? [];
   const isSectioned = categories.some((c) => (c.children?.length ?? 0) > 0);
-
   const theme = useMemo(() => getBrandTheme(activeBrand.label), [activeBrand.label]);
 
-  // hover 끊김(아래로 이동하면 사라짐) 방지
+  // hover 끊김 방지
   const closeTimer = useRef<number | null>(null);
   const safeOpen = () => {
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
@@ -537,14 +517,16 @@ export default function ProductsMegaMenu() {
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full pt-3 z-50">
+        <div className="absolute left-0 top-full z-50 pt-3">
           <div className="w-[min(1200px,calc(100vw-2rem))] max-h-[calc(100vh-5.25rem)] overflow-hidden rounded-2xl border bg-white shadow-2xl">
-            {/* 상단 바 (브랜드별 색상) */}
+            {/* ✅ 상단 바: 그라데이션 */}
             <div
               className={[
-                "flex items-center justify-between gap-3 px-5 py-3",
-                theme.headerBg,
-                theme.headerText,
+              "flex items-center justify-between gap-3 px-5 py-3",
+              "bg-gradient-to-r",
+              theme.headerGradientFrom,
+              "to-white/96", // ← 여기! (숫자 높을수록 더 하얘짐)
+              theme.headerText,
               ].join(" ")}
             >
               <div className="min-w-0 text-sm font-semibold">
@@ -556,9 +538,12 @@ export default function ProductsMegaMenu() {
                 href={activeBrand.href}
                 target="_blank"
                 rel="noreferrer"
-                className="shrink-0 text-sm font-semibold hover:underline"
+                className={[
+                "shrink-0 text-sm font-semibold hover:underline",
+                "text-slate-900", // ✅ 흰 배경쪽에서도 보이게
+                ].join(" ")}
                 onClick={() => setOpen(false)}
-              >
+                >
                 View {activeBrand.label} →
               </Link>
             </div>
@@ -566,9 +551,7 @@ export default function ProductsMegaMenu() {
             <div className="grid grid-cols-[minmax(0,260px)_minmax(0,1fr)]">
               {/* LEFT: Brand list */}
               <div className="min-w-0 border-r bg-slate-50">
-                <div className="px-4 py-3 text-xs font-semibold text-slate-500">
-                  Search by Product
-                </div>
+                <div className="px-4 py-3 text-xs font-semibold text-slate-500">Search by Product</div>
 
                 <div className="max-h-[calc(100vh-11.5rem)] overflow-y-auto px-2 pb-3">
                   <ul className="space-y-1">
@@ -581,8 +564,7 @@ export default function ProductsMegaMenu() {
                           <button
                             type="button"
                             className={[
-                              "w-full min-w-0 rounded-xl px-3 py-2 text-left text-sm transition",
-                              "flex items-center gap-2",
+                              "flex w-full min-w-0 items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition",
                               active
                                 ? ["bg-white shadow-sm ring-1", bTheme.ring].join(" ")
                                 : "hover:bg-white hover:shadow-sm",
@@ -636,7 +618,6 @@ export default function ProductsMegaMenu() {
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
                       {categories.map((cat) => (
                         <div key={cat.href} className="min-w-0">
-                          {/* 섹션 타이틀 카드 (브랜드별 hover 컬러) */}
                           <Link
                             href={cat.href}
                             target="_blank"
@@ -649,12 +630,7 @@ export default function ProductsMegaMenu() {
                             title={cat.label}
                           >
                             <span className="min-w-0 truncate">{cat.label}</span>
-                            <span
-                              className={[
-                                "shrink-0 transition group-hover:translate-x-0.5",
-                                theme.arrowText,
-                              ].join(" ")}
-                            >
+                            <span className={["shrink-0 transition group-hover:translate-x-0.5", theme.arrowText].join(" ")}>
                               →
                             </span>
                           </Link>
@@ -662,24 +638,17 @@ export default function ProductsMegaMenu() {
                           <ul className="mt-3 space-y-2">
                             {(cat.children ?? []).map((it) => (
                               <li key={it.href} className="min-w-0">
-                                {/* 2뎁스 */}
                                 <Link
                                   href={it.href}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className={[
-                                    "flex min-w-0 items-start gap-2 text-sm text-slate-700",
-                                    theme.accentTextHover,
-                                  ].join(" ")}
+                                  className={["flex min-w-0 items-start gap-2 text-sm text-slate-700", theme.accentTextHover].join(" ")}
                                   onClick={() => setOpen(false)}
                                 >
                                   <ArrowBullet borderClass={theme.bulletBorder} />
-                                  <span className="min-w-0 break-words whitespace-normal leading-5">
-                                    {it.label}
-                                  </span>
+                                  <span className="min-w-0 break-words whitespace-normal leading-5">{it.label}</span>
                                 </Link>
 
-                                {/* 3뎁스 */}
                                 {it.children?.length ? (
                                   <ul className="mt-2 space-y-1 pl-4">
                                     {it.children.map((ch) => (
@@ -688,16 +657,11 @@ export default function ProductsMegaMenu() {
                                           href={ch.href}
                                           target="_blank"
                                           rel="noreferrer"
-                                          className={[
-                                            "flex min-w-0 items-start gap-2 text-sm text-slate-600",
-                                            theme.accentTextHover,
-                                          ].join(" ")}
+                                          className={["flex min-w-0 items-start gap-2 text-sm text-slate-600", theme.accentTextHover].join(" ")}
                                           onClick={() => setOpen(false)}
                                         >
                                           <span className="mt-[7px] inline-block h-1 w-1 shrink-0 rounded-full bg-slate-300" />
-                                          <span className="min-w-0 break-words whitespace-normal leading-5">
-                                            {ch.label}
-                                          </span>
+                                          <span className="min-w-0 break-words whitespace-normal leading-5">{ch.label}</span>
                                         </Link>
                                       </li>
                                     ))}
@@ -710,7 +674,6 @@ export default function ProductsMegaMenu() {
                       ))}
                     </div>
                   ) : (
-                    // 섹션 구조 없는 브랜드: 그리드 링크
                     <div className="grid grid-cols-1 gap-x-10 gap-y-3 md:grid-cols-2 lg:grid-cols-3">
                       {categories.map((c) => (
                         <Link
@@ -718,23 +681,17 @@ export default function ProductsMegaMenu() {
                           href={c.href}
                           target="_blank"
                           rel="noreferrer"
-                          className={[
-                            "flex min-w-0 items-start gap-2 text-sm text-slate-700",
-                            theme.accentTextHover,
-                          ].join(" ")}
+                          className={["flex min-w-0 items-start gap-2 text-sm text-slate-700", theme.accentTextHover].join(" ")}
                           onClick={() => setOpen(false)}
                         >
                           <ArrowBullet borderClass={theme.bulletBorder} />
-                          <span className="min-w-0 break-words whitespace-normal leading-5">
-                            {c.label}
-                          </span>
+                          <span className="min-w-0 break-words whitespace-normal leading-5">{c.label}</span>
                         </Link>
                       ))}
                       {!categories.length && <div className="text-sm text-slate-500">No items.</div>}
                     </div>
                   )}
 
-                  {/* 하단 퀵 링크 */}
                   <div className="mt-6 flex flex-wrap gap-3 border-t pt-4">
                     <Link
                       href="/quote"
