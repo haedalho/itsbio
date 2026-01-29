@@ -202,23 +202,7 @@ export default function ProductsCategoryGrid() {
 
   return (
     <section>
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-            Products
-          </h2>
-          <p className="mt-2 text-sm text-slate-600">
-            Browse products by category and find what you need faster.
-          </p>
-        </div>
-
-        <Link
-          href="/products"
-          className="text-sm font-semibold text-orange-700 hover:underline"
-        >
-          View all products →
-        </Link>
-      </div>
+      
 
       <div
         className="mt-6 overflow-hidden"

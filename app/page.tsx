@@ -3,30 +3,10 @@ import Link from "next/link";
 
 import ProductsCategoryGrid from "@/components/site/home/ProductsCategoryGrid";
 
-
-const FEATURED_PRODUCTS = [
-  { name: "qPCR Master Mix", cat: "CAT# QP-1024", desc: "High sensitivity, fast cycling.", tag: "Hot" },
-  { name: "RNA Extraction Kit", cat: "CAT# RN-3301", desc: "High yield from tough samples.", tag: "New" },
-  { name: "Anti-CD3 Antibody", cat: "CAT# AB-7789", desc: "Validated for Flow/IF.", tag: "Best" },
-  { name: "Protein Ladder 10–250kDa", cat: "CAT# PL-2200", desc: "Sharp, consistent bands.", tag: "Popular" },
-];
-
-const PROMOTIONS = [
-  { title: "Bundle Discount", desc: "Save on kits + consumables.", cta: "See Offers" },
-  { title: "Spring Promotion", desc: "Limited-time on select reagents.", cta: "Learn More" },
-  { title: "Free Shipping", desc: "On orders over ₩300,000.", cta: "Details" },
-];
-
-const RESOURCES = [
-  { title: "Catalogs", desc: "Latest product catalogs", badge: "PDF" },
-  { title: "Datasheets", desc: "Specs & performance data", badge: "PDF" },
-  { title: "Protocols", desc: "Recommended workflows", badge: "DOC" },
-  { title: "Safety Docs", desc: "SDS & compliance", badge: "PDF" },
-];
-
 const NOTICES = [
   { title: "New Product Launch: XYZ Antibody", date: "2026-01-10" },
   { title: "Upcoming Webinar: qPCR Optimization", date: "2026-01-05" },
+  { title: "Holiday Shipping Schedule", date: "2025-12-28" },
   { title: "Holiday Shipping Schedule", date: "2025-12-28" },
 ];
 
@@ -37,23 +17,243 @@ const QUICK_CATEGORIES = [
   { label: "Cell Culture", href: "/products?category=cell-culture" },
 ];
 
+function SectionHeading({
+  title,
+  desc,
+  rightLinkHref,
+  rightLinkText,
+}: {
+  title: string;
+  desc?: string;
+  rightLinkHref?: string;
+  rightLinkText?: string;
+}) {
+  return (
+    <div className="text-center">
+      <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">{title}</h2>
+      <div className="mx-auto mt-3 h-1 w-10 rounded-full bg-orange-600" />
+      {desc ? <p className="mx-auto mt-3 max-w-2xl text-slate-600">{desc}</p> : null}
+
+      {rightLinkHref && rightLinkText ? (
+        <div className="mt-5">
+          <Link href={rightLinkHref} className="text-sm font-semibold text-orange-700 hover:underline">
+            {rightLinkText} →
+          </Link>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** 프로모션: 이미지 크게 + 아래 소개(그라데이션 제거) */
+function PromotionsShowcase() {
+  const PROMOTIONS = [
+    {
+      title: "Bundle Promotion",
+      caption: "Save more with bundles",
+      href: "/promotions/bundle",
+      img: "/home/promo-bundle.jpg",
+    },
+    {
+      title: "Spring Promotion",
+      caption: "Seasonal specials",
+      href: "/promotions/spring",
+      img: "/home/promo-spring.jpg",
+    },
+    {
+      title: "Free Shipping",
+      caption: "Orders over ₩300,000+",
+      href: "/promotions/free-shipping",
+      img: "/home/promo-shipping.jpg",
+    },
+    {
+      title: "GMP Online Tour",
+      caption: "Virtual facility tour",
+      href: "/promotions/gmp-tour",
+      img: "/home/promo-gmp.jpg",
+    },
+  ];
+
+  return (
+    <section id="promotions" className="bg-slate-50 py-14 md:py-18">
+      <div className="mx-auto max-w-7xl px-6">
+        <SectionHeading
+          title="Promotions"
+          desc="Highlights and limited-time benefits."
+          rightLinkHref="/promotions"
+          rightLinkText="View all promotions"
+        />
+
+        <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {PROMOTIONS.map((p) => (
+            <Link
+              key={p.title}
+              href={p.href}
+              className="group overflow-hidden rounded-3xl bg-white shadow-sm transition hover:shadow-md"
+            >
+              <div className="relative aspect-[4/3] w-full">
+                <Image
+                  src={p.img}
+                  alt={p.title}
+                  fill
+                  className="object-cover transition duration-300 group-hover:scale-[1.03]"
+                  sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                />
+              </div>
+
+              <div className="p-5">
+                <div className="text-base font-extrabold tracking-tight text-slate-900">{p.title}</div>
+                <div className="mt-1 text-sm text-slate-600">{p.caption}</div>
+
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="inline-flex rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-800">
+                    Promotion
+                  </span>
+                  <span className="text-sm font-extrabold text-orange-700 transition group-hover:translate-x-0.5">
+                    →
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function NotebookNotices() {
+  return (
+    <div className="mt-10">
+      <div className="px-0 md:px-0">
+        <div className="space-y-3">
+          {NOTICES.map((n, idx) => {
+            const dateLabel = n.date.replaceAll("-", ".");
+            return (
+              <Link key={`${n.title}-${n.date}-${idx}`} href="/notice" className="group block px-1 py-2">
+                <div className="flex items-start gap-3">
+                  {/* bullet */}
+                  <div className="mt-2 h-3 w-3 rotate-12 rounded-sm bg-orange-400/90 shadow-[1px_1px_0_rgba(15,23,42,0.18)]" />
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <div className="min-w-0 truncate text-base font-semibold text-slate-900 group-hover:text-orange-800">
+                        {n.title}
+                      </div>
+
+                      {idx === 0 ? (
+                        <span className="inline-flex rotate-[-2deg] rounded-md bg-orange-200/80 px-2 py-0.5 text-[11px] font-extrabold text-orange-900 shadow-[1px_1px_0_rgba(15,23,42,0.18)]">
+                          NEW!
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <div className="mt-1 text-xs text-slate-600">
+                      <span className="font-semibold text-slate-700">{dateLabel}</span> · 클릭해서 자세히 보기
+                    </div>
+
+                    {/* underline: base + hover fill */}
+                    <div className="mt-3 relative h-[2px] w-full overflow-hidden rounded-full bg-orange-100">
+                      <div className="absolute inset-0 origin-left scale-x-0 rounded-full bg-orange-300 transition-transform duration-300 ease-out group-hover:scale-x-100" />
+                    </div>
+                  </div>
+
+                  {/* arrow */}
+                  <div className="shrink-0 text-lg font-extrabold text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-orange-700">
+                    →
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** ✅ Our Partners: 로고 캐러셀 (노티 뒤에 붙일 섹션) */
+function PartnersCarousel() {
+  const PARTNERS = [
+    { name: "Partner 1", src: "/partners/abm-logo-1.png", href: "https://www.abmgood.com/" },
+    { name: "Partner 2", src: "/partners/aims-logo.png", href: "https://animalid.com/" },
+    { name: "Partner 3", src: "/partners/bioplastics-logo.png", href: "https://www.kentscientific.com/?srsltid=AfmBOoo8v6ctNcJYeHtOiyLOZHXntbUEi8iDnRUiHCbc-sxHTZSSe-_f" },
+    { name: "Partner 4", src: "/partners/cellfreesciences-logo.png", href: "https://www.cfsciences.com/" },
+    { name: "Partner 5", src: "/partners/Cleaverscientific-logo.png", href: "https://www.thistlescientific.co.uk/" },
+    { name: "Partner 6", src: "/partners/itschem-logo.png", href: "#" },
+    { name: "Partner 7", src: "/partners/KentScientific-logo.png", href: "https://www.kentscientific.com/" },
+    { name: "Partner 8", src: "/partners/plaslabs-logo.png", href: "https://plas-labs.com/" },
+    { name: "Partner 9", src: "/partners/Seedburo-logo.png", href: "https://seedburo.com/" },
+  ];
+
+  // 무한 루프용(2번 이어붙이기)
+  const loop = [...PARTNERS, ...PARTNERS];
+
+  return (
+    <section id="partners" className="bg-slate-50 py-14 md:py-18">
+      <div className="mx-auto max-w-7xl px-6">
+        <SectionHeading title="Our Partners" desc="Trusted brands and suppliers we work with." />
+
+        <div className="mt-10">
+          {/* ✅ 4개만 보이게: max-w를 4개 폭 기준으로 제한 */}
+          <div className="relative mx-auto w-full max-w-4xl overflow-hidden">
+            {/* 양끝 페이드(원하면 빼도 됨) */}
+            <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-white to-transparent" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-white to-transparent" />
+
+            {/* track */}
+            <div
+              className={[
+                "flex w-max items-center gap-10",
+                "[animation:partners-marquee_22s_linear_infinite]",
+              ].join(" ")}
+            >
+              {loop.map((p, i) => (
+                <Link
+                  key={`${p.name}-${i}`}
+                  href={p.href}
+                  target="blank"
+                  aria-label={p.name}
+                  className="flex w-[220px] shrink-0 items-center justify-center"
+                >
+                  <div className="relative h-17 w-[300px]">
+                    <Image
+                      src={p.src}
+                      alt={p.name}
+                      fill
+                      className="object-contain"
+                      sizes="300px"
+                      />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   return (
-    <main className="bg-slate-50">
-      {/* HERO (image + form overlay) */}
+    <main className="bg-white">
+      {/* HERO */}
       <section id="top" className="relative">
         <div className="relative h-[620px] w-full overflow-hidden md:h-[720px]">
-          <Image
-            src="/hero.png"
+         <Image
+            src="/hero-e.png"
             alt="ITS BIO"
             fill
             priority
-            className="object-cover object-[85%_75%]"
+            className="object-cover object-[85%_15%]"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/75 via-slate-950/40 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/35 via-transparent to-transparent" />
 
-          {/* Content on image */}
+          {/* ✅ 최소 그라데이션: 거의 안 어두워짐 (가독성만 살짝) */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/25 via-black/10 to-transparent" />
+
+
+
           <div className="absolute inset-0">
             <div className="mx-auto flex h-full max-w-7xl px-6">
               <div className="my-auto w-full max-w-3xl">
@@ -63,15 +263,14 @@ export default function Home() {
                 </div>
 
                 <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight text-white md:text-6xl">
-                  High-quality reagents and innovative tools for your{" "}
-                  <span className="whitespace-nowrap">lab needs</span>
+                  High-quality reagents and innovative tools for your <span className="whitespace-nowrap">lab needs</span>
                 </h1>
 
                 <p className="mt-4 text-base leading-7 text-white/80 md:text-lg">
                   Search by product name or catalog number. Get the right item for your workflow.
                 </p>
 
-                {/* Search form sits on image */}
+                {/* ✅ 검색 폼 유지 */}
                 <form
                   action="/products"
                   method="GET"
@@ -103,175 +302,40 @@ export default function Home() {
                     ))}
                   </div>
                 </form>
-
-                <div className="mt-6 flex flex-wrap gap-2">
-                  <Link
-                    href="#products"
-                    className="inline-flex rounded-full bg-white/15 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/20"
-                  >
-                    Browse featured
-                  </Link>
-                  <Link
-                    href="/quote"
-                    className="inline-flex rounded-full bg-orange-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-700"
-                  >
-                    Request a Quote
-                  </Link>
-                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* PRODUCTS (Category Tiles) */}
-      <section className="mx-auto max-w-7xl px-6 pt-12 pb-2 md:pt-16">
-        <ProductsCategoryGrid />
-      </section>
-
-      {/* FEATURED PRODUCTS */}
-      <section id="products" className="mx-auto max-w-7xl px-6 pt-10 pb-10 md:pt-12">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900">Featured Products</h2>
-            <p className="mt-2 text-slate-600">Curated items frequently requested by labs.</p>
+      {/* PRODUCTS */}
+      <section id="products" className="bg-white py-14 md:py-18">
+        <div className="mx-auto max-w-7xl px-6">
+          <SectionHeading
+            title="Products"
+            desc="Browse by category — built for fast discovery."
+            rightLinkHref="/products"
+            rightLinkText="View all Products"
+          />
+          <div className="mt-8">
+            <ProductsCategoryGrid />
           </div>
-          <Link href="/products" className="text-sm font-semibold text-orange-700 hover:underline">
-            View all products →
-          </Link>
-        </div>
-
-        <div className="mt-7 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {FEATURED_PRODUCTS.map((p) => (
-            <div key={p.cat} className="rounded-2xl border bg-white p-5 shadow-sm transition hover:shadow-md">
-              <div className="flex items-center justify-between">
-                <div className="text-xs text-slate-500">{p.cat}</div>
-                <span className="rounded-full border bg-orange-50 px-2 py-0.5 text-xs text-orange-700">
-                  {p.tag}
-                </span>
-              </div>
-              <div className="mt-2 font-semibold text-slate-900">{p.name}</div>
-              <div className="mt-1 text-sm text-slate-600">{p.desc}</div>
-
-              <div className="mt-4 flex gap-2">
-                <Link
-                  href="/products"
-                  className="flex-1 rounded-xl bg-slate-100 px-4 py-2 text-center text-sm font-semibold transition hover:bg-slate-200"
-                >
-                  Details
-                </Link>
-                <Link
-                  href="/quote"
-                  className="flex-1 rounded-xl bg-orange-600 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-orange-700"
-                >
-                  Quote
-                </Link>
-              </div>
-            </div>
-          ))}
         </div>
       </section>
 
       {/* PROMOTIONS */}
-      <section id="promotions" className="mx-auto max-w-7xl px-6 py-10 md:py-12">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900">Current Promotions</h2>
-            <p className="mt-2 text-slate-600">Limited-time offers and bundles.</p>
-          </div>
-          <Link href="/promotions" className="text-sm font-semibold text-orange-700 hover:underline">
-            View all promotions →
-          </Link>
-        </div>
-
-        <div className="mt-7 grid grid-cols-1 gap-4 md:grid-cols-3">
-          {PROMOTIONS.map((x) => (
-            <div
-              key={x.title}
-              className="relative overflow-hidden rounded-2xl border bg-white p-6 shadow-sm transition hover:shadow-md"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-50 via-transparent to-white" />
-              <div className="relative">
-                <div className="text-lg font-semibold text-slate-900">{x.title}</div>
-                <div className="mt-2 text-sm text-slate-600">{x.desc}</div>
-                <Link
-                  href="/promotions"
-                  className="mt-5 inline-flex rounded-xl bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-700"
-                >
-                  {x.cta}
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* RESOURCES */}
-      <section id="resources" className="mx-auto max-w-7xl px-6 py-10 md:py-12">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900">Resources & Downloads</h2>
-            <p className="mt-2 text-slate-600">Documents, catalogs, and protocols.</p>
-          </div>
-          <Link href="/resources" className="text-sm font-semibold text-orange-700 hover:underline">
-            View all →
-          </Link>
-        </div>
-
-        <div className="mt-7 grid grid-cols-2 gap-3 md:grid-cols-4">
-          {RESOURCES.map((r) => (
-            <Link
-              key={r.title}
-              href="/resources"
-              className="rounded-xl border bg-white p-4 shadow-sm transition hover:shadow-md"
-            >
-              <div className="inline-flex rounded-full border bg-orange-50 px-2 py-0.5 text-xs text-orange-700">
-                {r.badge}
-              </div>
-              <div className="mt-2 font-semibold text-slate-900">{r.title}</div>
-              <div className="mt-1 text-xs text-slate-600">{r.desc}</div>
-            </Link>
-          ))}
-        </div>
-
-        <Link
-          href="/resources"
-          className="mt-6 inline-flex rounded-xl bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-700"
-        >
-          Browse resources
-        </Link>
-      </section>
+      <PromotionsShowcase />
 
       {/* NOTICE */}
-      <section id="notice" className="mx-auto max-w-7xl px-6 py-10 md:py-12">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900">Latest Notices</h2>
-            <p className="mt-2 text-slate-600">Updates and announcements.</p>
-          </div>
-          <Link href="/notice" className="text-sm font-semibold text-orange-700 hover:underline">
-            View all →
-          </Link>
-        </div>
-
-        <div className="mt-7 divide-y rounded-2xl border bg-white shadow-sm">
-          {NOTICES.map((n) => (
-            <Link
-              key={n.title}
-              href="/notice"
-              className="block px-5 py-4 transition hover:bg-slate-50"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="font-semibold text-slate-900">{n.title}</div>
-                <div className="shrink-0 text-xs text-slate-500">{n.date}</div>
-              </div>
-              <div className="mt-1 text-sm text-slate-600">Click to view details →</div>
-            </Link>
-          ))}
+      <section id="notice" className="bg-white py-14 md:py-18">
+        <div className="mx-auto max-w-7xl px-6">
+          <SectionHeading title="Latest Notices" desc="Updates and announcements." rightLinkHref="/notice" rightLinkText="View all" />
+          <NotebookNotices />
         </div>
       </section>
 
-      {/* NEED ASSISTANCE (footer form exists below in layout라면 여기 빼도 됨) */}
+      {/* OUR PARTNERS */}
+      <PartnersCarousel />
     </main>
   );
 }
