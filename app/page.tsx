@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { sanityClient } from "../lib/sanity.client";
-import { BRANDS_QUERY } from "../lib/sanity.queries";
+import { sanityClient } from "@/lib/sanity/sanity.client";
+import { BRANDS_QUERY } from "@/lib/sanity/sanity.queries";
 
 import ProductsCategoryGrid from "@/components/site/home/ProductsCategoryGrid";
 

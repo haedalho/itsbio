@@ -1,39 +1,79 @@
-import { sanityClient } from "@/lib/sanity.client";
-import { BRANDS_QUERY } from "@/lib/sanity.queries";
+// app/sanity-test/page.tsx
+import Link from "next/link";
+import { sanityClient } from "@/lib/sanity/sanity.client";
 
-type Brand = {
-  _id: string;
-  title: string;
-  slug: string;
-};
+const Q = `
+*[_type == "notice"] 
+| order(publishedAt desc, _createdAt desc) [0...50]{
+  _id,
+  title,
+  "slug": slug.current,
+  summary,
+  publishedAt,
+  isActive,
+  order,
+  body
+}
+`;
 
 export default async function SanityTestPage() {
-  const brands = await sanityClient.fetch<Brand[]>(BRANDS_QUERY);
+  const items = await sanityClient.fetch(Q);
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-10">
-      <h1 className="text-2xl font-semibold">Sanity 연동 테스트</h1>
-      <p className="mt-2 text-sm text-gray-600">
-        아래에 ABM, Kent가 보이면 연동 성공.
+    <main className="mx-auto max-w-5xl px-6 py-10">
+      <h1 className="text-2xl font-semibold">Sanity Debug: Notice (top 50)</h1>
+      <p className="mt-2 text-sm text-neutral-600">
+        여기서 CMS에 들어있는 노티 데이터를 그대로 확인합니다.
       </p>
 
-      <div className="mt-6 rounded-xl border bg-white p-5">
-        <h2 className="text-lg font-medium">Brands</h2>
+      <div className="mt-6 space-y-4">
+        {(items as any[]).map((it, idx) => (
+          <div key={it._id} className="rounded-xl border border-neutral-200 p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-neutral-500">#{idx + 1}</span>
+              <span className="text-sm font-semibold">{it.title ?? "(no title)"}</span>
+              {it.isActive === false ? (
+                <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs text-red-700">inactive</span>
+              ) : (
+                <span className="rounded-full bg-green-50 px-2 py-0.5 text-xs text-green-700">active</span>
+              )}
+              {typeof it.order === "number" ? (
+                <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-700">
+                  order: {it.order}
+                </span>
+              ) : null}
+            </div>
 
-        {brands.length === 0 ? (
-          <p className="mt-3 text-sm text-gray-500">
-            브랜드가 0개로 나왔어. Studio에서 Brand 문서가 Publish 되었는지 확인해줘.
-          </p>
-        ) : (
-          <ul className="mt-3 space-y-2">
-            {brands.map((b) => (
-              <li key={b._id} className="flex items-center justify-between rounded-lg border px-3 py-2">
-                <span className="font-medium">{b.title}</span>
-                <span className="text-sm text-gray-500">/{b.slug}</span>
-              </li>
-            ))}
-          </ul>
-        )}
+            <div className="mt-2 text-xs text-neutral-600">
+              slug: <span className="font-mono">{it.slug ?? "(none)"}</span> ·{" "}
+              {it.publishedAt ? new Date(it.publishedAt).toISOString().slice(0, 10) : "(no date)"}
+            </div>
+
+            {it.summary ? <div className="mt-2 text-sm text-neutral-700">{it.summary}</div> : null}
+
+            {it.slug ? (
+              <div className="mt-3">
+                <Link className="text-sm underline" href={`/notice/${it.slug}`}>
+                  상세 보기 → /notice/{it.slug}
+                </Link>
+              </div>
+            ) : null}
+
+            {/* body가 들어있는지 확인용 */}
+            <details className="mt-3">
+              <summary className="cursor-pointer text-sm text-neutral-600">raw data 보기</summary>
+              <pre className="mt-2 overflow-auto rounded-lg bg-neutral-50 p-3 text-xs">
+                {JSON.stringify(it, null, 2)}
+              </pre>
+            </details>
+          </div>
+        ))}
+
+        {(items as any[]).length === 0 ? (
+          <div className="rounded-xl border border-neutral-200 p-8 text-center text-sm text-neutral-600">
+            notice 문서가 0개로 보입니다. (dataset/프로젝트 연결 확인 필요)
+          </div>
+        ) : null}
       </div>
     </main>
   );

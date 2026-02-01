@@ -4,7 +4,7 @@ import Link from "next/link";
 import Breadcrumb from "@/components/site/Breadcrumb";
 
 import imageUrlBuilder from "@sanity/image-url";
-import { sanityClient } from "../../lib/sanity.client";
+import { sanityClient } from "@/lib/sanity/sanity.client";
 
 type PromotionDoc = {
   _id: string;

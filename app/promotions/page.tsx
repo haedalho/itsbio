@@ -1,9 +1,11 @@
+// app/promotions/page.tsx
 import Image from "next/image";
 import Link from "next/link";
 import Breadcrumb from "@/components/site/Breadcrumb";
+import NeedAssistance from "@/components/site/NeedAssistance";
 
-import { createImageUrlBuilder } from "@sanity/image-url";
-import { sanityClient } from "../../lib/sanity.client";
+import { sanityClient } from "@/lib/sanity/sanity.client";
+import { urlFor } from "@/lib/sanity/image";
 
 type PromotionDoc = {
   _id: string;
@@ -11,26 +13,22 @@ type PromotionDoc = {
   summary?: string;
   publishedAt?: string;
   order?: number;
-  isActive?: boolean;
 
-  ctaUrl?: string;
   ctaLabel?: string;
 
-  image?: any;
+  // ✅ cover는 image 또는 gallery[0]
+  cover?: any;
 
-  // optional
   dateText?: string;
   startDate?: string;
   endDate?: string;
+
+  slug?: string;
 };
 
-const PAGE_SIZE = 9;
+type SP = { q?: string; page?: string };
 
-// ✅ Sanity image builder (named export)
-const builder = createImageUrlBuilder(sanityClient as any);
-function urlFor(source: any) {
-  return builder.image(source);
-}
+const PAGE_SIZE = 9;
 
 function formatDot(dateIso?: string) {
   if (!dateIso) return "";
@@ -100,49 +98,49 @@ function getPageWindow(current: number, total: number) {
 export default async function PromotionsPage({
   searchParams,
 }: {
-  // ✅ Next.js 15: searchParams가 Promise
-  searchParams?: Promise<{ q?: string; page?: string }>;
+  searchParams?: Promise<SP>;
 }) {
-  // ✅ Promise 풀기
   const sp = (await searchParams) ?? {};
 
   const qRaw = (sp.q ?? "").trim();
   const qSafe = qRaw ? escapeForGROQ(qRaw) : "";
-
   const pageParam = clampInt(sp.page, 1, 1, 999);
 
-  // ✅ 제목(title)만 검색
   const filter = qSafe ? `&& (title match "*${qSafe}*")` : "";
 
-  // ✅ 총 개수
-  const TOTAL_QUERY = `count(*[_type=="promotion" && isActive==true ${filter}])`;
-  const total = await sanityClient.fetch<number>(TOTAL_QUERY);
+  // ✅ isActive 없어도 기본 노출(true)로 처리
+  const TOTAL_QUERY = `count(*[_type=="promotion" && coalesce(isActive,true)==true ${filter}])`;
+  const total = await sanityClient.fetch<number>(TOTAL_QUERY, {}, { cache: "no-store" });
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const currentPage = Math.min(pageParam, totalPages);
   const start = (currentPage - 1) * PAGE_SIZE;
   const end = start + PAGE_SIZE;
 
-  // ✅ 목록
   const PROMOTIONS_QUERY = `
-    *[_type=="promotion" && isActive==true ${filter}]
-      | order(order asc, publishedAt desc, _createdAt desc)
+    *[_type=="promotion" && coalesce(isActive,true)==true ${filter}]
+      | order(defined(order) desc, order desc, publishedAt desc, _createdAt desc)
       [${start}...${end}]{
         _id,
         title,
         summary,
         publishedAt,
         order,
-        isActive,
-        ctaUrl,
         ctaLabel,
-        image,
         dateText,
         startDate,
-        endDate
+        endDate,
+        "slug": slug.current,
+
+        // ✅ 대표 이미지(image) 있으면 그걸, 없으면 gallery[0]
+        "cover": coalesce(image, gallery[0])
       }
   `;
-  const promotions = await sanityClient.fetch<PromotionDoc[]>(PROMOTIONS_QUERY);
+  const promotions = await sanityClient.fetch<PromotionDoc[]>(
+    PROMOTIONS_QUERY,
+    {},
+    { cache: "no-store" }
+  );
 
   const showingFrom = total === 0 ? 0 : start + 1;
   const showingTo = Math.min(start + promotions.length, total);
@@ -152,20 +150,12 @@ export default async function PromotionsPage({
 
   return (
     <div>
-      {/* ✅ Banner */}
+      {/* Banner */}
       <section className="relative">
         <div className="relative h-[220px] w-full overflow-hidden md:h-[280px]">
-          {/* ⚠️ /contact-hero.png가 없어서 404났음 → 존재하는 이미지로 교체 */}
-          <Image
-            src="/hero-e.png"
-            alt="Promotions"
-            fill
-            priority
-            className="object-cover"
-          />
+          <Image src="/hero-e.png" alt="Promotions" fill priority className="object-cover" />
           <div className="absolute inset-0 bg-black/35" />
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/45 via-transparent to-transparent" />
-
           <div className="absolute inset-0">
             <div className="mx-auto flex h-full max-w-6xl items-center px-6">
               <div>
@@ -182,7 +172,7 @@ export default async function PromotionsPage({
         </div>
       </section>
 
-      {/* ✅ Breadcrumb */}
+      {/* Breadcrumb */}
       <div className="mx-auto max-w-6xl px-6">
         <div className="mt-6 flex justify-end">
           <Breadcrumb />
@@ -190,7 +180,7 @@ export default async function PromotionsPage({
       </div>
 
       <main className="mx-auto max-w-6xl px-6 pb-16 pt-10">
-        {/* 상단 타이틀 + 검색 */}
+        {/* 상단 결과 + 검색 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="mt-3 text-sm text-slate-700">
@@ -215,7 +205,6 @@ export default async function PromotionsPage({
             </div>
           </div>
 
-          {/* ✅ 제목 검색 (GET) */}
           <form action="/promotions" method="GET" className="flex w-full gap-2 sm:w-auto">
             <input
               name="q"
@@ -241,23 +230,22 @@ export default async function PromotionsPage({
           </form>
         </div>
 
-        {/* ✅ Grid (이미지 크기는 그대로: 16/10) */}
+        {/* Grid */}
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {promotions.map((p) => {
-            const href = p.ctaUrl || "/promotions";
-            const isExternal = !!p.ctaUrl && /^https?:\/\//i.test(p.ctaUrl);
+            const href = p.slug ? `/promotions/${p.slug}` : "/promotions";
 
             const dateLabel = promotionDateLabel(p);
-            const imgUrl = p.image
-              ? urlFor(p.image).width(1200).height(750).fit("crop").auto("format").url()
+
+            // ✅ cover(image or gallery[0])로 썸네일 생성
+            const imgUrl = p.cover
+              ? urlFor(p.cover).width(1200).height(750).fit("crop").auto("format").url()
               : "";
 
             return (
               <Link
                 key={p._id}
                 href={href}
-                target={isExternal ? "_blank" : undefined}
-                rel={isExternal ? "noreferrer" : undefined}
                 className={[
                   "group overflow-hidden rounded-3xl border border-slate-200 bg-white",
                   "shadow-[0_10px_26px_rgba(15,23,42,0.08)]",
@@ -310,7 +298,7 @@ export default async function PromotionsPage({
           })}
         </div>
 
-        {/* ✅ Pagination: 하단 중앙 / 이전 + 숫자 + 다음 */}
+        {/* Pagination */}
         {totalPages > 1 ? (
           <nav className="mt-12 flex items-center justify-center gap-2" aria-label="Pagination">
             <Link
@@ -337,19 +325,19 @@ export default async function PromotionsPage({
 
             {showLeftEllipsis ? <span className="px-2 text-slate-400">…</span> : null}
 
-            {pages.map((p) => (
+            {pages.map((pg) => (
               <Link
-                key={p}
-                href={buildHref("/promotions", qRaw, p)}
-                aria-current={p === currentPage ? "page" : undefined}
+                key={pg}
+                href={buildHref("/promotions", qRaw, pg)}
+                aria-current={pg === currentPage ? "page" : undefined}
                 className={[
                   "inline-flex h-10 min-w-10 items-center justify-center rounded-xl border px-3 text-sm font-semibold",
-                  p === currentPage
+                  pg === currentPage
                     ? "border-orange-200 bg-orange-50 text-orange-800"
                     : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
                 ].join(" ")}
               >
-                {p}
+                {pg}
               </Link>
             ))}
 
@@ -378,6 +366,10 @@ export default async function PromotionsPage({
             </Link>
           </nav>
         ) : null}
+
+        <div className="mt-12">
+          
+        </div>
       </main>
     </div>
   );

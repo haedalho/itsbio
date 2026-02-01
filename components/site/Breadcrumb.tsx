@@ -16,7 +16,6 @@ const SEGMENT_LABEL_EN: Record<string, string> = {
 };
 
 const SLUG_LABEL_EN: Record<string, string> = {
-  // 필요하면 여기 추가
   "custom-gmp-protein": "Custom GMP-grade Protein Service",
 };
 
@@ -48,36 +47,38 @@ function buildCrumbs(pathname: string): Crumb[] {
   return crumbs;
 }
 
-export default function Breadcrumb() {
+// ✅ items 옵션 추가
+export default function Breadcrumb({ items }: { items?: Crumb[] }) {
   const pathname = usePathname();
 
-  // ✅ 홈에서는 숨김
-  if (!pathname || pathname === "/") return null;
+  const resolved = items && items.length ? items : pathname ? buildCrumbs(pathname) : [];
 
-  const items = buildCrumbs(pathname);
-  if (items.length <= 1) return null;
+  // ✅ 홈에서는 숨김 (단, items가 직접 들어오면 보여줌)
+  if ((!items || items.length === 0) && (!pathname || pathname === "/")) return null;
+
+  if (resolved.length <= 1) return null;
 
   return (
-  <nav aria-label="Breadcrumb" className="w-full">
-    <ol className="flex flex-wrap items-center justify-end gap-3 text-[22px] font-medium text-neutral-700 leading-none">
-      {items.map((c, i) => {
-        const isLast = i === items.length - 1;
-        return (
-          <li key={`${c.label}-${i}`} className="flex items-center gap-3">
-            {c.href && !isLast ? (
-              <Link href={c.href} className="hover:text-neutral-900">
-                {c.label}
-              </Link>
-            ) : (
-              <span aria-current="page" className="text-neutral-900">
-                {c.label}
-              </span>
-            )}
-            {!isLast && <span className="text-neutral-400">›</span>}
-          </li>
-        );
-      })}
-    </ol>
-  </nav>
-);
+    <nav aria-label="Breadcrumb" className="w-full">
+      <ol className="flex flex-wrap items-center justify-end gap-3 text-[22px] font-medium text-neutral-700 leading-none">
+        {resolved.map((c, i) => {
+          const isLast = i === resolved.length - 1;
+          return (
+            <li key={`${c.label}-${i}`} className="flex items-center gap-3">
+              {c.href && !isLast ? (
+                <Link href={c.href} className="hover:text-neutral-900 hover:font-semibold transition-[font-weight]">
+                  {c.label}
+                </Link>
+              ) : (
+                <span aria-current="page" className="text-neutral-900">
+                  {c.label}
+                </span>
+              )}
+              {!isLast && <span className="text-neutral-400">›</span>}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
 }
