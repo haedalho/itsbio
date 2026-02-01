@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import { sanityClient } from "../lib/sanity.client";
+import { BRANDS_QUERY } from "../lib/sanity.queries";
 
 import ProductsCategoryGrid from "@/components/site/home/ProductsCategoryGrid";
 
@@ -16,6 +18,12 @@ const QUICK_CATEGORIES = [
   { label: "Extraction", href: "/products?category=extraction" },
   { label: "Cell Culture", href: "/products?category=cell-culture" },
 ];
+
+type Brand = {
+  _id: string;
+  title: string;
+  slug: string;
+};
 
 function SectionHeading({
   title,
@@ -186,7 +194,6 @@ function PartnersCarousel() {
     { name: "Partner 9", src: "/partners/Seedburo-logo.png", href: "https://seedburo.com/" },
   ];
 
-  // 무한 루프용(2번 이어붙이기)
   const loop = [...PARTNERS, ...PARTNERS];
 
   return (
@@ -195,19 +202,11 @@ function PartnersCarousel() {
         <SectionHeading title="Our Partners" desc="Trusted brands and suppliers we work with." />
 
         <div className="mt-10">
-          {/* ✅ 4개만 보이게: max-w를 4개 폭 기준으로 제한 */}
           <div className="relative mx-auto w-full max-w-4xl overflow-hidden">
-            {/* 양끝 페이드(원하면 빼도 됨) */}
             <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-white to-transparent" />
             <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-white to-transparent" />
 
-            {/* track */}
-            <div
-              className={[
-                "flex w-max items-center gap-10",
-                "[animation:partners-marquee_22s_linear_infinite]",
-              ].join(" ")}
-            >
+            <div className={["flex w-max items-center gap-10", "[animation:partners-marquee_22s_linear_infinite]"].join(" ")}>
               {loop.map((p, i) => (
                 <Link
                   key={`${p.name}-${i}`}
@@ -217,13 +216,7 @@ function PartnersCarousel() {
                   className="flex w-[220px] shrink-0 items-center justify-center"
                 >
                   <div className="relative h-17 w-[300px]">
-                    <Image
-                      src={p.src}
-                      alt={p.name}
-                      fill
-                      className="object-contain"
-                      sizes="300px"
-                      />
+                    <Image src={p.src} alt={p.name} fill className="object-contain" sizes="300px" />
                   </div>
                 </Link>
               ))}
@@ -235,24 +228,17 @@ function PartnersCarousel() {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  const brands = await sanityClient.fetch<Brand[]>(BRANDS_QUERY);
+
   return (
     <main className="bg-white">
       {/* HERO */}
       <section id="top" className="relative">
         <div className="relative h-[620px] w-full overflow-hidden md:h-[720px]">
-         <Image
-            src="/hero-e.png"
-            alt="ITS BIO"
-            fill
-            priority
-            className="object-cover object-[85%_15%]"
-          />
+          <Image src="/hero-e.png" alt="ITS BIO" fill priority className="object-cover object-[85%_15%]" />
 
-          {/* ✅ 최소 그라데이션: 거의 안 어두워짐 (가독성만 살짝) */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/25 via-black/10 to-transparent" />
-
-
 
           <div className="absolute inset-0">
             <div className="mx-auto flex h-full max-w-7xl px-6">
@@ -270,22 +256,14 @@ export default function Home() {
                   Search by product name or catalog number. Get the right item for your workflow.
                 </p>
 
-                {/* ✅ 검색 폼 유지 */}
-                <form
-                  action="/products"
-                  method="GET"
-                  className="mt-7 rounded-2xl border border-white/15 bg-white/10 p-3 backdrop-blur-md"
-                >
+                <form action="/products" method="GET" className="mt-7 rounded-2xl border border-white/15 bg-white/10 p-3 backdrop-blur-md">
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <input
                       name="q"
                       className="h-12 w-full flex-1 rounded-xl border border-white/30 bg-white/90 px-5 text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500/60"
                       placeholder="Search: qPCR enzyme, ab-1234..."
                     />
-                    <button
-                      type="submit"
-                      className="h-12 rounded-xl bg-orange-600 px-7 font-semibold text-white transition hover:bg-orange-700"
-                    >
+                    <button type="submit" className="h-12 rounded-xl bg-orange-600 px-7 font-semibold text-white transition hover:bg-orange-700">
                       Search
                     </button>
                   </div>
@@ -311,13 +289,36 @@ export default function Home() {
       {/* PRODUCTS */}
       <section id="products" className="bg-white py-14 md:py-18">
         <div className="mx-auto max-w-7xl px-6">
-          <SectionHeading
-            title="Products"
-            desc="Browse by category — built for fast discovery."
-            rightLinkHref="/products"
-            rightLinkText="View all Products"
-          />
-          <div className="mt-8">
+          <SectionHeading title="Products" desc="Browse by category — built for fast discovery." rightLinkHref="/products" rightLinkText="View all Products" />
+
+          {/* ✅ Browse by Brand (Sanity) */}
+          {brands?.length ? (
+            <div className="mt-10">
+              <div className="text-center">
+                <h3 className="text-lg font-extrabold tracking-tight text-slate-900">Browse by Brand</h3>
+                <p className="mt-2 text-sm text-slate-600">ABM처럼 브랜드별로 들어가서 제품을 볼 수 있어요.</p>
+              </div>
+
+              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {brands.map((b) => (
+                  <Link
+                    key={b._id}
+                    href={`/products?brand=${b.slug}`}
+                    className="group rounded-3xl border bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="text-base font-extrabold tracking-tight text-slate-900">{b.title}</div>
+                      <div className="text-sm font-extrabold text-orange-700 transition group-hover:translate-x-0.5">→</div>
+                    </div>
+                    <div className="mt-2 text-sm text-slate-600">/{b.slug}</div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {/* 기존 카테고리 그리드 유지 */}
+          <div className="mt-10">
             <ProductsCategoryGrid />
           </div>
         </div>
