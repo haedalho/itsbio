@@ -1,28 +1,26 @@
-import { defineField, defineType } from "sanity";
+import { defineType, defineField } from "sanity";
+import { fieldTitle, fieldSlug, fieldOrder, fieldThemeKey } from "./common";
 
 export default defineType({
   name: "brand",
   title: "Brand(공급사)",
   type: "document",
   fields: [
-    defineField({ name: "title", title: "Title", type: "string", validation: (r) => r.required() }),
-    defineField({
-      name: "slug",
-      title: "Slug",
-      type: "slug",
-      options: { source: "title", maxLength: 96 },
-      validation: (r) => r.required(),
-    }),
-    defineField({ name: "order", title: "Order", type: "number", initialValue: 0 }),
-    defineField({ name: "introTitle", title: "Intro Title", type: "string" }),
-    defineField({ name: "introDesc", title: "Intro Description", type: "text" }),
+    fieldTitle(),
+    fieldSlug("title"),
+    fieldOrder(),
 
-    // ✅ 메가메뉴/브랜드 그리드에서 쓰는 컬러 키 (abm, aims, seedburo...)
+    defineField({ name: "introTitle", title: "Intro Title", type: "string" }),
+    defineField({ name: "introDesc", title: "Intro Description", type: "text", rows: 3 }),
+
+    // 코드/테마/URL 매칭 키
+    fieldThemeKey(true),
+
     defineField({
-      name: "themeKey",
-      title: "Theme Key ",
-      type: "string",
-      description: 'ex) "abm", "kentscientifics", "itschem"... (코드 테마 매칭용)',
+      name: "logo",
+      title: "Logo",
+      type: "image",
+      options: { hotspot: true },
     }),
   ],
   orderings: [

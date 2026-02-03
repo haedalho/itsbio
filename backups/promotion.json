@@ -1,0 +1,176 @@
+[
+  {
+    "_createdAt": "2026-02-01T21:54:51Z",
+    "_id": "bcc36e15-d95e-4883-b50a-9de0e7c3cd13",
+    "_rev": "JYgroTimGWkWuSvjm1NyPP",
+    "_system": {
+      "base": {
+        "id": "bcc36e15-d95e-4883-b50a-9de0e7c3cd13",
+        "rev": "JYgroTimGWkWuSvjm1E94N"
+      }
+    },
+    "_type": "promotion",
+    "_updatedAt": "2026-02-01T22:43:39Z",
+    "attachments": [
+      {
+        "_key": "50c12da749a7",
+        "_type": "file",
+        "asset": {
+          "_ref": "file-c2281c4df7382d483a21d8e4486840b7104065a1-pdf",
+          "_type": "reference"
+        }
+      }
+    ],
+    "gallery": [
+      {
+        "_key": "318d3f9f2608",
+        "_type": "image",
+        "asset": {
+          "_ref": "image-5738a10779d11ddb9802fd51d5d331992aa30c52-2066x1440-jpg",
+          "_type": "reference"
+        }
+      },
+      {
+        "_key": "b6f236298929",
+        "_type": "image",
+        "asset": {
+          "_ref": "image-16a44fb03387d7f73d315ef44dca1c6935bb3eb4-2066x2966-jpg",
+          "_type": "reference"
+        }
+      }
+    ],
+    "publishedAt": "2023-11-01T02:11:00.000Z",
+    "slug": {
+      "_type": "slug",
+      "current": "tag-loading-control-antibodies-20-2023-12-21"
+    },
+    "title": "Tag & Loading Control Antibodies 20% 할인 행사!! (~ 2023. 12.21일 까지)"
+  },
+  {
+    "_createdAt": "2026-02-01T21:59:41Z",
+    "_id": "a2514118-adb0-450b-8b86-aa0b227ce7df",
+    "_rev": "JYgroTimGWkWuSvjm1K6yF",
+    "_system": {
+      "base": {
+        "id": "a2514118-adb0-450b-8b86-aa0b227ce7df",
+        "rev": "t2mOLTz0d65hnZv1VsIhgJ"
+      }
+    },
+    "_type": "promotion",
+    "_updatedAt": "2026-02-01T22:26:34Z",
+    "attachments": [
+      {
+        "_key": "80b682209693",
+        "_type": "file",
+        "asset": {
+          "_ref": "file-12af0fe3f975f847f864a00be03a4dc843e080f4-pdf",
+          "_type": "reference"
+        }
+      }
+    ],
+    "gallery": [
+      {
+        "_key": "900bfef8ec28",
+        "_type": "image",
+        "asset": {
+          "_ref": "image-fea3ccae28b8b33fd476d643f2bc1511ad996d99-805x1145-jpg",
+          "_type": "reference"
+        }
+      },
+      {
+        "_key": "57ae217ab31e",
+        "_type": "image",
+        "asset": {
+          "_ref": "image-09798cf252636179bbebb3b247739103ef504f36-805x1145-jpg",
+          "_type": "reference"
+        }
+      },
+      {
+        "_key": "cf3bb3edcf54",
+        "_type": "image",
+        "asset": {
+          "_ref": "image-22bda5f535a5dfa3814d7062a50cd939615dc4dd-805x1145-jpg",
+          "_type": "reference"
+        }
+      },
+      {
+        "_key": "c82c212c6b38",
+        "_type": "image",
+        "asset": {
+          "_ref": "image-f9cacba8a4a49e572ce8eaf9ee1ceba428fec51e-805x1145-jpg",
+          "_type": "reference"
+        }
+      },
+      {
+        "_key": "3a0ec46deb39",
+        "_type": "image",
+        "asset": {
+          "_ref": "image-abe3945d36a4a0b7873ed377f77717fa5b014c81-805x1145-jpg",
+          "_type": "reference"
+        }
+      },
+      {
+        "_key": "7298bbf8f842",
+        "_type": "image",
+        "asset": {
+          "_ref": "image-aea6f67b929857fa9a971c2cd65b8a9879afa818-805x1145-jpg",
+          "_type": "reference"
+        }
+      },
+      {
+        "_key": "b645f3dd87bf",
+        "_type": "image",
+        "asset": {
+          "_ref": "image-92977903485c26d7e116fb3e6c83e3c31e103716-805x1145-jpg",
+          "_type": "reference"
+        }
+      },
+      {
+        "_key": "63ddfb60f7df",
+        "_type": "image",
+        "asset": {
+          "_ref": "image-d0c361a984475f8cc68e4b2666380fda15c06cd9-805x1145-jpg",
+          "_type": "reference"
+        }
+      },
+      {
+        "_key": "1eabea50f6ab",
+        "_type": "image",
+        "asset": {
+          "_ref": "image-06fc89cfada7c282f7c54561181e39494a088f67-805x1145-jpg",
+          "_type": "reference"
+        }
+      },
+      {
+        "_key": "0726e4ed888d",
+        "_type": "image",
+        "asset": {
+          "_ref": "image-b3483b4f3420b2e53daa1dc4620911421399ada9-805x1145-jpg",
+          "_type": "reference"
+        }
+      },
+      {
+        "_key": "4fc51e020a77",
+        "_type": "image",
+        "asset": {
+          "_ref": "image-0d265d00e2fb6c2a64baf5b3679cb9dcae5f704e-805x1145-jpg",
+          "_type": "reference"
+        }
+      },
+      {
+        "_key": "7e1f1481373a",
+        "_type": "image",
+        "asset": {
+          "_ref": "image-9459df82c720e3e15ecd949868cab13df39b9ed0-805x1145-jpg",
+          "_type": "reference"
+        }
+      }
+    ],
+    "publishedAt": "2023-03-06T22:00:00.000Z",
+    "slug": {
+      "_type": "slug",
+      "current": "abm-pcr-products-1-1-20-4-28"
+    },
+    "title": "[abm] PCR Products 1+1 및 20% 할인 행사!! (~4월 28일 까지)"
+  }
+]
