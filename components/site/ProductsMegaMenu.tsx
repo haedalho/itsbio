@@ -11,127 +11,155 @@ const MENU: MenuItem[] = [
     href: "http://itsbio.co.kr/?page_id=196",
     children: [
       {
-        label: "COVID-19",
-        href: "http://itsbio.co.kr/?page_id=2282",
-        children: [
-          { label: "Coronavirus/SARS-CoV-2 Basics", href: "http://itsbio.co.kr/?page_id=8028" },
-          { label: "Coronavirus/SARS-CoV-2 Vectors", href: "http://itsbio.co.kr/?page_id=8039" },
-          { label: "Coronavirus/SARS-CoV-2 Receptors", href: "http://itsbio.co.kr/?page_id=8079" },
-          { label: "Coronavirus/SARS-CoV-2 Cell Lines", href: "http://itsbio.co.kr/?page_id=8150" },
-          { label: "Coronavirus/SARS-CoV-2 Diagnostics", href: "http://itsbio.co.kr/?page_id=8163" },
-          { label: "Coronavirus/SARS-CoV-2 Accessory Materials", href: "http://itsbio.co.kr/?page_id=8202" },
-        ],
-      },
-      {
-        label: "Cell Biology",
-        href: "http://itsbio.co.kr/?page_id=249",
+        label: "General Materials",
+        href: "https://www.abmgood.com/general-materials.html",
         children: [
           {
-            label: "Cell Types",
-            href: "http://itsbio.co.kr/?page_id=257",
+            label: "PCR Enzymes",
+            href: "https://www.abmgood.com/PCR-Enzymes.html",
             children: [
-              { label: "Primary Cells", href: "http://itsbio.co.kr/?page_id=261" },
-              { label: "Immortallized cells", href: "http://itsbio.co.kr/?page_id=1723" },
-              { label: "Tumor Cells", href: "http://itsbio.co.kr/?page_id=1755" },
-              { label: "Drug Discovery Cell Lines", href: "http://itsbio.co.kr/?page_id=1768" },
-              { label: "Reporter Cell Lines", href: "http://itsbio.co.kr/?page_id=1798" },
+              { label: "qPCR", href: "https://www.abmgood.com/qPCR-Mastermix-Plus.html" },
+              { label: "PCR Polymerase", href: "https://www.abmgood.com/PCR-Polymerase.html" },
+              { label: "RT & RT-PCR", href: "https://www.abmgood.com/Reverse-Transcriptase-PCR-cDNA-Synthesis.html" },
             ],
           },
-          { label: "Cell Biology Reagents", href: "http://itsbio.co.kr/?page_id=407" },
-          { label: "Cell Immortalization Kits", href: "http://itsbio.co.kr/?page_id=412" },
-          { label: "Growth Factors and Cytokines", href: "http://itsbio.co.kr/?page_id=9194" },
-          { label: "Cell Based Assay Products", href: "http://itsbio.co.kr/?page_id=9240" },
-          { label: "Stem Cells and iPSCs", href: "http://itsbio.co.kr/?page_id=9211" },
+          { label: "Enzymes & Kits", href: "https://www.abmgood.com/Molecular-Biology-Enzymes-and-Kits.html" },
+          {
+            label: "Antibodies",
+            href: "https://www.abmgood.com/antibodies.html",
+            children: [
+              { label: "Tag Antibodies", href: "https://www.abmgood.com/Tag-Antibodies.html" },
+              { label: "IHC Antibodies", href: "https://www.abmgood.com/IHC-Antibodies.html" },
+              { label: "Loading Control Antibodies", href: "https://www.abmgood.com/Loading-Control-Antibodies.html" },
+              { label: "Monoclonal Antibodies", href: "https://www.abmgood.com/Monoclonal-Antibodies.html" },
+              { label: "Polyclonal Antibodies", href: "https://www.abmgood.com/Polyclonal-Antibodies.html" },
+              { label: "Primary Antibodies", href: "https://www.abmgood.com/Primary-Antibodies.html" },
+              { label: "Secondary Antibodies", href: "https://www.abmgood.com/Secondary-Antibodies.html" },
+            ],
+          },
+          {
+            label: "Biorepository",
+            href: "https://www.abmgood.com/biorepository.html",
+            children: [{ label: "FFPE Tissue Sections", href: "https://www.abmgood.com/FFPE-Tissue-Sections.html" }],
+          },
+          { label: "Transfection Reagents", href: "https://www.abmgood.com/Transfection-Reagent-Protocol-Efficiency.html" },
+          { label: "DNA/RNA Purification", href: "https://www.abmgood.com/DNA-RNA-Purification-Kits.html" },
+          {
+            label: "Gel Documentation",
+            href: "https://www.abmgood.com/Gel-Documentation.html",
+            children: [
+              { label: "Gel Imager", href: "https://www.abmgood.com/SafeViewER-Imager.html" },
+              { label: "DNA Stains", href: "https://www.abmgood.com/Gel-Documentation.html#SafeView-DNA-Stains" },
+            ],
+          },
+          { label: "RNA Tracking (RNA Mango)", href: "https://www.abmgood.com/RNA-Mango.html" },
+          { label: "Buffers & General Chemicals", href: "https://www.abmgood.com/Buffers-and-Chemicals.html" },
+          { label: "Equipment", href: "https://www.abmgood.com/lab-equipment.html" },
+          { label: "DNA & Protein Ladders", href: "https://www.abmgood.com/DNA-and-Protein-Ladders.html" },
         ],
       },
-      {
-        label: "Gene Expression Vectors and Virus",
-        href: "http://itsbio.co.kr/?page_id=387",
-        children: [
-          { label: "Expression Systems and Packaging Kits", href: "http://itsbio.co.kr/?page_id=6267" },
-          { label: "GENE EXPRESSION CONTROLS", href: "http://itsbio.co.kr/?page_id=6572" },
-          { label: "Custom Lentivirus", href: "http://itsbio.co.kr/?page_id=6670" },
-          { label: "Custom AAV Service", href: "http://itsbio.co.kr/?page_id=6699" },
-          { label: "Custom Adenovirus", href: "http://itsbio.co.kr/?page_id=6719" },
-        ],
-      },
-      {
-        label: "RNAi Technology",
-        href: "http://itsbio.co.kr/?page_id=2303",
-        children: [
-          { label: "miRNA Detection and Quantification", href: "http://itsbio.co.kr/?page_id=6664" },
-          { label: "siRNA Expression Controls", href: "http://itsbio.co.kr/?page_id=6631" },
-          { label: "Custom siRNA Lentivirus Service", href: "http://itsbio.co.kr/?page_id=6645" },
-        ],
-      },
-      { label: "CRISPR", href: "http://itsbio.co.kr/?page_id=366" },
-      {
-        label: "Genetic Materials",
-        href: "http://itsbio.co.kr/?page_id=16514",
-        children: [
-          { label: "qPCR Virus Titer Kits", href: "http://itsbio.co.kr/?page_id=16922" },
-          { label: "Kits Related to Recombinant Virus", href: "http://itsbio.co.kr/?page_id=16954" },
-          { label: "Expression Systems", href: "http://itsbio.co.kr/?page_id=16962" },
-          { label: "Lentivirus", href: "http://itsbio.co.kr/?page_id=16655" },
-          { label: "AAV", href: "http://itsbio.co.kr/?page_id=16537" },
-          { label: "CRISPR", href: "http://itsbio.co.kr/?page_id=16688" },
-          { label: "miRNA and 3’UTR", href: "http://itsbio.co.kr/?page_id=16775" },
-          { label: "Control Vectors & Viruses", href: "http://itsbio.co.kr/?page_id=16796" },
-          { label: "Adenovirus", href: "http://itsbio.co.kr/?page_id=16808" },
-          { label: "ORF Vector", href: "http://itsbio.co.kr/?page_id=16815" },
-        ],
-      },
+
       {
         label: "Cellular Materials",
-        href: "http://itsbio.co.kr/?page_id=16969",
+        href: "https://www.abmgood.com/cellular-materials.html",
         children: [
-          { label: "Growth Factors and Cytokines", href: "http://itsbio.co.kr/?page_id=17056" },
-          { label: "Cell Immortalization Kits", href: "http://itsbio.co.kr/?page_id=17045" },
-          { label: "Media, Reagents, Kits & Plastics", href: "http://itsbio.co.kr/?page_id=17036" },
-          { label: "Primary Cells", href: "http://itsbio.co.kr/?page_id=17030" },
-          { label: "Tumor Cell Lines", href: "http://itsbio.co.kr/?page_id=17023" },
-          { label: "Immortalized Cell Lines", href: "http://itsbio.co.kr/?page_id=17002" },
-          { label: "Stable Cell Lines", href: "http://itsbio.co.kr/?page_id=17011" },
+          {
+            label: "Cell Library Collections",
+            href: "https://www.abmgood.com/cellular-collections.html",
+            children: [
+              { label: "Immortalized Cell Lines", href: "https://www.abmgood.com/Immortalized-Cell-Lines.html" },
+              { label: "Special Cell Line Collection", href: "https://www.abmgood.com/Special-Cell-Line-Collection.html" },
+              { label: "CRISPR KO Cell Lines", href: "https://www.abmgood.com/crispr-knockout-cell-line-library.html" },
+              { label: "Cas9 Expressing Cell Lines", href: "https://www.abmgood.com/cas9-expressing-cell-lines.html" },
+              { label: "Stable Cell Lines", href: "https://www.abmgood.com/Stable-Cell-Lines.html" },
+              { label: "Tumor Cell Lines", href: "https://www.abmgood.com/Tumor-Cell-Lines.html" },
+              { label: "Primary Cells", href: "https://www.abmgood.com/Primary-Cells.html" },
+            ],
+          },
+          {
+            label: "3D and Organoid",
+            href: "https://www.abmgood.com/3d-organoid.html",
+            children: [{ label: "3D and Organoid Products", href: "https://www.abmgood.com/3d-organoid-products.html" }],
+          },
+          { label: "Hematopoietic Cells", href: "https://www.abmgood.com/hematopoietic-cells.html" },
+          {
+            label: "Microbial Contamination",
+            href: "https://www.abmgood.com/microbial-contamination-control.html",
+            children: [
+              { label: "Mycoplasma Control", href: "https://www.abmgood.com/mycoplasma-contamination-control.html" },
+              { label: "Nanobacteria Control", href: "https://www.abmgood.com/nanobacteria.html" },
+              { label: "Bacteria Control", href: "https://www.abmgood.com/bacteria-contamination-control.html" },
+            ],
+          },
+          { label: "Cell Immortalization Reagents", href: "https://www.abmgood.com/Cell-Immortalization.html" },
+          { label: "Media & Supplements", href: "https://www.abmgood.com/Media-and-Supplements.html" },
+          { label: "Growth Factors and Cytokines", href: "https://www.abmgood.com/Growth-Factors-Cytokines.html" },
+          { label: "Cell Freezing Device and Medium", href: "https://www.abmgood.com/Cell-Freezing.html" },
+          { label: "Culture Consumables", href: "https://www.abmgood.com/Culture-Consumables.html" },
+          { label: "Cell Assay Products", href: "https://www.abmgood.com/Cell-based-Assay-Products.html" },
+          { label: "Cell Culture Equipment", href: "https://www.abmgood.com/Cell-Culture-Equipment.html" },
         ],
       },
+
       {
-        label: "General Materials & Others",
-        href: "http://itsbio.co.kr/?page_id=373",
+        label: "Genetic Materials",
+        href: "https://www.abmgood.com/genetic-materials.html",
         children: [
-          { label: "PCR, qPCR and RT", href: "http://itsbio.co.kr/?page_id=14770" },
-          { label: "Molecular Biology Enzymes and Kits", href: "http://itsbio.co.kr/?page_id=14837" },
-          { label: "SafeView™ DNA Stains", href: "http://itsbio.co.kr/?page_id=5908" },
-          { label: "RNA Tracking (RNA Mango)", href: "http://itsbio.co.kr/?page_id=6125" },
-          { label: "Gels, Blots & ELISAs", href: "http://itsbio.co.kr/?page_id=14879" },
-          { label: "DNA & RNA Purification Kits", href: "http://itsbio.co.kr/?page_id=14912" },
-          { label: "Expression Systems", href: "http://itsbio.co.kr/?page_id=14940" },
-          { label: "Cloning Vectors & Packaging Mixes", href: "http://itsbio.co.kr/?page_id=14989" },
-          { label: "Reagents and Chemicals", href: "http://itsbio.co.kr/?page_id=15031" },
-          { label: "Lab Equipment and Consumables", href: "http://itsbio.co.kr/?page_id=15046" },
+          {
+            label: "Expression-Ready Libraries",
+            href: "https://www.abmgood.com/expression-ready-libraries.html",
+            children: [
+              { label: "Lentiviral Vectors & Virus", href: "https://www.abmgood.com/Lentivirus-System.html" },
+              { label: "AAV Vectors & Virus", href: "https://www.abmgood.com/AAV-Adeno-Associated-Virus.html" },
+              { label: "Adenovirus", href: "https://www.abmgood.com/Adenovirus.html" },
+              { label: "siRNA", href: "https://www.abmgood.com/RNAi-shRNA-sirna-shrna-rnai-lentivirus.html" },
+              { label: "miRNA", href: "https://www.abmgood.com/miRNA-microRNA.html" },
+              { label: "ORF Vectors", href: "https://www.abmgood.com/Open-Reading-Frame-Vector.html" },
+              { label: "circRNA", href: "https://www.abmgood.com/circRNA.html" },
+              { label: "Control Vectors & Viruses", href: "https://www.abmgood.com/Control-Vectors-and-Viruses.html" },
+            ],
+          },
+          {
+            label: "CRISPR",
+            href: "https://www.abmgood.com/CRISPR-Cas9-sgRNA.html",
+            children: [
+              { label: "CRISPR KO Vectors & Virus", href: "https://www.abmgood.com/crispr-knockout-library.html" },
+              { label: "CRISPR Activation Vectors", href: "https://www.abmgood.com/crispr-activation-lentivirus-library.html" },
+              { label: "Cas9 Vectors & Virus", href: "https://www.abmgood.com/cas9-expression-vectors-and-viruses.html" },
+              { label: "Cas Proteins & CRISPR Screening", href: "https://www.abmgood.com/cas9-proteins.html" },
+            ],
+          },
+          {
+            label: "Expression Systems",
+            href: "https://www.abmgood.com/expression-systems.html",
+            children: [
+              { label: "Lentiviral Vectors", href: "https://www.abmgood.com/recombinant-lentiviral-vectors" },
+              { label: "AAV Vectors", href: "https://www.abmgood.com/recombinant-aav-vectors" },
+              { label: "Adenoviral Vectors", href: "https://www.abmgood.com/recombinant-adenoviral-vectors" },
+              { label: "Retroviral Vectors", href: "https://www.abmgood.com/recombinant-retroviral-vectors" },
+            ],
+          },
+          {
+            label: "Specialized Vectors",
+            href: "https://www.abmgood.com/Vectors.html",
+            children: [{ label: "iPSC Reporters", href: "https://www.abmgood.com/iPSC-Reporters.html" }],
+          },
+          {
+            label: "Kits for Viral Vectors",
+            href: "https://www.abmgood.com/Recombinant-Virus-Kits.html",
+            children: [
+              { label: "Virus Packaging DNA Mixes", href: "https://www.abmgood.com/virus-packaging-mixes.html" },
+              { label: "qPCR Virus Titer Kits", href: "https://www.abmgood.com/qPCR-Virus-Titer-Kits.html" },
+              { label: "Virus Transduction Enhancer", href: "https://www.abmgood.com/Transduction-Enhancers.html" },
+              { label: "Virus Purification Kits", href: "https://www.abmgood.com/virus-purification-kit.html" },
+              { label: "Lentivirus Bundles", href: "https://www.abmgood.com/Lentivirus-Bundles.html" },
+            ],
+          },
         ],
       },
-      { label: "Protein Expression and analysis", href: "http://itsbio.co.kr/?page_id=382" },
-      {
-        label: "Antibodies",
-        href: "http://itsbio.co.kr/?page_id=17100",
-        children: [
-          { label: "Primary Antibodies", href: "http://itsbio.co.kr/?page_id=17198" },
-          { label: "Tag Antibodies", href: "http://itsbio.co.kr/?page_id=17126" },
-          { label: "Loading Control Antibodies", href: "http://itsbio.co.kr/?page_id=17139" },
-          { label: "Secondary Antibodies", href: "http://itsbio.co.kr/?page_id=17149" },
-          { label: "IHC Antibodies", href: "http://itsbio.co.kr/?page_id=17156" },
-          { label: "IHC Supplies", href: "http://itsbio.co.kr/?page_id=17208" },
-          { label: "Antibody Purification", href: "http://itsbio.co.kr/?page_id=17214" },
-          { label: "Monoclonal Antibodies", href: "http://itsbio.co.kr/?page_id=17168" },
-          { label: "Polyclonal Antibodies", href: "http://itsbio.co.kr/?page_id=17178" },
-          { label: "Antibody Isotyping Kits", href: "http://itsbio.co.kr/?page_id=17220" },
-        ],
-      },
-      { label: "Histology", href: "http://itsbio.co.kr/?page_id=397" },
-      { label: "Lab Equipment and Consumables", href: "http://itsbio.co.kr/?page_id=402" },
-      { label: "Research CRO Custom Services", href: "http://itsbio.co.kr/?page_id=2306" },
     ],
   },
+
   {
     label: "KentScientifics",
     href: "http://itsbio.co.kr/?page_id=347",
@@ -256,27 +284,38 @@ function useClickOutside<T extends HTMLElement>(onOutside: () => void) {
 }
 
 function normalizeBrandKey(label: string) {
+  // "KentScientifics" -> "kentscientifics", "Cleaver Scientific" -> "cleaverscientific"
   return label.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
 }
 
-type BrandTheme = {
-  headerGradientFrom: string; // e.g. "from-orange-600"
-  headerGradientTo: string;   // e.g. "to-orange-500"
-  headerText: string;
+function toSlug(label: string) {
+  // URL segment for each node (stable enough for now)
+  return label
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
 
+function buildHref(brandLabel: string, labelsPath: string[]) {
+  const brand = normalizeBrandKey(brandLabel);
+  const path = labelsPath.map(toSlug).join("/");
+  return path ? `/products/${brand}/${path}` : `/products/${brand}`;
+}
+
+type BrandTheme = {
+  headerGradientFrom: string;
+  headerGradientTo: string;
+  headerText: string;
   accentTextHover: string;
   accentBorderHover: string;
   ring: string;
-
   dotActive: string;
   dotInactive: string;
-
   bulletBorder: string;
-
   pillBorder: string;
   pillText: string;
   pillHoverBg: string;
-
   arrowText: string;
 };
 
@@ -296,7 +335,6 @@ const BRAND_THEMES: Record<string, BrandTheme> = {
     pillHoverBg: "hover:bg-orange-50",
     arrowText: "text-orange-600",
   },
-
   kentscientifics: {
     headerGradientFrom: "from-blue-700",
     headerGradientTo: "to-blue-500",
@@ -312,7 +350,6 @@ const BRAND_THEMES: Record<string, BrandTheme> = {
     pillHoverBg: "hover:bg-blue-50",
     arrowText: "text-blue-600",
   },
-
   itschem: {
     headerGradientFrom: "from-rose-600",
     headerGradientTo: "to-rose-400",
@@ -328,7 +365,6 @@ const BRAND_THEMES: Record<string, BrandTheme> = {
     pillHoverBg: "hover:bg-rose-50",
     arrowText: "text-rose-600",
   },
-
   aims: {
     headerGradientFrom: "from-sky-700",
     headerGradientTo: "to-sky-500",
@@ -344,7 +380,6 @@ const BRAND_THEMES: Record<string, BrandTheme> = {
     pillHoverBg: "hover:bg-sky-50",
     arrowText: "text-sky-600",
   },
-
   seedburo: {
     headerGradientFrom: "from-green-700",
     headerGradientTo: "to-green-500",
@@ -360,7 +395,6 @@ const BRAND_THEMES: Record<string, BrandTheme> = {
     pillHoverBg: "hover:bg-green-50",
     arrowText: "text-green-600",
   },
-
   bioplastics: {
     headerGradientFrom: "from-yellow-400",
     headerGradientTo: "to-amber-300",
@@ -376,7 +410,6 @@ const BRAND_THEMES: Record<string, BrandTheme> = {
     pillHoverBg: "hover:bg-yellow-50",
     arrowText: "text-yellow-700",
   },
-
   cleaverscientific: {
     headerGradientFrom: "from-purple-700",
     headerGradientTo: "to-purple-500",
@@ -392,7 +425,6 @@ const BRAND_THEMES: Record<string, BrandTheme> = {
     pillHoverBg: "hover:bg-purple-50",
     arrowText: "text-purple-600",
   },
-
   cellfreesciences: {
     headerGradientFrom: "from-blue-950",
     headerGradientTo: "to-blue-700",
@@ -408,7 +440,6 @@ const BRAND_THEMES: Record<string, BrandTheme> = {
     pillHoverBg: "hover:bg-blue-50",
     arrowText: "text-blue-800",
   },
-
   plaslabs: {
     headerGradientFrom: "from-slate-950",
     headerGradientTo: "to-slate-700",
@@ -424,7 +455,6 @@ const BRAND_THEMES: Record<string, BrandTheme> = {
     pillHoverBg: "hover:bg-slate-50",
     arrowText: "text-slate-900",
   },
-
   affinityimmuno: {
     headerGradientFrom: "from-sky-500",
     headerGradientTo: "to-cyan-300",
@@ -440,7 +470,6 @@ const BRAND_THEMES: Record<string, BrandTheme> = {
     pillHoverBg: "hover:bg-sky-50",
     arrowText: "text-sky-700",
   },
-
   dogen: {
     headerGradientFrom: "from-red-950",
     headerGradientTo: "to-red-700",
@@ -485,7 +514,6 @@ export default function ProductsMegaMenu() {
   const isSectioned = categories.some((c) => (c.children?.length ?? 0) > 0);
   const theme = useMemo(() => getBrandTheme(activeBrand.label), [activeBrand.label]);
 
-  // hover 끊김 방지
   const closeTimer = useRef<number | null>(null);
   const safeOpen = () => {
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
@@ -504,6 +532,8 @@ export default function ProductsMegaMenu() {
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
+  const brandHref = buildHref(activeBrand.label, []);
+
   return (
     <div ref={ref} className="relative" onMouseEnter={safeOpen} onMouseLeave={safeClose}>
       <Link
@@ -520,14 +550,13 @@ export default function ProductsMegaMenu() {
       {open && (
         <div className="absolute left-0 top-full z-50 pt-3">
           <div className="w-[min(1200px,calc(100vw-2rem))] max-h-[calc(100vh-5.25rem)] overflow-hidden rounded-2xl border bg-white shadow-2xl">
-            {/* ✅ 상단 바: 그라데이션 */}
             <div
               className={[
-              "flex items-center justify-between gap-3 px-5 py-3",
-              "bg-gradient-to-r",
-              theme.headerGradientFrom,
-              "to-white/96", // ← 여기! (숫자 높을수록 더 하얘짐)
-              theme.headerText,
+                "flex items-center justify-between gap-3 px-5 py-3",
+                "bg-gradient-to-r",
+                theme.headerGradientFrom,
+                "to-white/96",
+                theme.headerText,
               ].join(" ")}
             >
               <div className="min-w-0 text-sm font-semibold">
@@ -535,22 +564,19 @@ export default function ProductsMegaMenu() {
                 <span className="opacity-80"> / </span>
                 <span className="truncate">{activeBrand.label}</span>
               </div>
+
+              {/* ✅ 내부 라우팅으로 변경 */}
               <Link
-                href={activeBrand.href}
-                target="_blank"
-                rel="noreferrer"
-                className={[
-                "shrink-0 text-sm font-semibold hover:underline",
-                "text-slate-900", // ✅ 흰 배경쪽에서도 보이게
-                ].join(" ")}
+                href={brandHref}
+                className={["shrink-0 text-sm font-semibold hover:underline", "text-slate-900"].join(" ")}
                 onClick={() => setOpen(false)}
-                >
+              >
                 View {activeBrand.label} →
               </Link>
             </div>
 
             <div className="grid grid-cols-[minmax(0,260px)_minmax(0,1fr)]">
-              {/* LEFT: Brand list */}
+              {/* LEFT */}
               <div className="min-w-0 border-r bg-slate-50">
                 <div className="px-4 py-3 text-xs font-semibold text-slate-500">Search by Product</div>
 
@@ -561,32 +587,19 @@ export default function ProductsMegaMenu() {
                       const bTheme = getBrandTheme(b.label);
 
                       return (
-                        <li key={b.href} className="min-w-0">
+                        <li key={b.label} className="min-w-0">
                           <button
                             type="button"
                             className={[
                               "flex w-full min-w-0 items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition",
-                              active
-                                ? ["bg-white shadow-sm ring-1", bTheme.ring].join(" ")
-                                : "hover:bg-white hover:shadow-sm",
+                              active ? ["bg-white shadow-sm ring-1", bTheme.ring].join(" ") : "hover:bg-white hover:shadow-sm",
                             ].join(" ")}
                             onMouseEnter={() => setActiveBrandIdx(i)}
                             onFocus={() => setActiveBrandIdx(i)}
                             onClick={() => setActiveBrandIdx(i)}
                           >
-                            <span
-                              className={[
-                                "h-2 w-2 shrink-0 rounded-full",
-                                active ? bTheme.dotActive : bTheme.dotInactive,
-                              ].join(" ")}
-                            />
-                            <span
-                              className={[
-                                "min-w-0 truncate",
-                                active ? "font-semibold text-slate-900" : "text-slate-700",
-                              ].join(" ")}
-                              title={b.label}
-                            >
+                            <span className={["h-2 w-2 shrink-0 rounded-full", active ? bTheme.dotActive : bTheme.dotInactive].join(" ")} />
+                            <span className={["min-w-0 truncate", active ? "font-semibold text-slate-900" : "text-slate-700"].join(" ")} title={b.label}>
                               {b.label}
                             </span>
                           </button>
@@ -617,78 +630,84 @@ export default function ProductsMegaMenu() {
                 <div className="max-h-[calc(100vh-11.5rem)] overflow-y-auto pr-2">
                   {isSectioned ? (
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-                      {categories.map((cat) => (
-                        <div key={cat.href} className="min-w-0">
-                          <Link
-                            href={cat.href}
-                            target="_blank"
-                            rel="noreferrer"
-                            className={[
-                              "group flex min-w-0 items-center justify-between gap-3 rounded-xl border bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm",
-                              theme.accentBorderHover,
-                            ].join(" ")}
-                            onClick={() => setOpen(false)}
-                            title={cat.label}
-                          >
-                            <span className="min-w-0 truncate">{cat.label}</span>
-                            <span className={["shrink-0 transition group-hover:translate-x-0.5", theme.arrowText].join(" ")}>
-                              →
-                            </span>
-                          </Link>
+                      {categories.map((cat) => {
+                        const catHref = buildHref(activeBrand.label, [cat.label]);
 
-                          <ul className="mt-3 space-y-2">
-                            {(cat.children ?? []).map((it) => (
-                              <li key={it.href} className="min-w-0">
-                                <Link
-                                  href={it.href}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className={["flex min-w-0 items-start gap-2 text-sm text-slate-700", theme.accentTextHover].join(" ")}
-                                  onClick={() => setOpen(false)}
-                                >
-                                  <ArrowBullet borderClass={theme.bulletBorder} />
-                                  <span className="min-w-0 break-words whitespace-normal leading-5">{it.label}</span>
-                                </Link>
+                        return (
+                          <div key={cat.label} className="min-w-0">
+                            <Link
+                              href={catHref}
+                              className={[
+                                "group flex min-w-0 items-center justify-between gap-3 rounded-xl border bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm",
+                                theme.accentBorderHover,
+                              ].join(" ")}
+                              onClick={() => setOpen(false)}
+                              title={cat.label}
+                            >
+                              <span className="min-w-0 truncate">{cat.label}</span>
+                              <span className={["shrink-0 transition group-hover:translate-x-0.5", theme.arrowText].join(" ")}>→</span>
+                            </Link>
 
-                                {it.children?.length ? (
-                                  <ul className="mt-2 space-y-1 pl-4">
-                                    {it.children.map((ch) => (
-                                      <li key={ch.href} className="min-w-0">
-                                        <Link
-                                          href={ch.href}
-                                          target="_blank"
-                                          rel="noreferrer"
-                                          className={["flex min-w-0 items-start gap-2 text-sm text-slate-600", theme.accentTextHover].join(" ")}
-                                          onClick={() => setOpen(false)}
-                                        >
-                                          <span className="mt-[7px] inline-block h-1 w-1 shrink-0 rounded-full bg-slate-300" />
-                                          <span className="min-w-0 break-words whitespace-normal leading-5">{ch.label}</span>
-                                        </Link>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                ) : null}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
+                            <ul className="mt-3 space-y-2">
+                              {(cat.children ?? []).map((it) => {
+                                const itHref = buildHref(activeBrand.label, [cat.label, it.label]);
+
+                                return (
+                                  <li key={it.label} className="min-w-0">
+                                    <Link
+                                      href={itHref}
+                                      className={["flex min-w-0 items-start gap-2 text-sm text-slate-700", theme.accentTextHover].join(" ")}
+                                      onClick={() => setOpen(false)}
+                                    >
+                                      <ArrowBullet borderClass={theme.bulletBorder} />
+                                      <span className="min-w-0 break-words whitespace-normal leading-5">{it.label}</span>
+                                    </Link>
+
+                                    {it.children?.length ? (
+                                      <ul className="mt-2 space-y-1 pl-4">
+                                        {it.children.map((ch) => {
+                                          const chHref = buildHref(activeBrand.label, [cat.label, it.label, ch.label]);
+
+                                          return (
+                                            <li key={ch.label} className="min-w-0">
+                                              <Link
+                                                href={chHref}
+                                                className={["flex min-w-0 items-start gap-2 text-sm text-slate-600", theme.accentTextHover].join(" ")}
+                                                onClick={() => setOpen(false)}
+                                              >
+                                                <span className="mt-[7px] inline-block h-1 w-1 shrink-0 rounded-full bg-slate-300" />
+                                                <span className="min-w-0 break-words whitespace-normal leading-5">{ch.label}</span>
+                                              </Link>
+                                            </li>
+                                          );
+                                        })}
+                                      </ul>
+                                    ) : null}
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 gap-x-10 gap-y-3 md:grid-cols-2 lg:grid-cols-3">
-                      {categories.map((c) => (
-                        <Link
-                          key={c.href}
-                          href={c.href}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={["flex min-w-0 items-start gap-2 text-sm text-slate-700", theme.accentTextHover].join(" ")}
-                          onClick={() => setOpen(false)}
-                        >
-                          <ArrowBullet borderClass={theme.bulletBorder} />
-                          <span className="min-w-0 break-words whitespace-normal leading-5">{c.label}</span>
-                        </Link>
-                      ))}
+                      {categories.map((c) => {
+                        const cHref = buildHref(activeBrand.label, [c.label]);
+
+                        return (
+                          <Link
+                            key={c.label}
+                            href={cHref}
+                            className={["flex min-w-0 items-start gap-2 text-sm text-slate-700", theme.accentTextHover].join(" ")}
+                            onClick={() => setOpen(false)}
+                          >
+                            <ArrowBullet borderClass={theme.bulletBorder} />
+                            <span className="min-w-0 break-words whitespace-normal leading-5">{c.label}</span>
+                          </Link>
+                        );
+                      })}
                       {!categories.length && <div className="text-sm text-slate-500">No items.</div>}
                     </div>
                   )}
