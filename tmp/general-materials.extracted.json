@@ -1,0 +1,116 @@
+{
+  "title": "General Materials",
+  "introHtmlLen": 463,
+  "resourcesCount": 4,
+  "pubsCount": 3,
+  "highlightsCount": 0,
+  "resourceFirst": {
+    "title": "Introduction to PCR",
+    "subtitle": "Learning Resources",
+    "href": "https://info.abmgood.com/polymerase-chain-reaction-pcr-introduction",
+    "imageUrl": "https://www.abmgood.com/assets/images/category/wysiwyg/Polymerase-Chain-Reaction(PCR).jpg",
+    "meta": {
+      "imageUrlRaw": "https://www.abmgood.com/assets/images/category/wysiwyg/Polymerase-Chain-Reaction(PCR).jpg",
+      "imageUrlUsed": "https://www.abmgood.com/assets/images/category/wysiwyg/Polymerase-Chain-Reaction(PCR).jpg",
+      "imageStatus": "ok",
+      "imageReason": ""
+    }
+  },
+  "pubFirst": {
+    "order": 1,
+    "citation": "01 Provencher, L et al. (2025) \"CHD6 has poly(ADP-ribose)- and DNA-binding domains and regulates PARP1/2-trapping inhibitor sensitivity via abasic site repair.\" Nature Communications, 16, 1026. doi: 10.1038/s41467-025-56085-5 Product: SafeView™ Classic (Cat. No. G108)",
+    "doi": "https://doi.org/10.1038/s41467-025-56085-5",
+    "product": "SafeView™ Classic (Cat. No. G108)"
+  },
+  "contentBlockTypes": [
+    "contentBlockHtml",
+    "contentBlockResources",
+    "contentBlockPublications"
+  ],
+  "rootFound": true,
+  "contentBlocks": [
+    {
+      "_type": "contentBlockHtml",
+      "title": "Body",
+      "html": "As an industry-leading and global biotech company, <b>abm</b> offers a wide range of PCR, RT-PCR and qPCR enzyme products suitable for a variety of applications, in addition to research tools such as chemicals, equipment, consumables, DNA &amp; RNA stains and other general molecular biology tools. <br><br>Can’t find what you're looking for? Contact us at <a class=\"abm-link\" href=\"mailto:technical@abmgood.com\">technical@abmgood.com</a>.\n<!-- Your code here -->"
+    },
+    {
+      "_type": "contentBlockResources",
+      "title": "Resource",
+      "items": [
+        {
+          "title": "Introduction to PCR",
+          "subtitle": "Learning Resources",
+          "href": "https://info.abmgood.com/polymerase-chain-reaction-pcr-introduction",
+          "imageUrl": "https://www.abmgood.com/assets/images/category/wysiwyg/Polymerase-Chain-Reaction(PCR).jpg",
+          "meta": {
+            "imageUrlRaw": "https://www.abmgood.com/assets/images/category/wysiwyg/Polymerase-Chain-Reaction(PCR).jpg",
+            "imageUrlUsed": "https://www.abmgood.com/assets/images/category/wysiwyg/Polymerase-Chain-Reaction(PCR).jpg",
+            "imageStatus": "ok",
+            "imageReason": ""
+          }
+        },
+        {
+          "title": "Introduction to Reverse Transcription",
+          "subtitle": "Learning Resources",
+          "href": "https://info.abmgood.com/polymerase-chain-reaction-pcr-reverse-transcription#Overview",
+          "imageUrl": "https://www.abmgood.com/assets/images/catalogPage/rtpcr/Resources_Reverse-Transcription-PCR_subcat.png",
+          "meta": {
+            "imageUrlRaw": "https://www.abmgood.com/assets/images/catalogPage/rtpcr/Resources_Reverse-Transcription-PCR_subcat.png",
+            "imageUrlUsed": "https://www.abmgood.com/assets/images/catalogPage/rtpcr/Resources_Reverse-Transcription-PCR_subcat.png",
+            "imageStatus": "ok",
+            "imageReason": ""
+          }
+        },
+        {
+          "title": "Introduction to qPCR",
+          "subtitle": "Learning Resources",
+          "href": "https://info.abmgood.com/polymerase-chain-reaction-pcr-rt-pcr-real-time-pcr-quantitative-pcr-qpcr#overview",
+          "imageUrl": "https://www.abmgood.com/assets/images/catalogPage/qpcr/Resources_DNA-Polymerase-Variations.png",
+          "meta": {
+            "imageUrlRaw": "https://www.abmgood.com/assets/images/catalogPage/qpcr/Resources_DNA-Polymerase-Variations.png",
+            "imageUrlUsed": "https://www.abmgood.com/assets/images/catalogPage/qpcr/Resources_DNA-Polymerase-Variations.png",
+            "imageStatus": "ok",
+            "imageReason": ""
+          }
+        },
+        {
+          "title": "PCR Strategies",
+          "subtitle": "Learning Resources",
+          "href": "https://info.abmgood.com/polymerase-chain-reaction-pcr-variations#overview",
+          "imageUrl": "https://www.abmgood.com/assets/images/catalogPage/rtpcr/Resources_Reverse-Transcription-Variations-to-the-system_subcat.png",
+          "meta": {
+            "imageUrlRaw": "https://www.abmgood.com/assets/images/catalogPage/rtpcr/Resources_Reverse-Transcription-Variations-to-the-system_subcat.png",
+            "imageUrlUsed": "https://www.abmgood.com/assets/images/catalogPage/rtpcr/Resources_Reverse-Transcription-Variations-to-the-system_subcat.png",
+            "imageStatus": "ok",
+            "imageReason": ""
+          }
+        }
+      ]
+    },
+    {
+      "_type": "contentBlockPublications",
+      "title": "Top Publications",
+      "items": [
+        {
+          "order": 1,
+          "citation": "01 Provencher, L et al. (2025) \"CHD6 has poly(ADP-ribose)- and DNA-binding domains and regulates PARP1/2-trapping inhibitor sensitivity via abasic site repair.\" Nature Communications, 16, 1026. doi: 10.1038/s41467-025-56085-5 Product: SafeView™ Classic (Cat. No. G108)",
+          "doi": "https://doi.org/10.1038/s41467-025-56085-5",
+          "product": "SafeView™ Classic (Cat. No. G108)"
+        },
+        {
+          "order": 2,
+          "citation": "02 Khan, F et al. (2024). \"Lactate dehydrogenase A regulates tumor-macrophage symbiosis to promote glioblastoma progression.\" Nature Communications, 15(1), 1987. doi: 10.1038/s41467-024-46193-z Product: All-In-One 5X RT MasterMix with gDNA Removal (Cat. No. G592)",
+          "doi": "https://doi.org/10.1038/s41467-024-46193-z",
+          "product": "All-In-One 5X RT MasterMix with gDNA Removal (Cat. No. G592)"
+        },
+        {
+          "order": 3,
+          "citation": "03 Jiang, S et al. (2024). \"Hsa_circ_0081065 exacerbates IH-induced EndMT via regulating miR-665/HIF-1α signal axis and HIF-1α nuclear translocation.\" Nature Scientific Reports, 14, 904. doi: 10.1038/s41598-024-51471-3 Product: RNase R (Cat. No. E049)",
+          "doi": "https://doi.org/10.1038/s41598-024-51471-3",
+          "product": "RNase R (Cat. No. E049)"
+        }
+      ]
+    }
+  ]
+}

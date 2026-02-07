@@ -1,16 +1,6 @@
+// studio-admin/schemaTypes/category.ts
 import { defineType, defineField } from "sanity";
-import {
-  fieldTitle,
-  fieldOrder,
-  fieldThemeKey,
-  fieldSourceUrl,
-  fieldLegacyHtml,
-  fieldIntroText,
-  fieldQuickLinks,
-  fieldBullets,
-  fieldResources,
-  fieldTopPublications,
-} from "./common";
+import { fieldTitle, fieldOrder, fieldThemeKey, fieldSourceUrl, fieldLegacyHtml, fieldContentBlocks } from "./common";
 
 export default defineType({
   name: "category",
@@ -27,7 +17,6 @@ export default defineType({
       validation: (r) => r.required(),
     }),
 
-    // ✅ URL segment 배열 (brand 아래 unique)
     defineField({
       name: "path",
       title: "URL Path Segments",
@@ -37,7 +26,6 @@ export default defineType({
       validation: (r) => r.required(),
     }),
 
-    // 트리 구조 (선택)
     defineField({
       name: "parent",
       title: "상위 카테고리",
@@ -46,23 +34,24 @@ export default defineType({
       description: "최상위면 비워두세요.",
     }),
 
-    // 테마키 (brand.themeKey와 동일 권장)
     fieldThemeKey(true),
-
     fieldSourceUrl(),
     fieldLegacyHtml(),
 
-    // ✅ 우리가 화면에 보여줄 “정제된” 본문 데이터
-    fieldIntroText(),
-    fieldQuickLinks(),
-    fieldBullets(),
-    fieldResources(),
-    fieldTopPublications(),
+    // ✅ 본문은 무조건 이거 하나로 통합
+    fieldContentBlocks(false),
 
-    // 선택: 내부 편집용
     defineField({ name: "summary", title: "요약", type: "text", rows: 3 }),
     defineField({ name: "heroImage", title: "대표 이미지", type: "image", options: { hotspot: true } }),
 
     fieldOrder(),
   ],
+
+  preview: {
+    select: { title: "title", path: "path", brandTitle: "brand.title" },
+    prepare({ title, path, brandTitle }) {
+      const subtitle = Array.isArray(path) && path.length ? path.join(" / ") : "";
+      return { title: title || "(untitled)", subtitle: subtitle || brandTitle || "" };
+    },
+  },
 });

@@ -1,5 +1,5 @@
 import { defineType, defineField } from "sanity";
-import { fieldTitle, fieldSlug, fieldOrder, fieldThemeKey } from "./common";
+import { fieldTitle, fieldOrder, fieldThemeKey, fieldSourceUrl, fieldLegacyHtml, fieldContentBlocks } from "./common";
 
 export default defineType({
   name: "brand",
@@ -7,24 +7,25 @@ export default defineType({
   type: "document",
   fields: [
     fieldTitle(),
-    fieldSlug("title"),
-    fieldOrder(),
-
-    defineField({ name: "introTitle", title: "Intro Title", type: "string" }),
-    defineField({ name: "introDesc", title: "Intro Description", type: "text", rows: 3 }),
-
-    // 코드/테마/URL 매칭 키
-    fieldThemeKey(true),
 
     defineField({
-      name: "logo",
-      title: "Logo",
-      type: "image",
-      options: { hotspot: true },
+      name: "slug",
+      title: "Slug",
+      type: "slug",
+      options: { source: "title", maxLength: 96 },
+      validation: (r) => r.required(),
     }),
-  ],
-  orderings: [
-    { title: "Order", name: "orderAsc", by: [{ field: "order", direction: "asc" }] },
-    { title: "Title", name: "titleAsc", by: [{ field: "title", direction: "asc" }] },
+
+    // (기존 brand 필드들이 더 있다면 그대로 유지)
+
+    fieldThemeKey(false),
+    fieldOrder(),
+
+    // ✅ 원본 보관(선택)
+    fieldSourceUrl(),
+    fieldLegacyHtml(),
+
+    // ✅ 통합 본문
+    fieldContentBlocks(false),
   ],
 });

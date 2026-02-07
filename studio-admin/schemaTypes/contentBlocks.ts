@@ -1,110 +1,102 @@
-import { defineField, defineType } from "sanity";
+// studio-admin/schemaTypes/contentBlocks.ts
+import { defineType, defineField } from "sanity";
 
-/**
- * Reusable content block list.
- * We keep blocks flexible so you can extract HTML content (text/images/tables/buttons)
- * from each brand site and re-build the page in your own UI.
- */
-export default defineType({
-  name: "contentBlocks",
-  title: "Content Blocks",
-  type: "array",
-  of: [
-    // 1) Rich text section (PortableText)
-    defineField({
-      name: "richText",
-      title: "Rich Text",
-      type: "object",
-      fields: [
-        defineField({ name: "title", title: "Section Title", type: "string" }),
-        defineField({
-          name: "body",
-          title: "Body",
-          type: "array",
-          of: [{ type: "block" }, { type: "image" }, { type: "simpleTable" }],
-        }),
-        defineField({ name: "ctas", title: "CTAs", type: "array", of: [{ type: "cta" }] }),
-      ],
-      preview: {
-        select: { title: "title" },
-        prepare({ title }) {
-          return { title: title || "Rich Text" };
-        },
-      },
-    }),
+export const contentBlockHtml = defineType({
+  name: "contentBlockHtml",
+  title: "Block: HTML",
+  type: "object",
+  fields: [
+    defineField({ name: "title", title: "Title", type: "string" }),
+    defineField({ name: "html", title: "HTML", type: "text", rows: 12, validation: (r) => r.required() }),
+  ],
+});
 
-    // 2) Image section
+export const contentBlockBullets = defineType({
+  name: "contentBlockBullets",
+  title: "Block: Bullets",
+  type: "object",
+  fields: [
+    defineField({ name: "title", title: "Title", type: "string" }),
     defineField({
-      name: "imageSection",
-      title: "Image",
-      type: "object",
-      fields: [
-        defineField({ name: "title", title: "Section Title", type: "string" }),
-        defineField({
-          name: "image",
-          title: "Image",
-          type: "image",
-          options: { hotspot: true },
+      name: "items",
+      title: "Items",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          name: "bulletLink",
           fields: [
-            defineField({ name: "alt", title: "Alt", type: "string" }),
-            defineField({ name: "caption", title: "Caption", type: "string" }),
+            defineField({ name: "title", title: "Title", type: "string", validation: (r) => r.required() }),
+            defineField({ name: "href", title: "Href", type: "url" }),
           ],
-        }),
-        defineField({ name: "ctas", title: "CTAs", type: "array", of: [{ type: "cta" }] }),
-      ],
-      preview: {
-        select: { title: "title", media: "image" },
-        prepare({ title, media }) {
-          return { title: title || "Image", media };
         },
-      },
-    }),
-
-    // 3) Table section
-    defineField({
-      name: "tableSection",
-      title: "Table",
-      type: "object",
-      fields: [
-        defineField({ name: "title", title: "Section Title", type: "string" }),
-        defineField({ name: "table", title: "Table", type: "simpleTable" }),
-        defineField({ name: "ctas", title: "CTAs", type: "array", of: [{ type: "cta" }] }),
       ],
-      preview: {
-        select: { title: "title" },
-        prepare({ title }) {
-          return { title: title || "Table" };
-        },
-      },
     }),
+  ],
+});
 
-    // 4) Downloads section
+export const contentBlockResources = defineType({
+  name: "contentBlockResources",
+  title: "Block: Resources",
+  type: "object",
+  fields: [
+    defineField({ name: "title", title: "Title", type: "string" }),
     defineField({
-      name: "downloads",
-      title: "Downloads",
-      type: "object",
-      fields: [
-        defineField({ name: "title", title: "Section Title", type: "string", initialValue: "Downloads" }),
-        defineField({
-          name: "files",
-          title: "Files",
-          type: "array",
-          of: [
+      name: "items",
+      title: "Cards",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          name: "resourceCard",
+          fields: [
+            defineField({ name: "title", title: "Title", type: "string", validation: (r) => r.required() }),
+            defineField({ name: "subtitle", title: "Subtitle", type: "string" }),
+            defineField({ name: "href", title: "Href", type: "url", validation: (r) => r.required() }),
+
+            // ✅ 지금은 외부 이미지 URL을 그대로 써도 되게 string으로 받자
+            defineField({ name: "imageUrl", title: "Image URL", type: "url" }),
+
             defineField({
-              name: "fileItem",
-              title: "File",
-              type: "file",
-              fields: [defineField({ name: "label", title: "Label", type: "string" })],
+              name: "meta",
+              title: "Meta (debug)",
+              type: "object",
+              fields: [
+                defineField({ name: "imageUrlRaw", title: "imageUrlRaw", type: "string" }),
+                defineField({ name: "imageUrlUsed", title: "imageUrlUsed", type: "string" }),
+                defineField({ name: "imageStatus", title: "imageStatus", type: "string" }),
+                defineField({ name: "imageReason", title: "imageReason", type: "string" }),
+              ],
             }),
           ],
-        }),
-      ],
-      preview: {
-        select: { title: "title" },
-        prepare({ title }) {
-          return { title: title || "Downloads" };
         },
-      },
+      ],
+    }),
+  ],
+});
+
+export const contentBlockPublications = defineType({
+  name: "contentBlockPublications",
+  title: "Block: Top Publications",
+  type: "object",
+  fields: [
+    defineField({ name: "title", title: "Title", type: "string" }),
+    defineField({
+      name: "items",
+      title: "Items",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          name: "topPublication",
+          fields: [
+            defineField({ name: "order", title: "Order", type: "number" }),
+            defineField({ name: "citation", title: "Citation", type: "text", rows: 3, validation: (r) => r.required() }),
+            defineField({ name: "doi", title: "DOI URL", type: "url" }),
+            defineField({ name: "product", title: "Product", type: "string" }),
+          ],
+        },
+      ],
     }),
   ],
 });

@@ -1,5 +1,5 @@
 import { defineType, defineField } from "sanity";
-import { fieldTitle, fieldSlug, fieldOrder } from "./common";
+import { fieldTitle, fieldOrder, fieldSourceUrl, fieldLegacyHtml, fieldContentBlocks } from "./common";
 
 export default defineType({
   name: "product",
@@ -7,7 +7,6 @@ export default defineType({
   type: "document",
   fields: [
     fieldTitle(),
-    fieldSlug("title"),
 
     defineField({
       name: "brand",
@@ -18,19 +17,27 @@ export default defineType({
     }),
 
     defineField({
-      name: "category",
-      title: "Category(세부 분류)",
-      type: "reference",
-      to: [{ type: "category" }],
-      description: "제품이 속한 카테고리(없으면 비워도 됨).",
+      name: "sku",
+      title: "SKU / Cat.No",
+      type: "string",
     }),
 
-    defineField({ name: "catalogNo", title: "Catalog No", type: "string" }),
-    defineField({ name: "summary", title: "한 줄 설명", type: "text", rows: 3 }),
-    defineField({ name: "image", title: "대표 이미지", type: "image", options: { hotspot: true } }),
-    defineField({ name: "description", title: "상세 설명", type: "array", of: [{ type: "block" }] }),
+    defineField({
+      name: "slug",
+      title: "Slug",
+      type: "slug",
+      options: { source: "title", maxLength: 96 },
+    }),
 
-    defineField({ name: "isActive", title: "노출", type: "boolean", initialValue: true }),
+    // (기존 product 필드들이 더 있다면 그대로 유지)
+
     fieldOrder(),
+
+    // ✅ 원본 보관(선택)
+    fieldSourceUrl(),
+    fieldLegacyHtml(),
+
+    // ✅ 통합 본문
+    fieldContentBlocks(false),
   ],
 });

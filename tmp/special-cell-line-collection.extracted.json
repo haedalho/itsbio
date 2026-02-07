@@ -1,0 +1,91 @@
+{
+  "title": "General Materials",
+  "rootFound": true,
+  "introHtmlLen": 647,
+  "resourcesCount": 4,
+  "pubsCount": 3,
+  "blocksCount": 3,
+  "contentBlockTypes": [
+    "contentBlockHtml",
+    "contentBlockResources",
+    "contentBlockPublications"
+  ],
+  "contentBlocks": [
+    {
+      "_type": "contentBlockHtml",
+      "_key": "rj1gpbaqxjp",
+      "title": "Content",
+      "html": "<!-- Your code here -->\n                <h2 class=\"abm-categories-title-h2\">General Materials</h2>\n\n<div class=\"abm-categories-text\">As an industry-leading and global biotech company, <b>abm</b> offers a wide range of PCR, RT-PCR and qPCR enzyme products suitable for a variety of applications, in addition to research tools such as chemicals, equipment, consumables, DNA &amp; RNA stains and other general molecular biology tools. <br><br>Can’t find what you're looking for? Contact us at <a class=\"abm-link\" href=\"mailto:technical@abmgood.com\">technical@abmgood.com</a>.</div>\n\n\n<div id=\"abm-category-section6\" class=\"abm-container-fluid\"></div>"
+    },
+    {
+      "_type": "contentBlockResources",
+      "_key": "5au697ccrsc",
+      "title": "Resources",
+      "items": [
+        {
+          "_type": "contentResourceItem",
+          "_key": "n1cy5egnmq",
+          "title": "Introduction to PCR",
+          "subtitle": "Learning Resources",
+          "href": "https://info.abmgood.com/polymerase-chain-reaction-pcr-introduction",
+          "imageUrl": "https://www.abmgood.com/assets/images/category/wysiwyg/Polymerase-Chain-Reaction(PCR).jpg"
+        },
+        {
+          "_type": "contentResourceItem",
+          "_key": "1qxdhzhz2dr",
+          "title": "Introduction to Reverse Transcription",
+          "subtitle": "Learning Resources",
+          "href": "https://info.abmgood.com/polymerase-chain-reaction-pcr-reverse-transcription#Overview",
+          "imageUrl": "https://www.abmgood.com/assets/images/catalogPage/rtpcr/Resources_Reverse-Transcription-PCR_subcat.png"
+        },
+        {
+          "_type": "contentResourceItem",
+          "_key": "9b0yax2u60b",
+          "title": "Introduction to qPCR",
+          "subtitle": "Learning Resources",
+          "href": "https://info.abmgood.com/polymerase-chain-reaction-pcr-rt-pcr-real-time-pcr-quantitative-pcr-qpcr#overview",
+          "imageUrl": "https://www.abmgood.com/assets/images/catalogPage/qpcr/Resources_DNA-Polymerase-Variations.png"
+        },
+        {
+          "_type": "contentResourceItem",
+          "_key": "t1usnnsqv59",
+          "title": "PCR Strategies",
+          "subtitle": "Learning Resources",
+          "href": "https://info.abmgood.com/polymerase-chain-reaction-pcr-variations#overview",
+          "imageUrl": "https://www.abmgood.com/assets/images/catalogPage/rtpcr/Resources_Reverse-Transcription-Variations-to-the-system_subcat.png"
+        }
+      ]
+    },
+    {
+      "_type": "contentBlockPublications",
+      "_key": "oirk0pjuayk",
+      "title": "Top Publications",
+      "items": [
+        {
+          "_type": "contentPublicationItem",
+          "_key": "iar74sga7ao",
+          "order": 1,
+          "citation": "Provencher, L et al. (2025) \"CHD6 has poly(ADP-ribose)- and DNA-binding domains and regulates PARP1/2-trapping inhibitor sensitivity via abasic site repair.\" Nature Communications, 16, 1026. doi: 10.1038/s41467-025-56085-5 Product: SafeView™ Classic (Cat. No. G108)",
+          "doi": "https://doi.org/10.1038/s41467-025-56085-5",
+          "product": "SafeView™ Classic (Cat. No. G108)"
+        },
+        {
+          "_type": "contentPublicationItem",
+          "_key": "zoi1bvrftb8",
+          "order": 2,
+          "citation": "Khan, F et al. (2024). \"Lactate dehydrogenase A regulates tumor-macrophage symbiosis to promote glioblastoma progression.\" Nature Communications, 15(1), 1987. doi: 10.1038/s41467-024-46193-z Product: All-In-One 5X RT MasterMix with gDNA Removal (Cat. No. G592)",
+          "doi": "https://doi.org/10.1038/s41467-024-46193-z",
+          "product": "All-In-One 5X RT MasterMix with gDNA Removal (Cat. No. G592)"
+        },
+        {
+          "_type": "contentPublicationItem",
+          "_key": "e636tyssfwt",
+          "order": 3,
+          "citation": "Jiang, S et al. (2024). \"Hsa_circ_0081065 exacerbates IH-induced EndMT via regulating miR-665/HIF-1α signal axis and HIF-1α nuclear translocation.\" Nature Scientific Reports, 14, 904. doi: 10.1038/s41598-024-51471-3 Product: RNase R (Cat. No. E049)",
+          "doi": "https://doi.org/10.1038/s41598-024-51471-3",
+          "product": "RNase R (Cat. No. E049)"
+        }
+      ]
+    }
+  ]
+}
