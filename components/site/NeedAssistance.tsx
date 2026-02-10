@@ -58,11 +58,16 @@ export default function NeedAssistance() {
       "Message:",
       form.message,
     ].join("\n");
-    return `mailto:info@itsbio.co.kr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    return `mailto:info@itsbio.co.kr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
+      body
+    )}`;
   }, [form]);
 
   return (
-    <section className="bg-slate-950 text-white">
+    // ✅ 아래쪽 여백을 섹션 자체에 추가해서 "NeedAssistance와 페이지 하단"이 딱 붙는 문제 해결
+    // - pb: Need 섹션 아래 공간
+    // - (필요하면) border/sep는 그대로 유지
+    <section className="bg-slate-950 pb-16 md:pb-24 text-white">
       <div className="mx-auto max-w-7xl px-6 py-14 md:py-16">
         <div className="grid gap-10 md:grid-cols-12">
           {/* Left: columns */}
@@ -70,9 +75,7 @@ export default function NeedAssistance() {
             <div className="flex flex-wrap items-center gap-3">
               <div className="text-2xl font-bold tracking-tight">Need assistance?</div>
               <span className="h-2 w-2 rounded-full bg-orange-500" />
-              <div className="text-sm text-white/70">
-                Contact our experts for support and fast quotations.
-              </div>
+              <div className="text-sm text-white/70">Contact our experts for support and fast quotations.</div>
             </div>
 
             <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
@@ -82,10 +85,7 @@ export default function NeedAssistance() {
                   <ul className="mt-3 space-y-2">
                     {col.items.map((it) => (
                       <li key={it.label}>
-                        <a
-                          href={it.href}
-                          className="text-sm text-white/70 hover:text-white transition"
-                        >
+                        <a href={it.href} className="text-sm text-white/70 transition hover:text-white">
                           {it.label}
                         </a>
                       </li>
@@ -114,8 +114,8 @@ export default function NeedAssistance() {
               <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
                 <div className="text-sm font-semibold text-white/90">ITSBio, Inc.</div>
                 <div className="mt-3 text-sm leading-6 text-white/70">
-                  812, Hanwha Bizmetro A-dong, 551-17 YangcheonRo, Gangseo-Gu, Seoul, 07532,
-                  Korea, Republic of
+                  812, Hanwha Bizmetro A-dong, 551-17 YangcheonRo, Gangseo-Gu, Seoul, 07532, Korea,
+                  Republic of
                   <br />
                   T : +82-2-3462-8658&nbsp;&nbsp;F : +82-2-3462-8659
                   <br />
@@ -128,9 +128,13 @@ export default function NeedAssistance() {
             </div>
 
             <div className="mt-10 flex flex-wrap gap-2 text-xs text-white/50">
-              <a className="hover:text-white/80 transition" href="/privacy">Privacy Policy</a>
+              <a className="transition hover:text-white/80" href="/privacy">
+                Privacy Policy
+              </a>
               <span>｜</span>
-              <a className="hover:text-white/80 transition" href="/terms">Terms</a>
+              <a className="transition hover:text-white/80" href="/terms">
+                Terms
+              </a>
               <span>｜</span>
               <span>© {new Date().getFullYear()} ITS BIO. All rights reserved.</span>
             </div>
@@ -146,11 +150,7 @@ export default function NeedAssistance() {
 
               <div className="mt-4 grid gap-3">
                 <div className="grid grid-cols-2 gap-3">
-                  <Input
-                    placeholder="Name"
-                    value={form.name}
-                    onChange={(v) => setForm((p) => ({ ...p, name: v }))}
-                  />
+                  <Input placeholder="Name" value={form.name} onChange={(v) => setForm((p) => ({ ...p, name: v }))} />
                   <Input
                     placeholder="Company"
                     value={form.company}
@@ -185,8 +185,6 @@ export default function NeedAssistance() {
                   />
                 </div>
 
-                
-
                 <Select
                   placeholder="Message type"
                   value={form.type}
@@ -194,15 +192,11 @@ export default function NeedAssistance() {
                   options={["Quote request", "Product inquiry", "Shipping/Lead time", "Documents", "Other"]}
                 />
 
-                <Textarea
-                  placeholder="Message"
-                  value={form.message}
-                  onChange={(v) => setForm((p) => ({ ...p, message: v }))}
-                />
+                <Textarea placeholder="Message" value={form.message} onChange={(v) => setForm((p) => ({ ...p, message: v }))} />
 
                 <a
                   href={mailto}
-                  className="mt-1 inline-flex h-11 items-center justify-center rounded-xl bg-orange-600 px-4 text-sm font-semibold text-white hover:bg-orange-700 transition"
+                  className="mt-1 inline-flex h-11 items-center justify-center rounded-xl bg-orange-600 px-4 text-sm font-semibold text-white transition hover:bg-orange-700"
                 >
                   Send
                 </a>

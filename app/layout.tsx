@@ -26,7 +26,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div style={{ ["--header-h" as any]: "56px" }}>
           <Header />
           {children}
-          <NeedAssistance />
+          <div className="mt-16 md:mt-24">
+            <NeedAssistance />
+          </div>
+          
         </div>
       </body>
     </html>

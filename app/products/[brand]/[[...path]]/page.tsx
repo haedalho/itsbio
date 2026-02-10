@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
 import { sanityClient } from "@/lib/sanity/sanity.client";
+import HtmlContent from "@/components/site/HtmlContent"; // ✅ 추가
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -25,17 +26,25 @@ function humanizeSegment(seg: string) {
   return (seg || "").replaceAll("-", " ").replaceAll("_", " ").trim();
 }
 
-function stripBrandSuffix(title: string) {
-  const t = (title || "").trim();
-  const idx = t.indexOf("|");
-  return (idx >= 0 ? t.slice(0, idx) : t).trim();
+// ✅ &amp; 같은 HTML entity를 실제 문자로 디코딩
+function decodeHtmlEntities(input: string) {
+  if (!input) return "";
+  return input
+    .replaceAll("&amp;", "&")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&#39;", "'")
+    .replaceAll("&#x27;", "'")
+    .replaceAll("&nbsp;", " ");
 }
 
-/**
- * ✅ 외부 링크/ABM 링크를 우리 라우팅(legacy)로 강제
- * - resources 카드 클릭 시: /products/{brand}/legacy?u=...
- * - html 본문 내 <a href="https://..."> 도 동일하게 변환
- */
+function stripBrandSuffix(title: string) {
+  const raw = decodeHtmlEntities((title || "").trim());
+  const idx = raw.indexOf("|");
+  return (idx >= 0 ? raw.slice(0, idx) : raw).trim();
+}
+
 function legacyHref(brandKey: string, url: string) {
   return `/products/${brandKey}/legacy?u=${encodeURIComponent(url)}`;
 }
@@ -94,63 +103,111 @@ const DESCENDANTS_BY_PREFIX_QUERY = `
     || brand->slug.current == $brandKey
   )
   && count(path) > $depth
-  && array::join(path[0..$end], "/") == $prefix
+  && array::join(path[0...$depth], "/") == $prefix
 ]
 | order(order asc, title asc) { _id, title, path, order }
 `;
 
 type CatLite = { _id: string; title: string; path: string[]; order?: number };
 
-async function fetchImmediateChildren(brandKey: string, path: string[]) {
-  if (!path.length) return [] as Array<CatLite & { isVirtual?: boolean }>;
-
-  const depth = path.length;
-  const end = depth - 1;
-  const prefix = path.join("/");
-
+async function fetchDescendants(brandKey: string, rootPath: string[]) {
+  if (!rootPath.length) return [] as CatLite[];
+  const depth = rootPath.length;
+  const prefix = rootPath.join("/");
   const descendants: CatLite[] = await sanityClient.fetch(DESCENDANTS_BY_PREFIX_QUERY, {
     brandKey,
     depth,
-    end,
     prefix,
   });
+  return descendants;
+}
 
-  const nextIndex = depth;
-  const map = new Map<string, (CatLite & { isVirtual?: boolean })>();
+/** -------------------- Tree Builder -------------------- */
 
-  for (const d of descendants) {
-    const seg = d.path?.[nextIndex];
-    if (!seg) continue;
+type TreeNode = {
+  key: string;
+  _id: string;
+  title: string;
+  path: string[];
+  order?: number;
+  isVirtual?: boolean;
+  children: TreeNode[];
+};
 
-    const childPath = [...path, seg];
+function makeNodeKey(path: string[]) {
+  return path.join("/");
+}
 
-    if (!map.has(seg)) {
-      map.set(seg, {
-        _id: `virtual-${seg}`,
-        title: humanizeSegment(seg),
-        path: childPath,
-        order: d.order,
-        isVirtual: true,
+function buildTreeFromDescendants(rootPath: string[], descendants: CatLite[]) {
+  const rootKey = makeNodeKey(rootPath);
+  const nodes = new Map<string, TreeNode>();
+
+  function ensureNode(path: string[], meta?: Partial<CatLite>) {
+    const key = makeNodeKey(path);
+    const seg = path[path.length - 1] || "";
+
+    if (!nodes.has(key)) {
+      nodes.set(key, {
+        key,
+        _id: meta?._id || `virtual-${key}`,
+        title: meta?.title || humanizeSegment(seg),
+        path,
+        order: meta?.order,
+        isVirtual: !meta?._id,
+        children: [],
       });
-    }
-
-    if (Array.isArray(d.path) && d.path.length === childPath.length) {
-      map.set(seg, {
-        _id: d._id,
-        title: d.title || humanizeSegment(seg),
-        path: d.path,
-        order: d.order,
+    } else if (meta?._id) {
+      const cur = nodes.get(key)!;
+      nodes.set(key, {
+        ...cur,
+        _id: meta._id,
+        title: meta.title || cur.title,
+        order: typeof meta.order === "number" ? meta.order : cur.order,
         isVirtual: false,
       });
     }
+
+    return nodes.get(key)!;
   }
 
-  return Array.from(map.values()).sort((a, b) => {
-    const ao = typeof a.order === "number" ? a.order : 999999;
-    const bo = typeof b.order === "number" ? b.order : 999999;
-    if (ao !== bo) return ao - bo;
-    return String(a.title).localeCompare(String(b.title));
-  });
+  // root 보장
+  ensureNode(rootPath, { _id: `virtual-${rootKey}`, title: humanizeSegment(rootPath[rootPath.length - 1] || "") });
+
+  for (const d of descendants) {
+    if (!Array.isArray(d.path) || d.path.length <= rootPath.length) continue;
+
+    const prefixOk = rootPath.every((seg, i) => d.path[i] === seg);
+    if (!prefixOk) continue;
+
+    for (let i = rootPath.length; i < d.path.length; i++) {
+      const p = d.path.slice(0, i + 1);
+      if (i === d.path.length - 1) ensureNode(p, d);
+      else ensureNode(p);
+    }
+  }
+
+  for (const [key, node] of nodes.entries()) {
+    if (key === rootKey) continue;
+    const parentPath = node.path.slice(0, node.path.length - 1);
+    const parentKey = makeNodeKey(parentPath);
+    const parent = nodes.get(parentKey);
+    if (parent) parent.children.push(node);
+  }
+
+  function sortRec(n: TreeNode) {
+    n.children.sort((a, b) => {
+      const ao = typeof a.order === "number" ? a.order : 999999;
+      const bo = typeof b.order === "number" ? b.order : 999999;
+      if (ao !== bo) return ao - bo;
+      return String(a.title).localeCompare(String(b.title));
+    });
+    n.children.forEach(sortRec);
+  }
+
+  const root = nodes.get(rootKey)!;
+  sortRec(root);
+
+  return root.children;
 }
 
 /** -------------------- ABM HTML sanitize/rewrite -------------------- */
@@ -164,10 +221,7 @@ function rewriteRelativeUrls(html: string, baseUrl: string) {
   if (!html) return "";
   if (!baseUrl) return html;
 
-  let out = html.replace(
-    /\s(href|src)=["'](\/(?!\/)[^"']*)["']/gi,
-    (_m, attr, p) => ` ${attr}="${baseUrl}${p}"`
-  );
+  let out = html.replace(/\s(href|src)=["'](\/(?!\/)[^"']*)["']/gi, (_m, attr, p) => ` ${attr}="${baseUrl}${p}"`);
 
   out = out.replace(/\s(href|src)=["'](\/\/[^"']+)["']/gi, (_m, attr, p2) => ` ${attr}="https:${p2}"`);
   return out;
@@ -177,46 +231,26 @@ function stripUnwantedAbmNav(html: string) {
   if (!html) return "";
   let out = html;
 
-  // ✅ 상단 카테고리 네비 리스트 제거
-  out = out.replace(
-    /<ul[^>]*class=["'][^"']*\babm-page-category-nav-list\b[^"']*["'][\s\S]*?<\/ul>/gi,
-    ""
-  );
+  out = out.replace(/<ul[^>]*class=["'][^"']*\babm-page-category-nav-list\b[^"']*["'][\s\S]*?<\/ul>/gi, "");
 
-  // ✅ Resource 섹션(ABM 원본 HTML) 제거: h3(Resource) ~ htmlcontent-home 구간 싹 제거
   out = out.replace(
     /<h3[^>]*>[\s\S]*?\bResource\b[\s\S]*?<\/h3>[\s\S]*?<ul[^>]*class=["'][^"']*\bhtmlcontent-home\b[^"']*["'][\s\S]*?<\/ul>[\s\S]*?(?=<h3\b|$)/gi,
     ""
   );
 
-  // ✅ Top Publications 섹션(ABM 원본 HTML) 제거: h3(Top Publications) ~ citations 테이블 구간 싹 제거
   out = out.replace(
     /<h3[^>]*>[\s\S]*?\bTop\s*Publications\b[\s\S]*?<\/h3>[\s\S]*?<table[\s\S]*?<\/table>[\s\S]*?(?=<h3\b|$)/gi,
     ""
   );
 
-  // JSON-LD 제거
   out = out.replace(/<script[^>]*type=["']application\/ld\+json["'][\s\S]*?<\/script>/gi, "");
-  // 남은 script 제거
   out = out.replace(/<script[\s\S]*?<\/script>/gi, "");
-
-  // “검은 글씨 Resources/Top Publications” 텍스트 찌꺼기 제거 (혹시 남아도 제거)
-  out = out.replace(/(^|\n)\s*(Resources|Resource)\s*(\n|$)/gi, "\n");
-  out = out.replace(/(^|\n)\s*Top\s*Publications\s*(\n|$)/gi, "\n");
-  
-  out = out.replace(/<(p|div|span)[^>]*>\s*(Resources|Resource)\s*<\/\1>/gi, "");
-  out = out.replace(/<(p|div|span)[^>]*>\s*Top\s*Publications\s*<\/\1>/gi, "");
-
-  // ✅ 혹시 태그 없이 그냥 텍스트 노드로 섞여도 제거
-  out = out.replace(/(^|>|\n)\s*(Resources|Resource)\s*(?=<|\n|$)/gi, "$1");
-  out = out.replace(/(^|>|\n)\s*Top\s*Publications\s*(?=<|\n|$)/gi, "$1");
 
   return out;
 }
 
 function rewriteAnchorsToLegacy(html: string, brandKey: string) {
   if (!html) return "";
-  // https://... 링크를 legacy 라우트로 강제
   return html.replace(/\shref=["'](https?:\/\/[^"']+)["']/gi, (_m, url) => {
     return ` href="${legacyHref(brandKey, url)}"`;
   });
@@ -245,9 +279,7 @@ function HeroBanner({ brandTitle }: { brandTitle: string }) {
           <div className="mx-auto flex h-full max-w-6xl items-center px-6">
             <div>
               <div className="text-xs font-semibold tracking-wide text-white/80">ITS BIO</div>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">
-                {brandTitle} Product
-              </h1>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">{brandTitle} Product</h1>
             </div>
           </div>
         </div>
@@ -256,19 +288,70 @@ function HeroBanner({ brandTitle }: { brandTitle: string }) {
   );
 }
 
+/**
+ * ✅ 메뉴: “호버 시 펼침”
+ * - 기본: 하위 숨김
+ * - hover: 펼침
+ * - active trail(현재 경로): 항상 펼침
+ */
 function SideNavTree({
   brandKey,
   roots,
   activePath,
-  activeRootChildren,
+  activeRootTree,
 }: {
   brandKey: string;
   roots: CatLite[];
   activePath: string[];
-  activeRootChildren: CatLite[];
+  activeRootTree: TreeNode[];
 }) {
-  const activeRoot = activePath[0] || "";
   const activePathStr = activePath.join("/");
+  const activeRoot = activePath[0] || "";
+  const INDENTS = ["ml-2", "ml-4", "ml-6", "ml-8", "ml-10", "ml-12"];
+
+  function NodeList({ nodes, depth }: { nodes: TreeNode[]; depth: number }) {
+    if (!nodes?.length) return null;
+    const indentClass = INDENTS[Math.min(depth, INDENTS.length - 1)];
+
+    return (
+      <div className="space-y-1">
+        {nodes.map((n) => {
+          const p = n.path.join("/");
+          const isActive = activePathStr === p;
+          const isOnTrail =
+            !isActive && activePath.length > n.path.length && activePath.slice(0, n.path.length).join("/") === p;
+
+          // ✅ active or trail이면 열려있고, 아니면 hover에서만 열림
+          const childrenOpen = isActive || isOnTrail;
+
+          return (
+            <div key={n.key} className="group">
+              <Link
+                href={buildHref(brandKey, n.path)}
+                className={[
+                  `${indentClass} flex items-center justify-between rounded-xl px-3 py-2 text-sm`,
+                  isActive
+                    ? `${THEME.accentBg} text-white`
+                    : isOnTrail
+                    ? "bg-neutral-50 text-neutral-900"
+                    : "text-neutral-700 hover:bg-neutral-50",
+                ].join(" ")}
+              >
+                <span className="min-w-0 truncate">{stripBrandSuffix(n.title)}</span>
+                <span className={isActive ? "text-white/80" : "text-neutral-300"}>›</span>
+              </Link>
+
+              {n.children?.length ? (
+                <div className={[childrenOpen ? "block" : "hidden group-hover:block", "mt-1"].join(" ")}>
+                  <NodeList nodes={n.children} depth={depth + 1} />
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
@@ -276,10 +359,10 @@ function SideNavTree({
         <div className="text-sm font-semibold text-neutral-900">All Products</div>
       </div>
 
-      <div className="p-2">
+      <div className="p-2 space-y-2">
         <div className="space-y-1">
           {roots.map((r) => {
-            const isActive = r.path[0] === activeRoot;
+            const isActive = activePath[0] === r.path[0];
             return (
               <Link
                 key={r._id}
@@ -296,32 +379,17 @@ function SideNavTree({
           })}
         </div>
 
-        {activeRoot && activeRootChildren.length ? (
+        {activeRoot ? (
           <div className="mt-2 border-t border-neutral-200 pt-2">
             <div className={`px-3 py-2 text-xs font-semibold tracking-wide ${THEME.accentText}`}>
               {humanizeSegment(activeRoot)}
             </div>
 
-            <div className="space-y-1">
-              {activeRootChildren.map((c) => {
-                const p = c.path.join("/");
-                const isActive = activePathStr === p;
-
-                return (
-                  <Link
-                    key={c._id}
-                    href={buildHref(brandKey, c.path)}
-                    className={[
-                      "ml-2 flex items-center justify-between rounded-xl px-3 py-2 text-sm",
-                      isActive ? `${THEME.accentBg} text-white` : "text-neutral-700 hover:bg-neutral-50",
-                    ].join(" ")}
-                  >
-                    <span className="min-w-0 truncate">{stripBrandSuffix(c.title)}</span>
-                    <span className={isActive ? "text-white/80" : "text-neutral-300"}>›</span>
-                  </Link>
-                );
-              })}
-            </div>
+            {activeRootTree?.length ? (
+              <NodeList nodes={activeRootTree} depth={0} />
+            ) : (
+              <div className="px-3 py-2 text-sm text-neutral-500">하위 카테고리가 없습니다.</div>
+            )}
           </div>
         ) : null}
       </div>
@@ -329,16 +397,79 @@ function SideNavTree({
   );
 }
 
+/** -------------------- contentBlocks renderer -------------------- */
+
+function normalizeResourceItems(rawItems: any[]) {
+  if (!Array.isArray(rawItems)) return [];
+  return rawItems
+    .filter(Boolean)
+    .map((it: any, i: number) => {
+      const href = typeof it?.href === "string" ? it.href.trim() : "";
+      const title = typeof it?.title === "string" ? it.title.trim() : "";
+      const subtitle = typeof it?.subtitle === "string" ? it.subtitle.trim() : "";
+      const imageUrl = typeof it?.imageUrl === "string" ? it.imageUrl.trim() : "";
+
+      return {
+        key: it?._key || `${title}-${href}-${i}`,
+        title: title || "(untitled)",
+        subtitle,
+        href,
+        imageUrl,
+      };
+    })
+    .filter((x) => x.href);
+}
+
+function normalizePubItems(rawItems: any[]) {
+  if (!Array.isArray(rawItems)) return [];
+  return rawItems
+    .filter(Boolean)
+    .map((it: any, i: number) => {
+      const order = typeof it?.order === "number" ? it.order : undefined;
+      const citation = typeof it?.citation === "string" ? it.citation.trim() : "";
+      const doi = typeof it?.doi === "string" ? it.doi.trim() : "";
+      const product = typeof it?.product === "string" ? it.product.trim() : "";
+
+      return {
+        key: it?._key || `${order ?? i}-${citation.slice(0, 16)}`,
+        order,
+        citation,
+        doi,
+        product,
+      };
+    })
+    .filter((x) => x.citation);
+}
+
+function normalizeBullets(rawItems: any[]) {
+  const arr = Array.isArray(rawItems) ? rawItems : [];
+  return arr
+    .map((x: any) => (typeof x === "string" ? x.trim() : ""))
+    .filter(Boolean)
+    .filter((t: string) => !/^resources?$|^top\s*publications$/i.test(t));
+}
+
+function BulletsSection({ items }: { items: string[] }) {
+  if (!items.length) return null;
+  return (
+    <section className="mt-8">
+      <ul className="list-disc space-y-2 pl-5 text-neutral-800 leading-7">
+        {items.map((t, i) => (
+          <li key={`${t}-${i}`}>{t}</li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 function HtmlBlock({ html, brandKey }: { html: string; brandKey: string }) {
   const cleaned = safeHtmlForRender(html, brandKey);
   if (!cleaned) return null;
 
+  // ✅ HtmlContent(클라이언트)에서: price 제거/테이블 디자인/아이콘 정리/메일 변경/quote 폼 제거
   return (
     <section className="mt-8">
-      <div
-        className="prose prose-neutral max-w-none prose-a:text-orange-600 prose-a:underline prose-img:rounded-xl prose-img:border prose-img:border-neutral-200"
-        dangerouslySetInnerHTML={{ __html: cleaned }}
-      />
+      <HtmlContent html={cleaned} />
     </section>
   );
 }
@@ -364,7 +495,6 @@ function ResourceSection({
               <div className="overflow-hidden rounded-t-2xl bg-neutral-100">
                 <div className="relative aspect-[16/9] w-full">
                   {x.imageUrl ? (
-                    // ✅ 외부호스트 next/image 설정 이슈 방지: img 유지 (무너짐 방지)
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={x.imageUrl}
@@ -382,9 +512,7 @@ function ResourceSection({
                 <div className="text-base font-semibold text-neutral-900 leading-snug line-clamp-2">
                   {stripBrandSuffix(x.title)}
                 </div>
-                <div className="mt-2 text-sm italic text-neutral-600 line-clamp-1">
-                  {x.subtitle || "Learning Resources"}
-                </div>
+                <div className="mt-2 text-sm italic text-neutral-600 line-clamp-1">{x.subtitle || "Learning Resources"}</div>
               </div>
             </div>
           </Link>
@@ -450,77 +578,9 @@ function TopPublicationsSection({
   );
 }
 
-/** -------------------- contentBlocks renderer -------------------- */
-
-function normalizeResourceItems(rawItems: any[]) {
-  if (!Array.isArray(rawItems)) return [];
-  return rawItems
-    .filter(Boolean)
-    .map((it: any, i: number) => {
-      const href = typeof it?.href === "string" ? it.href.trim() : "";
-      const title = typeof it?.title === "string" ? it.title.trim() : "";
-      const subtitle = typeof it?.subtitle === "string" ? it.subtitle.trim() : "";
-      const imageUrl = typeof it?.imageUrl === "string" ? it.imageUrl.trim() : "";
-
-      return {
-        key: it?._key || `${title}-${href}-${i}`,
-        title: title || "(untitled)",
-        subtitle,
-        href,
-        imageUrl,
-      };
-    })
-    .filter((x) => x.href);
-}
-
-function normalizePubItems(rawItems: any[]) {
-  if (!Array.isArray(rawItems)) return [];
-  return rawItems
-    .filter(Boolean)
-    .map((it: any, i: number) => {
-      const order = typeof it?.order === "number" ? it.order : undefined;
-      const citation = typeof it?.citation === "string" ? it.citation.trim() : "";
-      const doi = typeof it?.doi === "string" ? it.doi.trim() : "";
-      const product = typeof it?.product === "string" ? it.product.trim() : "";
-
-      return {
-        key: it?._key || `${order ?? i}-${citation.slice(0, 16)}`,
-        order,
-        citation,
-        doi,
-        product,
-      };
-    })
-    .filter((x) => x.citation);
-}
-
-function normalizeBullets(rawItems: any[]) {
-  const arr = Array.isArray(rawItems) ? rawItems : [];
-  const txt = arr
-    .map((x: any) => (typeof x === "string" ? x.trim() : ""))
-    .filter(Boolean)
-    // ✅ Genetic에서 검은 라벨로 뜨는 찌꺼기 제거
-    .filter((t: string) => !/^resources?$|^top\s*publications$/i.test(t));
-  return txt;
-}
-
-function BulletsSection({ items }: { items: string[] }) {
-  if (!items.length) return null;
-  return (
-    <section className="mt-8">
-      <ul className="list-disc space-y-2 pl-5 text-neutral-800 leading-7">
-        {items.map((t, i) => (
-          <li key={`${t}-${i}`}>{t}</li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
 function renderContentBlocks(blocks: any[], brandKey: string) {
   if (!Array.isArray(blocks) || blocks.length === 0) return null;
 
-  // ✅ 중복 렌더 방지(같은 타입이 여러 번 있으면 1번만)
   let renderedHtml = false;
   let renderedResources = false;
   let renderedPubs = false;
@@ -595,6 +655,14 @@ export default async function ProductsBrandPathPage({
 
   const roots: CatLite[] = await sanityClient.fetch(ROOT_CATEGORIES_QUERY, { brandKey });
 
+  const activeRoot = path[0] || "";
+  let activeRootTree: TreeNode[] = [];
+
+  if (activeRoot) {
+    const descendants = await fetchDescendants(brandKey, [activeRoot]);
+    activeRootTree = buildTreeFromDescendants([activeRoot], descendants);
+  }
+
   if (!path.length) {
     const breadcrumbItems = [
       { label: "Home", href: "/" },
@@ -613,7 +681,7 @@ export default async function ProductsBrandPathPage({
 
           <div className="mt-10 grid gap-8 lg:grid-cols-12">
             <aside className="lg:col-span-4">
-              <SideNavTree brandKey={brandKey} roots={roots} activePath={[]} activeRootChildren={[]} />
+              <SideNavTree brandKey={brandKey} roots={roots} activePath={[]} activeRootTree={[]} />
             </aside>
 
             <main className="lg:col-span-8">
@@ -629,11 +697,8 @@ export default async function ProductsBrandPathPage({
   const pathStr = path.join("/");
   const category = await sanityClient.fetch(CATEGORY_BY_PATHSTR_QUERY, { brandKey, pathStr });
 
-  const childrenHere = await fetchImmediateChildren(brandKey, path);
-  if (!category?._id && (!childrenHere || childrenHere.length === 0)) notFound();
-
-  const activeRoot = path[0];
-  const activeRootChildren = activeRoot ? await fetchImmediateChildren(brandKey, [activeRoot]) : [];
+  // 문서가 없더라도(virtual) 트리 존재하면 허용
+  if (!category?._id && (!activeRootTree || activeRootTree.length === 0)) notFound();
 
   const breadcrumbItems = [
     { label: "Home", href: "/" },
@@ -659,12 +724,7 @@ export default async function ProductsBrandPathPage({
 
         <div className="mt-10 grid gap-8 lg:grid-cols-12">
           <aside className="lg:col-span-4">
-            <SideNavTree
-              brandKey={brandKey}
-              roots={roots}
-              activePath={path}
-              activeRootChildren={activeRootChildren}
-            />
+            <SideNavTree brandKey={brandKey} roots={roots} activePath={path} activeRootTree={activeRootTree} />
           </aside>
 
           <main className="lg:col-span-8">
@@ -673,9 +733,7 @@ export default async function ProductsBrandPathPage({
             {blocks.length ? (
               renderContentBlocks(blocks, brandKey)
             ) : (
-              <div
-                className={`mt-10 rounded-2xl border ${THEME.accentBorder} ${THEME.accentSoftBg} p-6 text-sm text-neutral-800`}
-              >
+              <div className={`mt-10 rounded-2xl border ${THEME.accentBorder} ${THEME.accentSoftBg} p-6 text-sm text-neutral-800`}>
                 본문 데이터가 아직 없습니다.
                 {category?.sourceUrl ? (
                   <>
