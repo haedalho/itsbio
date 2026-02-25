@@ -102,13 +102,20 @@ function looksLikeGlobalMenuBlock(text: string) {
   return hit >= 3;
 }
 
-function scoreNode($el: cheerio.Cheerio) {
-  const text = collapseWs($el.text() || "");
+// ✅ cheerio 타입이 버전에 따라 length/get/each 인식이 깨지는 경우가 있어서
+//    cheerio 객체 접근은 any로 안전하게 처리
+function len(x: any) {
+  return typeof x?.length === "number" ? x.length : 0;
+}
+
+function scoreNode($el: any) {
+  const text = collapseWs($el.text?.() || "");
   const textLen = text.length;
-  const pCount = $el.find("p").length;
-  const hCount = $el.find("h1,h2,h3").length;
-  const imgCount = $el.find("img").length;
-  const linkCount = $el.find("a").length;
+
+  const pCount = len($el.find?.("p"));
+  const hCount = len($el.find?.("h1,h2,h3"));
+  const imgCount = len($el.find?.("img"));
+  const linkCount = len($el.find?.("a"));
 
   let score = textLen;
   score += pCount * 220;
@@ -116,10 +123,7 @@ function scoreNode($el: cheerio.Cheerio) {
   score += imgCount * 60;
   score -= linkCount * 12;
 
-  // 메뉴 같은 건 강하게 패널티
   if (looksLikeGlobalMenuBlock(text)) score -= 8000;
-
-  // 너무 짧으면 패널티
   if (textLen < 200 && pCount < 2) score -= 1500;
 
   return score;
@@ -139,13 +143,13 @@ function pickBestMain($: cheerio.CheerioAPI) {
     ".content",
   ];
 
-  let best: cheerio.Cheerio | null = null;
+  let best: any = null;
   let bestScore = -Infinity;
 
   for (const sel of selectors) {
-    const nodes = $(sel);
-    nodes.each((_, el) => {
-      const $el = $(el);
+    const nodes: any = ($ as any)(sel);
+    nodes?.each?.((_: any, el: any) => {
+      const $el: any = ($ as any)(el);
       const sc = scoreNode($el);
       if (sc > bestScore) {
         bestScore = sc;
@@ -154,58 +158,60 @@ function pickBestMain($: cheerio.CheerioAPI) {
     });
   }
 
-  // fallback: body
-  return best && best.length ? best : $("body");
+  const $body: any = ($ as any)("body");
+  return best && len(best) ? best : $body;
 }
 
 function extractBreadcrumbFromLegacy($frag: cheerio.CheerioAPI, baseUrl: string) {
-  // 1) 명시적 breadcrumb
-  const explicit = $frag(
-    'nav[aria-label*="breadcrumb" i], .breadcrumb, .breadcrumbs, ol.breadcrumb, ul.breadcrumb'
-  ).first();
+  const $f: any = $frag as any;
 
-  const toCrumbs = (root: cheerio.Cheerio) => {
+  // 1) 명시적 breadcrumb
+  const explicit: any = $f(
+    'nav[aria-label*="breadcrumb" i], .breadcrumb, .breadcrumbs, ol.breadcrumb, ul.breadcrumb'
+  ).first?.();
+
+  const toCrumbs = (root: any) => {
     const items: Crumb[] = [];
-    root.find("a").each((_, a) => {
-      const $a = $frag(a);
-      const label = collapseWs($a.text() || "");
-      const href = absUrl($a.attr("href") || "", baseUrl);
+    root.find?.("a")?.each?.((_: any, a: any) => {
+      const $a: any = $f(a);
+      const label = collapseWs($a.text?.() || "");
+      const href = absUrl($a.attr?.("href") || "", baseUrl);
       if (!label) return;
       items.push({ label, href: href || undefined });
     });
 
-    // 링크가 없더라도 텍스트 노드만 있는 breadcrumb도 처리
     if (items.length <= 1) {
-      const txt = collapseWs(root.text() || "");
-      // "Home › Learning Resources › ..." 형태라면 분해 시도
+      const txt = collapseWs(root.text?.() || "");
       if (txt.includes("›")) {
-        const parts = txt.split("›").map((x) => collapseWs(x)).filter(Boolean);
-        if (parts.length >= 2) return parts.map((p, i) => ({ label: p, href: i === parts.length - 1 ? undefined : undefined }));
+        const parts = txt
+          .split("›")
+          .map((x: string) => collapseWs(x))
+          .filter(Boolean);
+        if (parts.length >= 2) return parts.map((p: string) => ({ label: p }));
       }
     }
 
     return items;
   };
 
-  if (explicit.length) {
+  if (explicit && len(explicit)) {
     const items = toCrumbs(explicit);
     if (items.length >= 2) {
-      // breadcrumb DOM은 본문에서 제거
-      explicit.remove();
+      explicit.remove?.();
       return items;
     }
   }
 
-  // 2) heuristic: "Home / Learning Resources / ..." 같이 보이는 짧은 링크 그룹
-  const smallNav = $frag("a")
-    .filter((_, a) => collapseWs($frag(a).text() || "").toLowerCase() === "home")
-    .first()
-    .closest("div, nav, ul, ol");
+  // 2) heuristic: "Home ..." 링크 그룹
+  const smallNav: any = $f("a")
+    .filter?.((_: any, a: any) => collapseWs($f(a).text?.() || "").toLowerCase() === "home")
+    .first?.()
+    .closest?.("div, nav, ul, ol");
 
-  if (smallNav && smallNav.length) {
+  if (smallNav && len(smallNav)) {
     const items = toCrumbs(smallNav);
     if (items.length >= 2 && items.length <= 8) {
-      smallNav.remove();
+      smallNav.remove?.();
       return items;
     }
   }
@@ -214,23 +220,26 @@ function extractBreadcrumbFromLegacy($frag: cheerio.CheerioAPI, baseUrl: string)
 }
 
 function removeTocLikeBlocks($frag: cheerio.CheerioAPI) {
-  // anchor(#) 링크가 많은 ul/ol은 TOC로 간주하고 제거
-  $frag("ul,ol").each((_, el) => {
-    const $el = $frag(el);
-    const links = $el.find('a[href^="#"]');
-    const allLinks = $el.find("a");
-    if (allLinks.length >= 8 && links.length / Math.max(allLinks.length, 1) > 0.8) {
-      $el.remove();
+  const $f: any = $frag as any;
+
+  $f("ul,ol")?.each?.((_: any, el: any) => {
+    const $el: any = $f(el);
+    const links: any = $el.find?.('a[href^="#"]');
+    const allLinks: any = $el.find?.("a");
+
+    const allLen = len(allLinks);
+    const linksLen = len(links);
+
+    if (allLen >= 8 && linksLen / Math.max(allLen, 1) > 0.8) {
+      $el.remove?.();
     }
   });
 
-  // “Subscribe …” 같은 구독 블록 제거
-  $frag("*").each((_, el) => {
-    const $el = $frag(el);
-    const t = collapseWs($el.text() || "").toLowerCase();
+  $f("*")?.each?.((_: any, el: any) => {
+    const $el: any = $f(el);
+    const t = collapseWs($el.text?.() || "").toLowerCase();
     if (t.includes("subscribe") && t.includes("notified")) {
-      // 너무 넓게 지우지 않게, 폼/입력 포함한 블록만
-      if ($el.find("input,button,form").length) $el.remove();
+      if (len($el.find?.("input,button,form")) > 0) $el.remove?.();
     }
   });
 }
@@ -238,48 +247,44 @@ function removeTocLikeBlocks($frag: cheerio.CheerioAPI) {
 function extractLegacyArticle(fullHtml: string, url: string) {
   const html = stripScripts(fullHtml);
   const $ = cheerio.load(html);
+  const $any: any = $ as any;
 
-  // 기본 제거(전역 헤더/푸터/사이드바)
-  $("script, style, iframe, form, header, footer, nav, aside").remove();
-  $(".navbar, .menu, .navigation, .site-header, .site-footer, .sidebar").remove();
+  $any("script, style, iframe, form, header, footer, nav, aside").remove?.();
+  $any(".navbar, .menu, .navigation, .site-header, .site-footer, .sidebar").remove?.();
 
   const title =
-    $('meta[property="og:title"]').attr("content") ||
-    $("h1").first().text() ||
-    $("title").text() ||
+    $any('meta[property="og:title"]').attr?.("content") ||
+    $any("h1").first?.().text?.() ||
+    $any("title").text?.() ||
     "Legacy";
 
   const main = pickBestMain($);
-  const mainHtml = (main.html() || "").trim();
+  const mainHtml = (main?.html?.() || "").trim();
 
   const $frag = cheerio.load(`<div id="root">${mainHtml}</div>`);
-  const $root = $frag("#root");
+  const $f: any = $frag as any;
+  const $root: any = $f("#root");
 
-  // 본문 안에도 섞여 있는 전역 메뉴/푸터 제거
-  $root.find("header, footer, nav, aside, script, style, iframe, form").remove();
-  $root.find(".navbar, .menu, .navigation, .site-header, .site-footer, .sidebar").remove();
+  $root.find?.("header, footer, nav, aside, script, style, iframe, form").remove?.();
+  $root.find?.(".navbar, .menu, .navigation, .site-header, .site-footer, .sidebar").remove?.();
 
-  // 메뉴처럼 보이는 큰 ul 제거
-  $root.find("ul").each((_, ul) => {
-    const $ul = $frag(ul);
-    const liCount = $ul.find("li").length;
-    if (liCount >= 10 && looksLikeGlobalMenuBlock($ul.text() || "")) $ul.remove();
+  $root.find?.("ul")?.each?.((_: any, ul: any) => {
+    const $ul: any = $f(ul);
+    const liCount = len($ul.find?.("li"));
+    if (liCount >= 10 && looksLikeGlobalMenuBlock($ul.text?.() || "")) $ul.remove?.();
   });
 
-  // ✅ breadcrumb 추출 + 본문에서 제거
   const crumbs = extractBreadcrumbFromLegacy($frag, url);
-
-  // ✅ TOC/구독 블록 제거
   removeTocLikeBlocks($frag);
 
-  // 너무 빈 본문이면 fallback으로 body
-  let bodyHtml = ($root.html() || "").trim();
-  if (collapseWs($root.text() || "").length < 200) {
-    const body = $("body");
-    const bodyHtml2 = (body.html() || "").trim();
+  let bodyHtml = ($root.html?.() || "").trim();
+  if (collapseWs($root.text?.() || "").length < 200) {
+    const body: any = $any("body");
+    const bodyHtml2 = (body?.html?.() || "").trim();
     const $frag2 = cheerio.load(`<div id="root">${bodyHtml2}</div>`);
-    $frag2("#root").find("header, footer, nav, aside, script, style, iframe, form").remove();
-    bodyHtml = ($frag2("#root").html() || "").trim();
+    const $f2: any = $frag2 as any;
+    $f2("#root").find?.("header, footer, nav, aside, script, style, iframe, form").remove?.();
+    bodyHtml = ($f2("#root").html?.() || "").trim();
   }
 
   return {
@@ -325,7 +330,6 @@ export default async function ProductsBrandLegacyProxyPage({
   if (!brandKey) notFound();
   if (!uRaw) notFound();
 
-  // ✅ 1) abmgood.com 상품/카테고리면 Sanity로 redirect (info.abmgood.com은 그냥 legacy 렌더)
   const legacyPath = extractLegacyPathFromFullUrl(uRaw);
   if (legacyPath && /abmgood\.com/i.test(uRaw)) {
     const full1 = ABM_BASE1 + legacyPath;
@@ -345,7 +349,6 @@ export default async function ProductsBrandLegacyProxyPage({
 
   const extracted = extractLegacyArticle(fullHtml, uRaw);
 
-  // ✅ breadcrumb: 원문 crumbs가 있으면 그걸 우선 사용
   const crumbItems: Crumb[] =
     extracted.crumbs && extracted.crumbs.length >= 2
       ? extracted.crumbs
@@ -375,7 +378,6 @@ export default async function ProductsBrandLegacyProxyPage({
 
         <main className="mt-8 pb-14">
           <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-            {/* ✅ 본문만 넣고, 상대경로는 baseUrl로 복구 */}
             <HtmlContent html={extracted.bodyHtml} baseUrl={uRaw} />
           </div>
         </main>
