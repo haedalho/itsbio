@@ -5,6 +5,9 @@ import { notFound } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
 import { sanityClient } from "@/lib/sanity/sanity.client";
+import { sanityWriteClient } from "@/lib/sanity/sanity.write";
+
+import { parseAbmProductDetail } from "@/lib/abm/abm";
 
 import ProductGalleryClient from "@/components/products/ProductGalleryClient";
 import ProductTabsClient from "@/components/products/ProductTabs";
@@ -59,36 +62,69 @@ function legacyHref(brandKey: string, url: string) {
   return `/products/${brandKey}/legacy?u=${encodeURIComponent(url)}`;
 }
 
+/** ✅ Print 관련만 제거 (wrapper 통삭제 금지) */
 function stripPrintFromHtml(html: any) {
   let out = typeof html === "string" ? html : "";
   if (!out) return out;
 
+  out = out.replace(
+    /<a[^>]*(?:onclick=["'][^"']*print[^"']*["']|href=["'][^"']*print[^"']*["'])[^>]*>[\s\S]*?<\/a>/gi,
+    ""
+  );
+  out = out.replace(
+    /<button[^>]*(?:onclick=["'][^"']*print[^"']*["']|class=["'][^"']*print[^"']*["'])[^>]*>[\s\S]*?<\/button>/gi,
+    ""
+  );
+  out = out.replace(/<i[^>]*class=["'][^"']*fa-print[^"']*["'][^>]*>[\s\S]*?<\/i>/gi, "");
+  out = out.replace(/<svg[^>]*>[\s\S]*?<\/svg>/gi, (m) => (m.toLowerCase().includes("print") ? "" : m));
   out = out.replace(/\bPrint\b/gi, "");
 
-  out = out.replace(/<a[^>]*>\s*Print\s*<\/a>/gi, "");
-  out = out.replace(/<button[^>]*>\s*Print\s*<\/button>/gi, "");
-
-  out = out.replace(
-    /<([a-z0-9]+)([^>]*)(id|class)=["'][^"']*print[^"']*["']([^>]*)>[\s\S]*?<\/\1>/gi,
-    ""
-  );
-
-  out = out.replace(
-    /<([a-z0-9]+)([^>]*)(title|aria-label)=["'][^"']*print[^"']*["']([^>]*)>[\s\S]*?<\/\1>/gi,
-    ""
-  );
-
-  out = out.replace(/<a([^>]*?)href=["'][^"']*print[^"']*["']([^>]*)>[\s\S]*?<\/a>/gi, "");
-
-  out = out.replace(/<svg[^>]*>[\s\S]*?<\/svg>/gi, (m) => {
-    const mm = m.toLowerCase();
-    if (mm.includes("print")) return "";
-    return m;
-  });
-
-  out = out.replace(/<i[^>]*class=["'][^"']*print[^"']*["'][^>]*>[\s\S]*?<\/i>/gi, "");
-
   return out;
+}
+
+/** ✅ specsHtml 없을 때 fallback (렌더 보정용) */
+function extractSpecsTableFromHtml(html: string) {
+  if (!html) return "";
+
+  const nearSpecs = html.match(/Specifications[\s\S]{0,5000}?(<table[\s\S]*?<\/table>)/i);
+  if (nearSpecs?.[1]) return nearSpecs[1];
+
+  const tables = html.match(/<table[\s\S]*?<\/table>/gi) || [];
+  for (const t of tables) {
+    const low = t.toLowerCase();
+    if (low.includes("spec") || low.includes("specification") || low.includes("parameter")) return t;
+  }
+  if (tables.length) return tables.reduce((a, b) => (a.length >= b.length ? a : b), "");
+
+  return "";
+}
+
+function hasMeaningfulHtmlServer(html?: string) {
+  const t = (html || "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+  return t.length > 0;
+}
+
+/** ✅ ABM 갤러리 노이즈(마케팅/로고/배지/버튼) 제거 */
+function isGalleryNoiseUrl(u: string) {
+  const s = (u || "").toLowerCase();
+  if (!s) return true;
+
+  // ABM에서 자주 섞이는 노이즈 케이스들
+  if (s.includes("request") && s.includes("sample")) return true;
+  if (s.includes("request") && s.includes("quote")) return true;
+  if (s.includes("intertek")) return true;
+  if (s.includes("badge")) return true;
+  if (s.includes("icon")) return true;
+
+  // flag/logo 계열(원본 갤러리에 들어가는 경우는 거의 없음)
+  if (s.endsWith("/kr.png") || s.includes("/flag") || s.includes("flag-")) return true;
+  if (s.includes("abm") && s.includes("logo")) return true;
+
+  // ABM 썸네일 특유 사이즈(로고/국기에서 자주 나옴)
+  if (/-16x11\./.test(s)) return true;
+  if (/-229x65\./.test(s)) return true;
+
+  return false;
 }
 
 /** -------------------- GROQ -------------------- */
@@ -100,35 +136,56 @@ const BRAND_QUERY = `
 `;
 
 const PRODUCT_QUERY = `
-*[_type=="product" && slug.current == $slug][0]{
+*[_type=="product" && slug.current == $slug && (brand->slug.current==$brandKey || brand->themeKey==$brandKey)][0]{
   _id,
   title,
   "slug": slug.current,
-  catNo,
+  sku,
   sourceUrl,
   categoryPath,
+  categoryPathTitles,
 
   specsHtml,
+  extraHtml,
+  legacyHtml,
+
   datasheetHtml,
   documentsHtml,
   faqsHtml,
   referencesHtml,
   reviewsHtml,
 
-  docs[]{
-    _key,
-    label,
-    url
-  },
+  docs[]{ title, label, url },
 
-  imageFiles,
   imageUrls,
-  images[]{
-    _key,
-    asset->{ url }
-  }
+  imageFiles,
+  images[]{ _key, asset->{ url } },
+
+  enrichedAt
 }
 `;
+
+async function fetchHtml(url: string) {
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), 20000);
+
+  const res = await fetch(url, {
+    method: "GET",
+    redirect: "follow",
+    cache: "no-store",
+    signal: controller.signal,
+    headers: {
+      "user-agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
+      accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "accept-language": "en-US,en;q=0.9,ko-KR;q=0.8,ko;q=0.7",
+    },
+  });
+
+  clearTimeout(t);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return await res.text();
+}
 
 const ROOT_CATEGORIES_QUERY = `
 *[
@@ -159,11 +216,11 @@ const DESCENDANTS_BY_PREFIX_QUERY = `
 
 type CatLite = { _id: string; title: string; path: string[]; order?: number };
 
-async function fetchDescendants(brandKey: string, rootPath: string[]) {
+async function fetchDescendants(client: any, brandKey: string, rootPath: string[]) {
   if (!rootPath.length) return [] as CatLite[];
   const depth = rootPath.length;
   const prefix = rootPath.join("/");
-  const descendants: CatLite[] = await sanityClient.fetch(DESCENDANTS_BY_PREFIX_QUERY, {
+  const descendants: CatLite[] = await client.fetch(DESCENDANTS_BY_PREFIX_QUERY, {
     brandKey,
     depth,
     prefix,
@@ -215,7 +272,6 @@ function buildTreeFromDescendants(rootPath: string[], descendants: CatLite[]) {
         isVirtual: false,
       });
     }
-
     return nodes.get(key)!;
   }
 
@@ -226,7 +282,6 @@ function buildTreeFromDescendants(rootPath: string[], descendants: CatLite[]) {
 
   for (const d of descendants) {
     if (!Array.isArray(d.path) || d.path.length <= rootPath.length) continue;
-
     const prefixOk = rootPath.every((seg, i) => d.path[i] === seg);
     if (!prefixOk) continue;
 
@@ -257,7 +312,6 @@ function buildTreeFromDescendants(rootPath: string[], descendants: CatLite[]) {
 
   const root = nodes.get(rootKey)!;
   sortRec(root);
-
   return root.children;
 }
 
@@ -288,7 +342,9 @@ function SideNavTree({
           const p = n.path.join("/");
           const isActive = activePathStr === p;
           const isOnTrail =
-            !isActive && activePath.length > n.path.length && activePath.slice(0, n.path.length).join("/") === p;
+            !isActive &&
+            activePath.length > n.path.length &&
+            activePath.slice(0, n.path.length).join("/") === p;
 
           const childrenOpen = isActive || isOnTrail;
 
@@ -365,47 +421,28 @@ function SideNavTree({
   );
 }
 
-/** -------------------- Images normalize (logo/kr 제거) -------------------- */
-
+/** -------------------- Images normalize (ABM 1:1 우선 + 노이즈 제거) -------------------- */
 function normalizeImages(product: any, title: string) {
   const urls: string[] = Array.isArray(product?.imageUrls)
-    ? product.imageUrls.filter((u: any) => typeof u === "string")
-    : [];
-  const files: string[] = Array.isArray(product?.imageFiles)
-    ? product.imageFiles.filter((f: any) => typeof f === "string")
+    ? product.imageUrls.filter((u: any) => typeof u === "string" && u.trim())
     : [];
 
-  const skipIdx = new Set<number>();
-
-  if (files.length >= 2) {
-    const f0 = (files[0] || "").toLowerCase();
-    const f1 = (files[1] || "").toLowerCase();
-    if (f0.includes("abm") && f0.includes("logo")) skipIdx.add(0);
-    if (f1 === "kr.png" || f1.includes("kr")) skipIdx.add(1);
-  } else {
-    if (urls[0] && /-229x65\./i.test(urls[0])) skipIdx.add(0);
-    if (urls[1] && /-16x11\./i.test(urls[1])) skipIdx.add(1);
+  if (urls.length) {
+    const cleaned = urls.filter((u) => !isGalleryNoiseUrl(u));
+    const seen = new Set<string>();
+    return cleaned
+      .map((u) => ({ url: u.trim(), alt: title }))
+      .filter((x) => (seen.has(x.url) ? false : (seen.add(x.url), true)));
   }
 
+  // fallback only (imageUrls 없을 때만)
   const out: Array<{ url: string; alt: string }> = [];
-  for (let i = 0; i < urls.length; i++) {
-    if (skipIdx.has(i)) continue;
-    const u = (urls[i] || "").trim();
-    if (u) out.push({ url: u, alt: title });
-  }
-
   if (Array.isArray(product?.images)) {
     for (const im of product.images) {
       const u = im?.asset?.url;
-      if (typeof u !== "string" || !u.trim()) continue;
-      const lu = u.toLowerCase();
-      if (lu.includes("abmlogo")) continue;
-      if (/-16x11\./.test(lu)) continue;
-      if (/-229x65\./.test(lu)) continue;
-      out.push({ url: u.trim(), alt: title });
+      if (typeof u === "string" && u.trim() && !isGalleryNoiseUrl(u)) out.push({ url: u.trim(), alt: title });
     }
   }
-
   const seen = new Set<string>();
   return out.filter((x) => (seen.has(x.url) ? false : (seen.add(x.url), true)));
 }
@@ -447,23 +484,88 @@ export default async function ProductDetailPage({
 
   if (!brandKey || !slug) notFound();
 
-  const brand = await sanityClient.fetch(BRAND_QUERY, { brandKey });
+  // ✅ CDN stale 방지: 이 페이지에서는 항상 fresh로 fetch
+  const client = (sanityClient as any).withConfig ? (sanityClient as any).withConfig({ useCdn: false }) : sanityClient;
+
+  const brand = await client.fetch(BRAND_QUERY, { brandKey });
   if (!brand?._id) notFound();
 
-  const product = await sanityClient.fetch(PRODUCT_QUERY, { slug });
+  let product = await client.fetch(PRODUCT_QUERY, { slug, brandKey });
   if (!product?._id) notFound();
 
+  // ✅ ABM on-demand enrich가 "빈 탭(원래 없는 탭)" 때문에 매번 재실행되며
+  //    imageUrls/specsHtml을 덮어써서 깨지는 문제 방지:
+  //    -> "핵심 필드가 진짜 비었을 때만" enrich
+  const criticalMissing =
+    !Array.isArray(product?.imageUrls) ||
+    product.imageUrls.length === 0 ||
+    !hasMeaningfulHtmlServer(product?.specsHtml) ||
+    !Array.isArray(product?.categoryPath) ||
+    product.categoryPath.length === 0;
+
+  const needsEnrich = brandKey === "abm" && !!product?.sourceUrl && (!product?.enrichedAt || criticalMissing);
+
+  if (needsEnrich && process.env.SANITY_WRITE_TOKEN) {
+    try {
+      const html = await fetchHtml(String(product.sourceUrl));
+      const parsed: any = parseAbmProductDetail(html, String(product.sourceUrl));
+
+      // ✅ 빈 값으로 overwrite 금지: meaningful할 때만 set
+      const patchSet: Record<string, any> = {
+        enrichedAt: new Date().toISOString(),
+      };
+
+      if (parsed?.title) patchSet.title = parsed.title;
+      if (parsed?.sku) patchSet.sku = parsed.sku;
+
+      if (Array.isArray(parsed?.categoryPathSlugs) && parsed.categoryPathSlugs.length)
+        patchSet.categoryPath = parsed.categoryPathSlugs;
+      if (Array.isArray(parsed?.categoryPathTitles) && parsed.categoryPathTitles.length)
+        patchSet.categoryPathTitles = parsed.categoryPathTitles;
+
+      if (hasMeaningfulHtmlServer(parsed?.specsHtml)) patchSet.specsHtml = parsed.specsHtml;
+
+      if (hasMeaningfulHtmlServer(parsed?.datasheetHtml)) patchSet.datasheetHtml = parsed.datasheetHtml;
+      if (hasMeaningfulHtmlServer(parsed?.documentsHtml)) patchSet.documentsHtml = parsed.documentsHtml;
+      if (hasMeaningfulHtmlServer(parsed?.faqsHtml)) patchSet.faqsHtml = parsed.faqsHtml;
+      if (hasMeaningfulHtmlServer(parsed?.referencesHtml)) patchSet.referencesHtml = parsed.referencesHtml;
+      if (hasMeaningfulHtmlServer(parsed?.reviewsHtml)) patchSet.reviewsHtml = parsed.reviewsHtml;
+
+      if (Array.isArray(parsed?.imageUrls) && parsed.imageUrls.length) patchSet.imageUrls = parsed.imageUrls;
+
+      // docs normalize (title/label 혼재)
+      if (Array.isArray(parsed?.docs) && parsed.docs.length) {
+        patchSet.docs = parsed.docs
+          .map((d: any) => {
+            const url = typeof d?.url === "string" ? d.url.trim() : "";
+            const title = typeof d?.title === "string" ? d.title.trim() : "";
+            const label = typeof d?.label === "string" ? d.label.trim() : "";
+            if (!url) return null;
+            return { _type: "docItem", title: title || label || "Document", label: label || title || "Document", url };
+          })
+          .filter(Boolean);
+      }
+
+      await sanityWriteClient.patch(product._id).set(patchSet).commit();
+
+      // 렌더용 최신 반영
+      product = { ...product, ...patchSet };
+    } catch (e) {
+      console.error("ABM enrich failed:", (e as any)?.message || e);
+    }
+  }
+
   const title = stripBrandSuffix(product?.title || "");
-  const catNo = decodeHtmlEntities((product?.catNo || "").trim());
+  const catNo = decodeHtmlEntities((product?.sku || "").trim());
 
   const categoryPath: string[] = Array.isArray(product?.categoryPath) ? product.categoryPath : [];
   const categoryHref = buildHref(brandKey, categoryPath);
 
-  const roots: CatLite[] = await sanityClient.fetch(ROOT_CATEGORIES_QUERY, { brandKey });
+  const roots: CatLite[] = await client.fetch(ROOT_CATEGORIES_QUERY, { brandKey });
   const activeRoot = categoryPath[0] || "";
   let activeRootTree: TreeNode[] = [];
   if (activeRoot) {
-    const descendants = await fetchDescendants(brandKey, [activeRoot]);
+    const descendants = await fetchDescendants(client, brandKey, [activeRoot]);
     activeRootTree = buildTreeFromDescendants([activeRoot], descendants);
   }
 
@@ -483,12 +585,35 @@ export default async function ProductDetailPage({
 
   const images = normalizeImages(product, title);
 
-  const specsHtml = stripPrintFromHtml(product?.specsHtml);
+  const rawSpecs = typeof product?.specsHtml === "string" && product.specsHtml.trim() ? product.specsHtml : "";
+  const rawFallback =
+    typeof product?.extraHtml === "string" && product.extraHtml.trim()
+      ? product.extraHtml
+      : typeof product?.legacyHtml === "string"
+      ? product.legacyHtml
+      : "";
+
+  const derivedSpecs = rawSpecs ? "" : extractSpecsTableFromHtml(rawFallback);
+  const specsHtml = stripPrintFromHtml(rawSpecs || derivedSpecs);
+
   const datasheetHtml = stripPrintFromHtml(product?.datasheetHtml);
   const documentsHtml = stripPrintFromHtml(product?.documentsHtml);
   const faqsHtml = stripPrintFromHtml(product?.faqsHtml);
   const referencesHtml = stripPrintFromHtml(product?.referencesHtml);
   const reviewsHtml = stripPrintFromHtml(product?.reviewsHtml);
+
+  // ProductTabs는 label 사용: title/label 둘 다 대응
+  const documents = Array.isArray(product?.docs)
+    ? product.docs
+        .map((d: any) => {
+          const url = typeof d?.url === "string" ? d.url.trim() : "";
+          const title2 = typeof d?.title === "string" ? d.title.trim() : "";
+          const label2 = typeof d?.label === "string" ? d.label.trim() : "";
+          if (!url) return null;
+          return { url, label: title2 || label2 || "Document" };
+        })
+        .filter(Boolean)
+    : [];
 
   return (
     <div>
@@ -522,12 +647,17 @@ export default async function ProductDetailPage({
                   Back to Category
                 </Link>
 
-                
+                {openOriginalUrl ? (
+                  <Link
+                    href={legacyHref(brandKey, openOriginalUrl)}
+                    className={`inline-flex h-10 items-center justify-center rounded-xl border px-4 text-sm font-semibold ${THEME.accentBorder} ${THEME.accentSoftBg} ${THEME.accentText}`}
+                  >
+                    Open Original
+                  </Link>
+                ) : null}
               </div>
 
-              {/* ✅ 여기서 “갤러리 + 탭” 테두리를 하나로 합침 */}
               <div className="mt-6 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
-                {/* top: catno + gallery */}
                 <div className="p-5">
                   {catNo ? (
                     <div className="mb-4 text-sm">
@@ -539,30 +669,9 @@ export default async function ProductDetailPage({
                   <ProductGalleryClient images={images} title={title} />
                 </div>
 
-                {/* divider */}
                 <div className="h-px bg-neutral-200" />
 
-                {/* bottom: tabs */}
                 <div className="p-5">
-                  <style
-                    // eslint-disable-next-line react/no-danger
-                    dangerouslySetInnerHTML={{
-                      __html: `
-                        .itsbio-product-tabs [id*="print" i],
-                        .itsbio-product-tabs [class*="print" i] { display:none !important; }
-
-                        .itsbio-product-tabs a[title*="print" i],
-                        .itsbio-product-tabs button[title*="print" i],
-                        .itsbio-product-tabs a[aria-label*="print" i],
-                        .itsbio-product-tabs button[aria-label*="print" i] { display:none !important; }
-
-                        .itsbio-product-tabs a[href*="print" i],
-                        .itsbio-product-tabs button[data-action*="print" i],
-                        .itsbio-product-tabs [data-action*="print" i] { display:none !important; }
-                      `,
-                    }}
-                  />
-
                   <div className="itsbio-product-tabs">
                     <ProductTabsClient
                       specsHtml={specsHtml}
@@ -571,13 +680,12 @@ export default async function ProductDetailPage({
                       faqsHtml={faqsHtml}
                       referencesHtml={referencesHtml}
                       reviewsHtml={reviewsHtml}
-                      documents={Array.isArray(product?.docs) ? product.docs : []}
+                      documents={documents as any}
                     />
                   </div>
                 </div>
               </div>
 
-              {/* NeedAssistance와 붙는 거 방지 */}
               <div className="h-10" />
             </section>
           </div>

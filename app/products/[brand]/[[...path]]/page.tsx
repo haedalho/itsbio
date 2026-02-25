@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
 import { sanityClient } from "@/lib/sanity/sanity.client";
-import HtmlContent from "@/components/site/HtmlContent"; // ✅ 추가
+import HtmlContent from "@/components/site/HtmlContent";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -26,7 +26,6 @@ function humanizeSegment(seg: string) {
   return (seg || "").replaceAll("-", " ").replaceAll("_", " ").trim();
 }
 
-// ✅ &amp; 같은 HTML entity를 실제 문자로 디코딩
 function decodeHtmlEntities(input: string) {
   if (!input) return "";
   return input
@@ -61,7 +60,8 @@ const ROOT_CATEGORIES_QUERY = `
 *[
   _type == "category"
   && (
-    themeKey == $brandKey
+    brandSlug == $brandKey
+    || themeKey == $brandKey
     || brand->themeKey == $brandKey
     || brand->slug.current == $brandKey
   )
@@ -74,7 +74,8 @@ const CATEGORY_BY_PATHSTR_QUERY = `
 *[
   _type == "category"
   && (
-    themeKey == $brandKey
+    brandSlug == $brandKey
+    || themeKey == $brandKey
     || brand->themeKey == $brandKey
     || brand->slug.current == $brandKey
   )
@@ -84,7 +85,15 @@ const CATEGORY_BY_PATHSTR_QUERY = `
   title,
   path,
   sourceUrl,
+
   contentBlocks[] {
+    _key,
+    _type,
+    title,
+    html,
+    items[]
+  },
+  blocks[] {
     _key,
     _type,
     title,
@@ -94,11 +103,34 @@ const CATEGORY_BY_PATHSTR_QUERY = `
 }
 `;
 
+const PRODUCTS_BY_CATEGORYPATH_QUERY = `
+*[
+  _type=="product"
+  && isActive==true
+  && (
+    brandSlug == $brandKey
+    || brand->slug.current == $brandKey
+    || brand->themeKey == $brandKey
+  )
+  && array::join(categoryPath, "/") == $pathStr
+]
+| order(title asc) {
+  _id,
+  title,
+  sku,
+  "slug": slug.current,
+  "thumb": imageUrls[0],
+  sourceUrl,
+  enrichedAt
+}
+`;
+
 const DESCENDANTS_BY_PREFIX_QUERY = `
 *[
   _type == "category"
   && (
-    themeKey == $brandKey
+    brandSlug == $brandKey
+    || themeKey == $brandKey
     || brand->themeKey == $brandKey
     || brand->slug.current == $brandKey
   )
@@ -170,8 +202,10 @@ function buildTreeFromDescendants(rootPath: string[], descendants: CatLite[]) {
     return nodes.get(key)!;
   }
 
-  // root 보장
-  ensureNode(rootPath, { _id: `virtual-${rootKey}`, title: humanizeSegment(rootPath[rootPath.length - 1] || "") });
+  ensureNode(rootPath, {
+    _id: `virtual-${rootKey}`,
+    title: humanizeSegment(rootPath[rootPath.length - 1] || ""),
+  });
 
   for (const d of descendants) {
     if (!Array.isArray(d.path) || d.path.length <= rootPath.length) continue;
@@ -221,8 +255,10 @@ function rewriteRelativeUrls(html: string, baseUrl: string) {
   if (!html) return "";
   if (!baseUrl) return html;
 
-  let out = html.replace(/\s(href|src)=["'](\/(?!\/)[^"']*)["']/gi, (_m, attr, p) => ` ${attr}="${baseUrl}${p}"`);
-
+  let out = html.replace(
+    /\s(href|src)=["'](\/(?!\/)[^"']*)["']/gi,
+    (_m, attr, p) => ` ${attr}="${baseUrl}${p}"`
+  );
   out = out.replace(/\s(href|src)=["'](\/\/[^"']+)["']/gi, (_m, attr, p2) => ` ${attr}="https:${p2}"`);
   return out;
 }
@@ -232,12 +268,10 @@ function stripUnwantedAbmNav(html: string) {
   let out = html;
 
   out = out.replace(/<ul[^>]*class=["'][^"']*\babm-page-category-nav-list\b[^"']*["'][\s\S]*?<\/ul>/gi, "");
-
   out = out.replace(
     /<h3[^>]*>[\s\S]*?\bResource\b[\s\S]*?<\/h3>[\s\S]*?<ul[^>]*class=["'][^"']*\bhtmlcontent-home\b[^"']*["'][\s\S]*?<\/ul>[\s\S]*?(?=<h3\b|$)/gi,
     ""
   );
-
   out = out.replace(
     /<h3[^>]*>[\s\S]*?\bTop\s*Publications\b[\s\S]*?<\/h3>[\s\S]*?<table[\s\S]*?<\/table>[\s\S]*?(?=<h3\b|$)/gi,
     ""
@@ -274,7 +308,6 @@ function HeroBanner({ brandTitle }: { brandTitle: string }) {
         <Image src="/hero.png" alt="Products hero" fill priority className="object-cover" />
         <div className="absolute inset-0 bg-black/35" />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950/45 via-transparent to-transparent" />
-
         <div className="absolute inset-0">
           <div className="mx-auto flex h-full max-w-6xl items-center px-6">
             <div>
@@ -289,10 +322,11 @@ function HeroBanner({ brandTitle }: { brandTitle: string }) {
 }
 
 /**
- * ✅ 메뉴: “호버 시 펼침”
- * - 기본: 하위 숨김
- * - hover: 펼침
- * - active trail(현재 경로): 항상 펼침
+ * ✅ 핵심 수정:
+ * - 섹션 hover(group-hover) 때문에 자식 마커가 "전부" 뜨던 문제 해결
+ *   => group/section, group/item 네임드 그룹으로 분리
+ * - 기본: active 1개만 도트 표시
+ * - hover: 해당 item만 도트/꺾쇠 표시
  */
 function SideNavTree({
   brandKey,
@@ -307,91 +341,178 @@ function SideNavTree({
 }) {
   const activePathStr = activePath.join("/");
   const activeRoot = activePath[0] || "";
-  const INDENTS = ["ml-2", "ml-4", "ml-6", "ml-8", "ml-10", "ml-12"];
 
-  function NodeList({ nodes, depth }: { nodes: TreeNode[]; depth: number }) {
+  const activeRootTitle =
+    roots.find((r) => (r.path?.[0] || "") === activeRoot)?.title ||
+    (activeRoot ? humanizeSegment(activeRoot) : "All Products");
+
+  const isPrefix = (full: string, prefix: string) => full === prefix || full.startsWith(prefix + "/");
+
+  // 레퍼런스 좌표(필요하면 여기만 1~2px 튜닝)
+  const LINE_LEFT = "left-[18px]";
+  const DOT_LEFT = "left-[18px]";
+  const ARROW_LEFT = "left-[28px]";
+  const TEXT_OFFSET = "ml-[34px]";
+
+  function Children({ nodes }: { nodes: TreeNode[] }) {
     if (!nodes?.length) return null;
-    const indentClass = INDENTS[Math.min(depth, INDENTS.length - 1)];
 
     return (
-      <div className="space-y-1">
-        {nodes.map((n) => {
-          const p = n.path.join("/");
-          const isActive = activePathStr === p;
-          const isOnTrail =
-            !isActive && activePath.length > n.path.length && activePath.slice(0, n.path.length).join("/") === p;
+      <div className="relative">
+        <div className={`pointer-events-none absolute ${LINE_LEFT} top-0 h-full border-l border-dashed border-neutral-400`} />
 
-          // ✅ active or trail이면 열려있고, 아니면 hover에서만 열림
-          const childrenOpen = isActive || isOnTrail;
+        <div className="space-y-1">
+          {nodes.map((n) => {
+            const p = n.path.join("/");
+            const isActive = activePathStr === p;
 
-          return (
-            <div key={n.key} className="group">
-              <Link
-                href={buildHref(brandKey, n.path)}
-                className={[
-                  `${indentClass} flex items-center justify-between rounded-xl px-3 py-2 text-sm`,
-                  isActive
-                    ? `${THEME.accentBg} text-white`
-                    : isOnTrail
-                    ? "bg-neutral-50 text-neutral-900"
-                    : "text-neutral-700 hover:bg-neutral-50",
-                ].join(" ")}
-              >
-                <span className="min-w-0 truncate">{stripBrandSuffix(n.title)}</span>
-                <span className={isActive ? "text-white/80" : "text-neutral-300"}>›</span>
+            return (
+              <Link key={n.key} href={buildHref(brandKey, n.path)} className="group/item relative block">
+                {/* dot: 기본 숨김, active/hover(item)만 표시 */}
+                <span
+                  aria-hidden
+                  className={[
+                    "pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2",
+                    DOT_LEFT,
+                    "h-1.5 w-1.5 rounded-full bg-orange-500 transition",
+                    isActive ? "opacity-100 scale-125" : "opacity-0",
+                    "group-hover/item:opacity-100 group-hover/item:scale-110",
+                  ].join(" ")}
+                />
+                {/* ring */}
+                <span
+                  aria-hidden
+                  className={[
+                    "pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2",
+                    DOT_LEFT,
+                    "h-2.5 w-2.5 rounded-full border border-orange-200 transition",
+                    isActive ? "opacity-100 border-orange-300" : "opacity-0",
+                    "group-hover/item:opacity-100 group-hover/item:border-orange-200",
+                  ].join(" ")}
+                />
+                {/* here indicator: hover(item)에서만 */}
+                <span
+                  aria-hidden
+                  className={[
+                    "pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2",
+                    ARROW_LEFT,
+                    "text-xs text-orange-500 transition",
+                    "opacity-0 group-hover/item:opacity-100",
+                    isActive ? "opacity-0" : "",
+                  ].join(" ")}
+                >
+                  ›
+                </span>
+
+                {/* text area */}
+                <span
+                  className={[
+                    "relative block rounded-xl px-3 py-2 text-sm leading-6 transition",
+                    TEXT_OFFSET,
+                    isActive
+                      ? "bg-orange-100 text-orange-700 font-semibold"
+                      : "text-neutral-700 group-hover/item:bg-neutral-50",
+                  ].join(" ")}
+                >
+                  <span className="block min-w-0 truncate">{stripBrandSuffix(n.title)}</span>
+                </span>
               </Link>
-
-              {n.children?.length ? (
-                <div className={[childrenOpen ? "block" : "hidden group-hover:block", "mt-1"].join(" ")}>
-                  <NodeList nodes={n.children} depth={depth + 1} />
-                </div>
-              ) : null}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
+    );
+  }
+
+  function NodeRow({ node }: { node: TreeNode }) {
+    const p = node.path.join("/");
+    const isActive = activePathStr === p;
+    const isOnTrail = isPrefix(activePathStr, p) && !isActive;
+    const hasChildren = !!node.children?.length;
+
+    const isOpen = hasChildren && (isActive || isOnTrail);
+
+    if (hasChildren) {
+      return (
+        <div className="group/section">
+          <Link
+            href={buildHref(brandKey, node.path)}
+            className={[
+              "flex items-center justify-between rounded-xl px-3 py-2 text-sm transition",
+              isOpen ? "text-orange-600 font-semibold" : "text-neutral-800 hover:bg-neutral-50",
+            ].join(" ")}
+          >
+            <div className="min-w-0 flex items-center gap-2">
+              <span className={isOpen ? "text-orange-500" : "text-neutral-300"} aria-hidden>
+                ⌄
+              </span>
+              <span className="truncate">{stripBrandSuffix(node.title)}</span>
+            </div>
+
+            <span className={isOpen ? "text-orange-500 text-xs" : "text-neutral-300"} aria-hidden>
+              {isOpen ? "^" : "›"}
+            </span>
+          </Link>
+
+          {/* 열림: 항상 / 닫힘: 섹션 hover에서만 */}
+          <div className={isOpen ? "mt-1 block" : "mt-1 hidden group-hover/section:block"}>
+            <Children nodes={node.children} />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <Link
+        href={buildHref(brandKey, node.path)}
+        className={[
+          "flex items-center justify-between rounded-xl px-3 py-2 text-sm transition",
+          isActive ? "bg-orange-100 text-orange-700 font-semibold" : "text-neutral-800 hover:bg-neutral-50",
+        ].join(" ")}
+      >
+        <span className="min-w-0 truncate">{stripBrandSuffix(node.title)}</span>
+        <span className="text-neutral-300" aria-hidden>
+          ›
+        </span>
+      </Link>
     );
   }
 
   return (
     <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
       <div className="border-b border-neutral-200 px-5 py-4">
-        <div className="text-sm font-semibold text-neutral-900">All Products</div>
+        <div className="text-base font-semibold text-orange-600">
+          {stripBrandSuffix(activeRootTitle)}
+        </div>
       </div>
 
-      <div className="p-2 space-y-2">
+      <div className="p-2">
         <div className="space-y-1">
-          {roots.map((r) => {
-            const isActive = activePath[0] === r.path[0];
-            return (
+          {roots
+            .filter((r) => (r.path?.[0] || "") !== activeRoot)
+            .map((r) => (
               <Link
                 key={r._id}
                 href={buildHref(brandKey, r.path)}
-                className={[
-                  "flex items-center justify-between rounded-xl px-3 py-2 text-sm",
-                  isActive ? `${THEME.accentBg} text-white` : "text-neutral-700 hover:bg-neutral-50",
-                ].join(" ")}
+                className="flex items-center justify-between rounded-xl px-3 py-2 text-sm text-neutral-800 hover:bg-neutral-50"
               >
                 <span className="min-w-0 truncate">{stripBrandSuffix(r.title)}</span>
-                <span className={isActive ? "text-white/80" : "text-neutral-300"}>›</span>
+                <span className="text-neutral-300" aria-hidden>
+                  ›
+                </span>
               </Link>
-            );
-          })}
+            ))}
         </div>
 
-        {activeRoot ? (
-          <div className="mt-2 border-t border-neutral-200 pt-2">
-            <div className={`px-3 py-2 text-xs font-semibold tracking-wide ${THEME.accentText}`}>
-              {humanizeSegment(activeRoot)}
-            </div>
+        <div className="my-2 border-t border-neutral-200" />
 
-            {activeRootTree?.length ? (
-              <NodeList nodes={activeRootTree} depth={0} />
-            ) : (
-              <div className="px-3 py-2 text-sm text-neutral-500">하위 카테고리가 없습니다.</div>
-            )}
-          </div>
-        ) : null}
+        <div className="space-y-1">
+          {activeRootTree?.length ? (
+            activeRootTree.map((n) => <NodeRow key={n.key} node={n} />)
+          ) : (
+            <div className="px-3 py-2 text-sm text-neutral-500">하위 카테고리가 없습니다.</div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -465,8 +586,6 @@ function BulletsSection({ items }: { items: string[] }) {
 function HtmlBlock({ html, brandKey }: { html: string; brandKey: string }) {
   const cleaned = safeHtmlForRender(html, brandKey);
   if (!cleaned) return null;
-
-  // ✅ HtmlContent(클라이언트)에서: price 제거/테이블 디자인/아이콘 정리/메일 변경/quote 폼 제거
   return (
     <section className="mt-8">
       <HtmlContent html={cleaned} />
@@ -549,25 +668,6 @@ function TopPublicationsSection({
 
                 <div className="min-w-0">
                   <div className="text-sm leading-6 text-neutral-900 whitespace-pre-line">{p.citation}</div>
-
-                  <div className="mt-3 flex flex-wrap gap-3 text-sm">
-                    {p.doi ? (
-                      <a
-                        href={p.doi}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="font-semibold text-orange-600 underline underline-offset-4"
-                      >
-                        DOI
-                      </a>
-                    ) : null}
-
-                    {p.product ? (
-                      <div className="text-neutral-800">
-                        <span className="font-semibold">Product:</span> {p.product}
-                      </div>
-                    ) : null}
-                  </div>
                 </div>
               </div>
             </div>
@@ -641,10 +741,14 @@ function renderContentBlocks(blocks: any[], brandKey: string) {
 
 export default async function ProductsBrandPathPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ brand: string; path?: string[] }> | { brand: string; path?: string[] };
+  searchParams?: Promise<{ open?: string }> | { open?: string };
 }) {
   const resolved = await Promise.resolve(params as any);
+  const sp = await Promise.resolve(searchParams as any);
+  const openSlug = (sp?.open ?? "").toString().trim();
   const brandKey = (resolved?.brand ?? "").toLowerCase();
   const path = (resolved?.path ?? []) as string[];
 
@@ -697,7 +801,6 @@ export default async function ProductsBrandPathPage({
   const pathStr = path.join("/");
   const category = await sanityClient.fetch(CATEGORY_BY_PATHSTR_QUERY, { brandKey, pathStr });
 
-  // 문서가 없더라도(virtual) 트리 존재하면 허용
   if (!category?._id && (!activeRootTree || activeRootTree.length === 0)) notFound();
 
   const breadcrumbItems = [
@@ -711,7 +814,19 @@ export default async function ProductsBrandPathPage({
   ];
 
   const pageTitle = stripBrandSuffix(category?.title || humanizeSegment(path[path.length - 1] || ""));
-  const blocks = Array.isArray(category?.contentBlocks) ? category.contentBlocks : [];
+  const blocks = Array.isArray(category?.contentBlocks)
+    ? category.contentBlocks
+    : Array.isArray(category?.blocks)
+      ? category.blocks
+      : [];
+
+  const productsInCategory: Array<{
+    _id: string;
+    title: string;
+    sku?: string;
+    slug: string;
+    thumb?: string;
+  }> = await sanityClient.fetch(PRODUCTS_BY_CATEGORYPATH_QUERY, { brandKey, pathStr });
 
   return (
     <div>
@@ -730,6 +845,36 @@ export default async function ProductsBrandPathPage({
           <main className="lg:col-span-8">
             <h2 className="text-3xl font-semibold tracking-tight text-neutral-900">{pageTitle}</h2>
 
+            {productsInCategory.length ? (
+              <div className="mt-6">
+                <div className="text-sm font-semibold text-neutral-900">Products</div>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  {productsInCategory.map((p) => {
+                    const isOpen = openSlug && p.slug === openSlug;
+                    return (
+                      <Link
+                        key={p._id}
+                        href={`/products/${brandKey}/item/${encodeURIComponent(p.slug)}`}
+                        className={`group flex items-center gap-3 rounded-2xl border bg-white p-3 hover:shadow-sm ${
+                          isOpen ? "border-orange-400 ring-1 ring-orange-200" : "border-slate-200"
+                        }`}
+                      >
+                        <div className="relative h-12 w-12 overflow-hidden rounded-xl bg-slate-50">
+                          {p.thumb ? <Image src={p.thumb} alt="" fill className="object-contain" sizes="48px" /> : null}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-semibold text-neutral-900 group-hover:underline">
+                            {stripBrandSuffix(p.title)}
+                          </div>
+                          {p.sku ? <div className="mt-0.5 text-xs text-neutral-600">Cat.No: {p.sku}</div> : null}
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+
             {blocks.length ? (
               renderContentBlocks(blocks, brandKey)
             ) : (
@@ -738,10 +883,7 @@ export default async function ProductsBrandPathPage({
                 {category?.sourceUrl ? (
                   <>
                     {" "}
-                    <a
-                      className="font-semibold underline underline-offset-4 text-orange-700"
-                      href={legacyHref(brandKey, category.sourceUrl)}
-                    >
+                    <a className="font-semibold underline underline-offset-4 text-orange-700" href={legacyHref(brandKey, category.sourceUrl)}>
                       원문 보기
                     </a>
                   </>

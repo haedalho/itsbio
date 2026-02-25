@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import ProductsMegaMenu from "./ProductsMegaMenu";
+import SearchBox from "./SearchBox";
 
 function useClickOutside<T extends HTMLElement>(onOutside: () => void) {
   const ref = useRef<T | null>(null);
@@ -86,10 +87,7 @@ export default function Header() {
 
         {/* Right */}
         <div className="ml-auto flex items-center gap-3">
-          <input
-            className="hidden h-11 w-80 rounded-full border bg-white px-5 text-sm md:block"
-            placeholder="Search by Product Name, Catalog No..."
-          />
+          <SearchBox className="hidden w-80 md:block" />
           <Link
             href="/quote"
             className="rounded-full bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-700 md:px-5"
@@ -128,9 +126,11 @@ export default function Header() {
             </div>
 
             <div className="p-4">
-              <input
-                className="h-11 w-full rounded-xl border bg-white px-4 text-sm"
+              <SearchBox
+                className="w-full"
+                // 모바일은 radius만 살짝 다르게
                 placeholder="Search by Product Name, Catalog No..."
+                onSubmitted={() => setMobileOpen(false)}
               />
 
               <nav className="mt-4 space-y-1">

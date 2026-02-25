@@ -9,6 +9,16 @@ const nextConfig: NextConfig = {
         hostname: "cdn.sanity.io",
         pathname: "/images/**",
       },
+      {
+        protocol: "https",
+        hostname: "www.abmgood.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "abmgood.com",
+        pathname: "/**",
+      },
     ],
   },
 };

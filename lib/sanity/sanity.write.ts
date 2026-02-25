@@ -1,9 +1,13 @@
+// lib/sanity/sanity.write.ts
+// Server-only Sanity client for on-demand import/enrich (requires SANITY_WRITE_TOKEN).
+import "server-only";
+
 import { createClient } from "next-sanity";
 
-export const sanityClient = createClient({
+export const sanityWriteClient = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
   apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION!,
-  // ✅ 디버깅/즉시 반영을 위해 CDN 비활성 (patch 직후 stale 방지)
+  token: process.env.SANITY_WRITE_TOKEN,
   useCdn: false,
 });

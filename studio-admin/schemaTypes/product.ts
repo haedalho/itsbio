@@ -62,26 +62,58 @@ export default defineType({
     fieldSourceUrl(),
     fieldLegacyHtml(),
 
-    // ✅ 2단계(enrich) 결과 저장
+    // ✅ 2단계(enrich) 결과 저장 (요구사항: Tabs 5개만)
     defineField({
-      name: "specsHtml",
-      title: "Specifications HTML",
+      name: "datasheetHtml",
+      title: "Datasheet HTML",
       type: "text",
       rows: 16,
-      description: "ABM 상세에서 스펙/테이블만 뽑아서 저장 (Price 제거)",
     }),
-
     defineField({
-      name: "extraHtml",
-      title: "Extra / Description HTML",
+      name: "documentsHtml",
+      title: "Documents HTML",
       type: "text",
-      rows: 24,
-      description: "ABM 상세에서 설명/본문 영역 저장 (메일 치환 포함)",
+      rows: 16,
+    }),
+    defineField({
+      name: "faqsHtml",
+      title: "FAQs HTML",
+      type: "text",
+      rows: 16,
+    }),
+    defineField({
+      name: "referencesHtml",
+      title: "References HTML",
+      type: "text",
+      rows: 16,
+    }),
+    defineField({
+      name: "reviewsHtml",
+      title: "Reviews HTML",
+      type: "text",
+      rows: 16,
     }),
 
+    // ✅ 외부 이미지 URL(가볍게) - 로고/태극기 등은 파서에서 제외
+    defineField({
+      name: "imageUrls",
+      title: "Image URLs",
+      type: "array",
+      of: [{ type: "url" }],
+    }),
+
+    // ✅ 카테고리 경로(브레드크럼에서 추출)
+    defineField({
+      name: "categoryPathTitles",
+      title: "Category Path Titles",
+      type: "array",
+      of: [{ type: "string" }],
+    }),
+
+    // (기존 Sanity image 업로드 방식은 유지 가능하지만, ABM 온디맨드에서는 imageUrls 권장)
     defineField({
       name: "images",
-      title: "Images",
+      title: "Images (Uploaded)",
       type: "array",
       of: [
         defineField({
