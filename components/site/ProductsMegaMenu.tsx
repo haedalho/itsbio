@@ -161,7 +161,7 @@ const MENU: MenuItem[] = [
   },
 
   {
-    label: "KentScientifics",
+    label: "Kent",
     href: "http://itsbio.co.kr/?page_id=347",
     children: [
       { label: "Anesthesia", href: "http://itsbio.co.kr/?page_id=2875" },

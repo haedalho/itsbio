@@ -1,6 +1,13 @@
 // studio-admin/schemaTypes/category.ts
 import { defineType, defineField } from "sanity";
-import { fieldTitle, fieldOrder, fieldThemeKey, fieldSourceUrl, fieldLegacyHtml, fieldContentBlocks } from "./common";
+import {
+  fieldTitle,
+  fieldOrder,
+  fieldThemeKey,
+  fieldSourceUrl,
+  fieldLegacyHtml,
+  fieldContentBlocks,
+} from "./common";
 
 export default defineType({
   name: "category",
@@ -8,6 +15,14 @@ export default defineType({
   type: "document",
   fields: [
     fieldTitle(),
+
+    defineField({
+      name: "isActive",
+      title: "Active (Sidebar/Routes)",
+      type: "boolean",
+      initialValue: true,
+      description: "ABM All Products 기준으로 없으면 false 처리(숨김).",
+    }),
 
     defineField({
       name: "brand",
@@ -38,7 +53,6 @@ export default defineType({
     fieldSourceUrl(),
     fieldLegacyHtml(),
 
-    // ✅ 본문은 무조건 이거 하나로 통합
     fieldContentBlocks(false),
 
     defineField({ name: "summary", title: "요약", type: "text", rows: 3 }),
@@ -48,10 +62,13 @@ export default defineType({
   ],
 
   preview: {
-    select: { title: "title", path: "path", brandTitle: "brand.title" },
-    prepare({ title, path, brandTitle }) {
+    select: { title: "title", path: "path", brandTitle: "brand.title", isActive: "isActive" },
+    prepare({ title, path, brandTitle, isActive }) {
       const subtitle = Array.isArray(path) && path.length ? path.join(" / ") : "";
-      return { title: title || "(untitled)", subtitle: subtitle || brandTitle || "" };
+      return {
+        title: `${title || "(untitled)"}${isActive === false ? " (inactive)" : ""}`,
+        subtitle: subtitle || brandTitle || "",
+      };
     },
   },
 });

@@ -1,7 +1,7 @@
 // app/products/[brand]/[[...path]]/page.tsx
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
 import { sanityClient } from "@/lib/sanity/sanity.client";
@@ -17,6 +17,9 @@ const THEME = {
   accentBorder: "border-orange-200",
   accentSoftBg: "bg-orange-50",
 };
+
+// ✅ ABM는 루트 3갈래만 루트로 취급 (루트 오염 방지)
+const ABM_ROOTS = ["general-materials", "cellular-materials", "genetic-materials"] as const;
 
 function buildHref(brandKey: string, path: string[]) {
   return path.length ? `/products/${brandKey}/${path.join("/")}` : `/products/${brandKey}`;
@@ -48,6 +51,20 @@ function legacyHref(brandKey: string, url: string) {
   return `/products/${brandKey}/legacy?u=${encodeURIComponent(url)}`;
 }
 
+function slugFromHtmlUrl(url: string) {
+  try {
+    const u = new URL(url);
+    const last = (u.pathname.split("/").pop() || "").trim();
+    return last.replace(/\.html$/i, "");
+  } catch {
+    return "";
+  }
+}
+
+function normSeg(s: string) {
+  return (s || "").trim().toLowerCase();
+}
+
 /** -------------------- GROQ -------------------- */
 
 const BRAND_QUERY = `
@@ -59,6 +76,7 @@ const BRAND_QUERY = `
 const ROOT_CATEGORIES_QUERY = `
 *[
   _type == "category"
+  && (!defined(isActive) || isActive == true)
   && (
     brandSlug == $brandKey
     || themeKey == $brandKey
@@ -66,13 +84,15 @@ const ROOT_CATEGORIES_QUERY = `
     || brand->slug.current == $brandKey
   )
   && count(path) == 1
+  && ($isAbm == false || path[0] in $abmRoots)
 ]
-| order(order asc, title asc) { _id, title, path, order }
+| order(order asc, title asc) { _id, title, path, order, sourceUrl }
 `;
 
 const CATEGORY_BY_PATHSTR_QUERY = `
 *[
   _type == "category"
+  && (!defined(isActive) || isActive == true)
   && (
     brandSlug == $brandKey
     || themeKey == $brandKey
@@ -80,6 +100,7 @@ const CATEGORY_BY_PATHSTR_QUERY = `
     || brand->slug.current == $brandKey
   )
   && array::join(path, "/") == $pathStr
+  && ($isAbm == false || path[0] in $abmRoots)
 ][0]{
   _id,
   title,
@@ -128,6 +149,7 @@ const PRODUCTS_BY_CATEGORYPATH_QUERY = `
 const DESCENDANTS_BY_PREFIX_QUERY = `
 *[
   _type == "category"
+  && (!defined(isActive) || isActive == true)
   && (
     brandSlug == $brandKey
     || themeKey == $brandKey
@@ -136,11 +158,12 @@ const DESCENDANTS_BY_PREFIX_QUERY = `
   )
   && count(path) > $depth
   && array::join(path[0...$depth], "/") == $prefix
+  && ($isAbm == false || path[0] in $abmRoots)
 ]
-| order(order asc, title asc) { _id, title, path, order }
+| order(order asc, title asc) { _id, title, path, order, sourceUrl }
 `;
 
-type CatLite = { _id: string; title: string; path: string[]; order?: number };
+type CatLite = { _id: string; title: string; path: string[]; order?: number; sourceUrl?: string };
 
 async function fetchDescendants(brandKey: string, rootPath: string[]) {
   if (!rootPath.length) return [] as CatLite[];
@@ -150,6 +173,8 @@ async function fetchDescendants(brandKey: string, rootPath: string[]) {
     brandKey,
     depth,
     prefix,
+    isAbm: brandKey === "abm",
+    abmRoots: ABM_ROOTS,
   });
   return descendants;
 }
@@ -162,6 +187,7 @@ type TreeNode = {
   title: string;
   path: string[];
   order?: number;
+  sourceUrl?: string;
   isVirtual?: boolean;
   children: TreeNode[];
 };
@@ -185,6 +211,7 @@ function buildTreeFromDescendants(rootPath: string[], descendants: CatLite[]) {
         title: meta?.title || humanizeSegment(seg),
         path,
         order: meta?.order,
+        sourceUrl: (meta as any)?.sourceUrl,
         isVirtual: !meta?._id,
         children: [],
       });
@@ -195,6 +222,7 @@ function buildTreeFromDescendants(rootPath: string[], descendants: CatLite[]) {
         _id: meta._id,
         title: meta.title || cur.title,
         order: typeof meta.order === "number" ? meta.order : cur.order,
+        sourceUrl: (meta as any)?.sourceUrl || cur.sourceUrl,
         isVirtual: false,
       });
     }
@@ -352,6 +380,19 @@ function SideNavTree({
   const LINE_LEFT = "left-[18px]";
   const DOT_LEFT = "left-[18px]";
   const ARROW_LEFT = "left-[28px]";
+
+  function nodeHref(n: { path: string[]; sourceUrl?: string }) {
+    if (brandKey !== "abm") return buildHref(brandKey, n.path);
+
+    const lastSeg = normSeg(n.path[n.path.length - 1] || "");
+    const srcSeg = normSeg(slugFromHtmlUrl(n.sourceUrl || ""));
+    // ✅ sourceUrl slug가 path 마지막 세그먼트와 다르면 "제품 바로가기"로 판단
+    if (srcSeg && lastSeg && srcSeg !== lastSeg) {
+      return `/products/${brandKey}/item/${encodeURIComponent(slugFromHtmlUrl(n.sourceUrl || ""))}`;
+    }
+    return buildHref(brandKey, n.path);
+  }
+
   const TEXT_OFFSET = "ml-[34px]";
 
   function Children({ nodes }: { nodes: TreeNode[] }) {
@@ -367,7 +408,7 @@ function SideNavTree({
             const isActive = activePathStr === p;
 
             return (
-              <Link key={n.key} href={buildHref(brandKey, n.path)} className="group/item relative block">
+              <Link key={n.key} href={nodeHref(n)} className="group/item relative block">
                 {/* dot: 기본 숨김, active/hover(item)만 표시 */}
                 <span
                   aria-hidden
@@ -436,7 +477,7 @@ function SideNavTree({
       return (
         <div className="group/section">
           <Link
-            href={buildHref(brandKey, node.path)}
+            href={nodeHref(node)}
             className={[
               "flex items-center justify-between rounded-xl px-3 py-2 text-sm transition",
               isOpen ? "text-orange-600 font-semibold" : "text-neutral-800 hover:bg-neutral-50",
@@ -454,7 +495,6 @@ function SideNavTree({
             </span>
           </Link>
 
-          {/* 열림: 항상 / 닫힘: 섹션 hover에서만 */}
           <div className={isOpen ? "mt-1 block" : "mt-1 hidden group-hover/section:block"}>
             <Children nodes={node.children} />
           </div>
@@ -464,7 +504,7 @@ function SideNavTree({
 
     return (
       <Link
-        href={buildHref(brandKey, node.path)}
+        href={nodeHref(node)}
         className={[
           "flex items-center justify-between rounded-xl px-3 py-2 text-sm transition",
           isActive ? "bg-orange-100 text-orange-700 font-semibold" : "text-neutral-800 hover:bg-neutral-50",
@@ -481,9 +521,7 @@ function SideNavTree({
   return (
     <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
       <div className="border-b border-neutral-200 px-5 py-4">
-        <div className="text-base font-semibold text-orange-600">
-          {stripBrandSuffix(activeRootTitle)}
-        </div>
+        <div className="text-base font-semibold text-orange-600">{stripBrandSuffix(activeRootTitle)}</div>
       </div>
 
       <div className="p-2">
@@ -631,7 +669,9 @@ function ResourceSection({
                 <div className="text-base font-semibold text-neutral-900 leading-snug line-clamp-2">
                   {stripBrandSuffix(x.title)}
                 </div>
-                <div className="mt-2 text-sm italic text-neutral-600 line-clamp-1">{x.subtitle || "Learning Resources"}</div>
+                <div className="mt-2 text-sm italic text-neutral-600 line-clamp-1">
+                  {x.subtitle || "Learning Resources"}
+                </div>
               </div>
             </div>
           </Link>
@@ -757,7 +797,11 @@ export default async function ProductsBrandPathPage({
   const brand = await sanityClient.fetch(BRAND_QUERY, { brandKey });
   if (!brand?._id) notFound();
 
-  const roots: CatLite[] = await sanityClient.fetch(ROOT_CATEGORIES_QUERY, { brandKey });
+  const roots: CatLite[] = await sanityClient.fetch(ROOT_CATEGORIES_QUERY, {
+    brandKey,
+    isAbm: brandKey === "abm",
+    abmRoots: ABM_ROOTS,
+  });
 
   const activeRoot = path[0] || "";
   let activeRootTree: TreeNode[] = [];
@@ -799,7 +843,23 @@ export default async function ProductsBrandPathPage({
   }
 
   const pathStr = path.join("/");
-  const category = await sanityClient.fetch(CATEGORY_BY_PATHSTR_QUERY, { brandKey, pathStr });
+  const category = await sanityClient.fetch(CATEGORY_BY_PATHSTR_QUERY, {
+    brandKey,
+    pathStr,
+    isAbm: brandKey === "abm",
+    abmRoots: ABM_ROOTS,
+  });
+
+  // ✅ ABM: 특정 "카테고리처럼 보이는 메뉴"가 실제로는 제품 페이지로 바로 연결되는 경우가 있음
+  // 예) /general-materials/gel-documentation/gel-imager -> https://www.abmgood.com/SafeViewER-Imager.html
+  // 이런 케이스는 sourceUrl의 slug와 path 마지막 세그먼트가 다르므로 item 페이지로 이동
+  if (brandKey === "abm" && category?.sourceUrl) {
+    const lastSeg = normSeg(path[path.length - 1] || "");
+    const srcSeg = normSeg(slugFromHtmlUrl(String(category.sourceUrl)));
+    if (srcSeg && lastSeg && srcSeg !== lastSeg) {
+      redirect(`/products/${brandKey}/item/${encodeURIComponent(slugFromHtmlUrl(String(category.sourceUrl)))}`);
+    }
+  }
 
   if (!category?._id && (!activeRootTree || activeRootTree.length === 0)) notFound();
 
@@ -878,12 +938,17 @@ export default async function ProductsBrandPathPage({
             {blocks.length ? (
               renderContentBlocks(blocks, brandKey)
             ) : (
-              <div className={`mt-10 rounded-2xl border ${THEME.accentBorder} ${THEME.accentSoftBg} p-6 text-sm text-neutral-800`}>
+              <div
+                className={`mt-10 rounded-2xl border ${THEME.accentBorder} ${THEME.accentSoftBg} p-6 text-sm text-neutral-800`}
+              >
                 본문 데이터가 아직 없습니다.
                 {category?.sourceUrl ? (
                   <>
                     {" "}
-                    <a className="font-semibold underline underline-offset-4 text-orange-700" href={legacyHref(brandKey, category.sourceUrl)}>
+                    <a
+                      className="font-semibold underline underline-offset-4 text-orange-700"
+                      href={legacyHref(brandKey, category.sourceUrl)}
+                    >
                       원문 보기
                     </a>
                   </>
