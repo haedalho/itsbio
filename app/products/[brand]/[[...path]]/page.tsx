@@ -1,7 +1,7 @@
 // app/products/[brand]/[[...path]]/page.tsx
 import Image from "next/image";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
 import { sanityClient } from "@/lib/sanity/sanity.client";
@@ -51,133 +51,118 @@ function legacyHref(brandKey: string, url: string) {
   return `/products/${brandKey}/legacy?u=${encodeURIComponent(url)}`;
 }
 
-function slugFromHtmlUrl(url: string) {
-  try {
-    const u = new URL(url);
-    const last = (u.pathname.split("/").pop() || "").trim();
-    return last.replace(/\.html$/i, "");
-  } catch {
-    return "";
-  }
-}
+/** -------------------- GROQ (✅ 1회 호출, category만 join으로 복구) -------------------- */
 
-function normSeg(s: string) {
-  return (s || "").trim().toLowerCase();
-}
-
-/** -------------------- GROQ -------------------- */
-
-const BRAND_QUERY = `
-*[_type == "brand" && (themeKey == $brandKey || slug.current == $brandKey)][0]{
-  _id, title, themeKey, "slug": slug.current
-}
-`;
-
-const ROOT_CATEGORIES_QUERY = `
-*[
-  _type == "category"
-  && (!defined(isActive) || isActive == true)
-  && (
-    brandSlug == $brandKey
-    || themeKey == $brandKey
-    || brand->themeKey == $brandKey
-    || brand->slug.current == $brandKey
-  )
-  && count(path) == 1
-  && ($isAbm == false || path[0] in $abmRoots)
-]
-| order(order asc, title asc) { _id, title, path, order, sourceUrl }
-`;
-
-const CATEGORY_BY_PATHSTR_QUERY = `
-*[
-  _type == "category"
-  && (!defined(isActive) || isActive == true)
-  && (
-    brandSlug == $brandKey
-    || themeKey == $brandKey
-    || brand->themeKey == $brandKey
-    || brand->slug.current == $brandKey
-  )
-  && array::join(path, "/") == $pathStr
-  && ($isAbm == false || path[0] in $abmRoots)
-][0]{
-  _id,
-  title,
-  path,
-  sourceUrl,
-
-  contentBlocks[] {
-    _key,
-    _type,
-    title,
-    html,
-    items[]
+const PAGE_QUERY = `
+{
+  "brand": *[
+    _type == "brand"
+    && (themeKey == $brandKey || slug.current == $brandKey)
+  ][0]{
+    _id, title, themeKey, "slug": slug.current
   },
-  blocks[] {
-    _key,
-    _type,
-    title,
-    html,
-    items[]
-  }
-}
-`;
 
-const PRODUCTS_BY_CATEGORYPATH_QUERY = `
-*[
-  _type=="product"
-  && isActive==true
-  && (
-    brandSlug == $brandKey
-    || brand->slug.current == $brandKey
-    || brand->themeKey == $brandKey
-  )
-  && array::join(categoryPath, "/") == $pathStr
-]
-| order(title asc) {
-  _id,
-  title,
-  sku,
-  "slug": slug.current,
-  "thumb": imageUrls[0],
-  sourceUrl,
-  enrichedAt
-}
-`;
+  "roots": *[
+    _type == "category"
+    && (!defined(isActive) || isActive == true)
+    && (
+      brandSlug == $brandKey
+      || themeKey == $brandKey
+      || brand->themeKey == $brandKey
+      || brand->slug.current == $brandKey
+    )
+    && count(path) == 1
+    && ($isAbm == false || path[0] in $abmRoots)
+  ]
+  | order(order asc, title asc) {
+    _id, title, path, order, sourceUrl
+  },
 
-const DESCENDANTS_BY_PREFIX_QUERY = `
-*[
-  _type == "category"
-  && (!defined(isActive) || isActive == true)
-  && (
-    brandSlug == $brandKey
-    || themeKey == $brandKey
-    || brand->themeKey == $brandKey
-    || brand->slug.current == $brandKey
+  "descendants": select(
+    $hasActiveRoot => *[
+      _type == "category"
+      && (!defined(isActive) || isActive == true)
+      && (
+        brandSlug == $brandKey
+        || themeKey == $brandKey
+        || brand->themeKey == $brandKey
+        || brand->slug.current == $brandKey
+      )
+      && count(path) > 1
+      && path[0] == $activeRoot
+      && ($isAbm == false || path[0] in $abmRoots)
+    ]
+    | order(order asc, title asc) {
+      _id, title, path, order, sourceUrl
+    },
+    []
+  ),
+
+  "category": select(
+    $hasPath => *[
+      _type == "category"
+      && (!defined(isActive) || isActive == true)
+      && (
+        brandSlug == $brandKey
+        || themeKey == $brandKey
+        || brand->themeKey == $brandKey
+        || brand->slug.current == $brandKey
+      )
+      // ✅ 본문 누락 원인 해결: 배열 완전일치 대신 join 비교로 복구
+      && array::join(path, "/") == $pathStr
+      && ($isAbm == false || path[0] in $abmRoots)
+    ][0]{
+      _id,
+      title,
+      path,
+      sourceUrl,
+
+      contentBlocks[] {
+        _key,
+        _type,
+        title,
+        html,
+        items[]
+      },
+      blocks[] {
+        _key,
+        _type,
+        title,
+        html,
+        items[]
+      }
+    },
+    null
+  ),
+
+  "products": select(
+    $hasPath => *[
+      _type=="product"
+      && isActive==true
+      && (
+        brandSlug == $brandKey
+        || brand->slug.current == $brandKey
+        || brand->themeKey == $brandKey
+      )
+      // ✅ 제품 쿼리는 array join 대신 배열 비교 유지 (계산식 제거로 성능)
+      && defined(categoryPath)
+      && categoryPath == $pathArr
+    ]
+    | order(title asc) {
+      _id,
+      title,
+      sku,
+      "slug": slug.current,
+      "thumb": imageUrls[0],
+      sourceUrl,
+      enrichedAt
+    },
+    []
   )
-  && count(path) > $depth
-  && array::join(path[0...$depth], "/") == $prefix
-  && ($isAbm == false || path[0] in $abmRoots)
-]
-| order(order asc, title asc) { _id, title, path, order, sourceUrl }
+}
 `;
 
 type CatLite = { _id: string; title: string; path: string[]; order?: number; sourceUrl?: string };
-
-async function fetchDescendants(brandKey: string, rootPath: string[]) {
-  if (!rootPath.length) return [] as CatLite[];
-  const depth = rootPath.length;
-  const prefix = rootPath.join("/");
-  const descendants: CatLite[] = await sanityClient.fetch(DESCENDANTS_BY_PREFIX_QUERY, {
-    brandKey,
-    depth,
-    prefix,
-    isAbm: brandKey === "abm",
-    abmRoots: ABM_ROOTS,
-  });
-  return descendants;
-}
 
 /** -------------------- Tree Builder -------------------- */
 
@@ -349,13 +334,6 @@ function HeroBanner({ brandTitle }: { brandTitle: string }) {
   );
 }
 
-/**
- * ✅ 핵심 수정:
- * - 섹션 hover(group-hover) 때문에 자식 마커가 "전부" 뜨던 문제 해결
- *   => group/section, group/item 네임드 그룹으로 분리
- * - 기본: active 1개만 도트 표시
- * - hover: 해당 item만 도트/꺾쇠 표시
- */
 function SideNavTree({
   brandKey,
   roots,
@@ -376,20 +354,12 @@ function SideNavTree({
 
   const isPrefix = (full: string, prefix: string) => full === prefix || full.startsWith(prefix + "/");
 
-  // 레퍼런스 좌표(필요하면 여기만 1~2px 튜닝)
   const LINE_LEFT = "left-[18px]";
   const DOT_LEFT = "left-[18px]";
   const ARROW_LEFT = "left-[28px]";
 
-  function nodeHref(n: { path: string[]; sourceUrl?: string }) {
-    if (brandKey !== "abm") return buildHref(brandKey, n.path);
-
-    const lastSeg = normSeg(n.path[n.path.length - 1] || "");
-    const srcSeg = normSeg(slugFromHtmlUrl(n.sourceUrl || ""));
-    // ✅ sourceUrl slug가 path 마지막 세그먼트와 다르면 "제품 바로가기"로 판단
-    if (srcSeg && lastSeg && srcSeg !== lastSeg) {
-      return `/products/${brandKey}/item/${encodeURIComponent(slugFromHtmlUrl(n.sourceUrl || ""))}`;
-    }
+  // ✅ FIX: ABM도 카테고리 트리는 항상 카테고리 경로로 이동 (sourceUrl mismatch로 /item 보내지 않음)
+  function nodeHref(n: { path: string[] }) {
     return buildHref(brandKey, n.path);
   }
 
@@ -401,7 +371,6 @@ function SideNavTree({
     return (
       <div className="relative">
         <div className={`pointer-events-none absolute ${LINE_LEFT} top-0 h-full border-l border-dashed border-neutral-400`} />
-
         <div className="space-y-1">
           {nodes.map((n) => {
             const p = n.path.join("/");
@@ -409,7 +378,6 @@ function SideNavTree({
 
             return (
               <Link key={n.key} href={nodeHref(n)} className="group/item relative block">
-                {/* dot: 기본 숨김, active/hover(item)만 표시 */}
                 <span
                   aria-hidden
                   className={[
@@ -420,7 +388,6 @@ function SideNavTree({
                     "group-hover/item:opacity-100 group-hover/item:scale-110",
                   ].join(" ")}
                 />
-                {/* ring */}
                 <span
                   aria-hidden
                   className={[
@@ -431,7 +398,6 @@ function SideNavTree({
                     "group-hover/item:opacity-100 group-hover/item:border-orange-200",
                   ].join(" ")}
                 />
-                {/* here indicator: hover(item)에서만 */}
                 <span
                   aria-hidden
                   className={[
@@ -445,7 +411,6 @@ function SideNavTree({
                   ›
                 </span>
 
-                {/* text area */}
                 <span
                   className={[
                     "relative block rounded-xl px-3 py-2 text-sm leading-6 transition",
@@ -788,26 +753,46 @@ export default async function ProductsBrandPathPage({
 }) {
   const resolved = await Promise.resolve(params as any);
   const sp = await Promise.resolve(searchParams as any);
+
   const openSlug = (sp?.open ?? "").toString().trim();
   const brandKey = (resolved?.brand ?? "").toLowerCase();
   const path = (resolved?.path ?? []) as string[];
 
   if (!brandKey) notFound();
 
-  const brand = await sanityClient.fetch(BRAND_QUERY, { brandKey });
-  if (!brand?._id) notFound();
+  const activeRoot = path[0] || "";
+  const hasPath = path.length > 0;
+  const hasActiveRoot = !!activeRoot;
+  const pathStr = path.join("/");
 
-  const roots: CatLite[] = await sanityClient.fetch(ROOT_CATEGORIES_QUERY, {
+  // ✅ 1회 fetch로 모든 데이터 가져오기
+  const data = await sanityClient.fetch(PAGE_QUERY, {
     brandKey,
     isAbm: brandKey === "abm",
     abmRoots: ABM_ROOTS,
+    hasPath,
+    hasActiveRoot,
+    activeRoot,
+    pathArr: path,
+    pathStr,
   });
 
-  const activeRoot = path[0] || "";
-  let activeRootTree: TreeNode[] = [];
+  const brand = data?.brand;
+  if (!brand?._id) notFound();
 
+  const roots: CatLite[] = Array.isArray(data?.roots) ? data.roots : [];
+  const descendants: CatLite[] = Array.isArray(data?.descendants) ? data.descendants : [];
+  const category = data?.category || null;
+  const productsInCategory: Array<{
+    _id: string;
+    title: string;
+    sku?: string;
+    slug: string;
+    thumb?: string;
+  }> = Array.isArray(data?.products) ? data.products : [];
+
+  let activeRootTree: TreeNode[] = [];
   if (activeRoot) {
-    const descendants = await fetchDescendants(brandKey, [activeRoot]);
     activeRootTree = buildTreeFromDescendants([activeRoot], descendants);
   }
 
@@ -842,24 +827,8 @@ export default async function ProductsBrandPathPage({
     );
   }
 
-  const pathStr = path.join("/");
-  const category = await sanityClient.fetch(CATEGORY_BY_PATHSTR_QUERY, {
-    brandKey,
-    pathStr,
-    isAbm: brandKey === "abm",
-    abmRoots: ABM_ROOTS,
-  });
-
-  // ✅ ABM: 특정 "카테고리처럼 보이는 메뉴"가 실제로는 제품 페이지로 바로 연결되는 경우가 있음
-  // 예) /general-materials/gel-documentation/gel-imager -> https://www.abmgood.com/SafeViewER-Imager.html
-  // 이런 케이스는 sourceUrl의 slug와 path 마지막 세그먼트가 다르므로 item 페이지로 이동
-  if (brandKey === "abm" && category?.sourceUrl) {
-    const lastSeg = normSeg(path[path.length - 1] || "");
-    const srcSeg = normSeg(slugFromHtmlUrl(String(category.sourceUrl)));
-    if (srcSeg && lastSeg && srcSeg !== lastSeg) {
-      redirect(`/products/${brandKey}/item/${encodeURIComponent(slugFromHtmlUrl(String(category.sourceUrl)))}`);
-    }
-  }
+  // ✅ FIX: ABM에서 sourceUrl slug != path 라는 이유로 /item 으로 보내는 로직 제거
+  // (카테고리/리소스 페이지가 제품 페이지로 오판되어 item/page.tsx로 뜨는 문제 방지)
 
   if (!category?._id && (!activeRootTree || activeRootTree.length === 0)) notFound();
 
@@ -879,14 +848,6 @@ export default async function ProductsBrandPathPage({
     : Array.isArray(category?.blocks)
       ? category.blocks
       : [];
-
-  const productsInCategory: Array<{
-    _id: string;
-    title: string;
-    sku?: string;
-    slug: string;
-    thumb?: string;
-  }> = await sanityClient.fetch(PRODUCTS_BY_CATEGORYPATH_QUERY, { brandKey, pathStr });
 
   return (
     <div>

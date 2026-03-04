@@ -23,6 +23,9 @@ const THEME = {
   accentSoftBg: "bg-orange-50",
 };
 
+// ✅ ABM 루트 3갈래만 (카테고리 페이지와 동일)
+const ABM_ROOTS = ["general-materials", "cellular-materials", "genetic-materials"] as const;
+
 function buildHref(brandKey: string, path: string[]) {
   return path.length ? `/products/${brandKey}/${path.join("/")}` : `/products/${brandKey}`;
 }
@@ -109,59 +112,88 @@ function isGalleryNoiseUrl(u: string) {
   const s = (u || "").toLowerCase();
   if (!s) return true;
 
-  // ABM에서 자주 섞이는 노이즈 케이스들
   if (s.includes("request") && s.includes("sample")) return true;
   if (s.includes("request") && s.includes("quote")) return true;
   if (s.includes("intertek")) return true;
   if (s.includes("badge")) return true;
   if (s.includes("icon")) return true;
 
-  // flag/logo 계열(원본 갤러리에 들어가는 경우는 거의 없음)
   if (s.endsWith("/kr.png") || s.includes("/flag") || s.includes("flag-")) return true;
   if (s.includes("abm") && s.includes("logo")) return true;
 
-  // ABM 썸네일 특유 사이즈(로고/국기에서 자주 나옴)
   if (/-16x11\./.test(s)) return true;
   if (/-229x65\./.test(s)) return true;
 
   return false;
 }
 
-/** -------------------- GROQ -------------------- */
+/** -------------------- GROQ (✅ item도 1회 fetch로 묶기) -------------------- */
 
-const BRAND_QUERY = `
-*[_type == "brand" && (themeKey == $brandKey || slug.current == $brandKey)][0]{
-  _id, title, themeKey, "slug": slug.current
-}
-`;
+const ITEM_PAGE_QUERY = `
+{
+  "brand": *[_type == "brand" && (themeKey == $brandKey || slug.current == $brandKey)][0]{
+    _id, title, themeKey, "slug": slug.current
+  },
 
-const PRODUCT_QUERY = `
-*[_type=="product" && slug.current == $slug && (brand->slug.current==$brandKey || brand->themeKey==$brandKey)][0]{
-  _id,
-  title,
-  "slug": slug.current,
-  sku,
-  sourceUrl,
-  categoryPath,
-  categoryPathTitles,
+  "product": *[
+    _type=="product"
+    && slug.current == $slug
+    && (brand->slug.current==$brandKey || brand->themeKey==$brandKey)
+  ][0]{
+    _id,
+    title,
+    "slug": slug.current,
+    sku,
+    sourceUrl,
+    categoryPath,
+    categoryPathTitles,
 
-  specsHtml,
-  extraHtml,
-  legacyHtml,
+    specsHtml,
+    extraHtml,
+    legacyHtml,
 
-  datasheetHtml,
-  documentsHtml,
-  faqsHtml,
-  referencesHtml,
-  reviewsHtml,
+    datasheetHtml,
+    documentsHtml,
+    faqsHtml,
+    referencesHtml,
+    reviewsHtml,
 
-  docs[]{ title, label, url },
+    docs[]{ title, label, url },
 
-  imageUrls,
-  imageFiles,
-  images[]{ _key, asset->{ url } },
+    imageUrls,
+    imageFiles,
+    images[]{ _key, asset->{ url } },
 
-  enrichedAt
+    enrichedAt
+  },
+
+  "roots": *[
+    _type == "category"
+    && (
+      themeKey == $brandKey
+      || brand->themeKey == $brandKey
+      || brand->slug.current == $brandKey
+    )
+    && count(path) == 1
+    && ($isAbm == false || path[0] in $abmRoots)
+  ]
+  | order(order asc, title asc) { _id, title, path, order },
+
+  "descendants": select(
+    $hasActiveRoot => *[
+      _type == "category"
+      && (
+        themeKey == $brandKey
+        || brand->themeKey == $brandKey
+        || brand->slug.current == $brandKey
+      )
+      && count(path) > 1
+      && path[0] == $activeRoot
+      && ($isAbm == false || path[0] in $abmRoots)
+    ]
+    | order(order asc, title asc) { _id, title, path, order },
+    []
+  )
 }
 `;
 
@@ -187,48 +219,7 @@ async function fetchHtml(url: string) {
   return await res.text();
 }
 
-const ROOT_CATEGORIES_QUERY = `
-*[
-  _type == "category"
-  && (
-    themeKey == $brandKey
-    || brand->themeKey == $brandKey
-    || brand->slug.current == $brandKey
-  )
-  && count(path) == 1
-]
-| order(order asc, title asc) { _id, title, path, order }
-`;
-
-const DESCENDANTS_BY_PREFIX_QUERY = `
-*[
-  _type == "category"
-  && (
-    themeKey == $brandKey
-    || brand->themeKey == $brandKey
-    || brand->slug.current == $brandKey
-  )
-  && count(path) > $depth
-  && array::join(path[0...$depth], "/") == $prefix
-]
-| order(order asc, title asc) { _id, title, path, order }
-`;
-
 type CatLite = { _id: string; title: string; path: string[]; order?: number };
-
-async function fetchDescendants(client: any, brandKey: string, rootPath: string[]) {
-  if (!rootPath.length) return [] as CatLite[];
-  const depth = rootPath.length;
-  const prefix = rootPath.join("/");
-  const descendants: CatLite[] = await client.fetch(DESCENDANTS_BY_PREFIX_QUERY, {
-    brandKey,
-    depth,
-    prefix,
-  });
-  return descendants;
-}
-
-/** -------------------- Tree Builder -------------------- */
 
 type TreeNode = {
   key: string;
@@ -435,7 +426,6 @@ function normalizeImages(product: any, title: string) {
       .filter((x) => (seen.has(x.url) ? false : (seen.add(x.url), true)));
   }
 
-  // fallback only (imageUrls 없을 때만)
   const out: Array<{ url: string; alt: string }> = [];
   if (Array.isArray(product?.images)) {
     for (const im of product.images) {
@@ -470,102 +460,145 @@ function HeroBanner({ brandTitle }: { brandTitle: string }) {
   );
 }
 
+/** -------------------- enrich helper (✅ 기본은 렌더를 막지 않도록) -------------------- */
+
+async function enrichAbmProductIfNeeded(opts: {
+  product: any;
+  brandKey: string;
+}) {
+  const { product, brandKey } = opts;
+
+  if (brandKey !== "abm") return;
+  if (!process.env.SANITY_WRITE_TOKEN) return;
+  if (!product?._id) return;
+  if (!product?.sourceUrl) return;
+
+  const html = await fetchHtml(String(product.sourceUrl));
+  const parsed: any = parseAbmProductDetail(html, String(product.sourceUrl));
+
+  const patchSet: Record<string, any> = {
+    enrichedAt: new Date().toISOString(),
+  };
+
+  // ✅ 빈 값 overwrite 금지
+  if (parsed?.title) patchSet.title = parsed.title;
+  if (parsed?.sku) patchSet.sku = parsed.sku;
+
+  if (Array.isArray(parsed?.categoryPathSlugs) && parsed.categoryPathSlugs.length)
+    patchSet.categoryPath = parsed.categoryPathSlugs;
+  if (Array.isArray(parsed?.categoryPathTitles) && parsed.categoryPathTitles.length)
+    patchSet.categoryPathTitles = parsed.categoryPathTitles;
+
+  if (hasMeaningfulHtmlServer(parsed?.specsHtml)) patchSet.specsHtml = parsed.specsHtml;
+
+  if (hasMeaningfulHtmlServer(parsed?.datasheetHtml)) patchSet.datasheetHtml = parsed.datasheetHtml;
+  if (hasMeaningfulHtmlServer(parsed?.documentsHtml)) patchSet.documentsHtml = parsed.documentsHtml;
+  if (hasMeaningfulHtmlServer(parsed?.faqsHtml)) patchSet.faqsHtml = parsed.faqsHtml;
+  if (hasMeaningfulHtmlServer(parsed?.referencesHtml)) patchSet.referencesHtml = parsed.referencesHtml;
+  if (hasMeaningfulHtmlServer(parsed?.reviewsHtml)) patchSet.reviewsHtml = parsed.reviewsHtml;
+
+  if (Array.isArray(parsed?.imageUrls) && parsed.imageUrls.length) patchSet.imageUrls = parsed.imageUrls;
+
+  if (Array.isArray(parsed?.docs) && parsed.docs.length) {
+    patchSet.docs = parsed.docs
+      .map((d: any) => {
+        const url = typeof d?.url === "string" ? d.url.trim() : "";
+        const title = typeof d?.title === "string" ? d.title.trim() : "";
+        const label = typeof d?.label === "string" ? d.label.trim() : "";
+        if (!url) return null;
+        return { _type: "docItem", title: title || label || "Document", label: label || title || "Document", url };
+      })
+      .filter(Boolean);
+  }
+
+  await sanityWriteClient.patch(product._id).set(patchSet).commit();
+  return patchSet;
+}
+
 /** -------------------- Page -------------------- */
 
 export default async function ProductDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ brand: string; slug: string[] }> | { brand: string; slug: string[] };
+  searchParams?: Promise<{ enrich?: string }> | { enrich?: string };
 }) {
   const resolved = await Promise.resolve(params as any);
+  const sp = await Promise.resolve(searchParams as any);
+
   const brandKey = String(resolved?.brand ?? "").toLowerCase();
   const slugArr = (resolved?.slug ?? []) as string[];
   const slug = slugArr.join("/");
 
+  const forceEnrich = String(sp?.enrich ?? "") === "1";
+
   if (!brandKey || !slug) notFound();
 
-  // ✅ CDN stale 방지: 이 페이지에서는 항상 fresh로 fetch
+  // ✅ dev/배포 모두: 최신 읽기
   const client = (sanityClient as any).withConfig ? (sanityClient as any).withConfig({ useCdn: false }) : sanityClient;
 
-  const brand = await client.fetch(BRAND_QUERY, { brandKey });
+  // ✅ 1회 fetch로 data 가져오기
+  const bundle = await client.fetch(ITEM_PAGE_QUERY, {
+    brandKey,
+    slug,
+    isAbm: brandKey === "abm",
+    abmRoots: ABM_ROOTS,
+    hasActiveRoot: false, // 아래에서 계산 후 다시 쓰기
+    activeRoot: "",
+  });
+
+  const brand = bundle?.brand;
   if (!brand?._id) notFound();
 
-  let product = await client.fetch(PRODUCT_QUERY, { slug, brandKey });
+  let product = bundle?.product;
   if (!product?._id) notFound();
 
-  // ✅ ABM on-demand enrich가 "빈 탭(원래 없는 탭)" 때문에 매번 재실행되며
-  //    imageUrls/specsHtml을 덮어써서 깨지는 문제 방지:
-  //    -> "핵심 필드가 진짜 비었을 때만" enrich
-  const criticalMissing =
-    !Array.isArray(product?.imageUrls) ||
-    product.imageUrls.length === 0 ||
-    !hasMeaningfulHtmlServer(product?.specsHtml) ||
-    !Array.isArray(product?.categoryPath) ||
-    product.categoryPath.length === 0;
+  const categoryPath: string[] = Array.isArray(product?.categoryPath) ? product.categoryPath : [];
+  const activeRoot = categoryPath[0] || "";
 
-  const needsEnrich = brandKey === "abm" && !!product?.sourceUrl && (!product?.enrichedAt || criticalMissing);
+  // descendants는 activeRoot 있으면 다시 1번 더 fetch (bundle에서 activeRoot를 모른 채 호출했기 때문)
+  // -> 하지만 이 호출은 가볍고(카테고리 페이지처럼) enrich에 비하면 매우 작음
+  const data2 = await client.fetch(ITEM_PAGE_QUERY, {
+    brandKey,
+    slug,
+    isAbm: brandKey === "abm",
+    abmRoots: ABM_ROOTS,
+    hasActiveRoot: !!activeRoot,
+    activeRoot,
+  });
 
-  if (needsEnrich && process.env.SANITY_WRITE_TOKEN) {
-    try {
-      const html = await fetchHtml(String(product.sourceUrl));
-      const parsed: any = parseAbmProductDetail(html, String(product.sourceUrl));
+  const roots: CatLite[] = Array.isArray(data2?.roots) ? data2.roots : [];
+  const descendants: CatLite[] = Array.isArray(data2?.descendants) ? data2.descendants : [];
 
-      // ✅ 빈 값으로 overwrite 금지: meaningful할 때만 set
-      const patchSet: Record<string, any> = {
-        enrichedAt: new Date().toISOString(),
-      };
+  // ✅ 느림의 원인: enrich를 렌더에서 await 했던 것.
+  //    이제는 기본은 "비동기(렌더 안 막음)"로 돌림.
+  const needsEnrich = brandKey === "abm" && !!product?.sourceUrl && !product?.enrichedAt && !!process.env.SANITY_WRITE_TOKEN;
 
-      if (parsed?.title) patchSet.title = parsed.title;
-      if (parsed?.sku) patchSet.sku = parsed.sku;
-
-      if (Array.isArray(parsed?.categoryPathSlugs) && parsed.categoryPathSlugs.length)
-        patchSet.categoryPath = parsed.categoryPathSlugs;
-      if (Array.isArray(parsed?.categoryPathTitles) && parsed.categoryPathTitles.length)
-        patchSet.categoryPathTitles = parsed.categoryPathTitles;
-
-      if (hasMeaningfulHtmlServer(parsed?.specsHtml)) patchSet.specsHtml = parsed.specsHtml;
-
-      if (hasMeaningfulHtmlServer(parsed?.datasheetHtml)) patchSet.datasheetHtml = parsed.datasheetHtml;
-      if (hasMeaningfulHtmlServer(parsed?.documentsHtml)) patchSet.documentsHtml = parsed.documentsHtml;
-      if (hasMeaningfulHtmlServer(parsed?.faqsHtml)) patchSet.faqsHtml = parsed.faqsHtml;
-      if (hasMeaningfulHtmlServer(parsed?.referencesHtml)) patchSet.referencesHtml = parsed.referencesHtml;
-      if (hasMeaningfulHtmlServer(parsed?.reviewsHtml)) patchSet.reviewsHtml = parsed.reviewsHtml;
-
-      if (Array.isArray(parsed?.imageUrls) && parsed.imageUrls.length) patchSet.imageUrls = parsed.imageUrls;
-
-      // docs normalize (title/label 혼재)
-      if (Array.isArray(parsed?.docs) && parsed.docs.length) {
-        patchSet.docs = parsed.docs
-          .map((d: any) => {
-            const url = typeof d?.url === "string" ? d.url.trim() : "";
-            const title = typeof d?.title === "string" ? d.title.trim() : "";
-            const label = typeof d?.label === "string" ? d.label.trim() : "";
-            if (!url) return null;
-            return { _type: "docItem", title: title || label || "Document", label: label || title || "Document", url };
-          })
-          .filter(Boolean);
+  if (needsEnrich) {
+    if (forceEnrich) {
+      // ?enrich=1 일 때만 기다려서 즉시 반영
+      try {
+        const patchSet = await enrichAbmProductIfNeeded({ product, brandKey });
+        if (patchSet) product = { ...product, ...patchSet };
+      } catch (e) {
+        console.error("ABM enrich failed:", (e as any)?.message || e);
       }
-
-      await sanityWriteClient.patch(product._id).set(patchSet).commit();
-
-      // 렌더용 최신 반영
-      product = { ...product, ...patchSet };
-    } catch (e) {
-      console.error("ABM enrich failed:", (e as any)?.message || e);
+    } else {
+      // 기본: 렌더는 즉시, enrich는 백그라운드로 (속도 체감 개선)
+      void enrichAbmProductIfNeeded({ product, brandKey }).catch((e) => {
+        console.error("ABM enrich(bg) failed:", (e as any)?.message || e);
+      });
     }
   }
 
   const title = stripBrandSuffix(product?.title || "");
   const catNo = decodeHtmlEntities((product?.sku || "").trim());
 
-  const categoryPath: string[] = Array.isArray(product?.categoryPath) ? product.categoryPath : [];
   const categoryHref = buildHref(brandKey, categoryPath);
 
-  const roots: CatLite[] = await client.fetch(ROOT_CATEGORIES_QUERY, { brandKey });
-  const activeRoot = categoryPath[0] || "";
   let activeRootTree: TreeNode[] = [];
   if (activeRoot) {
-    const descendants = await fetchDescendants(client, brandKey, [activeRoot]);
     activeRootTree = buildTreeFromDescendants([activeRoot], descendants);
   }
 
@@ -602,7 +635,6 @@ export default async function ProductDetailPage({
   const referencesHtml = stripPrintFromHtml(product?.referencesHtml);
   const reviewsHtml = stripPrintFromHtml(product?.reviewsHtml);
 
-  // ProductTabs는 label 사용: title/label 둘 다 대응
   const documents = Array.isArray(product?.docs)
     ? product.docs
         .map((d: any) => {
@@ -653,6 +685,16 @@ export default async function ProductDetailPage({
                     className={`inline-flex h-10 items-center justify-center rounded-xl border px-4 text-sm font-semibold ${THEME.accentBorder} ${THEME.accentSoftBg} ${THEME.accentText}`}
                   >
                     Open Original
+                  </Link>
+                ) : null}
+
+                {/* 필요하면 수동으로 enrich 실행 */}
+                {brandKey === "abm" && openOriginalUrl && !product?.enrichedAt ? (
+                  <Link
+                    href={`/products/${brandKey}/item/${encodeURIComponent(String(product.slug))}?enrich=1`}
+                    className="inline-flex h-10 items-center justify-center rounded-xl border border-neutral-200 bg-white px-4 text-sm font-semibold text-neutral-900 hover:bg-neutral-50"
+                  >
+                    Refresh Details
                   </Link>
                 ) : null}
               </div>
