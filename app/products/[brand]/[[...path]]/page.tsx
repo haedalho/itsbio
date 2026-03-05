@@ -11,15 +11,51 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
-const THEME = {
+// ✅ ABM는 루트 3갈래만 루트로 취급 (루트 오염 방지)
+const ABM_ROOTS = ["general-materials", "cellular-materials", "genetic-materials"] as const;
+
+// ✅ Kent 메뉴 상단 고정 헤더(가상 그룹)
+const KENT_MENU_TITLE = "General Lab Equipment";
+
+type Theme = {
+  accentBg: string;
+  accentText: string;
+  accentBorder: string;
+  accentSoftBg: string;
+  accentActiveBg: string;
+  accentActiveText: string;
+  accentDotBg: string;
+  accentDotBorder: string;
+  accentUnderline: string;
+};
+
+const THEME_ORANGE: Theme = {
   accentBg: "bg-orange-500",
   accentText: "text-orange-600",
   accentBorder: "border-orange-200",
   accentSoftBg: "bg-orange-50",
+  accentActiveBg: "bg-orange-100",
+  accentActiveText: "text-orange-700",
+  accentDotBg: "bg-orange-500",
+  accentDotBorder: "border-orange-200",
+  accentUnderline: "text-orange-700",
 };
 
-// ✅ ABM는 루트 3갈래만 루트로 취급 (루트 오염 방지)
-const ABM_ROOTS = ["general-materials", "cellular-materials", "genetic-materials"] as const;
+const THEME_KENT: Theme = {
+  accentBg: "bg-blue-600",
+  accentText: "text-blue-700",
+  accentBorder: "border-blue-200",
+  accentSoftBg: "bg-blue-50",
+  accentActiveBg: "bg-blue-50",
+  accentActiveText: "text-blue-800",
+  accentDotBg: "bg-blue-600",
+  accentDotBorder: "border-blue-200",
+  accentUnderline: "text-blue-700",
+};
+
+function getTheme(brandKey: string): Theme {
+  return brandKey === "kent" ? THEME_KENT : THEME_ORANGE;
+}
 
 function buildHref(brandKey: string, path: string[]) {
   return path.length ? `/products/${brandKey}/${path.join("/")}` : `/products/${brandKey}`;
@@ -51,7 +87,21 @@ function legacyHref(brandKey: string, url: string) {
   return `/products/${brandKey}/legacy?u=${encodeURIComponent(url)}`;
 }
 
-/** -------------------- GROQ (✅ 1회 호출, category만 join으로 복구) -------------------- */
+function escapeHtml(s: string) {
+  return (s || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function isSafeNextImageSrc(src: string) {
+  if (!src) return false;
+  return src.startsWith("https://cdn.sanity.io/") || src.startsWith("/");
+}
+
+/** -------------------- GROQ (✅ 1회 호출) -------------------- */
 
 const PAGE_QUERY = `
 {
@@ -78,7 +128,25 @@ const PAGE_QUERY = `
     _id, title, path, order, sourceUrl
   },
 
+  // ✅ Kent는 "전체 descendants"를 받아야 메뉴 그룹 아래 트리를 만들 수 있음
   "descendants": select(
+    $isKent => *[
+      _type == "category"
+      && (!defined(isActive) || isActive == true)
+      && (
+        brandSlug == $brandKey
+        || themeKey == $brandKey
+        || brand->themeKey == $brandKey
+        || brand->slug.current == $brandKey
+      )
+      && count(path) > 1
+      && ($isAbm == false || path[0] in $abmRoots)
+    ]
+    | order(order asc, title asc) {
+      _id, title, path, order, sourceUrl
+    },
+
+    // ✅ 기존(ABM 포함)은 activeRoot만 descendants로
     $hasActiveRoot => *[
       _type == "category"
       && (!defined(isActive) || isActive == true)
@@ -95,6 +163,7 @@ const PAGE_QUERY = `
     | order(order asc, title asc) {
       _id, title, path, order, sourceUrl
     },
+
     []
   ),
 
@@ -108,7 +177,6 @@ const PAGE_QUERY = `
         || brand->themeKey == $brandKey
         || brand->slug.current == $brandKey
       )
-      // ✅ 본문 누락 원인 해결: 배열 완전일치 대신 join 비교로 복구
       && array::join(path, "/") == $pathStr
       && ($isAbm == false || path[0] in $abmRoots)
     ][0]{
@@ -117,20 +185,12 @@ const PAGE_QUERY = `
       path,
       sourceUrl,
 
-      contentBlocks[] {
-        _key,
-        _type,
-        title,
-        html,
-        items[]
-      },
-      blocks[] {
-        _key,
-        _type,
-        title,
-        html,
-        items[]
-      }
+      // ✅ 본문 fallback용(가벼움)
+      summary,
+      legacyHtml,
+
+      contentBlocks[] { _key,_type,title,html,items[] },
+      blocks[] { _key,_type,title,html,items[] }
     },
     null
   ),
@@ -144,7 +204,7 @@ const PAGE_QUERY = `
         || brand->slug.current == $brandKey
         || brand->themeKey == $brandKey
       )
-      // ✅ 제품 쿼리는 array join 대신 배열 비교 유지 (계산식 제거로 성능)
+      // ✅ 성능 유지(완전일치)
       && defined(categoryPath)
       && categoryPath == $pathArr
     ]
@@ -181,6 +241,7 @@ function makeNodeKey(path: string[]) {
   return path.join("/");
 }
 
+// 기존(ABM 방식) rootPath 기준
 function buildTreeFromDescendants(rootPath: string[], descendants: CatLite[]) {
   const rootKey = makeNodeKey(rootPath);
   const nodes = new Map<string, TreeNode>();
@@ -222,7 +283,6 @@ function buildTreeFromDescendants(rootPath: string[], descendants: CatLite[]) {
 
   for (const d of descendants) {
     if (!Array.isArray(d.path) || d.path.length <= rootPath.length) continue;
-
     const prefixOk = rootPath.every((seg, i) => d.path[i] === seg);
     if (!prefixOk) continue;
 
@@ -257,10 +317,94 @@ function buildTreeFromDescendants(rootPath: string[], descendants: CatLite[]) {
   return root.children;
 }
 
-/** -------------------- ABM HTML sanitize/rewrite -------------------- */
+// ✅ Kent용: roots(1뎁스) + descendants(2뎁스+) 전체로 트리 만들기
+function buildTreeFromAllCategories(roots: CatLite[], descendants: CatLite[]) {
+  const nodes = new Map<string, TreeNode>();
+
+  function ensureNode(path: string[], meta?: Partial<CatLite>) {
+    const key = makeNodeKey(path);
+    const seg = path[path.length - 1] || "";
+
+    if (!nodes.has(key)) {
+      nodes.set(key, {
+        key,
+        _id: meta?._id || `virtual-${key}`,
+        title: meta?.title || humanizeSegment(seg),
+        path,
+        order: meta?.order,
+        sourceUrl: (meta as any)?.sourceUrl,
+        isVirtual: !meta?._id,
+        children: [],
+      });
+    } else if (meta?._id) {
+      const cur = nodes.get(key)!;
+      nodes.set(key, {
+        ...cur,
+        _id: meta._id,
+        title: meta.title || cur.title,
+        order: typeof meta.order === "number" ? meta.order : cur.order,
+        sourceUrl: (meta as any)?.sourceUrl || cur.sourceUrl,
+        isVirtual: false,
+      });
+    }
+
+    return nodes.get(key)!;
+  }
+
+  // roots 먼저
+  for (const r of roots) {
+    if (!Array.isArray(r.path) || r.path.length !== 1) continue;
+    ensureNode(r.path, r);
+  }
+
+  // descendants + 중간 노드 보강
+  for (const d of descendants) {
+    if (!Array.isArray(d.path) || d.path.length < 2) continue;
+
+    for (let i = 0; i < d.path.length; i++) {
+      const p = d.path.slice(0, i + 1);
+      if (i === d.path.length - 1) ensureNode(p, d);
+      else ensureNode(p);
+    }
+  }
+
+  // attach
+  for (const node of nodes.values()) {
+    if (node.path.length === 1) continue;
+    const parentPath = node.path.slice(0, node.path.length - 1);
+    const parentKey = makeNodeKey(parentPath);
+    const parent = nodes.get(parentKey);
+    if (parent) parent.children.push(node);
+  }
+
+  // sort
+  function sortRec(n: TreeNode) {
+    n.children.sort((a, b) => {
+      const ao = typeof a.order === "number" ? a.order : 999999;
+      const bo = typeof b.order === "number" ? b.order : 999999;
+      if (ao !== bo) return ao - bo;
+      return String(a.title).localeCompare(String(b.title));
+    });
+    n.children.forEach(sortRec);
+  }
+
+  const rootNodes = [...nodes.values()].filter((n) => n.path.length === 1);
+  rootNodes.sort((a, b) => {
+    const ao = typeof a.order === "number" ? a.order : 999999;
+    const bo = typeof b.order === "number" ? b.order : 999999;
+    if (ao !== bo) return ao - bo;
+    return String(a.title).localeCompare(String(b.title));
+  });
+  rootNodes.forEach(sortRec);
+
+  return rootNodes;
+}
+
+/** -------------------- HTML rewrite -------------------- */
 
 function getBaseUrlForBrand(brandKey: string) {
   if (brandKey === "abm") return "https://www.abmgood.com";
+  if (brandKey === "kent") return "https://www.kentscientific.com";
   return "";
 }
 
@@ -306,7 +450,7 @@ function rewriteAnchorsToLegacy(html: string, brandKey: string) {
 function safeHtmlForRender(html: string, brandKey: string) {
   const baseUrl = getBaseUrlForBrand(brandKey);
   let out = html || "";
-  out = stripUnwantedAbmNav(out);
+  if (brandKey === "abm") out = stripUnwantedAbmNav(out);
   out = rewriteRelativeUrls(out, baseUrl);
   out = rewriteAnchorsToLegacy(out, brandKey);
   return out.trim();
@@ -339,18 +483,22 @@ function SideNavTree({
   roots,
   activePath,
   activeRootTree,
+  theme,
+  isKentMode,
 }: {
   brandKey: string;
   roots: CatLite[];
   activePath: string[];
   activeRootTree: TreeNode[];
+  theme: Theme;
+  isKentMode: boolean;
 }) {
   const activePathStr = activePath.join("/");
   const activeRoot = activePath[0] || "";
 
-  const activeRootTitle =
-    roots.find((r) => (r.path?.[0] || "") === activeRoot)?.title ||
-    (activeRoot ? humanizeSegment(activeRoot) : "All Products");
+  const activeRootTitle = isKentMode
+    ? KENT_MENU_TITLE
+    : roots.find((r) => (r.path?.[0] || "") === activeRoot)?.title || (activeRoot ? humanizeSegment(activeRoot) : "All Products");
 
   const isPrefix = (full: string, prefix: string) => full === prefix || full.startsWith(prefix + "/");
 
@@ -358,7 +506,6 @@ function SideNavTree({
   const DOT_LEFT = "left-[18px]";
   const ARROW_LEFT = "left-[28px]";
 
-  // ✅ FIX: ABM도 카테고리 트리는 항상 카테고리 경로로 이동 (sourceUrl mismatch로 /item 보내지 않음)
   function nodeHref(n: { path: string[] }) {
     return buildHref(brandKey, n.path);
   }
@@ -377,13 +524,14 @@ function SideNavTree({
             const isActive = activePathStr === p;
 
             return (
-              <Link key={n.key} href={nodeHref(n)} className="group/item relative block">
+              <Link key={n.key} href={nodeHref(n)} prefetch={false} className="group/item relative block">
                 <span
                   aria-hidden
                   className={[
                     "pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2",
                     DOT_LEFT,
-                    "h-1.5 w-1.5 rounded-full bg-orange-500 transition",
+                    "h-1.5 w-1.5 rounded-full transition",
+                    theme.accentDotBg,
                     isActive ? "opacity-100 scale-125" : "opacity-0",
                     "group-hover/item:opacity-100 group-hover/item:scale-110",
                   ].join(" ")}
@@ -393,9 +541,10 @@ function SideNavTree({
                   className={[
                     "pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2",
                     DOT_LEFT,
-                    "h-2.5 w-2.5 rounded-full border border-orange-200 transition",
-                    isActive ? "opacity-100 border-orange-300" : "opacity-0",
-                    "group-hover/item:opacity-100 group-hover/item:border-orange-200",
+                    "h-2.5 w-2.5 rounded-full border transition",
+                    theme.accentDotBorder,
+                    isActive ? "opacity-100" : "opacity-0",
+                    "group-hover/item:opacity-100",
                   ].join(" ")}
                 />
                 <span
@@ -403,8 +552,8 @@ function SideNavTree({
                   className={[
                     "pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2",
                     ARROW_LEFT,
-                    "text-xs text-orange-500 transition",
-                    "opacity-0 group-hover/item:opacity-100",
+                    "text-xs transition opacity-0 group-hover/item:opacity-100",
+                    theme.accentText,
                     isActive ? "opacity-0" : "",
                   ].join(" ")}
                 >
@@ -416,7 +565,7 @@ function SideNavTree({
                     "relative block rounded-xl px-3 py-2 text-sm leading-6 transition",
                     TEXT_OFFSET,
                     isActive
-                      ? "bg-orange-100 text-orange-700 font-semibold"
+                      ? `${theme.accentActiveBg} ${theme.accentActiveText} font-semibold`
                       : "text-neutral-700 group-hover/item:bg-neutral-50",
                   ].join(" ")}
                 >
@@ -443,19 +592,20 @@ function SideNavTree({
         <div className="group/section">
           <Link
             href={nodeHref(node)}
+            prefetch={false}
             className={[
               "flex items-center justify-between rounded-xl px-3 py-2 text-sm transition",
-              isOpen ? "text-orange-600 font-semibold" : "text-neutral-800 hover:bg-neutral-50",
+              isOpen ? `${theme.accentText} font-semibold` : "text-neutral-800 hover:bg-neutral-50",
             ].join(" ")}
           >
             <div className="min-w-0 flex items-center gap-2">
-              <span className={isOpen ? "text-orange-500" : "text-neutral-300"} aria-hidden>
+              <span className={isOpen ? theme.accentText : "text-neutral-300"} aria-hidden>
                 ⌄
               </span>
               <span className="truncate">{stripBrandSuffix(node.title)}</span>
             </div>
 
-            <span className={isOpen ? "text-orange-500 text-xs" : "text-neutral-300"} aria-hidden>
+            <span className={isOpen ? `${theme.accentText} text-xs` : "text-neutral-300"} aria-hidden>
               {isOpen ? "^" : "›"}
             </span>
           </Link>
@@ -470,9 +620,10 @@ function SideNavTree({
     return (
       <Link
         href={nodeHref(node)}
+        prefetch={false}
         className={[
           "flex items-center justify-between rounded-xl px-3 py-2 text-sm transition",
-          isActive ? "bg-orange-100 text-orange-700 font-semibold" : "text-neutral-800 hover:bg-neutral-50",
+          isActive ? `${theme.accentActiveBg} ${theme.accentActiveText} font-semibold` : "text-neutral-800 hover:bg-neutral-50",
         ].join(" ")}
       >
         <span className="min-w-0 truncate">{stripBrandSuffix(node.title)}</span>
@@ -486,28 +637,34 @@ function SideNavTree({
   return (
     <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
       <div className="border-b border-neutral-200 px-5 py-4">
-        <div className="text-base font-semibold text-orange-600">{stripBrandSuffix(activeRootTitle)}</div>
+        <div className={`text-base font-semibold ${theme.accentText}`}>{stripBrandSuffix(activeRootTitle)}</div>
       </div>
 
       <div className="p-2">
-        <div className="space-y-1">
-          {roots
-            .filter((r) => (r.path?.[0] || "") !== activeRoot)
-            .map((r) => (
-              <Link
-                key={r._id}
-                href={buildHref(brandKey, r.path)}
-                className="flex items-center justify-between rounded-xl px-3 py-2 text-sm text-neutral-800 hover:bg-neutral-50"
-              >
-                <span className="min-w-0 truncate">{stripBrandSuffix(r.title)}</span>
-                <span className="text-neutral-300" aria-hidden>
-                  ›
-                </span>
-              </Link>
-            ))}
-        </div>
+        {/* ✅ Kent 모드: "다른 roots" 섹션 숨기고, 전체 트리를 바로 렌더 */}
+        {!isKentMode ? (
+          <>
+            <div className="space-y-1">
+              {roots
+                .filter((r) => (r.path?.[0] || "") !== activeRoot)
+                .map((r) => (
+                  <Link
+                    key={r._id}
+                    href={buildHref(brandKey, r.path)}
+                    prefetch={false}
+                    className="flex items-center justify-between rounded-xl px-3 py-2 text-sm text-neutral-800 hover:bg-neutral-50"
+                  >
+                    <span className="min-w-0 truncate">{stripBrandSuffix(r.title)}</span>
+                    <span className="text-neutral-300" aria-hidden>
+                      ›
+                    </span>
+                  </Link>
+                ))}
+            </div>
 
-        <div className="my-2 border-t border-neutral-200" />
+            <div className="my-2 border-t border-neutral-200" />
+          </>
+        ) : null}
 
         <div className="space-y-1">
           {activeRootTree?.length ? (
@@ -599,31 +756,28 @@ function HtmlBlock({ html, brandKey }: { html: string; brandKey: string }) {
 function ResourceSection({
   items,
   brandKey,
+  theme,
 }: {
   items: Array<{ key: string; title: string; subtitle?: string; href: string; imageUrl?: string }>;
   brandKey: string;
+  theme: Theme;
 }) {
   const safeItems = items.filter((x) => typeof x?.href === "string" && x.href.trim().length > 0);
   if (!safeItems.length) return null;
 
   return (
     <section className="mt-10">
-      <h3 className={`text-xl font-semibold ${THEME.accentText}`}>Resources</h3>
+      <h3 className={`text-xl font-semibold ${theme.accentText}`}>Resources</h3>
 
       <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {safeItems.map((x) => (
-          <Link key={x.key} href={legacyHref(brandKey, x.href)} className="block">
+          <Link key={x.key} href={legacyHref(brandKey, x.href)} prefetch={false} className="block">
             <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm transition hover:border-neutral-300 hover:shadow-md">
               <div className="overflow-hidden rounded-t-2xl bg-neutral-100">
                 <div className="relative aspect-[16/9] w-full">
                   {x.imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={x.imageUrl}
-                      alt={x.title}
-                      className="absolute inset-0 h-full w-full object-cover"
-                      loading="lazy"
-                    />
+                    <img src={x.imageUrl} alt={x.title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                   ) : (
                     <div className="absolute inset-0" />
                   )}
@@ -634,9 +788,7 @@ function ResourceSection({
                 <div className="text-base font-semibold text-neutral-900 leading-snug line-clamp-2">
                   {stripBrandSuffix(x.title)}
                 </div>
-                <div className="mt-2 text-sm italic text-neutral-600 line-clamp-1">
-                  {x.subtitle || "Learning Resources"}
-                </div>
+                <div className="mt-2 text-sm italic text-neutral-600 line-clamp-1">{x.subtitle || "Learning Resources"}</div>
               </div>
             </div>
           </Link>
@@ -648,8 +800,10 @@ function ResourceSection({
 
 function TopPublicationsSection({
   items,
+  theme,
 }: {
   items: Array<{ key: string; order?: number; citation?: string; doi?: string; product?: string }>;
+  theme: Theme;
 }) {
   const safeItems = items.filter((x) => typeof x?.citation === "string" && x.citation.trim().length > 0);
   if (!safeItems.length) return null;
@@ -658,7 +812,7 @@ function TopPublicationsSection({
 
   return (
     <section className="mt-14">
-      <h3 className={`text-2xl font-semibold ${THEME.accentText}`}>Top Publications</h3>
+      <h3 className={`text-2xl font-semibold ${theme.accentText}`}>Top Publications</h3>
 
       <div className="mt-6 space-y-5">
         {sorted.map((p, idx) => {
@@ -667,10 +821,9 @@ function TopPublicationsSection({
             <div key={p.key} className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
               <div className="flex gap-5">
                 <div className="w-14 shrink-0">
-                  <div className={`text-3xl font-semibold ${THEME.accentText}`}>{no}</div>
-                  <div className="mt-2 h-[2px] w-10 bg-orange-500" />
+                  <div className={`text-3xl font-semibold ${theme.accentText}`}>{no}</div>
+                  <div className={`mt-2 h-[2px] w-10 ${theme.accentBg}`} />
                 </div>
-
                 <div className="min-w-0">
                   <div className="text-sm leading-6 text-neutral-900 whitespace-pre-line">{p.citation}</div>
                 </div>
@@ -683,7 +836,7 @@ function TopPublicationsSection({
   );
 }
 
-function renderContentBlocks(blocks: any[], brandKey: string) {
+function renderContentBlocks(blocks: any[], brandKey: string, theme: Theme) {
   if (!Array.isArray(blocks) || blocks.length === 0) return null;
 
   let renderedHtml = false;
@@ -720,7 +873,7 @@ function renderContentBlocks(blocks: any[], brandKey: string) {
           const items = normalizeResourceItems(b?.items ?? []);
           return (
             <div key={b._key || "resources"}>
-              <ResourceSection items={items} brandKey={brandKey} />
+              <ResourceSection items={items} brandKey={brandKey} theme={theme} />
             </div>
           );
         }
@@ -731,7 +884,7 @@ function renderContentBlocks(blocks: any[], brandKey: string) {
           const items = normalizePubItems(b?.items ?? []);
           return (
             <div key={b._key || "pubs"}>
-              <TopPublicationsSection items={items} />
+              <TopPublicationsSection items={items} theme={theme} />
             </div>
           );
         }
@@ -756,8 +909,10 @@ export default async function ProductsBrandPathPage({
 
   const openSlug = (sp?.open ?? "").toString().trim();
   const brandKey = (resolved?.brand ?? "").toLowerCase();
-  const path = (resolved?.path ?? []) as string[];
+  const theme = getTheme(brandKey);
+  const isKent = brandKey === "kent";
 
+  const path = (resolved?.path ?? []) as string[];
   if (!brandKey) notFound();
 
   const activeRoot = path[0] || "";
@@ -765,9 +920,9 @@ export default async function ProductsBrandPathPage({
   const hasActiveRoot = !!activeRoot;
   const pathStr = path.join("/");
 
-  // ✅ 1회 fetch로 모든 데이터 가져오기
   const data = await sanityClient.fetch(PAGE_QUERY, {
     brandKey,
+    isKent,
     isAbm: brandKey === "abm",
     abmRoots: ABM_ROOTS,
     hasPath,
@@ -783,6 +938,7 @@ export default async function ProductsBrandPathPage({
   const roots: CatLite[] = Array.isArray(data?.roots) ? data.roots : [];
   const descendants: CatLite[] = Array.isArray(data?.descendants) ? data.descendants : [];
   const category = data?.category || null;
+
   const productsInCategory: Array<{
     _id: string;
     title: string;
@@ -791,8 +947,12 @@ export default async function ProductsBrandPathPage({
     thumb?: string;
   }> = Array.isArray(data?.products) ? data.products : [];
 
+  // ✅ ABM: 기존처럼 activeRoot 기준
+  // ✅ Kent: 전체 트리를 만들어 General Lab Equipment 아래에 뿌림
   let activeRootTree: TreeNode[] = [];
-  if (activeRoot) {
+  if (isKent) {
+    activeRootTree = buildTreeFromAllCategories(roots, descendants);
+  } else if (activeRoot) {
     activeRootTree = buildTreeFromDescendants([activeRoot], descendants);
   }
 
@@ -814,7 +974,14 @@ export default async function ProductsBrandPathPage({
 
           <div className="mt-10 grid gap-8 lg:grid-cols-12">
             <aside className="lg:col-span-4">
-              <SideNavTree brandKey={brandKey} roots={roots} activePath={[]} activeRootTree={[]} />
+              <SideNavTree
+                brandKey={brandKey}
+                roots={roots}
+                activePath={[]}
+                activeRootTree={activeRootTree}
+                theme={theme}
+                isKentMode={isKent}
+              />
             </aside>
 
             <main className="lg:col-span-8">
@@ -827,15 +994,13 @@ export default async function ProductsBrandPathPage({
     );
   }
 
-  // ✅ FIX: ABM에서 sourceUrl slug != path 라는 이유로 /item 으로 보내는 로직 제거
-  // (카테고리/리소스 페이지가 제품 페이지로 오판되어 item/page.tsx로 뜨는 문제 방지)
-
   if (!category?._id && (!activeRootTree || activeRootTree.length === 0)) notFound();
 
   const breadcrumbItems = [
     { label: "Home", href: "/" },
     { label: "Products", href: "/products" },
     { label: brand.title, href: `/products/${brandKey}` },
+    ...(isKent ? [{ label: KENT_MENU_TITLE, href: `/products/${brandKey}` }] : []),
     ...path.map((seg: string, i: number) => ({
       label: humanizeSegment(seg),
       href: buildHref(brandKey, path.slice(0, i + 1)),
@@ -843,11 +1008,22 @@ export default async function ProductsBrandPathPage({
   ];
 
   const pageTitle = stripBrandSuffix(category?.title || humanizeSegment(path[path.length - 1] || ""));
+
   const blocks = Array.isArray(category?.contentBlocks)
     ? category.contentBlocks
     : Array.isArray(category?.blocks)
       ? category.blocks
       : [];
+
+  // ✅ 내용이 안 나올 때 최소 텍스트라도 보여주기(legacyHtml 전체 렌더는 무거울 수 있어 summary 우선)
+  const fallbackHtmlRaw =
+    blocks.length
+      ? ""
+      : category?.summary
+        ? `<p>${escapeHtml(category.summary)}</p>`
+        : "";
+
+  const fallbackHtml = fallbackHtmlRaw ? safeHtmlForRender(fallbackHtmlRaw, brandKey) : "";
 
   return (
     <div>
@@ -860,7 +1036,14 @@ export default async function ProductsBrandPathPage({
 
         <div className="mt-10 grid gap-8 lg:grid-cols-12">
           <aside className="lg:col-span-4">
-            <SideNavTree brandKey={brandKey} roots={roots} activePath={path} activeRootTree={activeRootTree} />
+            <SideNavTree
+              brandKey={brandKey}
+              roots={roots}
+              activePath={path}
+              activeRootTree={activeRootTree}
+              theme={theme}
+              isKentMode={isKent}
+            />
           </aside>
 
           <main className="lg:col-span-8">
@@ -876,12 +1059,25 @@ export default async function ProductsBrandPathPage({
                       <Link
                         key={p._id}
                         href={`/products/${brandKey}/item/${encodeURIComponent(p.slug)}`}
+                        prefetch={false} // ✅ 무한 로딩 체감 방지
                         className={`group flex items-center gap-3 rounded-2xl border bg-white p-3 hover:shadow-sm ${
-                          isOpen ? "border-orange-400 ring-1 ring-orange-200" : "border-slate-200"
+                          isOpen ? `${theme.accentBorder} ring-1 ${theme.accentSoftBg}` : "border-slate-200"
                         }`}
                       >
                         <div className="relative h-12 w-12 overflow-hidden rounded-xl bg-slate-50">
-                          {p.thumb ? <Image src={p.thumb} alt="" fill className="object-contain" sizes="48px" /> : null}
+                          {p.thumb ? (
+                            isSafeNextImageSrc(p.thumb) ? (
+                              <Image src={p.thumb} alt="" fill className="object-contain" sizes="48px" />
+                            ) : (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={p.thumb}
+                                alt=""
+                                className="absolute inset-0 h-full w-full object-contain"
+                                loading="lazy"
+                              />
+                            )
+                          ) : null}
                         </div>
                         <div className="min-w-0">
                           <div className="truncate text-sm font-semibold text-neutral-900 group-hover:underline">
@@ -897,19 +1093,25 @@ export default async function ProductsBrandPathPage({
             ) : null}
 
             {blocks.length ? (
-              renderContentBlocks(blocks, brandKey)
+              renderContentBlocks(blocks, brandKey, theme)
+            ) : fallbackHtml ? (
+              <section className="mt-8">
+                <HtmlContent html={fallbackHtml} />
+                {category?.sourceUrl ? (
+                  <div className="mt-4 text-sm">
+                    <a className={`font-semibold underline underline-offset-4 ${theme.accentUnderline}`} href={legacyHref(brandKey, category.sourceUrl)}>
+                      원문 보기
+                    </a>
+                  </div>
+                ) : null}
+              </section>
             ) : (
-              <div
-                className={`mt-10 rounded-2xl border ${THEME.accentBorder} ${THEME.accentSoftBg} p-6 text-sm text-neutral-800`}
-              >
+              <div className={`mt-10 rounded-2xl border ${theme.accentBorder} ${theme.accentSoftBg} p-6 text-sm text-neutral-800`}>
                 본문 데이터가 아직 없습니다.
                 {category?.sourceUrl ? (
                   <>
                     {" "}
-                    <a
-                      className="font-semibold underline underline-offset-4 text-orange-700"
-                      href={legacyHref(brandKey, category.sourceUrl)}
-                    >
+                    <a className={`font-semibold underline underline-offset-4 ${theme.accentUnderline}`} href={legacyHref(brandKey, category.sourceUrl)}>
                       원문 보기
                     </a>
                   </>

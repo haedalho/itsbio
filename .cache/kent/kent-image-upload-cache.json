@@ -319,6 +319,1990 @@
     "https://kentscientific.com/wp-content/uploads/2025/09/laboratory-animal-anaesthesia.jpg": {
       "assetId": "image-7e7ec3a9e20126a986febcfef179c8066b9730e9-168x255-jpg",
       "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/7e7ec3a9e20126a986febcfef179c8066b9730e9-168x255.jpg"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SF_01_CONTROLLER_3QTRR_Silo_copy-1.png": {
+      "assetId": "image-e8e27b168c82d838b13bc403872cae14d1ef1be6-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e8e27b168c82d838b13bc403872cae14d1ef1be6-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SF_01_CONTROLLER_3QTRR_Silo_copy-1-100x100.png": {
+      "assetId": "image-5efff7a98cd6fc64ce7e5dd1b78cdad11ecd8268-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/5efff7a98cd6fc64ce7e5dd1b78cdad11ecd8268-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/pressure_reducer4_5-100x100.png": {
+      "assetId": "image-a88522b1ddda41de6af6ca378b3f34b9c4633602-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a88522b1ddda41de6af6ca378b3f34b9c4633602-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/vetflo_vaporizer_single_left-1-100x100.png": {
+      "assetId": "image-dafa25938303d9edb36390023d20d0cfc7291946-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/dafa25938303d9edb36390023d20d0cfc7291946-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Dermus_SkinScanner-2.png": {
+      "assetId": "image-142ee1615f5b173a58e6230775b39c68323609c6-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/142ee1615f5b173a58e6230775b39c68323609c6-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Dermus_SkinScanner-2-100x100.png": {
+      "assetId": "image-7ab11bd094cd6a7005ae462527f2b4f6a519da37-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/7ab11bd094cd6a7005ae462527f2b4f6a519da37-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/blue-circle.svg": {
+      "assetId": "image-da505370a4f0a1321a81adc465368312cd9442cf-25x26-svg",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/da505370a4f0a1321a81adc465368312cd9442cf-25x26.svg"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/gear-circle-2.svg": {
+      "assetId": "image-f3f7aa621b6efde0312d1817c82dbce610109a63-25x26-svg",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/f3f7aa621b6efde0312d1817c82dbce610109a63-25x26.svg"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/gear-circle.svg": {
+      "assetId": "image-27ccced550163fee650e48ad624970e3ffe5b467-25x26-svg",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/27ccced550163fee650e48ad624970e3ffe5b467-25x26.svg"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/Anipill-Core-Temperature-Monitoring-System-for-animal-research.png": {
+      "assetId": "image-d8c78d40f0906e610fb0645937d3c1756a803e6f-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d8c78d40f0906e610fb0645937d3c1756a803e6f-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/Anipill-Core-Temperature-Monitoring-System-for-animal-research-100x100.png": {
+      "assetId": "image-8550a052fe77d6d2da9baa25ce777c8a682bd9b3-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8550a052fe77d6d2da9baa25ce777c8a682bd9b3-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/caposcan-screen-1-100x100.png": {
+      "assetId": "image-99cabfa7b1566d7e2fcc4091960f1972131b3b01-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/99cabfa7b1566d7e2fcc4091960f1972131b3b01-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/08/PS-02-Controller_v1.png": {
+      "assetId": "image-01880a4e49d86411cbbb77d059ea89ae86d86376-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/01880a4e49d86411cbbb77d059ea89ae86d86376-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/08/PS-02-Controller_v1-100x100.png": {
+      "assetId": "image-35f61274e5076e6c82a695afae1b6ff6459933cc-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/35f61274e5076e6c82a695afae1b6ff6459933cc-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CBL-ANAOUT-MINI_4_5-1-100x100.png": {
+      "assetId": "image-43eef70cd96e9bfc895d061d61dac7bfe08c7974-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/43eef70cd96e9bfc895d061d61dac7bfe08c7974-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/08/MouseSTAT.svg": {
+      "assetId": "image-10b7061daa977cde23e794d357f4448edd2b8577-64x65-svg",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/10b7061daa977cde23e794d357f4448edd2b8577-64x65.svg"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/08/CapnoScan.svg": {
+      "assetId": "image-16c26698aeb28fb2b50cfeae9e3d877a2b37af1a-64x65-svg",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/16c26698aeb28fb2b50cfeae9e3d877a2b37af1a-64x65.svg"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/08/faq.svg": {
+      "assetId": "image-38d1af37d4192bb2a861157a270e351a573a528b-47x48-svg",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/38d1af37d4192bb2a861157a270e351a573a528b-47x48.svg"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/somnoflo-3.png": {
+      "assetId": "image-5d3597e6b7099cffa1aeaed6fdccbfc0caf09751-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/5d3597e6b7099cffa1aeaed6fdccbfc0caf09751-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/somnoflo-3-100x100.png": {
+      "assetId": "image-a6e415a7377a5b565da36aa8359cfba16d8736a9-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a6e415a7377a5b565da36aa8359cfba16d8736a9-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo_Chambers_lo_res_no_tubing-100x100.png": {
+      "assetId": "image-4ef8b994a581b06a5669c9decc97137b250a3892-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4ef8b994a581b06a5669c9decc97137b250a3892-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/somnosuite-100x100.png": {
+      "assetId": "image-b436eef927278a8c91623f41ba4be23e68a9d7bb-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/b436eef927278a8c91623f41ba4be23e68a9d7bb-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/somnosuite.png": {
+      "assetId": "image-5b5ab583f6ff310eff71ff103a8cf06046da783a-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/5b5ab583f6ff310eff71ff103a8cf06046da783a-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/10-4000-66-100x100.png": {
+      "assetId": "image-6e87cc95080a210db7361c98592bc0acc0958136-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/6e87cc95080a210db7361c98592bc0acc0958136-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/canister-100x100.png": {
+      "assetId": "image-7eaa4d92a13cc801eb04e75fd13f9c281a112887-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/7eaa4d92a13cc801eb04e75fd13f9c281a112887-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/06/RV_4-21.png": {
+      "assetId": "image-50a9502fe1868fb563403711f8cf318e2e472562-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/50a9502fe1868fb563403711f8cf318e2e472562-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/06/RV_4-21-100x100.png": {
+      "assetId": "image-1593f4ccd13ba6a72c184e303f06ec8bf104abbf-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/1593f4ccd13ba6a72c184e303f06ec8bf104abbf-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/intubation-combined-right-w-hand-1-100x100.png": {
+      "assetId": "image-e060e7731d54a2fdaed35c17e637fe1093450e54-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e060e7731d54a2fdaed35c17e637fe1093450e54-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/06/RVJR_421-1-300x300.png": {
+      "assetId": "image-3d6121731cbb03ce18b05002fa19b29934726c42-300x300-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/3d6121731cbb03ce18b05002fa19b29934726c42-300x300.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/06/RV_4-21-300x300.png": {
+      "assetId": "image-3a371c5b3bb618e4e6f6dddc74371a794ddb31d2-300x300-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/3a371c5b3bb618e4e6f6dddc74371a794ddb31d2-300x300.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/06/RVJR_421-1.png": {
+      "assetId": "image-fc0fe131cdbcc0358e80d9d1f2967985caf9f589-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/fc0fe131cdbcc0358e80d9d1f2967985caf9f589-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/06/RVJR_421-1-100x100.png": {
+      "assetId": "image-8d0f607f3aa916a0da1cee5f60e8a90ec638f72a-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8d0f607f3aa916a0da1cee5f60e8a90ec638f72a-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CBL-ANAOUT-MINI_4_5-100x100.png": {
+      "assetId": "image-d3da85872e9057066f6c8fb7d897c3f89e9b2e9e-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d3da85872e9057066f6c8fb7d897c3f89e9b2e9e-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/MouseSTAT-Jr-hand-1.png": {
+      "assetId": "image-fa01ca1c23bd15b2f35345bde481a093e9e4f8a2-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/fa01ca1c23bd15b2f35345bde481a093e9e4f8a2-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Pulse-oximeter-sensor.png": {
+      "assetId": "image-beadcd73916600be016bfabe1dc80ac999af9dbf-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/beadcd73916600be016bfabe1dc80ac999af9dbf-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Rat-paw-pulse-oximeter-sensor.png": {
+      "assetId": "image-3b7a3490bc0413e5d4ff6683e381f4985502497a-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/3b7a3490bc0413e5d4ff6683e381f4985502497a-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SPO2-9MMM.png": {
+      "assetId": "image-74fcbea1638ef807280aa8c1fb5c4a4c09ae121f-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/74fcbea1638ef807280aa8c1fb5c4a4c09ae121f-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/MouseSTAT-Jr-hand-1-100x100.png": {
+      "assetId": "image-9c2f9e1819785d41d287b6ec9923f2de2b577487-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/9c2f9e1819785d41d287b6ec9923f2de2b577487-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Pulse-oximeter-sensor-100x100.png": {
+      "assetId": "image-6751d50fada10739c5326bfa1a8638a7c4a694d1-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/6751d50fada10739c5326bfa1a8638a7c4a694d1-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Rat-paw-pulse-oximeter-sensor-100x100.png": {
+      "assetId": "image-6ad6e7082af05ae87f3d3877df74ba95da4bca14-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/6ad6e7082af05ae87f3d3877df74ba95da4bca14-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SPO2-9MMM-100x100.png": {
+      "assetId": "image-11ff9e619bad08af348a917de168672f97fa5e08-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/11ff9e619bad08af348a917de168672f97fa5e08-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Pulse-oximeter-sensor-1-100x100.png": {
+      "assetId": "image-3b889af309cabeb849ebbc00882bed0ed6c09150-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/3b889af309cabeb849ebbc00882bed0ed6c09150-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SPO2-9MMM-1-100x100.png": {
+      "assetId": "image-b3bf7458badf4b1c8ca540b74426529695bd9ae9-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/b3bf7458badf4b1c8ca540b74426529695bd9ae9-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CODA-monitor-1.png": {
+      "assetId": "image-7f263915b46299f7bc36c89b2f9f0136e9b10a21-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/7f263915b46299f7bc36c89b2f9f0136e9b10a21-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CODA-monitor-1-100x100.png": {
+      "assetId": "image-87f902a874a6a50b3b01f342e2f388de89eb5799-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/87f902a874a6a50b3b01f342e2f388de89eb5799-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CODA-High-Throughput-1-100x100.png": {
+      "assetId": "image-35b88c33b5542ce1aba7a3d5622599df4c4fd74b-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/35b88c33b5542ce1aba7a3d5622599df4c4fd74b-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CODA-MRI_4_5-100x100.png": {
+      "assetId": "image-0f8280e328d1f1f0914dfc21a8867a1a2d5f30da-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/0f8280e328d1f1f0914dfc21a8867a1a2d5f30da-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CODA-High-Throughput-1.png": {
+      "assetId": "image-6727e9d5107f91e806adca243ea0c1053525af48-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/6727e9d5107f91e806adca243ea0c1053525af48-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CODA_Software_Screen-100x100.png": {
+      "assetId": "image-06dfbf72d5fd33aa9571faf60e151837b0e5cd60-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/06dfbf72d5fd33aa9571faf60e151837b0e5cd60-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-M03_SURGI-R03_3QTR_LIT_Silo_copy-1.png": {
+      "assetId": "image-b857033e6f8b53b2bd9ec6e07ac60bb8a4ffe1f5-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/b857033e6f8b53b2bd9ec6e07ac60bb8a4ffe1f5-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-M_SURGI-R_3QTR_Silo.png": {
+      "assetId": "image-5cbb71d59e70d20acab5babaabc3de3565a90a6a-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/5cbb71d59e70d20acab5babaabc3de3565a90a6a-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-M01_SURGI-R01_3QTR_LIT_Silo_copy.png": {
+      "assetId": "image-262114d50ecc16dada07a86855f8d203b8248e42-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/262114d50ecc16dada07a86855f8d203b8248e42-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-M02_SURGI-R02_3QTR_Silo_copy.png": {
+      "assetId": "image-16b370020a89582219cb4cc62209b9801a0087a6-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/16b370020a89582219cb4cc62209b9801a0087a6-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-M04__SURGI-R04_3.png": {
+      "assetId": "image-49fb04c448eec6b21b977284c9e7d767d601d626-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/49fb04c448eec6b21b977284c9e7d767d601d626-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-M03_SURGI-R03_3QTR_LIT_Silo_copy-1-100x100.png": {
+      "assetId": "image-03bf4543cff767c9d896d0f9e83e48b598f312c0-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/03bf4543cff767c9d896d0f9e83e48b598f312c0-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-M_SURGI-R_3QTR_Silo-100x100.png": {
+      "assetId": "image-b6962cd4f37b328c389cc6e431bc3f1ff5acafda-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/b6962cd4f37b328c389cc6e431bc3f1ff5acafda-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-M01_SURGI-R01_3QTR_LIT_Silo_copy-100x100.png": {
+      "assetId": "image-558b27e23b6d55e0a4337d38e5449cbd12658249-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/558b27e23b6d55e0a4337d38e5449cbd12658249-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-M02_SURGI-R02_3QTR_Silo_copy-100x100.png": {
+      "assetId": "image-d383a25652020f9b498128f2e3c8ffcb1e086128-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d383a25652020f9b498128f2e3c8ffcb1e086128-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-M04__SURGI-R04_3-100x100.png": {
+      "assetId": "image-ac1a95c9cc209206c6864bcab065750f3bb4d8bb-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ac1a95c9cc209206c6864bcab065750f3bb4d8bb-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/striaght-serrated-needle-holder-INS600110_PROFILE_silo-100x100.jpg": {
+      "assetId": "image-dff2d6de639b176be2afd55c538160d9bca72674-100x100-jpg",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/dff2d6de639b176be2afd55c538160d9bca72674-100x100.jpg"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Tweezer-5-100x100.png": {
+      "assetId": "image-6d3a8fcfd30c6e45740cd34035fd772dfed49cc9-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/6d3a8fcfd30c6e45740cd34035fd772dfed49cc9-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/RightTemp-Jr-500x282_UPDATED.png": {
+      "assetId": "image-771b3019ab6acd2f220cbb34838c5d6210b273f8-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/771b3019ab6acd2f220cbb34838c5d6210b273f8-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/RightTemp-Jr-500x282_UPDATED-100x100.png": {
+      "assetId": "image-281ec78369c8d9cbc266dcc615cf873cd217b5da-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/281ec78369c8d9cbc266dcc615cf873cd217b5da-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/HTP-1500-100x100.png": {
+      "assetId": "image-820c679f028932dbc20fc96ec30031ad3a37868c-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/820c679f028932dbc20fc96ec30031ad3a37868c-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/rightTemp-screen-100x100.jpg": {
+      "assetId": "image-4748f6cb05dbfc24cc33800b3fb537fccc4a5f51-100x100-jpg",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4748f6cb05dbfc24cc33800b3fb537fccc4a5f51-100x100.jpg"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty2-18.png": {
+      "assetId": "image-d984cdb1647e04173497e51dd42dbd5987078bfc-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d984cdb1647e04173497e51dd42dbd5987078bfc-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty2-18-100x100.png": {
+      "assetId": "image-40ad791a0d1fa94af93ac7487183d600156dc8fd-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/40ad791a0d1fa94af93ac7487183d600156dc8fd-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty2-19-100x100.png": {
+      "assetId": "image-ef2e576ba3d280f3b20193105b907a1ebfe046ae-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ef2e576ba3d280f3b20193105b907a1ebfe046ae-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty2-19.png": {
+      "assetId": "image-ff4c418d64234a01710d6ca9bf01b813fa446c6d-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ff4c418d64234a01710d6ca9bf01b813fa446c6d-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty2-16-100x100.png": {
+      "assetId": "image-1a77745254ef4f28214a81f7f8252fdd640f5c46-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/1a77745254ef4f28214a81f7f8252fdd640f5c46-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty2-16.png": {
+      "assetId": "image-2bf3c104768a00bdd21045402e024ad72ef0a49e-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/2bf3c104768a00bdd21045402e024ad72ef0a49e-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty2-17-100x100.png": {
+      "assetId": "image-7962c7290803435bad5db8d075df60ac1bf35b60-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/7962c7290803435bad5db8d075df60ac1bf35b60-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty2-17.png": {
+      "assetId": "image-f513fe6e05b3596f5f8f159aac9957db6a43f259-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/f513fe6e05b3596f5f8f159aac9957db6a43f259-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty-2-100x100.png": {
+      "assetId": "image-84b7c20258bcbe7518dba6adb2b6bff96b75d74d-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/84b7c20258bcbe7518dba6adb2b6bff96b75d74d-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty-2.png": {
+      "assetId": "image-9622678ef302511c10475009c7fd2bffc43c04bb-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/9622678ef302511c10475009c7fd2bffc43c04bb-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty-1-100x100.png": {
+      "assetId": "image-f1d4fb1ca20fb75d36fd83829e927843acdd2ddc-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/f1d4fb1ca20fb75d36fd83829e927843acdd2ddc-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty-1.png": {
+      "assetId": "image-4530c121272caf9898b9c96951923211b5c8bc9b-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4530c121272caf9898b9c96951923211b5c8bc9b-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty-3-100x100.png": {
+      "assetId": "image-74768bfcd177a61f8e0cefeed95a205080a0b8d9-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/74768bfcd177a61f8e0cefeed95a205080a0b8d9-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty-3.png": {
+      "assetId": "image-974a41cc7448ae5e5bb044fc52fdb1d95490fc47-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/974a41cc7448ae5e5bb044fc52fdb1d95490fc47-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty-4-100x100.png": {
+      "assetId": "image-cf5432d05a05440dd7729b7e87cd6aeac082b60f-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/cf5432d05a05440dd7729b7e87cd6aeac082b60f-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty-4.png": {
+      "assetId": "image-106fa8363908bce484fd35dc86113e831bdd8a69-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/106fa8363908bce484fd35dc86113e831bdd8a69-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty-6-100x100.png": {
+      "assetId": "image-d37dcc818ee407a5f375afda9c4c374fac63dd16-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d37dcc818ee407a5f375afda9c4c374fac63dd16-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty-6.png": {
+      "assetId": "image-ba2986350a5729474801e0463c30c846f4b7be29-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ba2986350a5729474801e0463c30c846f4b7be29-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty-7-100x100.png": {
+      "assetId": "image-8223f50c1c1e94e99cf04d54b75a06d45fad1077-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8223f50c1c1e94e99cf04d54b75a06d45fad1077-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty-7.png": {
+      "assetId": "image-d9c4ecb6420a3394c06cf1081b74c3cd205f1327-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d9c4ecb6420a3394c06cf1081b74c3cd205f1327-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty-8-100x100.png": {
+      "assetId": "image-a88ee2570a101844565c7bc9448b9aa0f8339558-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a88ee2570a101844565c7bc9448b9aa0f8339558-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty-8.png": {
+      "assetId": "image-e45edb53001337256d1be02ade550d27454ad1f1-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e45edb53001337256d1be02ade550d27454ad1f1-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty-12-100x100.png": {
+      "assetId": "image-1e1281668cf4e7722a33ac94a156fd9c5b7eedfa-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/1e1281668cf4e7722a33ac94a156fd9c5b7eedfa-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty-12.png": {
+      "assetId": "image-4ce25b60441ec2dc66f02605032b0924b548537b-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4ce25b60441ec2dc66f02605032b0924b548537b-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty-10-100x100.png": {
+      "assetId": "image-c1c2ad4032bfd5f16bbeae150a3a01564106f249-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/c1c2ad4032bfd5f16bbeae150a3a01564106f249-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty-10.png": {
+      "assetId": "image-055df7ad62e1d24f3a880790d7dca47a2e3aaaf2-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/055df7ad62e1d24f3a880790d7dca47a2e3aaaf2-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty-11-100x100.png": {
+      "assetId": "image-16e1b3530009480fa98d4d5f516907326066ab84-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/16e1b3530009480fa98d4d5f516907326066ab84-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty-11.png": {
+      "assetId": "image-5a378a21f7a653b85f7a20e8dfc441426132487f-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/5a378a21f7a653b85f7a20e8dfc441426132487f-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty2-14-100x100.png": {
+      "assetId": "image-0cd139c1a0c7fa5db942631927599d57daac7ae9-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/0cd139c1a0c7fa5db942631927599d57daac7ae9-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/La_Pias_Ear_Tags-2.png": {
+      "assetId": "image-75b665fd5b8ff33268625c0ab23252230af5cea3-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/75b665fd5b8ff33268625c0ab23252230af5cea3-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/La_Pias_Ear_Tags_on_Rat_pups-1.png": {
+      "assetId": "image-a6037e05b58db02b7004ac298d8147956b20197d-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a6037e05b58db02b7004ac298d8147956b20197d-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/La_Pias_Ear_Tags-2-100x100.png": {
+      "assetId": "image-396bdb57703ddb203867e372f2bcd66c50b6b509-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/396bdb57703ddb203867e372f2bcd66c50b6b509-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/La_Pias_Ear_Tags_on_Rat_pups-1-100x100.png": {
+      "assetId": "image-502d5f242b3a7cc81e7c876fa7951dc6b9dba5fd-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/502d5f242b3a7cc81e7c876fa7951dc6b9dba5fd-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/ear-tag-applicator-2-1-100x100.png": {
+      "assetId": "image-a5fb0ad5194df03dae8fced6370c1151de56302c-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a5fb0ad5194df03dae8fced6370c1151de56302c-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/OCC-XS_cuff_only.png": {
+      "assetId": "image-62bda7ea78ff5718819187abae6b2ecf04903618-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/62bda7ea78ff5718819187abae6b2ecf04903618-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/OCC-XS_cuff_only-100x100.png": {
+      "assetId": "image-8f158f1b2c698329a6ed0f9e0beaafb5bbbec434-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8f158f1b2c698329a6ed0f9e0beaafb5bbbec434-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VPR-S_cuff_only-100x100.png": {
+      "assetId": "image-5ab612582c6b2e6c9990a06fd399168d568c10c6-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/5ab612582c6b2e6c9990a06fd399168d568c10c6-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VPR-S_cuff_only.png": {
+      "assetId": "image-88c14a70a75d49f11697645d1b0938af23496626-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/88c14a70a75d49f11697645d1b0938af23496626-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/10-1000-179-100x100.png": {
+      "assetId": "image-c1a7f700b0f5522fe48fcf18fc90f7d3a5d85276-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/c1a7f700b0f5522fe48fcf18fc90f7d3a5d85276-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SOMNO-5ml_4_5_copy-1.png": {
+      "assetId": "image-515dfafcef70cfc1008998c7cecc1327e1dcd173-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/515dfafcef70cfc1008998c7cecc1327e1dcd173-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SOMNO-5ml_4_5_copy-1-100x100.png": {
+      "assetId": "image-53e3d4d8c735bbc59f45d7a984fb2922569f903a-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/53e3d4d8c735bbc59f45d7a984fb2922569f903a-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SOMNO-10ml_4_5-1-100x100.png": {
+      "assetId": "image-2ae600292cff5f8a815d6e3354201b3ba3deede1-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/2ae600292cff5f8a815d6e3354201b3ba3deede1-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SOMNO-10ml_4_5-1.png": {
+      "assetId": "image-afa902994b18ef35901f033b6610e3276fc4453a-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/afa902994b18ef35901f033b6610e3276fc4453a-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/adapter_kit_2-100x100.png": {
+      "assetId": "image-2e6a1feba61d50ef9ce9e8523baf4d4d4cb2889f-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/2e6a1feba61d50ef9ce9e8523baf4d4d4cb2889f-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/adapter_kit_2.png": {
+      "assetId": "image-824bc2e4c0ef1be1f969b8bcde1796f1f0d7f32c-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/824bc2e4c0ef1be1f969b8bcde1796f1f0d7f32c-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-003-3-100x100.png": {
+      "assetId": "image-f97b0ddb92b3f0ba4fd96e770010b63555379949-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/f97b0ddb92b3f0ba4fd96e770010b63555379949-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-003-3.png": {
+      "assetId": "image-b11287af304207dabb69298b5f33865d3a00a586-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/b11287af304207dabb69298b5f33865d3a00a586-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-004_v2-2.png": {
+      "assetId": "image-74b912318881adf7383e0cabffd31c47a8e7973b-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/74b912318881adf7383e0cabffd31c47a8e7973b-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-004_v2-2-100x100.png": {
+      "assetId": "image-215b95dacd0075abfea6bf765fc6ade4ad1f4072-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/215b95dacd0075abfea6bf765fc6ade4ad1f4072-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-1215-100x100.png": {
+      "assetId": "image-e3e043a259248153db8deb4845f94373aaa228b4-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e3e043a259248153db8deb4845f94373aaa228b4-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/all-holders-3.png": {
+      "assetId": "image-cf47cc327a48c58b26e87cd77bde54545a32c089-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/cf47cc327a48c58b26e87cd77bde54545a32c089-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/NEB-MM_All_Items-2-1-100x100.png": {
+      "assetId": "image-437a1bd79fd4cc9b5bcdc03853d178fd2758145b-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/437a1bd79fd4cc9b5bcdc03853d178fd2758145b-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/all-holders-3-100x100.png": {
+      "assetId": "image-6392ad2fd7b79fa76b97abbd0baf3a3afab6baee-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/6392ad2fd7b79fa76b97abbd0baf3a3afab6baee-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/NEB-7000SM-1-100x100.png": {
+      "assetId": "image-1eebe9a6c493a94054419ee3276d508406e00371-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/1eebe9a6c493a94054419ee3276d508406e00371-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/ear-tag-applicator-2-1.png": {
+      "assetId": "image-b7fb2376249e5a69d56fe6fd5e4c0291cede2dda-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/b7fb2376249e5a69d56fe6fd5e4c0291cede2dda-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/stamped-tags-100x100.png": {
+      "assetId": "image-a85a77cb7bda6fb93608d69e338a3e1b113f8295-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a85a77cb7bda6fb93608d69e338a3e1b113f8295-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Blood_Collection_MCVT200_Group-1.png": {
+      "assetId": "image-dc2f1207228375d74af1b564ac26d0121db9c24f-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/dc2f1207228375d74af1b564ac26d0121db9c24f-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Blood_Collection_MCVT200_Group-1-100x100.png": {
+      "assetId": "image-b49b51ff78331e4f6ea913bfd96a7bd9d7412c02-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/b49b51ff78331e4f6ea913bfd96a7bd9d7412c02-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Stainless-Steel-Brain-Matrices-_-Kent-Scientific-100x100.png": {
+      "assetId": "image-6b6595cf540af3a9ec985c107f72d1bba0ae5243-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/6b6595cf540af3a9ec985c107f72d1bba0ae5243-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Cylinder_Bracket.png": {
+      "assetId": "image-d43fe98aff0b74b093f00876bc6d8bcd2a614370-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d43fe98aff0b74b093f00876bc6d8bcd2a614370-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/cylinder_bracket_on_cart.png": {
+      "assetId": "image-d6a7a9b7effbdd3c6cd11e4c0c8e38cc22ff349f-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d6a7a9b7effbdd3c6cd11e4c0c8e38cc22ff349f-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Cylinder_Bracket-100x100.png": {
+      "assetId": "image-dd4db4fa6291e0d0f360a8d5ec24104f8c5b9ce8-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/dd4db4fa6291e0d0f360a8d5ec24104f8c5b9ce8-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/cylinder_bracket_on_cart-100x100.png": {
+      "assetId": "image-029efa6ef45b00b460175cf52812a75440816438-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/029efa6ef45b00b460175cf52812a75440816438-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/MC-02-100x100.png": {
+      "assetId": "image-91deabfbf0029987a5d077ef3ea34abba83e973c-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/91deabfbf0029987a5d077ef3ea34abba83e973c-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/fine-dressing-forceps-15cm.png": {
+      "assetId": "image-0033ba984ecfa887b66fe6144a390f1b45f5acd0-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/0033ba984ecfa887b66fe6144a390f1b45f5acd0-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/fine-dressing-forceps-15cm-100x100.png": {
+      "assetId": "image-3499dd6890a17aab94905098a6e99c47d35ef72f-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/3499dd6890a17aab94905098a6e99c47d35ef72f-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/super-fine-dressing-forceps-100x100.png": {
+      "assetId": "image-8d2c3ecab9bfd58f1578914f509fcb714af9e4ff-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8d2c3ecab9bfd58f1578914f509fcb714af9e4ff-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/super-fine-dressing-forceps.png": {
+      "assetId": "image-fca209c2e82c9f1bc919929ef5367eae798f64df-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/fca209c2e82c9f1bc919929ef5367eae798f64df-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Hemostat-Forceps-Straight-1-100x100.png": {
+      "assetId": "image-20533356e96c37784fc375ee83da4fd45b1e47e9-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/20533356e96c37784fc375ee83da4fd45b1e47e9-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Hemostat-Forceps-Straight-1.png": {
+      "assetId": "image-dd844d26fc65f42e6df2db68d4c6e52c35b70cf9-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/dd844d26fc65f42e6df2db68d4c6e52c35b70cf9-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Tweezer-5-006-mm-Tips-Detail-100x100.png": {
+      "assetId": "image-08eb10e3c5ebc6962c16e125c46ba8792f34f9c6-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/08eb10e3c5ebc6962c16e125c46ba8792f34f9c6-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/NEB-7000SM-1.png": {
+      "assetId": "image-ab5907f8ea4bb61e0e8b62fe75f0267b1271e90a-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ab5907f8ea4bb61e0e8b62fe75f0267b1271e90a-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/NEB-1400_silo-100x100.png": {
+      "assetId": "image-e344fffc2ee1cb9033a285e90112077683e076be-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e344fffc2ee1cb9033a285e90112077683e076be-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty2-14.png": {
+      "assetId": "image-4c6cbe7eb669f54f86a587e89a9d6f2153890ad5-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4c6cbe7eb669f54f86a587e89a9d6f2153890ad5-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty2-15-100x100.png": {
+      "assetId": "image-8618add1045d7e3c0a78fe7bdef874b08099f732-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8618add1045d7e3c0a78fe7bdef874b08099f732-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty2-15.png": {
+      "assetId": "image-06fc63cf1b95fe569c89da977d36a7bdb2648687-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/06fc63cf1b95fe569c89da977d36a7bdb2648687-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty2-1-100x100.png": {
+      "assetId": "image-d004699c1f9e8d4987ca47053d6db4f043134a36-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d004699c1f9e8d4987ca47053d6db4f043134a36-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty2-1.png": {
+      "assetId": "image-18fea9b0cbf2759741fdcef0cfe7a225ae6509f2-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/18fea9b0cbf2759741fdcef0cfe7a225ae6509f2-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty2-2-100x100.png": {
+      "assetId": "image-3bd2f8a1e72e6d69b00e3851345f6e9823a177de-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/3bd2f8a1e72e6d69b00e3851345f6e9823a177de-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/10/warranty2-2.png": {
+      "assetId": "image-a79921f99fb339f93c3b888c59d2526b29e18488-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a79921f99fb339f93c3b888c59d2526b29e18488-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/caposcan-screen-1.png": {
+      "assetId": "image-356c4b2e4c5d9861973e4e44d2c8ae4ba162ee7c-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/356c4b2e4c5d9861973e4e44d2c8ae4ba162ee7c-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/rightTemp-screen.jpg": {
+      "assetId": "image-c6cd1f21b44d23e448862794cef4f6e5cc89ae2f-400x307-jpg",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/c6cd1f21b44d23e448862794cef4f6e5cc89ae2f-400x307.jpg"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Thermocouple-Meter_no_probe-100x100.png": {
+      "assetId": "image-db6aa3775c018758c8c7373ef45a746366638282-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/db6aa3775c018758c8c7373ef45a746366638282-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-1215.png": {
+      "assetId": "image-2fd3877bdc419a4deb78aa8f4c5d41281f288d5c-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/2fd3877bdc419a4deb78aa8f4c5d41281f288d5c-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-1215_Tubing.png": {
+      "assetId": "image-f7ed10d78f0c92eb66985c200c070e87aec6c346-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/f7ed10d78f0c92eb66985c200c070e87aec6c346-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/25000KA.png": {
+      "assetId": "image-0b4125e97c6dcb5ebef14199d529465f2ac9bcff-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/0b4125e97c6dcb5ebef14199d529465f2ac9bcff-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-1215_Tubing-100x100.png": {
+      "assetId": "image-44fc30d4cd8ebcb2b99fe1c3d07456019d25502a-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/44fc30d4cd8ebcb2b99fe1c3d07456019d25502a-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/25000KA-100x100.png": {
+      "assetId": "image-97b7476ee9fbcaa6c2d737accc32401b2a58a8ec-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/97b7476ee9fbcaa6c2d737accc32401b2a58a8ec-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-1205-100x100.png": {
+      "assetId": "image-d74d895a6feed8959d944283a1444a4f797b1b7f-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d74d895a6feed8959d944283a1444a4f797b1b7f-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-1220.png": {
+      "assetId": "image-b1d9f4eecd9411baa6fc72a93390253ab59a36e3-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/b1d9f4eecd9411baa6fc72a93390253ab59a36e3-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-1220_Tubing.png": {
+      "assetId": "image-a0099674cc7add966c9b3dbecdd1659bd9a8552c-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a0099674cc7add966c9b3dbecdd1659bd9a8552c-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-1220-100x100.png": {
+      "assetId": "image-da2ffdd6640914257cb5dce59acfdd3643a29dad-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/da2ffdd6640914257cb5dce59acfdd3643a29dad-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-1220_Tubing-100x100.png": {
+      "assetId": "image-46d468301c092a9dfedf869ed4066510e6371b2c-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/46d468301c092a9dfedf869ed4066510e6371b2c-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Vaporizer-for-Sevoflurane-100x100.png": {
+      "assetId": "image-238cba231390287d70eac7ffde543284df0c2dbb-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/238cba231390287d70eac7ffde543284df0c2dbb-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-1205.png": {
+      "assetId": "image-d6216a8dbb6988e1e1bc174d29f75d6c2c341b46-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d6216a8dbb6988e1e1bc174d29f75d6c2c341b46-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-1205_Tubing.png": {
+      "assetId": "image-a2e9f08dd456d8d10671f1630dee801e5044b710-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a2e9f08dd456d8d10671f1630dee801e5044b710-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-1205_Tubing-100x100.png": {
+      "assetId": "image-3f8b6f073f6b8cd4fd3adfdcb9ae74795e73df4d-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/3f8b6f073f6b8cd4fd3adfdcb9ae74795e73df4d-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-1225.png": {
+      "assetId": "image-d35a1c6aafcb9a215d3675c8d138a93cbb037600-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d35a1c6aafcb9a215d3675c8d138a93cbb037600-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-1225_Tubing.png": {
+      "assetId": "image-72292ac8625dce521daadf26548b083b34e81bb7-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/72292ac8625dce521daadf26548b083b34e81bb7-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-1225-100x100.png": {
+      "assetId": "image-7116e0431f990d499924fef28590677527e1cc99-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/7116e0431f990d499924fef28590677527e1cc99-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-1225_Tubing-100x100.png": {
+      "assetId": "image-7ba787d344fa01e12cdb8d5fd81f7390400b23c1-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/7ba787d344fa01e12cdb8d5fd81f7390400b23c1-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/canister.png": {
+      "assetId": "image-4390c2a2d10e87e948d892d47ca07638c00675cd-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4390c2a2d10e87e948d892d47ca07638c00675cd-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SOMNO-0602_10-4500_4_5-100x100.png": {
+      "assetId": "image-981593676f291c83b6842e3fb05382500878e2da-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/981593676f291c83b6842e3fb05382500878e2da-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-1231K.png": {
+      "assetId": "image-91c412d96aded6c33a7c519bfac85503fdc0a870-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/91c412d96aded6c33a7c519bfac85503fdc0a870-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-1231K-100x100.png": {
+      "assetId": "image-56bc8f4f5d2dca7644310c3601dc3746737f5d1f-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/56bc8f4f5d2dca7644310c3601dc3746737f5d1f-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Vaporizer-for-Sevoflurane.png": {
+      "assetId": "image-f9c3316e274960b6d2d2f2a3fb3f78770b63f395-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/f9c3316e274960b6d2d2f2a3fb3f78770b63f395-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Tweezer-5-Curved.png": {
+      "assetId": "image-fa5f61c2fce14f1653271e9097d8d0cab63c2d99-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/fa5f61c2fce14f1653271e9097d8d0cab63c2d99-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Tweezer-5-Curved-100x100.png": {
+      "assetId": "image-9aa1197dba3958852f6184b90df03c32aeec060b-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/9aa1197dba3958852f6184b90df03c32aeec060b-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Tweezer-5B.png": {
+      "assetId": "image-cae8b02980f26a78d122c95a8aca871b107d6e6e-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/cae8b02980f26a78d122c95a8aca871b107d6e6e-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Tweezer-5B-100x100.png": {
+      "assetId": "image-8138dfad7874afdc8f847c5912098c772c3e24fa-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8138dfad7874afdc8f847c5912098c772c3e24fa-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Thermocouple-Meter_no_probe.png": {
+      "assetId": "image-9461ccb764ce5a5bfb682238d2e46869b421f171-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/9461ccb764ce5a5bfb682238d2e46869b421f171-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/RightTemp%C2%AE-Sensor-for-Animal-or-Warming-Pad-_-Kent-Scientific-100x100.png": {
+      "assetId": "image-d7c901249ab42f7b8460f1783fccdcab2120b9f9-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d7c901249ab42f7b8460f1783fccdcab2120b9f9-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Tweezer-5-006-mm-Tips-Detail.png": {
+      "assetId": "image-8a3c33cb90f7ffa1c5856cc49c5963bfd1aa5e5a-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8a3c33cb90f7ffa1c5856cc49c5963bfd1aa5e5a-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Tweezer-5-0015-mm-Tips-Detail.png": {
+      "assetId": "image-229b4d2501392a82445af2c78512a0e9c4de178a-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/229b4d2501392a82445af2c78512a0e9c4de178a-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Tweezer-5-0015-mm-Tips-Detail-100x100.png": {
+      "assetId": "image-8e711c3a85bb14a9c2f482365dfbbd14e49bb800-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8e711c3a85bb14a9c2f482365dfbbd14e49bb800-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/ECON_ANI_HOLD_GROUP_silo-3.png": {
+      "assetId": "image-1c1430136d372cbe4146bc02e58afa344cf428c7-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/1c1430136d372cbe4146bc02e58afa344cf428c7-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/ECON_ANI_HOLD_GROUP_silo-3-100x100.png": {
+      "assetId": "image-79a7bad5e0b5d43eb913fa9e5f8733b24e563e3a-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/79a7bad5e0b5d43eb913fa9e5f8733b24e563e3a-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/IMG_20191213_144850162-2-100x100.png": {
+      "assetId": "image-8ffbc25dbe224db05535872f7420d74d0e29bb5a-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8ffbc25dbe224db05535872f7420d74d0e29bb5a-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Tweezer-5.png": {
+      "assetId": "image-4a7b63c382992d229c9f41337f71d7c722fba315-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4a7b63c382992d229c9f41337f71d7c722fba315-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SuperCut-Iris-Scissors-Straight.png": {
+      "assetId": "image-b2d9ac4090ed1a1e99a32982f3029d0a84ede942-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/b2d9ac4090ed1a1e99a32982f3029d0a84ede942-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SuperCut-Iris-Scissors-Straight-100x100.png": {
+      "assetId": "image-61c25f68ac03aa1e942ed0745abf43188f5c45c0-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/61c25f68ac03aa1e942ed0745abf43188f5c45c0-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Magnifiers.png": {
+      "assetId": "image-4c9e302f8ad9f06393563e36d44729381e715fc0-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4c9e302f8ad9f06393563e36d44729381e715fc0-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Magnifiers-100x100.png": {
+      "assetId": "image-0ed31723d1e326c658b2c8bf231df7592d5cc1ea-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/0ed31723d1e326c658b2c8bf231df7592d5cc1ea-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Humaneway%E2%84%A2-Tail-Vein-Simulator-_-Kent-Scientific.png": {
+      "assetId": "image-05266abb3a0e74b9d0cf6b0d51dd2c894f84736a-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/05266abb3a0e74b9d0cf6b0d51dd2c894f84736a-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Humaneway%E2%84%A2-Tail-Vein-Simulator-_-Kent-Scientific-100x100.png": {
+      "assetId": "image-15fa66550f9093b2da0043fc9e81d7a0b09ba491-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/15fa66550f9093b2da0043fc9e81d7a0b09ba491-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/BLD-HW-BS_2-100x100.png": {
+      "assetId": "image-d342c5ca2db7f4202d1794c2cc54e28c480059b3-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d342c5ca2db7f4202d1794c2cc54e28c480059b3-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Feeding-Needle-staright-2.png": {
+      "assetId": "image-3028673ae49a1cc59c639c6df554825a60426041-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/3028673ae49a1cc59c639c6df554825a60426041-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Feeding-Needle-staright-2-100x100.png": {
+      "assetId": "image-3cd5b4f267bbdc9fd12b3c9e7f0bccdfa051f2ed-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/3cd5b4f267bbdc9fd12b3c9e7f0bccdfa051f2ed-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Feeding-Needle-curved-2-100x100.png": {
+      "assetId": "image-ba2f1f6f313fa226e50cb7617900e76c45b74f1d-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ba2f1f6f313fa226e50cb7617900e76c45b74f1d-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/striaght-serrated-needle-holder-INS600110_PROFILE_silo.jpg": {
+      "assetId": "image-ed77aa808bf3746bcce9657f58dd0c9dfc7892ad-800x533-jpg",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ed77aa808bf3746bcce9657f58dd0c9dfc7892ad-800x533.jpg"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/INS600-KIT-100x100.png": {
+      "assetId": "image-d2c040bcc24a2673a9b6ff32bf364f772e60cd37-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d2c040bcc24a2673a9b6ff32bf364f772e60cd37-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/INS600-KIT.png": {
+      "assetId": "image-b61f11027b948798033d3ee18c758c72cc01f8c2-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/b61f11027b948798033d3ee18c758c72cc01f8c2-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Spring-Scissors-Curved-2-100x100.png": {
+      "assetId": "image-f230295561db20b2912f1409d933188056aed57b-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/f230295561db20b2912f1409d933188056aed57b-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5023-3_silo-2.png": {
+      "assetId": "image-8a9cee2debd0f945c78094a929aa889f7508a580-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8a9cee2debd0f945c78094a929aa889f7508a580-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5023-3_silo-2-100x100.png": {
+      "assetId": "image-3ffdef56b78c037a358477a9d974e792e0f66dbf-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/3ffdef56b78c037a358477a9d974e792e0f66dbf-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/NEB-1400_silo.png": {
+      "assetId": "image-d38f9f33d49c22fbab28a5dcbd517147a061106b-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d38f9f33d49c22fbab28a5dcbd517147a061106b-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/NEB_holder_only__w_tubing-100x100.png": {
+      "assetId": "image-2b989910b8706adbe07c25c50f6165cf1df3c01a-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/2b989910b8706adbe07c25c50f6165cf1df3c01a-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/stamped-tags.png": {
+      "assetId": "image-0f7e347785907cbe54b2c8d895547680d55568a4-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/0f7e347785907cbe54b2c8d895547680d55568a4-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/applicator-tool-and-tag.png": {
+      "assetId": "image-a595fb330ce7ce0e3ae8477680d2ab0640c26253-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a595fb330ce7ce0e3ae8477680d2ab0640c26253-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/applicator-tool-and-tag-100x100.png": {
+      "assetId": "image-4e6d9d6f8e88b31f1c8c4ab3a0904576b6c74e59-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4e6d9d6f8e88b31f1c8c4ab3a0904576b6c74e59-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/IM-100C-2-100x100.png": {
+      "assetId": "image-6f3b494068e66ff03aaebf769cac1d934f989025-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/6f3b494068e66ff03aaebf769cac1d934f989025-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/10-1000-179.png": {
+      "assetId": "image-e98da81830d08dfc988ea47a6c8c91cf75b16a89-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e98da81830d08dfc988ea47a6c8c91cf75b16a89-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/IMG_20191213_144850162-2.png": {
+      "assetId": "image-40778bbcc2c0708ed7bcf6c511fbeae8fbe4d324-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/40778bbcc2c0708ed7bcf6c511fbeae8fbe4d324-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/OCC-XS-BLAD-2-100x100.png": {
+      "assetId": "image-ea6e00c62600a0475c5f6339d0e772b599393638-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ea6e00c62600a0475c5f6339d0e772b599393638-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Stainless-Steel-Brain-Matrices-_-Kent-Scientific.png": {
+      "assetId": "image-f04ff4fee783c75bb78f4ef78eb3b2ed48475791-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/f04ff4fee783c75bb78f4ef78eb3b2ed48475791-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Blood_Collection_MTSC_Group-100x100.png": {
+      "assetId": "image-ecfef9c1c44b8cf4a6a666a15c9583b61d3b8487-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ecfef9c1c44b8cf4a6a666a15c9583b61d3b8487-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Spring-Scissors-Curved-2.png": {
+      "assetId": "image-f257f0703686642bde231df044af309e7862b6e3-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/f257f0703686642bde231df044af309e7862b6e3-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Spring-Scissors-Curved-100x100.png": {
+      "assetId": "image-1dcebd8ebb9e4977a3c2a1cd655df43780a3793f-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/1dcebd8ebb9e4977a3c2a1cd655df43780a3793f-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Spring-Scissors-Curved.png": {
+      "assetId": "image-4cd322e89206988e3b8f5ee1623515c8a849fffa-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4cd322e89206988e3b8f5ee1623515c8a849fffa-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Small-Bulldog-Clamp-100x100.png": {
+      "assetId": "image-b8f3dadea91f805bc10d395e70c7547c8d3fafd8-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/b8f3dadea91f805bc10d395e70c7547c8d3fafd8-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SOMNO-0602_10-4500_4_5.png": {
+      "assetId": "image-8819149a4134f4ea432fceca85ecdbd5e4fa9859-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8819149a4134f4ea432fceca85ecdbd5e4fa9859-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SomnoSuiteTypSetup.png": {
+      "assetId": "image-7113404e462236cbce42df5f6e3e561d6b34545c-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/7113404e462236cbce42df5f6e3e561d6b34545c-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SomnoSuiteTypSetup-100x100.png": {
+      "assetId": "image-1e5977d45cf753b48015b3c6e67a4aca625f8c2c-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/1e5977d45cf753b48015b3c6e67a4aca625f8c2c-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/10-4000-66.png": {
+      "assetId": "image-7861ed5bafdfd07987cd454f85a2e18fc811e31b-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/7861ed5bafdfd07987cd454f85a2e18fc811e31b-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/chambers-no_tubing-100x100.png": {
+      "assetId": "image-63f2b4381da18481b56a90b59bea9847df25f34c-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/63f2b4381da18481b56a90b59bea9847df25f34c-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SOMNO-Fill-Iso_4_5_copy.png": {
+      "assetId": "image-2f9dcd74020f8552ac2085e978c344ec000112d7-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/2f9dcd74020f8552ac2085e978c344ec000112d7-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SOMNO-Fill-Sevo_4_5_copy.png": {
+      "assetId": "image-9d067db3472119b4f5f1c06cdf155ef1249eff68-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/9d067db3472119b4f5f1c06cdf155ef1249eff68-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SOMNO-Fill-Iso_4_5_copy-100x100.png": {
+      "assetId": "image-b835a0f4fb72da04b46d6b7b4522572f366ccbcd-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/b835a0f4fb72da04b46d6b7b4522572f366ccbcd-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SOMNO-Fill-Sevo_4_5_copy-100x100.png": {
+      "assetId": "image-4bb227bd221b0932f38d9266ea155fb76cbf501a-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4bb227bd221b0932f38d9266ea155fb76cbf501a-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/chambers-no_tubing.png": {
+      "assetId": "image-7e19feb482b5f74848dd53a490cbe83f39dafe17-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/7e19feb482b5f74848dd53a490cbe83f39dafe17-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/0309_Yellow-100x100.png": {
+      "assetId": "image-b2d1705d7846481aa8773c3c4a2bfc6788c9ae20-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/b2d1705d7846481aa8773c3c4a2bfc6788c9ae20-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo_Chambers_lo_res_no_tubing.png": {
+      "assetId": "image-8b00fba34492cd1987c769e4e9e6ed9462b1abfd-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8b00fba34492cd1987c769e4e9e6ed9462b1abfd-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Small-Bulldog-Clamp.png": {
+      "assetId": "image-753ef87c9cd51dd575193d4665b6f07927e6963d-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/753ef87c9cd51dd575193d4665b6f07927e6963d-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/RETRACTOR_TIPS_copy-2-100x100.png": {
+      "assetId": "image-ebdda35a6d23b4cee06a53503a4dd73818e21353-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ebdda35a6d23b4cee06a53503a4dd73818e21353-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/RightTemp%C2%AE-Sensor-for-Animal-or-Warming-Pad-_-Kent-Scientific.png": {
+      "assetId": "image-038bdd1c8f16e4a87de253c015dbccdf1dbc4870-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/038bdd1c8f16e4a87de253c015dbccdf1dbc4870-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Rectal-Probe-for-Rats-100x100.png": {
+      "assetId": "image-fb27a0da99090d7a93d87b514734a4838158ded4-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/fb27a0da99090d7a93d87b514734a4838158ded4-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/RETRACTOR_TIPS_copy-2.png": {
+      "assetId": "image-1ff426a0e70323dfe29ea67c40114ad31cb8f02c-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/1ff426a0e70323dfe29ea67c40114ad31cb8f02c-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5021-2_VERSION2_copy-2-100x100.png": {
+      "assetId": "image-ac037badca409e50107d5bfa8486a57301db6d20-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ac037badca409e50107d5bfa8486a57301db6d20-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Retractor-Wires.png": {
+      "assetId": "image-149107a3cb3bdd0f24a1f83513d664c182f8df2d-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/149107a3cb3bdd0f24a1f83513d664c182f8df2d-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Retractor-Wires-100x100.png": {
+      "assetId": "image-ae11dc78f1228474ef8a212c2dbc5dadcb0b8a4e-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ae11dc78f1228474ef8a212c2dbc5dadcb0b8a4e-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Replacement-Glass-Beads.png": {
+      "assetId": "image-cc8357d9f25e97d06a0786af507f1dbb2a1f8184-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/cc8357d9f25e97d06a0786af507f1dbb2a1f8184-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Replacement-Glass-Beads-100x100.png": {
+      "assetId": "image-04b704044cd6e8efcda137ae7ab72684d84d3c33-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/04b704044cd6e8efcda137ae7ab72684d84d3c33-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/autoclip_remover-100x100.png": {
+      "assetId": "image-1a9c1004c542559d4707e5ef0c9b7c2b09b0760a-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/1a9c1004c542559d4707e5ef0c9b7c2b09b0760a-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5021-2_VERSION2_copy-2.png": {
+      "assetId": "image-889d90b26c64d245297a3770a8b07349730ea157-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/889d90b26c64d245297a3770a8b07349730ea157-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5022-2_VERSION2_copy-2.png": {
+      "assetId": "image-0e4f0543193833b1a20c634ec36ba3fa7854e6b8-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/0e4f0543193833b1a20c634ec36ba3fa7854e6b8-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5022-2_VERSION2_copy-2-100x100.png": {
+      "assetId": "image-a905957678200fe3c1a98edde8a27fcc2f211ba5-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a905957678200fe3c1a98edde8a27fcc2f211ba5-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Reflex-Clips-100x100.png": {
+      "assetId": "image-d14a46674867f013635840d8d170567e4250a43f-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d14a46674867f013635840d8d170567e4250a43f-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/OCC-XS-BLAD-2.png": {
+      "assetId": "image-8690547a3f5b6eaf3de9c2b242d9ccf2a1930c38-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8690547a3f5b6eaf3de9c2b242d9ccf2a1930c38-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/0309_Yellow.png": {
+      "assetId": "image-66207f3d8a007ca483ae30fcdb844c7d085406c4-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/66207f3d8a007ca483ae30fcdb844c7d085406c4-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Oxygen-Concentrator-100x100.png": {
+      "assetId": "image-87b1f79a241ffa86130cf6d73bbf6853a24d7272-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/87b1f79a241ffa86130cf6d73bbf6853a24d7272-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Reflex-Clips.png": {
+      "assetId": "image-24e398e82dfdb76f8aade3025d9096d36cbb0975-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/24e398e82dfdb76f8aade3025d9096d36cbb0975-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Reflex-Clip-Applier-100x100.png": {
+      "assetId": "image-e88afbd61eaddc194e8ab7fdee9f5fb682069740-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e88afbd61eaddc194e8ab7fdee9f5fb682069740-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/autoclip_remover.png": {
+      "assetId": "image-2418291244ade729f0ed3f5a3d20e4c9f217827f-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/2418291244ade729f0ed3f5a3d20e4c9f217827f-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/7mm_refl.png": {
+      "assetId": "image-948792f10773ea7b42bb4b666ae583b86ec12513-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/948792f10773ea7b42bb4b666ae583b86ec12513-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/7mm_refl-100x100.png": {
+      "assetId": "image-164dfb635ed584b22496106fd844380a63be92f6-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/164dfb635ed584b22496106fd844380a63be92f6-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Reflex-Clip-Applier.png": {
+      "assetId": "image-835f1902ad2cd111536fd255f05385b6e1cdd8cb-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/835f1902ad2cd111536fd255f05385b6e1cdd8cb-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-50002_copy-2-100x100.png": {
+      "assetId": "image-6b4b865bf0e398e31f1c60e6243da82254b2fe25-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/6b4b865bf0e398e31f1c60e6243da82254b2fe25-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Rat-Surgical-Instrument-Kit.png": {
+      "assetId": "image-e40500477c480aa4b336bbba7cf48718a7ce0957-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e40500477c480aa4b336bbba7cf48718a7ce0957-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Rat-Surgical-Instrument-Kit-100x100.png": {
+      "assetId": "image-e53d958dec8eff5b64c1d1c5008d8494e419707d-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e53d958dec8eff5b64c1d1c5008d8494e419707d-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Rectal-Probe-for-Mice.png": {
+      "assetId": "image-a3dfb101883881a484ece342ab6fbdf7c4ebf471-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a3dfb101883881a484ece342ab6fbdf7c4ebf471-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Rectal-Probe-for-Mice-100x100.png": {
+      "assetId": "image-4ba163424df7ae8626a167b62f0d5bc623ebd9a2-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4ba163424df7ae8626a167b62f0d5bc623ebd9a2-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Rat-paw-pulse-oximeter-sensor-1-100x100.png": {
+      "assetId": "image-9a41c20556ccf4c7d7d05dd9dd2de21ec1439239-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/9a41c20556ccf4c7d7d05dd9dd2de21ec1439239-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Rectal-Probe-for-Rats.png": {
+      "assetId": "image-21484cc55d6b73689c7c7af3a42e619762e37423-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/21484cc55d6b73689c7c7af3a42e619762e37423-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-50002_copy-2.png": {
+      "assetId": "image-04a0a461d58ef9d4f2e78a8670a68de214039187-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/04a0a461d58ef9d4f2e78a8670a68de214039187-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Magnetic-Fixators-1.png": {
+      "assetId": "image-978f52cc5c9417a62335ce0dac3926fa85ff6c55-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/978f52cc5c9417a62335ce0dac3926fa85ff6c55-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Magnetic-Fixators-1-100x100.png": {
+      "assetId": "image-874a078dfa39dd9bb8ba594668ae14fb669d2986-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/874a078dfa39dd9bb8ba594668ae14fb669d2986-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5020-3_SINGLE_copy-100x100.png": {
+      "assetId": "image-e61f6098cffc4b1be366a3abfffb7c5827f826a7-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e61f6098cffc4b1be366a3abfffb7c5827f826a7-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SPO2-9MMM-1.png": {
+      "assetId": "image-fd8d9fe1bbab855b29452955464c98a58af479f8-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/fd8d9fe1bbab855b29452955464c98a58af479f8-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/2_sensors_for_web-100x100.png": {
+      "assetId": "image-b0afc4cc437154b215c1a805453ac7bc58f6efed-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/b0afc4cc437154b215c1a805453ac7bc58f6efed-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Rat-paw-pulse-oximeter-sensor-1.png": {
+      "assetId": "image-0f917fb4a6093e7cbaee4f81b03e39508ed706c0-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/0f917fb4a6093e7cbaee4f81b03e39508ed706c0-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/2_sensors_for_web.png": {
+      "assetId": "image-88b4086c950b9be2c150e7c7eaa6649e82f7a30c-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/88b4086c950b9be2c150e7c7eaa6649e82f7a30c-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SPO2-5MMM.png": {
+      "assetId": "image-27f39318de11faaf065e87875f37e4bcbcd78549-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/27f39318de11faaf065e87875f37e4bcbcd78549-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SPO2-5MMM-100x100.png": {
+      "assetId": "image-aad5d5c9006aaa917e8cf2d5e413d8ecdef5428e-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/aad5d5c9006aaa917e8cf2d5e413d8ecdef5428e-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CODA-IRT_silo-100x100.png": {
+      "assetId": "image-d27019ead279032c34acf383827a53f44a4c8d53-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d27019ead279032c34acf383827a53f44a4c8d53-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CBL-03-EXT.png": {
+      "assetId": "image-25a8d55fb6ef1392f1853b5990a04dc4cd5fc9d6-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/25a8d55fb6ef1392f1853b5990a04dc4cd5fc9d6-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CBL-03-EXT-100x100.png": {
+      "assetId": "image-e10925734e3f55caa139747d76bc1edeed71c52d-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e10925734e3f55caa139747d76bc1edeed71c52d-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5020-3_SINGLE_copy.png": {
+      "assetId": "image-4783784f562b822cf5cb5be72c22604a0679d4a1-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4783784f562b822cf5cb5be72c22604a0679d4a1-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5020-3_VERSION2_copy.png": {
+      "assetId": "image-0eb818ddf039290c67930663fed2240542bc9832-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/0eb818ddf039290c67930663fed2240542bc9832-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5020-3_VERSION2_copy-100x100.png": {
+      "assetId": "image-a6ebe7ec9d3491e2b80eb725d0c1f3b272436834-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a6ebe7ec9d3491e2b80eb725d0c1f3b272436834-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/12/Mouse-Surgical-Instrument-Kit-100x100.png": {
+      "assetId": "image-4ff83339a5eda0aa0533c0821e3fe2b6aa5abe6e-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4ff83339a5eda0aa0533c0821e3fe2b6aa5abe6e-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/799822_silo.png": {
+      "assetId": "image-05f35fae109688fcad1e8eada6ed4ecca88ee6e4-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/05f35fae109688fcad1e8eada6ed4ecca88ee6e4-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/799822_silo-100x100.png": {
+      "assetId": "image-9c54dc5ec7ddf3ca8561f243e7abf61a36ee9bc5-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/9c54dc5ec7ddf3ca8561f243e7abf61a36ee9bc5-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Low_Profile_4_sizes__2-2-100x100.png": {
+      "assetId": "image-587f76435945e6a76956271485f5a0fe74bc608c-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/587f76435945e6a76956271485f5a0fe74bc608c-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Pocket-Reader.png": {
+      "assetId": "image-5faa8eaf105b4f63e0fda8da79d6dc1b3453e7da-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/5faa8eaf105b4f63e0fda8da79d6dc1b3453e7da-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Pocket-Reader-100x100.png": {
+      "assetId": "image-03d3b54bb52175c1ae6318b1e2fc1edf871692f9-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/03d3b54bb52175c1ae6318b1e2fc1edf871692f9-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Bluetooth-reader-1-100x100.png": {
+      "assetId": "image-e6047b353f3e512512665adb7fc0358ed4767cca-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e6047b353f3e512512665adb7fc0358ed4767cca-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/IM-100C-2.png": {
+      "assetId": "image-519240433ecda45b5baa524075e451ed744af6b5-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/519240433ecda45b5baa524075e451ed744af6b5-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/IM-300C_with_transponder-2.png": {
+      "assetId": "image-f2568f4df5b0e8c545b9ddb6fc43415301e36925-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/f2568f4df5b0e8c545b9ddb6fc43415301e36925-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/IM-300C_with_transponder-2-100x100.png": {
+      "assetId": "image-a0d43f8cedc1ca8b59fdf966c93fce4109c10cff-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a0d43f8cedc1ca8b59fdf966c93fce4109c10cff-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Oxygen-Concentrator.png": {
+      "assetId": "image-e10f26294d3f53078d05e04445f3c3fb7066ba65-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e10f26294d3f53078d05e04445f3c3fb7066ba65-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-003.png": {
+      "assetId": "image-b11287af304207dabb69298b5f33865d3a00a586-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/b11287af304207dabb69298b5f33865d3a00a586-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-004_v1-3.png": {
+      "assetId": "image-a16ca91ad1fea8ae1baa76333abb7fcc2e19e353-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a16ca91ad1fea8ae1baa76333abb7fcc2e19e353-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-003-100x100.png": {
+      "assetId": "image-0cb1e9673df1c55a5b76800888c5253a10edba9f-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/0cb1e9673df1c55a5b76800888c5253a10edba9f-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-004_v1-3-100x100.png": {
+      "assetId": "image-74934ff01e83741c6e6b37e9f5082b370a87a6f9-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/74934ff01e83741c6e6b37e9f5082b370a87a6f9-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/NEB_holder_only__w_tubing.png": {
+      "assetId": "image-6344851246af2f00f4574c67c8cc067cdc851cc5-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/6344851246af2f00f4574c67c8cc067cdc851cc5-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/holder-rat-medium.png": {
+      "assetId": "image-be40ebeb7d75fd3a85654a32b749754ba3619324-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/be40ebeb7d75fd3a85654a32b749754ba3619324-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/holder-mouse-large.png": {
+      "assetId": "image-64a5f22ceba6840a7d41ebe6730abcd9ede75e42-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/64a5f22ceba6840a7d41ebe6730abcd9ede75e42-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/holder-mouse-medium.png": {
+      "assetId": "image-b377f1f4f640285a0b49af4da81dc5c3baf75d01-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/b377f1f4f640285a0b49af4da81dc5c3baf75d01-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/holder-mouse-small.png": {
+      "assetId": "image-6f99c1278b2106cb9f95dc3ba3d8feefdaa935e2-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/6f99c1278b2106cb9f95dc3ba3d8feefdaa935e2-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/holder-rat-large-1.png": {
+      "assetId": "image-d0b98a8f56dcd2633352f7eda837bb85f6e78f41-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d0b98a8f56dcd2633352f7eda837bb85f6e78f41-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/holder-rat-small.png": {
+      "assetId": "image-57d0a82b39b05e6eba8fbfc42ae0ed99c4290e76-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/57d0a82b39b05e6eba8fbfc42ae0ed99c4290e76-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/holder-rat-xlarge.png": {
+      "assetId": "image-02f2683655d99946e915dc8ea510a5dc342c5234-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/02f2683655d99946e915dc8ea510a5dc342c5234-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/holder-rat-medium-100x100.png": {
+      "assetId": "image-a48e71de55042e67b90b62dd838944201582e295-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a48e71de55042e67b90b62dd838944201582e295-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/holder-mouse-large-100x100.png": {
+      "assetId": "image-af894504aa50ae58fc3c139b0f6fbad538957bd3-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/af894504aa50ae58fc3c139b0f6fbad538957bd3-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/holder-mouse-medium-100x100.png": {
+      "assetId": "image-25d33a091c490d785e3ed1ec78f85050a18a3c84-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/25d33a091c490d785e3ed1ec78f85050a18a3c84-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/holder-mouse-small-100x100.png": {
+      "assetId": "image-1698cbf2e1ac65448e9f8813224de511a9e9e2b3-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/1698cbf2e1ac65448e9f8813224de511a9e9e2b3-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/holder-rat-large-1-100x100.png": {
+      "assetId": "image-08172bcaac34838a2f7430e62d860b45b343fbd1-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/08172bcaac34838a2f7430e62d860b45b343fbd1-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/holder-rat-small-100x100.png": {
+      "assetId": "image-5e81fbc5d7f80a5f3b4c0b75490655f101389788-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/5e81fbc5d7f80a5f3b4c0b75490655f101389788-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/holder-rat-xlarge-100x100.png": {
+      "assetId": "image-10a2c2e1404b7a96267568db1e982d75d41afb3d-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/10a2c2e1404b7a96267568db1e982d75d41afb3d-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/NEB-1301_noted-100x100.png": {
+      "assetId": "image-a4b3e841d7cc2ec1ee61436e5aca45690a2debe4-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a4b3e841d7cc2ec1ee61436e5aca45690a2debe4-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CODA-IRT_silo.png": {
+      "assetId": "image-c4dcc35673cdf938475f29d86ce6b9a75ec16cc9-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/c4dcc35673cdf938475f29d86ce6b9a75ec16cc9-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Temporary_image_of_mouse_tunnels-2-100x100.png": {
+      "assetId": "image-da7b82eee169b68bd735c34dff7cc5b48d3fadf0-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/da7b82eee169b68bd735c34dff7cc5b48d3fadf0-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CODA-MRI_4_5.png": {
+      "assetId": "image-706733cf62762608285d44b5a8f0866f52ae2812-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/706733cf62762608285d44b5a8f0866f52ae2812-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/MSE-CUFFKIT_cuffs_only_labeled-100x100.png": {
+      "assetId": "image-39a8b8e10330b80290da0e214e52a991231dcfbd-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/39a8b8e10330b80290da0e214e52a991231dcfbd-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/NEB-1301_noted.png": {
+      "assetId": "image-b80dec1476e454dc99581aa478bbd34b77ba044f-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/b80dec1476e454dc99581aa478bbd34b77ba044f-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/NEB-0801-100x100.png": {
+      "assetId": "image-f788c5cfc13a2c21c1ba5b6362bb05e789e2e395-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/f788c5cfc13a2c21c1ba5b6362bb05e789e2e395-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/12/Mouse-Surgical-Instrument-Kit.png": {
+      "assetId": "image-8f1d3a97212817875b6638fd0683cc34b7de513c-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8f1d3a97212817875b6638fd0683cc34b7de513c-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5001_copy-2-100x100.png": {
+      "assetId": "image-46404f7853363656ee7936cc9a045a12f5538882-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/46404f7853363656ee7936cc9a045a12f5538882-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Temporary_image_of_mouse_tunnels-2.png": {
+      "assetId": "image-6d8d9c870af86574a43bf987dd865e24d7d489a4-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/6d8d9c870af86574a43bf987dd865e24d7d489a4-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/miniARCO-clipper-2-100x100.png": {
+      "assetId": "image-e62820cb9600c905e239e66ac5953986d2575495-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e62820cb9600c905e239e66ac5953986d2575495-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Pulse-oximeter-sensor-1.png": {
+      "assetId": "image-0142462209ccabba2cba6976fc0c348d49725a4d-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/0142462209ccabba2cba6976fc0c348d49725a4d-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SPO2-9MMM-1-1-100x100.png": {
+      "assetId": "image-65d2144c83df4ee746a8d786c016000d1e3f1ad1-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/65d2144c83df4ee746a8d786c016000d1e3f1ad1-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5001_copy-2.png": {
+      "assetId": "image-4318061a98ae65a7fb21f523f95f27c23709060f-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4318061a98ae65a7fb21f523f95f27c23709060f-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Magnetic-Fixators.png": {
+      "assetId": "image-fb7d7972acd78d86af87e604c7c3f8bc998b66d3-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/fb7d7972acd78d86af87e604c7c3f8bc998b66d3-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Magnetic-Fixators-100x100.png": {
+      "assetId": "image-353abdfaacd02f6a739b4e277777b3e39fb6566b-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/353abdfaacd02f6a739b4e277777b3e39fb6566b-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Vessel-cannulation-kit-100x100.png": {
+      "assetId": "image-ea370889db6186b1aac2eb65b7d8c2bbc95f79a8-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ea370889db6186b1aac2eb65b7d8c2bbc95f79a8-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Vessel-cannulation-kit.png": {
+      "assetId": "image-8c173b0456a60cb7b01e2e8e5341cfd04bc31a72-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8c173b0456a60cb7b01e2e8e5341cfd04bc31a72-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Micro-Bulldog-Clamp-100x100.png": {
+      "assetId": "image-80aa5bea3966e9cd9b545bc78bcf306ed8b17f34-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/80aa5bea3966e9cd9b545bc78bcf306ed8b17f34-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/MC-01.png": {
+      "assetId": "image-f81140828a59d998db2db64d62b42fe6fafe0177-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/f81140828a59d998db2db64d62b42fe6fafe0177-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/MC-01-100x100.png": {
+      "assetId": "image-349f0d46cad4a0f721382255e445da601f05ebfb-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/349f0d46cad4a0f721382255e445da601f05ebfb-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/miniARCO-clipper-2.png": {
+      "assetId": "image-c9006b6d2bafca88de6ed0e99f06a7d3b93f6cac-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/c9006b6d2bafca88de6ed0e99f06a7d3b93f6cac-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/FLAT_BOT_ANI_HOLDER_GROUP_silo-2-100x100.png": {
+      "assetId": "image-7841f062a84d8d3cbd043b23d2b5371ac79e9fcf-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/7841f062a84d8d3cbd043b23d2b5371ac79e9fcf-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/MC-02.png": {
+      "assetId": "image-055107bdaf5f8575cb8bc2f115f031380c3458be-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/055107bdaf5f8575cb8bc2f115f031380c3458be-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Blood_Collection_KMIC_Group.png": {
+      "assetId": "image-1257badc8ee5fccd8e04e97246fda68548193311-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/1257badc8ee5fccd8e04e97246fda68548193311-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Blood_Collection_KMIC_Group-100x100.png": {
+      "assetId": "image-21072321cbecb39684eda39470121cdb9fe07d04-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/21072321cbecb39684eda39470121cdb9fe07d04-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Blood_Collection_MCVT100_Group-100x100.png": {
+      "assetId": "image-22fcd4a1ee595e9906ef753f51f81e2122b2f4f9-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/22fcd4a1ee595e9906ef753f51f81e2122b2f4f9-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Blood_Collection_MTSC_Group.png": {
+      "assetId": "image-4465388993e83256cf4482a515331ee1bbb86c51-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4465388993e83256cf4482a515331ee1bbb86c51-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Bluetooth-reader-1.png": {
+      "assetId": "image-9d0ee62d858ffe779f4bccbe7726d3e1788a6fa8-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/9d0ee62d858ffe779f4bccbe7726d3e1788a6fa8-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/ID-100C_closeup-2-100x100.png": {
+      "assetId": "image-916e1b31c2caf814d3f1a1c67d8e90660bab9bd3-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/916e1b31c2caf814d3f1a1c67d8e90660bab9bd3-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/ID-100C_closeup-2.png": {
+      "assetId": "image-802710ce2deeacbb81a9b3bce6cdfb249d5c2dc6-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/802710ce2deeacbb81a9b3bce6cdfb249d5c2dc6-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/laser-etched-2sided-ear-tags-100x100.png": {
+      "assetId": "image-8a1215c5dbf5ed2e576d4d9cd5a7f39c48fa6709-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8a1215c5dbf5ed2e576d4d9cd5a7f39c48fa6709-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Blood_Collection_MCVT100_Group.png": {
+      "assetId": "image-2aa124f58385e4359a9c94c89b351bf5fafd49a0-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/2aa124f58385e4359a9c94c89b351bf5fafd49a0-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/INF-HW-BI-100x100.png": {
+      "assetId": "image-0622fbf9ff145401f00fde4713560f91d171e16a-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/0622fbf9ff145401f00fde4713560f91d171e16a-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Micro-Bulldog-Clamp.png": {
+      "assetId": "image-3ee3afb53b1f11139df67e97edca2f1e13878acc-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/3ee3afb53b1f11139df67e97edca2f1e13878acc-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Mayo-Op-Scissors-Straight-100x100.png": {
+      "assetId": "image-6170342f601fb8c05d3cc1779a8cfbcd16cef258-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/6170342f601fb8c05d3cc1779a8cfbcd16cef258-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/fine-dressing-forceps.png": {
+      "assetId": "image-4d4e33d4c3afbfbaa7c150f14f108d4434180d02-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4d4e33d4c3afbfbaa7c150f14f108d4434180d02-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/fine-dressing-forceps-100x100.png": {
+      "assetId": "image-1df09185a1736c5851ccfb4cfb8244aac00904f3-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/1df09185a1736c5851ccfb4cfb8244aac00904f3-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/McPherson-Vannas-Micro-Scissors-7-cm.png": {
+      "assetId": "image-74d34e0f381936487c7f3f9c0afed1767408b09b-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/74d34e0f381936487c7f3f9c0afed1767408b09b-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/McPherson-Vannas-Micro-Scissors-7-cm-100x100.png": {
+      "assetId": "image-6d305793dd646fa0bbe0e9cd9fecf2c957e94c02-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/6d305793dd646fa0bbe0e9cd9fecf2c957e94c02-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5011-2_PAIR_silo-2-100x100.png": {
+      "assetId": "image-0370845dab323d641de1b0cb64acca2f52d26cbb-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/0370845dab323d641de1b0cb64acca2f52d26cbb-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/McPherson-Vannas-Micro-Scissors-7-cm-1.png": {
+      "assetId": "image-5195c4ea49cf7cd4b2382154825c02aac371c933-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/5195c4ea49cf7cd4b2382154825c02aac371c933-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/McPherson-Vannas-Micro-Scissors-7-cm-1-100x100.png": {
+      "assetId": "image-8faf4fda61fe597cfbb0946782f2b6d2080babf1-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8faf4fda61fe597cfbb0946782f2b6d2080babf1-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5030-2.png": {
+      "assetId": "image-96ee0e0e01e0983fc34c7f897928300ed6088ed4-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/96ee0e0e01e0983fc34c7f897928300ed6088ed4-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5030-2-100x100.png": {
+      "assetId": "image-c9a1da20597982520c2f9fe30b075c33875717b0-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/c9a1da20597982520c2f9fe30b075c33875717b0-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Mayo-Op-Scissors-Straight.png": {
+      "assetId": "image-17a10516da0d4ebbd1f115d1c1d16b6ca77d4fe2-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/17a10516da0d4ebbd1f115d1c1d16b6ca77d4fe2-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5011-2_PAIR_silo-2.png": {
+      "assetId": "image-5a2604ffd0282bb562fb0e6deab89d151cc232c1-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/5a2604ffd0282bb562fb0e6deab89d151cc232c1-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5010-2_PAIR_silo-2.png": {
+      "assetId": "image-483722068e3c9778e7a9e6d4b0033f3ade458387-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/483722068e3c9778e7a9e6d4b0033f3ade458387-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5010-2_PAIR_silo-2-100x100.png": {
+      "assetId": "image-965d5bab688288efb6d898d69ced327796fdb3f1-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/965d5bab688288efb6d898d69ced327796fdb3f1-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5003_silo-100x100.png": {
+      "assetId": "image-5b0580af8c9a6b84f2f22ae1b5035d1818c6dc58-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/5b0580af8c9a6b84f2f22ae1b5035d1818c6dc58-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Low_Profile_4_sizes__2-2.png": {
+      "assetId": "image-061d006bde4dd17bbc207f7d4d58bb13ea87d737-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/061d006bde4dd17bbc207f7d4d58bb13ea87d737-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Anesthesia-Masks.png": {
+      "assetId": "image-d30edf826cf426970c53d29e038877cdd2956ef5-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d30edf826cf426970c53d29e038877cdd2956ef5-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Mouse_with_Facemask.png": {
+      "assetId": "image-0647085f08b8038b6d100b4173e0f4f0bc2209e1-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/0647085f08b8038b6d100b4173e0f4f0bc2209e1-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Rat_with_Facemask.png": {
+      "assetId": "image-fb49fce9208d05ed81ad576f9765ad03a871e750-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/fb49fce9208d05ed81ad576f9765ad03a871e750-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Anesthesia-Masks-100x100.png": {
+      "assetId": "image-c75301478aa2a1b12f2aa1f94a32c86ca061865f-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/c75301478aa2a1b12f2aa1f94a32c86ca061865f-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Mouse_with_Facemask-100x100.png": {
+      "assetId": "image-a11db6a544dfbd5a60c09501405ccb0cf8ddbd23-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a11db6a544dfbd5a60c09501405ccb0cf8ddbd23-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Rat_with_Facemask-100x100.png": {
+      "assetId": "image-e315a34b20f1b6a407e47726c645be6a7ea81270-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e315a34b20f1b6a407e47726c645be6a7ea81270-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/LC-Chamber-Sizes_336x341edit__4L_copy-1-100x100.png": {
+      "assetId": "image-53f47b3ef1eee302be5d2c1498dbc05eddc50cd3-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/53f47b3ef1eee302be5d2c1498dbc05eddc50cd3-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/NEB-0801.png": {
+      "assetId": "image-ab2b6af813928ba3012ee098734b688c88b20d9b-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ab2b6af813928ba3012ee098734b688c88b20d9b-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/NEB-0705-100x100.png": {
+      "assetId": "image-33ac41f509ca6ed0252be67a2b42b3062ea8fa1a-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/33ac41f509ca6ed0252be67a2b42b3062ea8fa1a-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SOMNO-2001H_ANG_silo-100x100.png": {
+      "assetId": "image-64630757d13b292031ef5280e8deafb605e17aaf-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/64630757d13b292031ef5280e8deafb605e17aaf-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/LC-Chamber-Sizes_336x341edit__4L_copy.png": {
+      "assetId": "image-f7948bfc8d259ba80c5fc933aaf4de5a1b7ebc0c-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/f7948bfc8d259ba80c5fc933aaf4de5a1b7ebc0c-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/LC-Chamber-Sizes_336x341edit__4L_copy-100x100.png": {
+      "assetId": "image-cdb1ef3b4de3b5c60a877c67b6ab11b3d24efc5c-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/cdb1ef3b4de3b5c60a877c67b6ab11b3d24efc5c-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/LC-Chamber-Sizes_336x341edit__4L_copy-1.png": {
+      "assetId": "image-f7948bfc8d259ba80c5fc933aaf4de5a1b7ebc0c-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/f7948bfc8d259ba80c5fc933aaf4de5a1b7ebc0c-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5003_silo.png": {
+      "assetId": "image-adf850c94de7716bde5a1ccdd451fd74f67c865b-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/adf850c94de7716bde5a1ccdd451fd74f67c865b-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Iris-Scissors-Straight-100x100.png": {
+      "assetId": "image-cd66b39f70d678d3708bdb18f469c0d5f3f5bc9f-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/cd66b39f70d678d3708bdb18f469c0d5f3f5bc9f-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/laser-etched-2sided-ear-tags.png": {
+      "assetId": "image-98d420fcf375b0615cd042fff934c26a2531c292-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/98d420fcf375b0615cd042fff934c26a2531c292-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/laser-etched-ear-tags.png": {
+      "assetId": "image-6a547116cadf28dfa8d4ea779503cf17c64a0a0e-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/6a547116cadf28dfa8d4ea779503cf17c64a0a0e-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/laser-etched-ear-tags-100x100.png": {
+      "assetId": "image-90f422fbf29223f8a81abe176d4cbaf04f5d8a57-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/90f422fbf29223f8a81abe176d4cbaf04f5d8a57-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SPO2-9MMM-1-1.png": {
+      "assetId": "image-18ac78212eba6f2673f4fb3c953265f2d96b37d6-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/18ac78212eba6f2673f4fb3c953265f2d96b37d6-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/EXT-PWRBNK1_for_Web-100x100.png": {
+      "assetId": "image-64f6fb82025ac9858ea45f7452674581f984f4b1-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/64f6fb82025ac9858ea45f7452674581f984f4b1-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/La_Pias_Applicator-2-100x100.png": {
+      "assetId": "image-ba1175af626710624e3a01d6e68f8123ad974219-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ba1175af626710624e3a01d6e68f8123ad974219-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/intubation-combined-right-w-hand-1.png": {
+      "assetId": "image-09e168155d93e62db7ffa28b106afedf12274d19-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/09e168155d93e62db7ffa28b106afedf12274d19-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Rev_End_Ilte2-100x100.png": {
+      "assetId": "image-868cbc45f95da2efc643121b78e14e197d74cf9d-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/868cbc45f95da2efc643121b78e14e197d74cf9d-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Iris-Dressing-Forceps.png": {
+      "assetId": "image-762e800ff1b74433dc08badb8324884959306c6b-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/762e800ff1b74433dc08badb8324884959306c6b-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Iris-Dressing-Forceps-100x100.png": {
+      "assetId": "image-0b23f223c33c511e6f23a12a33eeb7ab0594fd3c-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/0b23f223c33c511e6f23a12a33eeb7ab0594fd3c-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Bead-Sterilizer-100x100.png": {
+      "assetId": "image-f4f561dc0b5d0c5b3ba528e918f5c7887789a7f4-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/f4f561dc0b5d0c5b3ba528e918f5c7887789a7f4-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Iris-Scissors-Straight.png": {
+      "assetId": "image-5641d408f943b1aee8af23facebbfe0ba5200105-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/5641d408f943b1aee8af23facebbfe0ba5200105-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/La_Pias_Applicator-2.png": {
+      "assetId": "image-0293ce4234ecb7d1181428c78079c313de5a215e-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/0293ce4234ecb7d1181428c78079c313de5a215e-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Bluetooth-reader-100x100.png": {
+      "assetId": "image-fcb5e53ea413de8c822377d861c162d07d107477-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/fcb5e53ea413de8c822377d861c162d07d107477-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Bead-Sterilizer.png": {
+      "assetId": "image-919f5031fc5cf721cbc280700098ac53d9301d96-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/919f5031fc5cf721cbc280700098ac53d9301d96-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Hemostat-Forceps-Curved-100x100.png": {
+      "assetId": "image-aa38b8b0f4963412fd22d5140243c5fad873e033-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/aa38b8b0f4963412fd22d5140243c5fad873e033-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/RSTR-HW.png": {
+      "assetId": "image-31d7c7b8a9a292354c3d40c386a5295f79ee85c1-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/31d7c7b8a9a292354c3d40c386a5295f79ee85c1-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/RSTR-HW-100x100.png": {
+      "assetId": "image-67e0bd307c1662fb8fe46cf7d769f99db22c6574-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/67e0bd307c1662fb8fe46cf7d769f99db22c6574-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/BLD-HW-BS_2.png": {
+      "assetId": "image-d0f8cc2bccd3c63b6c285069252c379621de3448-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d0f8cc2bccd3c63b6c285069252c379621de3448-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/INF-HW-BI.png": {
+      "assetId": "image-9b842781fcdc58b1dea45a6aa118232bce46be1f-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/9b842781fcdc58b1dea45a6aa118232bce46be1f-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Hemostat-Forceps-Curved.png": {
+      "assetId": "image-cfccd133c795e71c600e9676b575cfaae863cdec-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/cfccd133c795e71c600e9676b575cfaae863cdec-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SOMNO-2001H_ANG_silo.png": {
+      "assetId": "image-e3a77d79c81840076e8d91478290cef2fa096444-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e3a77d79c81840076e8d91478290cef2fa096444-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SOMNO-2001H_CANISTER_silo.png": {
+      "assetId": "image-3b5760dd3d9da14772f0692b13ba38c5bd6508d3-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/3b5760dd3d9da14772f0692b13ba38c5bd6508d3-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SOMNO-2001H_CANISTER_silo-100x100.png": {
+      "assetId": "image-c59ad21bec02fbb5ab2caec6d83577bfb2cffa22-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/c59ad21bec02fbb5ab2caec6d83577bfb2cffa22-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-7105_7106_Blue-100x100.png": {
+      "assetId": "image-4e89c75f062fa68aee83da65e2b11ce28c2e4362-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4e89c75f062fa68aee83da65e2b11ce28c2e4362-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/HTP-1500.png": {
+      "assetId": "image-ce0ba91ff9a712604b61f46f93b63b1024509275-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ce0ba91ff9a712604b61f46f93b63b1024509275-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/2_Warming-PadsRedux-100x100.png": {
+      "assetId": "image-ce1a0b05c83af5794cf23238e2146bc150358ebd-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ce1a0b05c83af5794cf23238e2146bc150358ebd-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/FLAT_BOT_ANI_HOLDER_GROUP_silo-2.png": {
+      "assetId": "image-e3a6b0f372a1e5698920431b5e3a24b958807a47-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e3a6b0f372a1e5698920431b5e3a24b958807a47-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/ELIZABETHAN_COLLARS_silo-2-100x100.png": {
+      "assetId": "image-743660b15607207ce3747520cdfeafc47311edf6-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/743660b15607207ce3747520cdfeafc47311edf6-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Rev_End_Ilte2.png": {
+      "assetId": "image-793cda91508c10d64848e93570c3df5b083daf8c-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/793cda91508c10d64848e93570c3df5b083daf8c-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Intubation-Kit-light-1-100x100.png": {
+      "assetId": "image-ae0684f859ad4d51a9501e1f4db4d69bb1ecf14f-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ae0684f859ad4d51a9501e1f4db4d69bb1ecf14f-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5019-2-100x100.png": {
+      "assetId": "image-388fa582a24dc581c9425994cd0ac19cafc36a34-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/388fa582a24dc581c9425994cd0ac19cafc36a34-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/2_Warming-PadsRedux.png": {
+      "assetId": "image-5140a0188a1790fe1d6b2ca1cdcdcf2882366c63-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/5140a0188a1790fe1d6b2ca1cdcdcf2882366c63-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/IMG_20211015_144458390_Silo-100x100.png": {
+      "assetId": "image-7eef757d97dbc93db358bc918153d7304b952abb-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/7eef757d97dbc93db358bc918153d7304b952abb-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Far-Infrared-Warming-Pad-Controller-500x282_2_UPDATED_copy.png": {
+      "assetId": "image-9e92ec81fc154878cc02d510c124be30e586bf41-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/9e92ec81fc154878cc02d510c124be30e586bf41-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Far-Infrared-Warming-Pad-Controller-500x282_2_UPDATED_copy-100x100.png": {
+      "assetId": "image-9deb9b576820a6a892164b49c33cb139069477dd-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/9deb9b576820a6a892164b49c33cb139069477dd-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Intubation-Kit-light-1.png": {
+      "assetId": "image-c8019d2261ac3bfc976e8c16bf9d0557c1d32f0e-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/c8019d2261ac3bfc976e8c16bf9d0557c1d32f0e-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/ETI-16_4_5-100x100.png": {
+      "assetId": "image-5ad1f8a0972bc675d1e5aec7018bf43b4404c54d-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/5ad1f8a0972bc675d1e5aec7018bf43b4404c54d-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/EXT-PWRBNK1_for_Web.png": {
+      "assetId": "image-4aaa98a48796d4bfecdcf0e2897164c860b764a3-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4aaa98a48796d4bfecdcf0e2897164c860b764a3-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/IMG_20211111_133235601_copy-100x100.png": {
+      "assetId": "image-48e24f4b27b41f64b2399b87fba003bf7e3fee23-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/48e24f4b27b41f64b2399b87fba003bf7e3fee23-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/ETI-16_4_5.png": {
+      "assetId": "image-e0bdec740db7fc0829f6a8e315b8e7146566ee01-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e0bdec740db7fc0829f6a8e315b8e7146566ee01-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/ETI-MSE-03_4_5-1-100x100.png": {
+      "assetId": "image-7727ee8f2c4aaeefca5028674f9464766c8a2401-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/7727ee8f2c4aaeefca5028674f9464766c8a2401-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/safety_wedge_use__smaller_-300x77.jpg": {
+      "assetId": "image-fa0cceefcd20b85c0515f27b2beb8989d4b29dfb-300x77-jpg",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/fa0cceefcd20b85c0515f27b2beb8989d4b29dfb-300x77.jpg"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/mouse-rat-intubation-kit-stands_2-1.png": {
+      "assetId": "image-fd8b653a70471c911dae85460979e37b1163b863-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/fd8b653a70471c911dae85460979e37b1163b863-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Intubation-Kit-Neck-support-close-up.png": {
+      "assetId": "image-70cad52e686672c90b30ec092fc04f01ed6117be-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/70cad52e686672c90b30ec092fc04f01ed6117be-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Rev_End_Ilte2-1.png": {
+      "assetId": "image-793cda91508c10d64848e93570c3df5b083daf8c-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/793cda91508c10d64848e93570c3df5b083daf8c-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Intubation-Kit-light-2.png": {
+      "assetId": "image-a5f0a4d2091c1b0ca6303c42d934387713641625-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a5f0a4d2091c1b0ca6303c42d934387713641625-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/mouse-rat-intubation-kit-stands_2-1-100x100.png": {
+      "assetId": "image-e296565926a152b96f1e4ccacb00c8ce368a399a-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e296565926a152b96f1e4ccacb00c8ce368a399a-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Intubation-Kit-Neck-support-close-up-100x100.png": {
+      "assetId": "image-7187e563c4af1b75b1f904d4da6a3bb3aa0a7301-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/7187e563c4af1b75b1f904d4da6a3bb3aa0a7301-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Rev_End_Ilte2-1-100x100.png": {
+      "assetId": "image-868cbc45f95da2efc643121b78e14e197d74cf9d-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/868cbc45f95da2efc643121b78e14e197d74cf9d-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Intubation-Kit-light-2-100x100.png": {
+      "assetId": "image-d2a73b2da7139820b9b55cf820ca4a7c8787e2e5-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d2a73b2da7139820b9b55cf820ca4a7c8787e2e5-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/IMG_20211015_144458390_Silo.png": {
+      "assetId": "image-a027dc50563a50f63019fe7b30fef7153481e016-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a027dc50563a50f63019fe7b30fef7153481e016-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/IMG_20211015_160527581_Silo.png": {
+      "assetId": "image-677afefee1c6e5b181c4c2e51a10d424e2b54e3b-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/677afefee1c6e5b181c4c2e51a10d424e2b54e3b-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/IMG_20211015_160527581_Silo-100x100.png": {
+      "assetId": "image-72f94e9abcd63c40d9663735081f8125a07482b3-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/72f94e9abcd63c40d9663735081f8125a07482b3-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/DCT-1520P-3-100x100.png": {
+      "assetId": "image-4d29860d7f70ea06d4a15ce3f65006ee2e7b0535-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4d29860d7f70ea06d4a15ce3f65006ee2e7b0535-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/ELIZABETHAN_COLLARS_silo-2.png": {
+      "assetId": "image-ebc79056725d9ded6ebe707ad988b729cb95c04f-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ebc79056725d9ded6ebe707ad988b729cb95c04f-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/bravmini_-2-100x100.png": {
+      "assetId": "image-135674a454bca7a63c76364f7051b1446bc18599-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/135674a454bca7a63c76364f7051b1446bc18599-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SURGI-5019-2.png": {
+      "assetId": "image-1305dba5fa28ea8fc8d16e1c50c4837bd0f5571e-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/1305dba5fa28ea8fc8d16e1c50c4837bd0f5571e-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Castroviejo-Needle-Holder-Serrated-100x100.png": {
+      "assetId": "image-6783144b23a69af1cea417dbd6c5460eb69beaea-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/6783144b23a69af1cea417dbd6c5460eb69beaea-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Dissecting-scissors-straight.png": {
+      "assetId": "image-06565d36c0fa2641c676465afcb88028e063c058-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/06565d36c0fa2641c676465afcb88028e063c058-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Dissecting-scissors-straight-100x100.png": {
+      "assetId": "image-781af30ebb6e4ea11ffc05408142d8a86f648db5-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/781af30ebb6e4ea11ffc05408142d8a86f648db5-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Feeding-Needle-curved-2.png": {
+      "assetId": "image-e6ddf10a6878f87fc8eb4536bc8cc25082ea1402-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e6ddf10a6878f87fc8eb4536bc8cc25082ea1402-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/DCT-1520P-3.png": {
+      "assetId": "image-98147c0f044f8649145064497c2c5b6870e13be2-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/98147c0f044f8649145064497c2c5b6870e13be2-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/MSE-CUFFKIT_cuffs_only_labeled.png": {
+      "assetId": "image-fa8f9963abee954b4048e912f775879c5669df34-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/fa8f9963abee954b4048e912f775879c5669df34-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CODA-CSC-100x100.png": {
+      "assetId": "image-46c17bdf2e104007c99ed9de18a49153da432fe1-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/46c17bdf2e104007c99ed9de18a49153da432fe1-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CODA_Software_Screen.png": {
+      "assetId": "image-18633d4ee873ac326604b8c85aa251f2eb8aeb25-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/18633d4ee873ac326604b8c85aa251f2eb8aeb25-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CODA-CSC.png": {
+      "assetId": "image-fca1a5086a784fa123f9aabc84d8b8a32e435088-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/fca1a5086a784fa123f9aabc84d8b8a32e435088-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CODA-CSC_with_cuffs.png": {
+      "assetId": "image-71324bf30b1b33edae07d0298154764e86f34eaf-721x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/71324bf30b1b33edae07d0298154764e86f34eaf-721x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CODA-CSC_with_cuffs-100x100.png": {
+      "assetId": "image-ada0e04208c19686b6e64d43d36e666309fda5af-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ada0e04208c19686b6e64d43d36e666309fda5af-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/NEB-0705.png": {
+      "assetId": "image-4eaa47b81e2a3293e330d9895c6903c0be2be346-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4eaa47b81e2a3293e330d9895c6903c0be2be346-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/neb-1100-1-100x100.png": {
+      "assetId": "image-362842a97d2b4b31e0968d3fd1046167e883f7b2-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/362842a97d2b4b31e0968d3fd1046167e883f7b2-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/bravmini_-2.png": {
+      "assetId": "image-8adc89b2dfc329ee3ffa6c0203697e2e86580442-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8adc89b2dfc329ee3ffa6c0203697e2e86580442-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/ARCO-SE-clipper-2-100x100.png": {
+      "assetId": "image-ad0bb8024a82ccb2a91874db723a54cec17fa8cc-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ad0bb8024a82ccb2a91874db723a54cec17fa8cc-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/IMG_20211111_133235601_copy.png": {
+      "assetId": "image-6b279cfc8e7b70cfc31daec2031f186dccb17b0d-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/6b279cfc8e7b70cfc31daec2031f186dccb17b0d-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Castroviejo-Needle-Holder-Serrated.png": {
+      "assetId": "image-658bb0ad4099d5951734bc817e7f6689c628c637-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/658bb0ad4099d5951734bc817e7f6689c628c637-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/autoclips-100x100.png": {
+      "assetId": "image-779c6b6b85d3fda7a8f70f03bcf7142cbfccb942-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/779c6b6b85d3fda7a8f70f03bcf7142cbfccb942-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Bluetooth-reader.png": {
+      "assetId": "image-b85239d4c6ff98803dda9e35fe1b10bf63e21f47-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/b85239d4c6ff98803dda9e35fe1b10bf63e21f47-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/autoclip_applier.png": {
+      "assetId": "image-65040ef9467e079238a72baa77bde55978685ccc-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/65040ef9467e079238a72baa77bde55978685ccc-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/autoclip_applier-100x100.png": {
+      "assetId": "image-0aefd20ad713952f0497408b79cfcfb431a57378-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/0aefd20ad713952f0497408b79cfcfb431a57378-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Angled-Tweezer-Kit-100x100.png": {
+      "assetId": "image-c10a29b983310302969ac4a2da0e0ed2b399db93-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/c10a29b983310302969ac4a2da0e0ed2b399db93-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/autoclips.png": {
+      "assetId": "image-5722f9a3dab88e9645cec55674fee8d9008bc842-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/5722f9a3dab88e9645cec55674fee8d9008bc842-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-7105_7106_Blue.png": {
+      "assetId": "image-01e94a0e26ac8cf31b87b528e7783f3d6f830370-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/01e94a0e26ac8cf31b87b528e7783f3d6f830370-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/ANEST-IND-100x100.png": {
+      "assetId": "image-41125e92f7937eab3221ab725c06fe3b6a11ab9d-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/41125e92f7937eab3221ab725c06fe3b6a11ab9d-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/ARCO-SE-clipper-2.png": {
+      "assetId": "image-a5d785258261bb7414ef0039251c549f3f9249fe-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a5d785258261bb7414ef0039251c549f3f9249fe-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/W4000-2-100x100.png": {
+      "assetId": "image-6e44b451abb36f6f3f83ecc723f4dd22fc37a978-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/6e44b451abb36f6f3f83ecc723f4dd22fc37a978-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SCL-4000-2.png": {
+      "assetId": "image-e8696053b0c260279b8cff2f65455bc0746a5316-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e8696053b0c260279b8cff2f65455bc0746a5316-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SCL-4000-2-100x100.png": {
+      "assetId": "image-fa6c581da1eab86b04d34ee15bee1a84da7ca49a-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/fa6c581da1eab86b04d34ee15bee1a84da7ca49a-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Angled-Tweezer-Kit.png": {
+      "assetId": "image-260be2163d057252d1039afcf5b36bec6a88871b-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/260be2163d057252d1039afcf5b36bec6a88871b-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/ETI-MSE-03_4_5-1.png": {
+      "assetId": "image-dda50be832e1d4f298fbf0e41e5dadc98813427e-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/dda50be832e1d4f298fbf0e41e5dadc98813427e-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VETFLO-0304_copy.png": {
+      "assetId": "image-2845b414db41981877766cf673ad8bcaf2e36d68-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/2845b414db41981877766cf673ad8bcaf2e36d68-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VETFLO-0304_copy-100x100.png": {
+      "assetId": "image-2cdf19b761ccfe052e18b7fce41f32f4704fd44b-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/2cdf19b761ccfe052e18b7fce41f32f4704fd44b-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SOMNO-2001-8_silo-100x100.png": {
+      "assetId": "image-7fce7047ad07403d42e56fde970d104a4779b3b4-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/7fce7047ad07403d42e56fde970d104a4779b3b4-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/ANEST-IND.png": {
+      "assetId": "image-78a2f6dd0c0c1efd83ecfaff4226381e88c0ec2e-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/78a2f6dd0c0c1efd83ecfaff4226381e88c0ec2e-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SOMNO-0304_copy.png": {
+      "assetId": "image-56e766db5c70a414cbbd5a73178ab55658fd4870-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/56e766db5c70a414cbbd5a73178ab55658fd4870-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SOMNO-0304_copy-100x100.png": {
+      "assetId": "image-c8b6f5409c6544dd221a446c19c642d1ac5120ce-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/c8b6f5409c6544dd221a446c19c642d1ac5120ce-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/neb-1100-1.png": {
+      "assetId": "image-e2be7619c31f768f6d7facafb56c63574cc71624-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e2be7619c31f768f6d7facafb56c63574cc71624-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Aeroneb-Lab-100x100.png": {
+      "assetId": "image-53a675e37dbeb5ff07653f0cdb632b29094bdd08-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/53a675e37dbeb5ff07653f0cdb632b29094bdd08-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/NEB-0801-1.png": {
+      "assetId": "image-ab2b6af813928ba3012ee098734b688c88b20d9b-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ab2b6af813928ba3012ee098734b688c88b20d9b-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Low_Profile_4_sizes__2.png": {
+      "assetId": "image-061d006bde4dd17bbc207f7d4d58bb13ea87d737-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/061d006bde4dd17bbc207f7d4d58bb13ea87d737-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/NEB-0801-1-100x100.png": {
+      "assetId": "image-4fda6ee4f67b57dc88cfaa2d7d59e672de5fd2b9-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/4fda6ee4f67b57dc88cfaa2d7d59e672de5fd2b9-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Low_Profile_4_sizes__2-100x100.png": {
+      "assetId": "image-50d87bbd446086bc59d8c4f80802d257cc39ab90-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/50d87bbd446086bc59d8c4f80802d257cc39ab90-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CBL-ANAOUT-MINI_4_5-1.png": {
+      "assetId": "image-571dc7fad45d88df694612a42833adf0c6e29419-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/571dc7fad45d88df694612a42833adf0c6e29419-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SOMNO-2001-8_silo.png": {
+      "assetId": "image-9ad9ef4fa40be6edf1d57a0514af55ba391e5e53-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/9ad9ef4fa40be6edf1d57a0514af55ba391e5e53-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/10-1000-32_silo-100x100.png": {
+      "assetId": "image-aac8c774b54c69c5adf190ff5226467edab9f520-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/aac8c774b54c69c5adf190ff5226467edab9f520-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Aeroneb-Lab.png": {
+      "assetId": "image-ed52dc8917140deef9d278dfb0cd2345393d83be-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ed52dc8917140deef9d278dfb0cd2345393d83be-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/10-1000-32_silo.png": {
+      "assetId": "image-f6ad144b3879033e918321cec81e0635149a14d3-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/f6ad144b3879033e918321cec81e0635149a14d3-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Isoflurane-for-small_animals-research-vetinarians-250ml-1-100x100.png": {
+      "assetId": "image-eefcd2f861c990d974fde9c6783623ed8f9a2b66-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/eefcd2f861c990d974fde9c6783623ed8f9a2b66-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/BRAIN_MATRIX_ACR_ANGLE_silo.png": {
+      "assetId": "image-a721c5b3b6d81d80286ca2bb75158bd73734ac51-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a721c5b3b6d81d80286ca2bb75158bd73734ac51-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/BRAIN_MATRIX_ACR_ANGLE_silo-100x100.png": {
+      "assetId": "image-712729ee63dc21afe09ec9dcf202f9e4f30ccbcd-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/712729ee63dc21afe09ec9dcf202f9e4f30ccbcd-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/W4000-2.png": {
+      "assetId": "image-12ba3b9008a02621123b3a9180e118b63951f7ff-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/12ba3b9008a02621123b3a9180e118b63951f7ff-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CBL-ANAOUT-MINI_4_5.png": {
+      "assetId": "image-2a74bf6db707f46e3dd0fd69e352eb1aee532b5e-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/2a74bf6db707f46e3dd0fd69e352eb1aee532b5e-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Isoflurane-for-small_animals-research-vetinarians-250ml-1.png": {
+      "assetId": "image-7c16a0110b583184c7759fefeda5e0aa11a837be-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/7c16a0110b583184c7759fefeda5e0aa11a837be-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/vetflo_vaporizer_single_left-1.png": {
+      "assetId": "image-ceedcc74620ed28d0c794e3c7e22da92ddc46861-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ceedcc74620ed28d0c794e3c7e22da92ddc46861-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/25000KA.jpg": {
+      "assetId": "image-404dac744ad7189aa3c6c4ffabcabcd07fc54ad1-800x640-jpg",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/404dac744ad7189aa3c6c4ffabcabcd07fc54ad1-800x640.jpg"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-1205_Tubing.jpg": {
+      "assetId": "image-0f5114d84d0d3b1b277b23154066d5378b95a196-800x571-jpg",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/0f5114d84d0d3b1b277b23154066d5378b95a196-800x571.jpg"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-Single-Channel-v2-500.jpg": {
+      "assetId": "image-5a5e744911da60b6efc9de3178ea199cf844131e-414x800-jpg",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/5a5e744911da60b6efc9de3178ea199cf844131e-414x800.jpg"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/25000KA-100x100.jpg": {
+      "assetId": "image-6b0a3199d3cb03179bdc68d8720b14850e4cbbe8-100x100-jpg",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/6b0a3199d3cb03179bdc68d8720b14850e4cbbe8-100x100.jpg"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-1205_Tubing-100x100.jpg": {
+      "assetId": "image-b93509518179c56a503fb3e6a17f98963ef742bf-100x100-jpg",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/b93509518179c56a503fb3e6a17f98963ef742bf-100x100.jpg"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VetFlo-Single-Channel-v2-500-100x100.jpg": {
+      "assetId": "image-565ea725ada6903260732d7f9d536d8b177c8c82-100x100-jpg",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/565ea725ada6903260732d7f9d536d8b177c8c82-100x100.jpg"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/pressure_reducer4_5.png": {
+      "assetId": "image-b298131a8ac224f95af6dd839214acef437f4574-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/b298131a8ac224f95af6dd839214acef437f4574-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SOMNO-7305_4_5.png": {
+      "assetId": "image-a5ac6c447646f5faa46407133f2db42fbe94e0fe-700x700-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a5ac6c447646f5faa46407133f2db42fbe94e0fe-700x700.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SOMNO-7305_4_5-100x100.png": {
+      "assetId": "image-145c16878bf80d8b74eae23e8fbba31762456aa7-100x100-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/145c16878bf80d8b74eae23e8fbba31762456aa7-100x100.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/somnoflo-3-300x300.png": {
+      "assetId": "image-faf0a226304e118ebeae5cacf9f5e6597b7b75ed-300x300-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/faf0a226304e118ebeae5cacf9f5e6597b7b75ed-300x300.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/vetflo_vaporizer_single_left-1-300x300.png": {
+      "assetId": "image-d2eee9100196a21370ea4c0ecc7a951d71838233-300x300-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d2eee9100196a21370ea4c0ecc7a951d71838233-300x300.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/somnosuite-1-300x300.png": {
+      "assetId": "image-a6a8fdc6c050e85b45f22ac750c0206e7a351cca-300x300-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/a6a8fdc6c050e85b45f22ac750c0206e7a351cca-300x300.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/digital_documentation.svg": {
+      "assetId": "image-8bcd9736cceffc2e7b87736b0cce6e3642e4233f-54x73-svg",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8bcd9736cceffc2e7b87736b0cce6e3642e4233f-54x73.svg"
     }
   }
 }
