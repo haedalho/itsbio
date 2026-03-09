@@ -53,6 +53,9 @@ export function fieldContentBlocks(required = false) {
       { type: "contentBlockResources" },
       { type: "contentBlockPublications" },
       { type: "contentBlockCta" },
+
+      // ✅ 추가
+      { type: "contentBlockCards" },
     ],
     validation: (r) => (required ? r.required().min(1) : r),
   });

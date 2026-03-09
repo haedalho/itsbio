@@ -1,4 +1,4 @@
-// app/products/[brand]/item/[...slug]/page.tsx
+// app/products/abm/item/[...slug]/page.tsx
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -517,23 +517,23 @@ async function enrichAbmProductIfNeeded(opts: {
 
 /** -------------------- Page -------------------- */
 
-export default async function ProductDetailPage({
+export default async function AbmProductDetailPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ brand: string; slug: string[] }> | { brand: string; slug: string[] };
+  params: Promise<{ slug: string[] }> | { slug: string[] };
   searchParams?: Promise<{ enrich?: string }> | { enrich?: string };
 }) {
   const resolved = await Promise.resolve(params as any);
   const sp = await Promise.resolve(searchParams as any);
 
-  const brandKey = String(resolved?.brand ?? "").toLowerCase();
+  const brandKey = "abm";
   const slugArr = (resolved?.slug ?? []) as string[];
   const slug = slugArr.join("/");
 
   const forceEnrich = String(sp?.enrich ?? "") === "1";
 
-  if (!brandKey || !slug) notFound();
+  if (!slug) notFound();
 
   // ✅ dev/배포 모두: 최신 읽기
   const client = (sanityClient as any).withConfig ? (sanityClient as any).withConfig({ useCdn: false }) : sanityClient;

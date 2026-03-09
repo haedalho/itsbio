@@ -1,4 +1,4 @@
-// app/products/[brand]/legacy/[[...legacy]]/page.tsx
+// app/products/kent/legacy/[[...legacy]]/page.tsx
 import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 import * as cheerio from "cheerio";
@@ -304,7 +304,7 @@ function HeroBanner({ title }: { title: string }) {
         <div className="absolute inset-0">
           <div className="mx-auto flex h-full max-w-6xl items-center px-6">
             <div className="max-w-3xl">
-              <div className="text-xs font-semibold tracking-wide text-white/80">ABM Legacy</div>
+              <div className="text-xs font-semibold tracking-wide text-white/80">KENT Legacy</div>
               <h1 className="mt-2 text-2xl font-semibold tracking-tight text-white md:text-3xl">{title}</h1>
             </div>
           </div>
@@ -314,20 +314,19 @@ function HeroBanner({ title }: { title: string }) {
   );
 }
 
-export default async function ProductsBrandLegacyProxyPage({
+export default async function KentLegacyProxyPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ brand: string }> | { brand: string };
+  params: Promise<{}> | {};
   searchParams: Promise<{ u?: string }> | { u?: string };
 }) {
   const resolvedParams = await Promise.resolve(params as any);
   const resolvedSearch = await Promise.resolve(searchParams as any);
 
-  const brandKey = String(resolvedParams?.brand ?? "").toLowerCase();
+  const brandKey = "kent";
   const uRaw = normalizeIncomingUrl(resolvedSearch?.u ?? "");
 
-  if (!brandKey) notFound();
   if (!uRaw) notFound();
 
   const legacyPath = extractLegacyPathFromFullUrl(uRaw);
@@ -355,7 +354,7 @@ export default async function ProductsBrandLegacyProxyPage({
       : [
           { label: "Home", href: "/" },
           { label: "Products", href: "/products" },
-          { label: "ABM", href: "/products/abm" },
+          { label: "KENT", href: "/products/kent" },
           { label: "Legacy" },
         ];
 

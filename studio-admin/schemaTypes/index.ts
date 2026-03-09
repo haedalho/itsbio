@@ -14,6 +14,9 @@ import contentBlockResources from "./contentBlocks/contentBlockResources";
 import contentBlockPublications from "./contentBlocks/contentBlockPublications";
 import contentBlockCta from "./contentBlocks/contentBlockCta";
 
+// ✅ 추가
+import contentBlockCards from "./contentBlocks/contentBlockCards";
+
 export const schemaTypes = [
   brand,
   category,
@@ -28,4 +31,7 @@ export const schemaTypes = [
   contentBlockResources,
   contentBlockPublications,
   contentBlockCta,
+
+  // ✅ 추가
+  contentBlockCards,
 ];

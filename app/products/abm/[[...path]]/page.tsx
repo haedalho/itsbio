@@ -1,4 +1,4 @@
-// app/products/[brand]/[[...path]]/page.tsx
+// app/products/abm/[[...path]]/page.tsx
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -897,23 +897,23 @@ function renderContentBlocks(blocks: any[], brandKey: string, theme: Theme) {
 
 /** -------------------- Page -------------------- */
 
-export default async function ProductsBrandPathPage({
+export default async function AbmProductsPathPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ brand: string; path?: string[] }> | { brand: string; path?: string[] };
+  params: Promise<{ path?: string[] }> | { path?: string[] };
   searchParams?: Promise<{ open?: string }> | { open?: string };
 }) {
   const resolved = await Promise.resolve(params as any);
   const sp = await Promise.resolve(searchParams as any);
 
   const openSlug = (sp?.open ?? "").toString().trim();
-  const brandKey = (resolved?.brand ?? "").toLowerCase();
+  const brandKey = "abm";
   const theme = getTheme(brandKey);
   const isKent = brandKey === "kent";
 
   const path = (resolved?.path ?? []) as string[];
-  if (!brandKey) notFound();
+  
 
   const activeRoot = path[0] || "";
   const hasPath = path.length > 0;

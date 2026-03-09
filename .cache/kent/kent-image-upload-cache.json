@@ -2303,6 +2303,50 @@
     "https://kentscientific.com/wp-content/uploads/2025/09/digital_documentation.svg": {
       "assetId": "image-8bcd9736cceffc2e7b87736b0cce6e3642e4233f-54x73-svg",
       "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8bcd9736cceffc2e7b87736b0cce6e3642e4233f-54x73.svg"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CODA_Software_Screen-300x300.png": {
+      "assetId": "image-59ebab34391938cc2923ac948b2fbb81a2a669b9-300x300-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/59ebab34391938cc2923ac948b2fbb81a2a669b9-300x300.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Thermocouple-Meter_no_probe-300x300.png": {
+      "assetId": "image-0d19156a9b50d9bca2611c440c4a79b12678d667-300x300-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/0d19156a9b50d9bca2611c440c4a79b12678d667-300x300.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CBL-ANAOUT-MINI_4_5-300x300.png": {
+      "assetId": "image-9b24f3a516cdd2f7d596a0f2d9e5722c2e9d92b2-300x300-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/9b24f3a516cdd2f7d596a0f2d9e5722c2e9d92b2-300x300.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/DCT-1520P-3-300x300.png": {
+      "assetId": "image-ac8cba30de21981c229c18a52ddb02abae626da8-300x300-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/ac8cba30de21981c229c18a52ddb02abae626da8-300x300.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/CODA-IRT_silo-300x300.png": {
+      "assetId": "image-e3fcc90201cd66d05985f13ff3854ed94ffe2046-300x300-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/e3fcc90201cd66d05985f13ff3854ed94ffe2046-300x300.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/SPO2-9MMM-1-300x300.png": {
+      "assetId": "image-c7ecd82aa78abddfadee64a92f53857fb394893f-300x300-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/c7ecd82aa78abddfadee64a92f53857fb394893f-300x300.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Hemostat-Forceps-Straight-1-300x300.png": {
+      "assetId": "image-6479f470cb450cd99091bfcb26c8cf2ca8228329-300x300-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/6479f470cb450cd99091bfcb26c8cf2ca8228329-300x300.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/MSE-CUFFKIT_cuffs_only_labeled-300x300.png": {
+      "assetId": "image-8628ff605f7f57057b666f99232b368c15dd737e-300x300-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/8628ff605f7f57057b666f99232b368c15dd737e-300x300.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/Tweezer-5B-300x300.png": {
+      "assetId": "image-20037fa09f81e1c447e3ce63c7faaed32d852e23-300x300-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/20037fa09f81e1c447e3ce63c7faaed32d852e23-300x300.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/OCC-XS_cuff_only-300x300.png": {
+      "assetId": "image-152fa6dbdca18ba5f000f956042a2730f55e5daf-300x300-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/152fa6dbdca18ba5f000f956042a2730f55e5daf-300x300.png"
+    },
+    "https://kentscientific.com/wp-content/uploads/2025/09/VPR-S_cuff_only-300x300.png": {
+      "assetId": "image-d8270e57fa9483227a68defc2d5fdec9abd5b1ba-300x300-png",
+      "assetUrl": "https://cdn.sanity.io/images/9b5twpc8/production/d8270e57fa9483227a68defc2d5fdec9abd5b1ba-300x300.png"
     }
   }
 }
