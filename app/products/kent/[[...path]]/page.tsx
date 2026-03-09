@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { ReactNode } from "react";
+import * as React from "react";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
 import HtmlContent from "@/components/site/HtmlContent";
@@ -495,7 +495,7 @@ type CardItem = {
 
 type CardsKind = "product" | "category" | "resource" | "publication";
 
-function KentH2({ children }: { children: ReactNode }) {
+function KentH2({ children }: { children: React.ReactNode }) {
   return <h2 className="text-[26px] font-semibold tracking-tight text-neutral-900">{children}</h2>;
 }
 
@@ -504,7 +504,7 @@ function KentDivider() {
 }
 
 function renderLandingBlocks(blocks: any[], brandKey: string, theme: Theme) {
-  const out: ReactNode[] = [];
+  const out: React.ReactNode[] = [];
   let first = true;
 
   for (const b of blocks) {
