@@ -908,7 +908,7 @@ export default async function AbmProductsPathPage({
   const sp = await Promise.resolve(searchParams as any);
 
   const openSlug = (sp?.open ?? "").toString().trim();
-  const brandKey = "abm";
+  const brandKey:string = "abm";
   const theme = getTheme(brandKey);
   const isKent = brandKey === "kent";
 
