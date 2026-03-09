@@ -53,11 +53,6 @@ function toLegacyIfExternal(href: string, brandKey: string) {
   return href;
 }
 
-function isSafeNextImageSrc(src: string) {
-  if (!src) return false;
-  return src.startsWith("https://cdn.sanity.io/") || src.startsWith("/");
-}
-
 function humanizeSegment(seg: string) {
   return (seg || "").replaceAll("-", " ").replaceAll("_", " ").trim();
 }
@@ -108,10 +103,7 @@ function rewriteRelativeUrls(html: string, baseUrl: string) {
   if (!html) return "";
   if (!baseUrl) return html;
 
-  let out = html.replace(
-    /\s(href|src)=["'](\/(?!\/)[^"']*)["']/gi,
-    (_m, attr, p) => ` ${attr}="${baseUrl}${p}"`
-  );
+  let out = html.replace(/\s(href|src)=["'](\/(?!\/)[^"']*)["']/gi, (_m, attr, p) => ` ${attr}="${baseUrl}${p}"`);
   out = out.replace(/\s(href|src)=["'](\/\/[^"']+)["']/gi, (_m, attr, p2) => ` ${attr}="https:${p2}"`);
   return out;
 }
@@ -503,26 +495,43 @@ function KentDivider() {
   return <div className="my-10 border-t border-slate-200" />;
 }
 
+/**
+ * ✅ 핵심: 짧은 HTML 블록도 "바로 뒤에 같은 title의 카드 블록이 있으면" 보여준다.
+ * (Kent 원본은 h2 아래 짧은 문장 + 바로 카드 그리드 구조가 많음)
+ */
 function renderLandingBlocks(blocks: any[], brandKey: string, theme: Theme) {
   const out: React.ReactNode[] = [];
   let first = true;
 
-  for (const b of blocks) {
+  const nextIsCardsWithSameTitle = (i: number, title: string) => {
+    const next = blocks[i + 1];
+    return !!(next && next._type === "contentBlockCards" && String(next.title || "").trim() === title);
+  };
+
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+
     if (b?._type === "contentBlockHtml") {
       const title = String(b?.title || "").trim();
       const html = safeHtmlForRender(String(b?.html || ""), brandKey);
+      const len = roughTextLenFromHtml(html);
 
-      if (roughTextLenFromHtml(html) < 40) continue;
+      // ✅ 내용이 거의 없고, 다음에 카드도 없으면 스킵
+      if (len < 10 && !nextIsCardsWithSameTitle(i, title)) continue;
 
-      if (!first) out.push(<KentDivider key={`div-${b._key || title}`} />);
+      if (!first) out.push(<KentDivider key={`div-${b._key || title}-${i}`} />);
       first = false;
 
       out.push(
-        <section key={b._key || title} className="mt-10">
+        <section key={b._key || `${title}-${i}`} className="mt-10">
           {title ? <KentH2>{title}</KentH2> : null}
-          <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-6">
-            <HtmlContent html={html} />
-          </div>
+
+          {/* ✅ Kent 느낌: 본문은 카드 박스 대신 “본문형”으로 */}
+          {len >= 10 ? (
+            <div className="mt-3 text-slate-700 leading-7">
+              <HtmlContent html={html} />
+            </div>
+          ) : null}
         </section>
       );
       continue;
@@ -534,14 +543,20 @@ function renderLandingBlocks(blocks: any[], brandKey: string, theme: Theme) {
       const items = Array.isArray(b?.items) ? (b.items as CardItem[]) : [];
       if (!items.length) continue;
 
-      if (!first) out.push(<KentDivider key={`div-${b._key || kind}`} />);
+      // 카드 섹션은 바로 위 html 섹션과 이어질 수도 있으니, divider는 "이전 블록이 html이 아니면"만 넣음
+      const prev = blocks[i - 1];
+      const prevIsSameSectionHtml = prev && prev._type === "contentBlockHtml" && String(prev.title || "").trim() === title;
+
+      if (!first && !prevIsSameSectionHtml) out.push(<KentDivider key={`div-${b._key || kind}-${i}`} />);
       first = false;
 
       if (kind === "product") {
         out.push(
-          <section key={b._key || `prod-${title}`} className="mt-10">
-            <KentH2>{title || "Featured products"}</KentH2>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <section key={b._key || `prod-${title}-${i}`} className="mt-4">
+            {/* ✅ product는 title을 위 html에서 이미 렌더했을 수도 있음 */}
+            {!prevIsSameSectionHtml ? <KentH2>{title || "Featured products"}</KentH2> : null}
+
+            <div className={`${prevIsSameSectionHtml ? "mt-4" : "mt-4"} grid gap-4 sm:grid-cols-2 lg:grid-cols-3`}>
               {items.map((it, idx) => (
                 <a
                   key={it._key || `${it.title}-${idx}`}
@@ -564,6 +579,8 @@ function renderLandingBlocks(blocks: any[], brandKey: string, theme: Theme) {
                     <div className="text-[13px] text-slate-500">Anesthesia</div>
                     <div className="mt-1 text-base font-semibold text-neutral-900 group-hover:underline">{it.title}</div>
                     {it.subtitle ? <div className="mt-2 text-sm text-slate-600 line-clamp-2">{it.subtitle}</div> : null}
+                    {it.sku ? <div className="mt-2 text-xs text-slate-600">Cat.No: {it.sku}</div> : null}
+
                     <div className="mt-4">
                       <span className={`inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-white ${theme.btnBg} ${theme.btnHover}`}>
                         View product
@@ -580,9 +597,10 @@ function renderLandingBlocks(blocks: any[], brandKey: string, theme: Theme) {
 
       if (kind === "category") {
         out.push(
-          <section key={b._key || `cat-${title}`} className="mt-10">
-            <KentH2>{title || "Additional equipment"}</KentH2>
-            <div className="mt-4 grid gap-4 grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+          <section key={b._key || `cat-${title}-${i}`} className="mt-4">
+            {!prevIsSameSectionHtml ? <KentH2>{title || "Additional equipment"}</KentH2> : null}
+
+            <div className={`${prevIsSameSectionHtml ? "mt-4" : "mt-4"} grid gap-4 grid-cols-2 md:grid-cols-3 xl:grid-cols-4`}>
               {items.map((it, idx) => (
                 <a
                   key={it._key || `${it.title}-${idx}`}
@@ -617,7 +635,7 @@ function renderLandingBlocks(blocks: any[], brandKey: string, theme: Theme) {
 
       if (kind === "publication") {
         out.push(
-          <section key={b._key || "pub"} className="mt-10">
+          <section key={b._key || `pub-${i}`} className="mt-10">
             <KentH2>{title || "Scientific articles and publications"}</KentH2>
             <div className="mt-5 space-y-5">
               {items.map((it, idx) => (
@@ -643,7 +661,7 @@ function renderLandingBlocks(blocks: any[], brandKey: string, theme: Theme) {
 
       if (kind === "resource") {
         out.push(
-          <section key={b._key || "res"} className="mt-10">
+          <section key={b._key || `res-${i}`} className="mt-10">
             <KentH2>{title || "Resources"}</KentH2>
             <div className="mt-5 space-y-4">
               {items.map((it, idx) => (
@@ -684,7 +702,8 @@ export default async function KentProductsPathPage({
 }) {
   const resolved = await Promise.resolve(params as any);
 
-  const brandKey = "kent";
+  // ✅ TS2367 방지
+  const brandKey: string = "kent";
   const theme = THEME_KENT;
 
   const pathArr = (resolved?.path ?? []) as string[];
