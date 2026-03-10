@@ -40,3 +40,12 @@ body {
 .partners-marquee {
 animation: partners-marquee 22s linear infinite;
 }
+
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}

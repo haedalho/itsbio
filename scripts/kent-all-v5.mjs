@@ -245,169 +245,195 @@ function extractCategoryCards($, $scope) {
   return items;
 }
 
-function extractPublications($) {
-  const items = [];
-  $(".porto-posts-grid .porto-tb-item.publication").each((_, el) => {
-    const a = $(el).find("h2 a").first();
-    const href = normUrl(a.attr("href") || "");
-    const title = textClean(a.text());
-    if (!title || !href) return;
-    items.push({ title, href });
-  });
-  return items;
+function uniqueBy(items, makeKey) {
+  const out = [];
+  const seen = new Set();
+  for (const item of items || []) {
+    const key = makeKey(item);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(item);
+  }
+  return out;
 }
 
-function extractResources($) {
+function extractResourcesFromScope($, $scope) {
   const items = [];
-  $(".elementor-widget-image-box").each((_, el) => {
-    const a = $(el).find("a[href]").first();
-    const href = toAbs(a.attr("href") || "");
-    const title = textClean($(el).find(".elementor-image-box-title").text()) || textClean(a.text());
-    const subtitle = textClean($(el).find(".elementor-image-box-description").text());
-    const img = $(el).find("img").first();
-    const imageUrl = toAbs(img.attr("src") || "");
+  $scope.find('.elementor-widget-image-box, [data-widget_type="image-box.default"]').each((_, el) => {
+    const a = $(el).find('a[href]').first();
+    const href = toAbs(a.attr('href') || '');
+    const title = textClean($(el).find('.elementor-image-box-title').text()) || textClean(a.text());
+    const subtitle = textClean($(el).find('.elementor-image-box-description').text());
+    const img = $(el).find('img').first();
+    const imageUrl = toAbs(img.attr('src') || '');
     if (!href || !title) return;
     items.push({ title, subtitle, href, imageUrl });
   });
-  return items;
+  return uniqueBy(items, (it) => `${it.href}__${it.title}`.toLowerCase());
 }
 
-/**
- * Parse landing blocks from a category page HTML.
- * - Intro: first text-editor widget with h1
- * - For each H2 text-editor widget, collect:
- *   - contentBlockHtml(title=h2, html=its body)
- *   - lookahead widgets within this section for product grids and category grids
- * - Then append publications/resources
- */
+function getWidgetType($el) {
+  return String($el.attr('data-widget_type') || '').trim();
+}
+
+function getSectionHeadingFromWidget($, $el) {
+  const type = getWidgetType($el);
+  if (type.startsWith('text-editor') || type.startsWith('heading')) {
+    const h2 = $el.find('h2').first();
+    if (h2.length) return textClean(h2.text());
+  }
+  return '';
+}
+
+function stripFirstHeadingHtml($, $el, tagName) {
+  const html = $el.html() || '';
+  if (!html) return '';
+  const $$ = cheerio.load(`<div id="root">${html}</div>`, { decodeEntities: false });
+  $$('#root').find(tagName).first().remove();
+  return $$('#root').html() || '';
+}
+
 function parseLandingContentBlocks(html) {
   const $ = cheerio.load(html, { decodeEntities: false });
 
   const $main =
-    $("#content").length ? $("#content") :
-    $(".main-content").length ? $(".main-content") :
-    $("main").length ? $("main") :
+    $('#content').length ? $('#content') :
+    $('.main-content').length ? $('.main-content') :
+    $('main').length ? $('main') :
     $.root();
 
   removeUnwantedUi($main, $);
 
   const blocks = [];
+  const widgets = $main.find('[data-widget_type]').toArray();
+  const firstContentH1Index = widgets.findIndex((el) => {
+    const $el = $(el);
+    const type = getWidgetType($el);
+    if (!(type.startsWith('text-editor') || type.startsWith('heading'))) return false;
+    return $el.find('h1').length > 0;
+  });
 
-  // Intro
-  const $firstText = $main.find(".elementor-widget-text-editor").first();
-  if ($firstText.length) {
-    const h1Text = textClean($firstText.find("h1").first().text());
-    const ps = $firstText.find("p").slice(0, 2).toArray().map((p) => $.html(p)).join("");
-    const introHtml = `${h1Text ? `<h1>${h1Text}</h1>` : ""}${ps}`;
-    if (textClean(cheerio.load(introHtml).text()).length > 30) {
+  let startIndex = 0;
+
+  if (firstContentH1Index >= 0) {
+    const $first = $(widgets[firstContentH1Index]);
+    const h1Text = textClean($first.find('h1').first().text());
+    const introHtml = stripFirstHeadingHtml($, $first, 'h1');
+    if (roughTextLenFromHtml(introHtml) >= 20) {
       blocks.push({
-        _type: "contentBlockHtml",
-        title: h1Text || "Overview",
+        _type: 'contentBlockHtml',
+        title: h1Text || 'Overview',
         html: introHtml,
       });
     }
+    startIndex = firstContentH1Index + 1;
   }
 
-  // Elementor blocks scan
-  const widgets = $main.find(".elementor-element").toArray();
-
-  for (let i = 0; i < widgets.length; i++) {
+  for (let i = startIndex; i < widgets.length; i++) {
     const $el = $(widgets[i]);
-    const $textWidget = $el.find(".elementor-widget-text-editor").first();
+    const sectionTitle = getSectionHeadingFromWidget($, $el);
+    if (!sectionTitle) continue;
+    if (UNWANTED.earlyAccess.test(sectionTitle)) continue;
+    if (/^Scientific articles and publications$/i.test(sectionTitle)) continue;
 
-    const h2Text = textClean($textWidget.find("h2").first().text());
-    if (!h2Text) continue;
-    if (UNWANTED.earlyAccess.test(h2Text)) continue;
+    const sectionHtmlParts = [];
+    const type = getWidgetType($el);
+    if (type.startsWith('text-editor')) {
+      const bodyHtml = stripFirstHeadingHtml($, $el, 'h2');
+      if (roughTextLenFromHtml(bodyHtml) > 0) sectionHtmlParts.push(bodyHtml);
+    }
 
-    // body html from this widget without the first h2
-    const widgetHtml = $textWidget.html() || "";
-    const $$ = cheerio.load(widgetHtml, { decodeEntities: false });
-    $$("h2").first().remove();
-    const bodyHtml = $$.root().html() || "";
+    let productItems = [];
+    let categoryItems = [];
+    let resourceItems = [];
 
-    // html block (can be empty marker)
-    blocks.push({
-      _type: "contentBlockHtml",
-      title: h2Text,
-      html: bodyHtml,
-    });
-
-    // look ahead until next section(h2)
     let j = i + 1;
     while (j < widgets.length) {
       const $next = $(widgets[j]);
-      const nextH2 = textClean($next.find(".elementor-widget-text-editor h2").first().text());
-      if (nextH2) break;
+      const nextSectionTitle = getSectionHeadingFromWidget($, $next);
+      if (nextSectionTitle) break;
 
-      // products grid
-      if ($next.find("ul.products li.product").length) {
-        const items = extractProductCards($, $next);
-        if (items.length) {
-          blocks.push({
-            _type: "contentBlockCards",
-            title: h2Text,
-            kind: "product",
-            items,
-          });
-        }
+      const nextType = getWidgetType($next);
+
+      if ($next.find('ul.products li.product').length || nextType.startsWith('woocommerce-products')) {
+        productItems.push(...extractProductCards($, $next));
       }
 
-      // categories grid
-      if ($next.find("li.product-category").length) {
-        const items = extractCategoryCards($, $next);
-        if (items.length) {
-          blocks.push({
-            _type: "contentBlockCards",
-            title: h2Text,
-            kind: "category",
-            items,
-          });
-        }
+      if ($next.find('li.product-category').length || nextType.startsWith('wc-categories')) {
+        categoryItems.push(...extractCategoryCards($, $next));
+      }
+
+      if (/^Resources$/i.test(sectionTitle) && (nextType.startsWith('image-box') || $next.find('.elementor-widget-image-box').length)) {
+        resourceItems.push(...extractResourcesFromScope($, $next));
+      }
+
+      if (nextType.startsWith('text-editor')) {
+        const htmlFrag = $next.html() || '';
+        if (roughTextLenFromHtml(htmlFrag) > 0) sectionHtmlParts.push(htmlFrag);
       }
 
       j++;
-      if (j - i > 14) break;
+      if (j - i > 20) break;
     }
+
+    const sectionHtml = sectionHtmlParts.join('');
+    if (roughTextLenFromHtml(sectionHtml) >= 20) {
+      blocks.push({
+        _type: 'contentBlockHtml',
+        title: sectionTitle,
+        html: sectionHtml,
+      });
+    }
+
+    productItems = uniqueBy(productItems, (it) => `${it.href}__${it.title}`.toLowerCase());
+    categoryItems = uniqueBy(categoryItems, (it) => `${it.href}__${it.title}`.toLowerCase());
+    resourceItems = uniqueBy(resourceItems, (it) => `${it.href}__${it.title}`.toLowerCase());
+
+    if (productItems.length) {
+      blocks.push({
+        _type: 'contentBlockCards',
+        title: sectionTitle,
+        kind: 'product',
+        items: productItems,
+      });
+    }
+
+    if (categoryItems.length) {
+      blocks.push({
+        _type: 'contentBlockCards',
+        title: sectionTitle,
+        kind: 'category',
+        items: categoryItems,
+      });
+    }
+
+    if (resourceItems.length) {
+      blocks.push({
+        _type: 'contentBlockCards',
+        title: sectionTitle,
+        kind: 'resource',
+        items: resourceItems,
+      });
+    }
+
+    i = j - 1;
   }
 
-  // Publications/resources (global)
-  const pubs = extractPublications($);
-  if (pubs.length) {
-    blocks.push({
-      _type: "contentBlockCards",
-      title: "Scientific articles and publications",
-      kind: "publication",
-      items: pubs,
-    });
-  }
-
-  const resources = extractResources($);
-  if (resources.length) {
-    blocks.push({
-      _type: "contentBlockCards",
-      title: "Resources",
-      kind: "resource",
-      items: resources,
-    });
-  }
-
-  // Cleanup: drop html blocks that are basically empty AND have no cards right after
   const cleaned = [];
   for (let k = 0; k < blocks.length; k++) {
     const b = blocks[k];
-    if (b._type === "contentBlockHtml") {
-      const len = roughTextLenFromHtml(b.html || "");
+    if (b._type === 'contentBlockHtml') {
+      const len = roughTextLenFromHtml(b.html || '');
       const next = blocks[k + 1];
-      const hasCardsNext = next && next._type === "contentBlockCards" && next.title === b.title;
+      const hasCardsNext = next && next._type === 'contentBlockCards' && next.title === b.title;
       if (len < 25 && !hasCardsNext) continue;
     }
     cleaned.push(b);
   }
 
-  // Final: rewrite relative urls, normalize card urls
   for (const b of cleaned) {
-    if (b._type === "contentBlockHtml" && b.html) b.html = rewriteRelativeUrls(b.html, BASE);
-    if (b._type === "contentBlockCards" && Array.isArray(b.items)) {
+    if (b._type === 'contentBlockHtml' && b.html) b.html = rewriteRelativeUrls(b.html, BASE);
+    if (b._type === 'contentBlockCards' && Array.isArray(b.items)) {
       b.items = b.items.map((it) => ({
         ...it,
         href: it.href ? normUrl(it.href) : it.href,

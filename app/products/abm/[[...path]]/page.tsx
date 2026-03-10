@@ -17,6 +17,9 @@ const ABM_ROOTS = ["general-materials", "cellular-materials", "genetic-materials
 // ✅ Kent 메뉴 상단 고정 헤더(가상 그룹)
 const KENT_MENU_TITLE = "General Lab Equipment";
 
+const PAGE_SHELL = "mx-auto max-w-[1320px] px-6";
+const CONTENT_LAYOUT = "grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[296px_minmax(0,1fr)]";
+
 type Theme = {
   accentBg: string;
   accentText: string;
@@ -128,7 +131,6 @@ const PAGE_QUERY = `
     _id, title, path, order, sourceUrl
   },
 
-  // ✅ Kent는 "전체 descendants"를 받아야 메뉴 그룹 아래 트리를 만들 수 있음
   "descendants": select(
     $isKent => *[
       _type == "category"
@@ -146,7 +148,6 @@ const PAGE_QUERY = `
       _id, title, path, order, sourceUrl
     },
 
-    // ✅ 기존(ABM 포함)은 activeRoot만 descendants로
     $hasActiveRoot => *[
       _type == "category"
       && (!defined(isActive) || isActive == true)
@@ -184,11 +185,8 @@ const PAGE_QUERY = `
       title,
       path,
       sourceUrl,
-
-      // ✅ 본문 fallback용(가벼움)
       summary,
       legacyHtml,
-
       contentBlocks[] { _key,_type,title,html,items[] },
       blocks[] { _key,_type,title,html,items[] }
     },
@@ -204,7 +202,6 @@ const PAGE_QUERY = `
         || brand->slug.current == $brandKey
         || brand->themeKey == $brandKey
       )
-      // ✅ 성능 유지(완전일치)
       && defined(categoryPath)
       && categoryPath == $pathArr
     ]
@@ -241,7 +238,6 @@ function makeNodeKey(path: string[]) {
   return path.join("/");
 }
 
-// 기존(ABM 방식) rootPath 기준
 function buildTreeFromDescendants(rootPath: string[], descendants: CatLite[]) {
   const rootKey = makeNodeKey(rootPath);
   const nodes = new Map<string, TreeNode>();
@@ -317,7 +313,6 @@ function buildTreeFromDescendants(rootPath: string[], descendants: CatLite[]) {
   return root.children;
 }
 
-// ✅ Kent용: roots(1뎁스) + descendants(2뎁스+) 전체로 트리 만들기
 function buildTreeFromAllCategories(roots: CatLite[], descendants: CatLite[]) {
   const nodes = new Map<string, TreeNode>();
 
@@ -351,13 +346,11 @@ function buildTreeFromAllCategories(roots: CatLite[], descendants: CatLite[]) {
     return nodes.get(key)!;
   }
 
-  // roots 먼저
   for (const r of roots) {
     if (!Array.isArray(r.path) || r.path.length !== 1) continue;
     ensureNode(r.path, r);
   }
 
-  // descendants + 중간 노드 보강
   for (const d of descendants) {
     if (!Array.isArray(d.path) || d.path.length < 2) continue;
 
@@ -368,7 +361,6 @@ function buildTreeFromAllCategories(roots: CatLite[], descendants: CatLite[]) {
     }
   }
 
-  // attach
   for (const node of nodes.values()) {
     if (node.path.length === 1) continue;
     const parentPath = node.path.slice(0, node.path.length - 1);
@@ -377,7 +369,6 @@ function buildTreeFromAllCategories(roots: CatLite[], descendants: CatLite[]) {
     if (parent) parent.children.push(node);
   }
 
-  // sort
   function sortRec(n: TreeNode) {
     n.children.sort((a, b) => {
       const ao = typeof a.order === "number" ? a.order : 999999;
@@ -466,7 +457,7 @@ function HeroBanner({ brandTitle }: { brandTitle: string }) {
         <div className="absolute inset-0 bg-black/35" />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950/45 via-transparent to-transparent" />
         <div className="absolute inset-0">
-          <div className="mx-auto flex h-full max-w-6xl items-center px-6">
+          <div className={`${PAGE_SHELL} flex h-full items-center`}>
             <div>
               <div className="text-xs font-semibold tracking-wide text-white/80">ITS BIO</div>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">{brandTitle} Product</h1>
@@ -498,19 +489,19 @@ function SideNavTree({
 
   const activeRootTitle = isKentMode
     ? KENT_MENU_TITLE
-    : roots.find((r) => (r.path?.[0] || "") === activeRoot)?.title || (activeRoot ? humanizeSegment(activeRoot) : "All Products");
+    : roots.find((r) => (r.path?.[0] || "") === activeRoot)?.title ||
+      (activeRoot ? humanizeSegment(activeRoot) : "All Products");
 
   const isPrefix = (full: string, prefix: string) => full === prefix || full.startsWith(prefix + "/");
 
   const LINE_LEFT = "left-[18px]";
   const DOT_LEFT = "left-[18px]";
   const ARROW_LEFT = "left-[28px]";
+  const TEXT_OFFSET = "ml-[34px]";
 
   function nodeHref(n: { path: string[] }) {
     return buildHref(brandKey, n.path);
   }
-
-  const TEXT_OFFSET = "ml-[34px]";
 
   function Children({ nodes }: { nodes: TreeNode[] }) {
     if (!nodes?.length) return null;
@@ -584,7 +575,6 @@ function SideNavTree({
     const isActive = activePathStr === p;
     const isOnTrail = isPrefix(activePathStr, p) && !isActive;
     const hasChildren = !!node.children?.length;
-
     const isOpen = hasChildren && (isActive || isOnTrail);
 
     if (hasChildren) {
@@ -641,7 +631,6 @@ function SideNavTree({
       </div>
 
       <div className="p-2">
-        {/* ✅ Kent 모드: "다른 roots" 섹션 숨기고, 전체 트리를 바로 렌더 */}
         {!isKentMode ? (
           <>
             <div className="space-y-1">
@@ -769,7 +758,7 @@ function ResourceSection({
     <section className="mt-10">
       <h3 className={`text-xl font-semibold ${theme.accentText}`}>Resources</h3>
 
-      <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
         {safeItems.map((x) => (
           <Link key={x.key} href={legacyHref(brandKey, x.href)} prefetch={false} className="block">
             <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm transition hover:border-neutral-300 hover:shadow-md">
@@ -785,10 +774,10 @@ function ResourceSection({
               </div>
 
               <div className="p-5">
-                <div className="text-base font-semibold text-neutral-900 leading-snug line-clamp-2">
+                <div className="line-clamp-2 text-base font-semibold leading-snug text-neutral-900">
                   {stripBrandSuffix(x.title)}
                 </div>
-                <div className="mt-2 text-sm italic text-neutral-600 line-clamp-1">{x.subtitle || "Learning Resources"}</div>
+                <div className="mt-2 line-clamp-1 text-sm italic text-neutral-600">{x.subtitle || "Learning Resources"}</div>
               </div>
             </div>
           </Link>
@@ -825,7 +814,7 @@ function TopPublicationsSection({
                   <div className={`mt-2 h-[2px] w-10 ${theme.accentBg}`} />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-sm leading-6 text-neutral-900 whitespace-pre-line">{p.citation}</div>
+                  <div className="whitespace-pre-line text-sm leading-6 text-neutral-900">{p.citation}</div>
                 </div>
               </div>
             </div>
@@ -908,13 +897,11 @@ export default async function AbmProductsPathPage({
   const sp = await Promise.resolve(searchParams as any);
 
   const openSlug = (sp?.open ?? "").toString().trim();
-  const brandKey:string = "abm";
+  const brandKey: string = "abm";
   const theme = getTheme(brandKey);
   const isKent = brandKey === "kent";
 
   const path = (resolved?.path ?? []) as string[];
-  
-
   const activeRoot = path[0] || "";
   const hasPath = path.length > 0;
   const hasActiveRoot = !!activeRoot;
@@ -947,8 +934,6 @@ export default async function AbmProductsPathPage({
     thumb?: string;
   }> = Array.isArray(data?.products) ? data.products : [];
 
-  // ✅ ABM: 기존처럼 activeRoot 기준
-  // ✅ Kent: 전체 트리를 만들어 General Lab Equipment 아래에 뿌림
   let activeRootTree: TreeNode[] = [];
   if (isKent) {
     activeRootTree = buildTreeFromAllCategories(roots, descendants);
@@ -967,13 +952,13 @@ export default async function AbmProductsPathPage({
       <div>
         <HeroBanner brandTitle={brand.title} />
 
-        <div className="mx-auto max-w-6xl px-6">
+        <div className={PAGE_SHELL}>
           <div className="mt-6 flex justify-end">
             <Breadcrumb items={breadcrumbItems} />
           </div>
 
-          <div className="mt-10 grid gap-8 lg:grid-cols-12">
-            <aside className="lg:col-span-4">
+          <div className={`mt-10 ${CONTENT_LAYOUT}`}>
+            <aside className="self-start lg:sticky lg:top-24">
               <SideNavTree
                 brandKey={brandKey}
                 roots={roots}
@@ -984,7 +969,7 @@ export default async function AbmProductsPathPage({
               />
             </aside>
 
-            <main className="lg:col-span-8">
+            <main className="min-w-0">
               <h2 className="text-2xl font-semibold tracking-tight text-neutral-900">Select a category</h2>
               <p className="mt-3 text-neutral-700 leading-7">Please choose a category from the left menu.</p>
             </main>
@@ -1015,13 +1000,11 @@ export default async function AbmProductsPathPage({
       ? category.blocks
       : [];
 
-  // ✅ 내용이 안 나올 때 최소 텍스트라도 보여주기(legacyHtml 전체 렌더는 무거울 수 있어 summary 우선)
-  const fallbackHtmlRaw =
-    blocks.length
-      ? ""
-      : category?.summary
-        ? `<p>${escapeHtml(category.summary)}</p>`
-        : "";
+  const fallbackHtmlRaw = blocks.length
+    ? ""
+    : category?.summary
+      ? `<p>${escapeHtml(category.summary)}</p>`
+      : "";
 
   const fallbackHtml = fallbackHtmlRaw ? safeHtmlForRender(fallbackHtmlRaw, brandKey) : "";
 
@@ -1029,13 +1012,13 @@ export default async function AbmProductsPathPage({
     <div>
       <HeroBanner brandTitle={brand.title} />
 
-      <div className="mx-auto max-w-6xl px-6">
+      <div className={PAGE_SHELL}>
         <div className="mt-6 flex justify-end">
           <Breadcrumb items={breadcrumbItems} />
         </div>
 
-        <div className="mt-10 grid gap-8 lg:grid-cols-12">
-          <aside className="lg:col-span-4">
+        <div className={`mt-10 ${CONTENT_LAYOUT}`}>
+          <aside className="self-start lg:sticky lg:top-24">
             <SideNavTree
               brandKey={brandKey}
               roots={roots}
@@ -1046,20 +1029,20 @@ export default async function AbmProductsPathPage({
             />
           </aside>
 
-          <main className="lg:col-span-8">
-            <h2 className="text-3xl font-semibold tracking-tight text-neutral-900">{pageTitle}</h2>
+          <main className="min-w-0">
+            <h2 className="text-3xl font-semibold tracking-tight text-neutral-900 md:text-4xl">{pageTitle}</h2>
 
             {productsInCategory.length ? (
               <div className="mt-6">
                 <div className="text-sm font-semibold text-neutral-900">Products</div>
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   {productsInCategory.map((p) => {
                     const isOpen = openSlug && p.slug === openSlug;
                     return (
                       <Link
                         key={p._id}
                         href={`/products/${brandKey}/item/${encodeURIComponent(p.slug)}`}
-                        prefetch={false} // ✅ 무한 로딩 체감 방지
+                        prefetch={false}
                         className={`group flex items-center gap-3 rounded-2xl border bg-white p-3 hover:shadow-sm ${
                           isOpen ? `${theme.accentBorder} ring-1 ${theme.accentSoftBg}` : "border-slate-200"
                         }`}
@@ -1099,7 +1082,10 @@ export default async function AbmProductsPathPage({
                 <HtmlContent html={fallbackHtml} />
                 {category?.sourceUrl ? (
                   <div className="mt-4 text-sm">
-                    <a className={`font-semibold underline underline-offset-4 ${theme.accentUnderline}`} href={legacyHref(brandKey, category.sourceUrl)}>
+                    <a
+                      className={`font-semibold underline underline-offset-4 ${theme.accentUnderline}`}
+                      href={legacyHref(brandKey, category.sourceUrl)}
+                    >
                       원문 보기
                     </a>
                   </div>
@@ -1111,7 +1097,10 @@ export default async function AbmProductsPathPage({
                 {category?.sourceUrl ? (
                   <>
                     {" "}
-                    <a className={`font-semibold underline underline-offset-4 ${theme.accentUnderline}`} href={legacyHref(brandKey, category.sourceUrl)}>
+                    <a
+                      className={`font-semibold underline underline-offset-4 ${theme.accentUnderline}`}
+                      href={legacyHref(brandKey, category.sourceUrl)}
+                    >
                       원문 보기
                     </a>
                   </>
