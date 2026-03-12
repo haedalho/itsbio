@@ -41,6 +41,21 @@ export default defineType({
       validation: (r) => r.required(),
     }),
 
+    defineField(
+      {
+        name: "pageType",
+        title: "Page Type",
+        type: "string",
+        initialValue: "listing",
+        options: {
+          list: [
+            { title: "Listing", value: "listing" },
+            { title: "Landing", value: "landing" },
+          ],
+          layout: "radio",
+        },
+      }),
+
     defineField({
       name: "parent",
       title: "상위 카테고리",

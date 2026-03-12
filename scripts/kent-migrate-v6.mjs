@@ -218,6 +218,35 @@ function rewriteRelativeUrls(html, baseUrl) {
   return out;
 }
 
+function roughTextLenFromHtml(html) {
+  return String(html || "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim().length;
+}
+
+function normalizeInlineText(input) {
+  return String(input || "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function uniqueBy(items, makeKey) {
+  const out = [];
+  const seen = new Set();
+
+  for (const item of items || []) {
+    const key = makeKey(item);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(item);
+  }
+
+  return out;
+}
+
 function rewriteAnchorsToInternalAware(html) {
   if (!html) return "";
   return html.replace(/\shref=["']([^"']+)["']/gi, (_m, url) => ` href="${resolveInternalKentHref(url)}"`);
@@ -379,6 +408,145 @@ function extractResources($) {
   return items;
 }
 
+function extractPublicationsFromScope($, $scope) {
+  const items = [];
+
+  $scope.find(".porto-posts-grid .porto-tb-item.publication, .porto-posts-grid article, .porto-posts-grid .porto-blog-item").each((_, el) => {
+    const $a = $(el).find("h2 a, h3 a, .entry-title a, a[href]").first();
+    const sourceUrl = normUrl($a.attr("href") || "");
+    const title = textClean($a.text());
+    if (!title || !sourceUrl) return;
+
+    items.push({
+      title,
+      href: legacyHref(sourceUrl),
+      sourceUrl,
+    });
+  });
+
+  return uniqueBy(items, (it) => `${it.sourceUrl}__${it.title}`.toLowerCase());
+}
+
+function extractResourcesFromScope($, $scope) {
+  const items = [];
+
+  $scope.find('.elementor-widget-image-box, [data-widget_type="image-box.default"]').each((_, el) => {
+    const $a = $(el).find('a[href]').first();
+    const sourceUrl = normUrl($a.attr('href') || '');
+    const title =
+      textClean($(el).find('.elementor-image-box-title').text()) || textClean($a.text());
+    const subtitle = textClean($(el).find('.elementor-image-box-description').text());
+    const imageUrl = toAbs($(el).find('img').first().attr('src') || '');
+    if (!sourceUrl || !title) return;
+
+    items.push({
+      title,
+      subtitle,
+      href: resolveInternalKentHref(sourceUrl),
+      sourceUrl,
+      imageUrl,
+    });
+  });
+
+  return uniqueBy(items, (it) => `${it.sourceUrl}__${it.title}`.toLowerCase());
+}
+
+function getWidgetType($el) {
+  return String($el.attr('data-widget_type') || '').trim();
+}
+
+function getSectionHeadingFromWidget($, $el) {
+  const type = getWidgetType($el);
+  if (type.startsWith('text-editor') || type.startsWith('heading')) {
+    const h2 = $el.find('h2').first();
+    if (h2.length) return textClean(h2.text());
+  }
+  return '';
+}
+
+function stripFirstHeadingHtml($, $el, tagName) {
+  const html = $el.html() || '';
+  if (!html) return '';
+
+  const $$ = cheerio.load(`<div id="root">${html}</div>`, { decodeEntities: false });
+  $$('#root').find(tagName).first().remove();
+  return $$('#root').html() || '';
+}
+
+function dedupeContentBlocksForStorage(blocks) {
+  const out = [];
+  const exactSeen = new Set();
+  const cardsIndexByKey = new Map();
+
+  for (const block of Array.isArray(blocks) ? blocks : []) {
+    if (block?._type === 'contentBlockHtml') {
+      const titleKey = normalizeInlineText(block.title || '');
+      const htmlKey = normalizeInlineText(block.html || '');
+      if (!htmlKey) continue;
+
+      const key = `html|${titleKey}|${htmlKey}`;
+      if (exactSeen.has(key)) continue;
+      exactSeen.add(key);
+      out.push(block);
+      continue;
+    }
+
+    if (block?._type === 'contentBlockCards') {
+      const items = uniqueBy(Array.isArray(block.items) ? block.items : [], (item) => {
+        return [
+          String(item?.href || '').trim(),
+          normalizeInlineText(item?.title || ''),
+          String(item?.imageUrl || '').trim(),
+        ].join('|');
+      }).filter((item) => String(item?.href || '').trim() && textClean(item?.title || ''));
+
+      if (!items.length) continue;
+
+      const bucketKey = `cards|${normalizeInlineText(block.title || '')}|${String(block.kind || '').trim()}`;
+      if (cardsIndexByKey.has(bucketKey)) {
+        const index = cardsIndexByKey.get(bucketKey);
+        const prev = out[index];
+        out[index] = {
+          ...prev,
+          items: uniqueBy([...(prev.items || []), ...items], (item) => {
+            return [
+              String(item?.href || '').trim(),
+              normalizeInlineText(item?.title || ''),
+              String(item?.imageUrl || '').trim(),
+            ].join('|');
+          }),
+        };
+        continue;
+      }
+
+      cardsIndexByKey.set(bucketKey, out.length);
+      out.push({ ...block, items });
+      continue;
+    }
+
+    out.push(block);
+  }
+
+  return out;
+}
+
+function extractCategoryLegacyHtml(html) {
+  const $ = cheerio.load(html, { decodeEntities: false });
+
+  const $main = $("#content").length
+    ? $("#content")
+    : $(".main-content").length
+    ? $(".main-content")
+    : $("main").length
+    ? $("main")
+    : $.root();
+
+  removeUnwantedUi($main, $);
+  $main.find('.woocommerce-breadcrumb, .breadcrumb, .breadcrumbs, .page-top, .page-header, .shop-loop-before').remove();
+
+  return safeHtmlForStorage($main.html() || '');
+}
+
 function parseLandingContentBlocks(html) {
   const $ = cheerio.load(html, { decodeEntities: false });
 
@@ -393,145 +561,191 @@ function parseLandingContentBlocks(html) {
   removeUnwantedUi($main, $);
 
   const blocks = [];
-  const firstText = $main.find(".elementor-widget-text-editor").first();
+  const widgets = $main.find('[data-widget_type]').toArray();
+  const firstContentH1Index = widgets.findIndex((el) => {
+    const $el = $(el);
+    const type = getWidgetType($el);
+    if (!(type.startsWith('text-editor') || type.startsWith('heading'))) return false;
+    return $el.find('h1').length > 0;
+  });
 
-  if (firstText.length) {
-    const h1Text = textClean(firstText.find("h1").first().text());
-    const ps = firstText
-      .find("p")
-      .slice(0, 2)
-      .toArray()
-      .map((p) => $.html(p))
-      .join("");
-    const introHtml = `${h1Text ? `<h1>${h1Text}</h1>` : ""}${ps}`;
-    if (textClean(cheerio.load(introHtml).text()).length > 30) {
+  let startIndex = 0;
+
+  if (firstContentH1Index >= 0) {
+    const $first = $(widgets[firstContentH1Index]);
+    const h1Text = textClean($first.find('h1').first().text());
+    const introHtml = stripFirstHeadingHtml($, $first, 'h1');
+    if (roughTextLenFromHtml(introHtml) >= 20) {
       blocks.push({
-        _type: "contentBlockHtml",
-        title: h1Text || "Overview",
+        _type: 'contentBlockHtml',
+        title: h1Text || 'Overview',
         html: safeHtmlForStorage(introHtml),
       });
     }
+    startIndex = firstContentH1Index + 1;
   }
 
-  const widgets = $main.find(".elementor-element").toArray();
-
-  for (let i = 0; i < widgets.length; i += 1) {
+  for (let i = startIndex; i < widgets.length; i += 1) {
     const $el = $(widgets[i]);
-    const $textWidget = $el.find(".elementor-widget-text-editor").first();
-    const h2Text = textClean($textWidget.find("h2").first().text());
+    const sectionTitle = getSectionHeadingFromWidget($, $el);
+    if (!sectionTitle) continue;
+    if (UNWANTED.earlyAccess.test(sectionTitle)) continue;
 
-    if (!h2Text || UNWANTED.earlyAccess.test(h2Text)) continue;
+    const sectionHtmlParts = [];
+    const type = getWidgetType($el);
+    if (type.startsWith('text-editor')) {
+      const bodyHtml = stripFirstHeadingHtml($, $el, 'h2');
+      if (roughTextLenFromHtml(bodyHtml) > 0) sectionHtmlParts.push(bodyHtml);
+    }
 
-    const widgetHtml = $textWidget.html() || "";
-    const $$ = cheerio.load(widgetHtml, { decodeEntities: false });
-    $$("h2").first().remove();
-    const bodyHtml = safeHtmlForStorage($$.root().html() || "");
-
-    blocks.push({ _type: "contentBlockHtml", title: h2Text, html: bodyHtml });
+    let productItems = [];
+    let categoryItems = [];
+    let resourceItems = [];
+    let publicationItems = [];
 
     let j = i + 1;
     while (j < widgets.length) {
       const $next = $(widgets[j]);
-      const nextH2 = textClean($next.find(".elementor-widget-text-editor h2").first().text());
-      if (nextH2) break;
+      const nextSectionTitle = getSectionHeadingFromWidget($, $next);
+      if (nextSectionTitle) break;
 
-      if ($next.find("ul.products li.product").length) {
-        const items = extractProductCards($, $next);
-        if (items.length) {
-          blocks.push({
-            _type: "contentBlockCards",
-            title: h2Text,
-            kind: "product",
-            items,
-          });
-        }
+      const nextType = getWidgetType($next);
+
+      if ($next.find('ul.products li.product').length || nextType.startsWith('woocommerce-products')) {
+        productItems.push(...extractProductCards($, $next));
       }
 
-      if ($next.find("li.product-category").length) {
-        const items = extractCategoryCards($, $next);
-        if (items.length) {
-          blocks.push({
-            _type: "contentBlockCards",
-            title: h2Text,
-            kind: "category",
-            items,
-          });
-        }
+      if ($next.find('li.product-category').length || nextType.startsWith('wc-categories')) {
+        categoryItems.push(...extractCategoryCards($, $next));
+      }
+
+      if (/^Scientific articles and publications$/i.test(sectionTitle)) {
+        publicationItems.push(...extractPublicationsFromScope($, $next));
+      }
+
+      if (/^Resources$/i.test(sectionTitle) && (nextType.startsWith('image-box') || $next.find('.elementor-widget-image-box').length)) {
+        resourceItems.push(...extractResourcesFromScope($, $next));
+      }
+
+      if (nextType.startsWith('text-editor')) {
+        const htmlFrag = $next.html() || '';
+        if (roughTextLenFromHtml(htmlFrag) > 0) sectionHtmlParts.push(htmlFrag);
       }
 
       j += 1;
-      if (j - i > 14) break;
+      if (j - i > 20) break;
     }
+
+    const sectionHtml = safeHtmlForStorage(sectionHtmlParts.join(''));
+    if (roughTextLenFromHtml(sectionHtml) >= 20) {
+      blocks.push({
+        _type: 'contentBlockHtml',
+        title: sectionTitle,
+        html: sectionHtml,
+      });
+    }
+
+    productItems = uniqueBy(productItems, (it) => `${it.sourceUrl || it.href}__${it.title}`.toLowerCase());
+    categoryItems = uniqueBy(categoryItems, (it) => `${it.sourceUrl || it.href}__${it.title}`.toLowerCase());
+    publicationItems = uniqueBy(publicationItems, (it) => `${it.sourceUrl || it.href}__${it.title}`.toLowerCase());
+    resourceItems = uniqueBy(resourceItems, (it) => `${it.sourceUrl || it.href}__${it.title}`.toLowerCase());
+
+    if (productItems.length) {
+      blocks.push({
+        _type: 'contentBlockCards',
+        title: sectionTitle,
+        kind: 'product',
+        items: productItems,
+      });
+    }
+
+    if (categoryItems.length) {
+      blocks.push({
+        _type: 'contentBlockCards',
+        title: sectionTitle,
+        kind: 'category',
+        items: categoryItems,
+      });
+    }
+
+    if (publicationItems.length) {
+      blocks.push({
+        _type: 'contentBlockCards',
+        title: sectionTitle,
+        kind: 'publication',
+        items: publicationItems,
+      });
+    }
+
+    if (resourceItems.length) {
+      blocks.push({
+        _type: 'contentBlockCards',
+        title: sectionTitle,
+        kind: 'resource',
+        items: resourceItems,
+      });
+    }
+
+    i = j - 1;
   }
 
-  const publications = extractPublications($);
-  if (publications.length) {
-    blocks.push({
-      _type: "contentBlockCards",
-      title: "Scientific articles and publications",
-      kind: "publication",
-      items: publications,
-    });
+  const cleaned = [];
+  for (let k = 0; k < blocks.length; k += 1) {
+    const block = blocks[k];
+    if (block?._type === 'contentBlockHtml') {
+      const len = roughTextLenFromHtml(block.html || '');
+      const next = blocks[k + 1];
+      const hasCardsNext = !!(next && next._type === 'contentBlockCards' && next.title === block.title);
+      if (len < 25 && !hasCardsNext) continue;
+    }
+    cleaned.push(block);
   }
 
-  const resources = extractResources($);
-  if (resources.length) {
-    blocks.push({
-      _type: "contentBlockCards",
-      title: "Resources",
-      kind: "resource",
-      items: resources,
-    });
-  }
-
-  return blocks.filter((block, index) => {
-    if (block._type !== "contentBlockHtml") return true;
-    const len = textClean(cheerio.load(String(block.html || "")).text()).length;
-    const next = blocks[index + 1];
-    const hasCardsNext =
-      next && next._type === "contentBlockCards" && next.title === block.title;
-    return len >= 25 || hasCardsNext;
-  });
+  return dedupeContentBlocksForStorage(cleaned);
 }
 
 function discoverChildCategories(html) {
   const $ = cheerio.load(html, { decodeEntities: false });
-  const found = new Set();
 
-  $("a[href]").each((_, el) => {
-    const raw = $(el).attr("href") || "";
-    if (isIgnorableUrl(raw)) return;
+  const $main = $("#content").length
+    ? $("#content")
+    : $(".main-content").length
+    ? $(".main-content")
+    : $("main").length
+    ? $("main")
+    : $.root();
 
-    const url = normUrlKeepTrailing(raw);
-    if (!url || !isKentCategoryUrl(url)) return;
+  removeUnwantedUi($main, $);
 
-    const pathArr = categoryUrlToPath(url);
-    if (!pathArr.length) return;
-
-    found.add(url);
+  const urls = [];
+  $main.find('li.product-category a[href*="/product/"]').each((_, a) => {
+    const url = normUrlKeepTrailing($(a).attr('href') || '');
+    if (isKentCategoryUrl(url)) urls.push(url);
   });
 
-  return [...found];
+  return uniqueBy(urls, (url) => url);
 }
 
 function discoverProductUrls(html) {
   const $ = cheerio.load(html, { decodeEntities: false });
-  const found = new Set();
 
-  $("a[href]").each((_, el) => {
-    const raw = $(el).attr("href") || "";
-    if (isIgnorableUrl(raw)) return;
+  const $main = $("#content").length
+    ? $("#content")
+    : $(".main-content").length
+    ? $(".main-content")
+    : $("main").length
+    ? $("main")
+    : $.root();
 
-    const url = normUrlKeepTrailing(raw);
-    if (!url || !isKentProductUrl(url)) return;
+  removeUnwantedUi($main, $);
 
-    const slug = productUrlToSlug(url);
-    if (!slug) return;
-
-    found.add(url);
+  const urls = [];
+  $main.find('ul.products li.product a[href*="/products/"]').each((_, a) => {
+    const url = normUrlKeepTrailing($(a).attr('href') || '');
+    if (isKentProductUrl(url)) urls.push(url);
   });
 
-  return [...found];
+  return uniqueBy(urls, (url) => url);
 }
 
 async function getBrandRef() {
@@ -836,7 +1050,8 @@ async function upsertCategory({ brandId, url, order = 9999 }) {
 
   if (!pathArr.length) return { childCategories: [], productUrls: [] };
 
-  const contentBlocks = parseLandingContentBlocks(html);
+  const contentBlocks = dedupeContentBlocksForStorage(parseLandingContentBlocks(html));
+  const cleanedLegacyHtml = extractCategoryLegacyHtml(html);
   const parentPath = pathArr.slice(0, -1);
   const parentId = parentPath.length ? pathArrToCategoryId(parentPath) : undefined;
   const id = pathArrToCategoryId(pathArr);
@@ -854,7 +1069,7 @@ async function upsertCategory({ brandId, url, order = 9999 }) {
     order,
     sourceUrl,
     summary: summary || "",
-    legacyHtml: safeHtmlForStorage(html),
+    legacyHtml: cleanedLegacyHtml,
     contentBlocks,
   };
 

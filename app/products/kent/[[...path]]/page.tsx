@@ -20,7 +20,20 @@ const PAGE_SHELL = "mx-auto max-w-[1320px] px-6";
 const CONTENT_LAYOUT =
   "grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[296px_minmax(0,1fr)]";
 
-const THEME = {
+type Theme = {
+  accentBg: string;
+  accentText: string;
+  accentBorder: string;
+  accentSoftBg: string;
+  accentActiveBg: string;
+  accentActiveText: string;
+  accentDotBg: string;
+  accentDotBorder: string;
+  accentUnderline: string;
+};
+
+const THEME_KENT: Theme = {
+  accentBg: "bg-blue-600",
   accentText: "text-blue-700",
   accentBorder: "border-blue-200",
   accentSoftBg: "bg-blue-50",
@@ -28,11 +41,10 @@ const THEME = {
   accentActiveText: "text-blue-800",
   accentDotBg: "bg-blue-600",
   accentDotBorder: "border-blue-200",
-  btnBg: "bg-blue-600",
-  btnHover: "hover:bg-blue-700",
+  accentUnderline: "text-blue-700",
 };
 
-type Theme = typeof THEME;
+type PageType = "landing" | "listing";
 
 type CardItem = {
   _key?: string;
@@ -54,6 +66,15 @@ type ContentBlock = {
   items?: CardItem[];
 };
 
+type ProductLite = {
+  _id: string;
+  title: string;
+  sku?: string;
+  slug: string;
+  thumb?: string;
+  sourceUrl?: string;
+};
+
 type CategoryDoc = {
   _id: string;
   title: string;
@@ -62,18 +83,14 @@ type CategoryDoc = {
   sourceUrl?: string;
   summary?: string;
   legacyHtml?: string;
+  pageType?: string;
   contentBlocks?: ContentBlock[];
 };
 
-type TreeNode = {
-  key: string;
-  _id: string;
+type StaticMenuNode = {
   title: string;
   path: string[];
-  order?: number;
-  sourceUrl?: string;
-  isVirtual?: boolean;
-  children: TreeNode[];
+  children?: StaticMenuNode[];
 };
 
 type CardsKind = "product" | "category" | "resource" | "publication";
@@ -87,29 +104,16 @@ const PAGE_QUERY = `
     _id, title, themeKey, "slug": slug.current
   },
 
-  "roots": *[
-    _type=="category"
-    && (!defined(isActive) || isActive==true)
-    && (brand->themeKey==$brandKey || brand->slug.current==$brandKey || themeKey==$brandKey || brandSlug==$brandKey)
-    && count(path)==1
-  ] | order(order asc, title asc) {
-    _id, title, path, order, sourceUrl
-  },
-
-  "descendants": *[
-    _type=="category"
-    && (!defined(isActive) || isActive==true)
-    && (brand->themeKey==$brandKey || brand->slug.current==$brandKey || themeKey==$brandKey || brandSlug==$brandKey)
-    && count(path)>1
-  ] | order(order asc, title asc) {
-    _id, title, path, order, sourceUrl
-  },
-
   "category": select(
     $hasPath => *[
       _type=="category"
       && (!defined(isActive) || isActive==true)
-      && (brand->themeKey==$brandKey || brand->slug.current==$brandKey || themeKey==$brandKey || brandSlug==$brandKey)
+      && (
+        brand->themeKey==$brandKey
+        || brand->slug.current==$brandKey
+        || themeKey==$brandKey
+        || brandSlug==$brandKey
+      )
       && array::join(path, "/")==$pathStr
     ][0]{
       _id,
@@ -119,6 +123,7 @@ const PAGE_QUERY = `
       sourceUrl,
       summary,
       legacyHtml,
+      pageType,
       contentBlocks[] {
         _key,
         _type,
@@ -138,16 +143,172 @@ const PAGE_QUERY = `
       }
     },
     null
+  ),
+
+  "products": select(
+    $hasPath => *[
+      _type=="product"
+      && (!defined(isActive) || isActive==true)
+      && (
+        brandSlug==$brandKey
+        || brand->slug.current==$brandKey
+        || brand->themeKey==$brandKey
+      )
+      && defined(categoryPath)
+      && categoryPath == $pathArr
+    ] | order(title asc) {
+      _id,
+      title,
+      sku,
+      "slug": slug.current,
+      "thumb": coalesce(imageUrls[0], images[0].asset->url, ""),
+      sourceUrl
+    },
+    []
   )
 }
 `;
+
+const KENT_STATIC_MENU: StaticMenuNode[] = [
+  {
+    title: "Anesthesia",
+    path: ["anesthesia"],
+    children: [
+      { title: "Anesthesia Accessories", path: ["anesthesia", "anesthesia-accessories"] },
+      {
+        title: "Anesthesia Accessories for SomnoFlo®",
+        path: ["anesthesia", "anesthesia-accessories", "anesthesia-accessories-for-somnoflo"],
+      },
+      {
+        title: "Anesthesia Accessories for SomnoSuite®",
+        path: ["anesthesia", "anesthesia-accessories", "anesthesia-accessories-for-somnosuite"],
+      },
+      {
+        title: "Anesthesia Accessories for VetFlo™",
+        path: ["anesthesia", "anesthesia-accessories", "anesthesia-accessories-for-vetflo"],
+      },
+    ],
+  },
+  {
+    title: "Animal Handling",
+    path: ["laboratory-animal-handling"],
+    children: [
+      { title: "Animal Holders", path: ["laboratory-animal-handling", "animal-holders"] },
+      { title: "Clippers", path: ["laboratory-animal-handling", "clippers"] },
+      { title: "Scales", path: ["laboratory-animal-handling", "scales"] },
+    ],
+  },
+  { title: "Body Composition Analysis", path: ["body-composition-analysis"] },
+  { title: "Feeding Needles", path: ["feeding-needles"] },
+  { title: "Mobile Carts", path: ["mobile-carts"] },
+  { title: "Nebulizer", path: ["nebulizers"] },
+  {
+    title: "Non-invasive Blood Pressure",
+    path: ["noninvasive-blood-pressure"],
+    children: [
+      {
+        title: "Accessories for CODA® Monitor",
+        path: ["noninvasive-blood-pressure", "accessories-for-coda-monitor"],
+      },
+      { title: "CODA® Cuffs", path: ["noninvasive-blood-pressure", "coda-cuffs"] },
+      {
+        title: "Non-Invasive Blood Pressure Accessories",
+        path: ["noninvasive-blood-pressure", "non-invasive-blood-pressure-accessories"],
+      },
+    ],
+  },
+  {
+    title: "Physiological Monitoring",
+    path: ["physiological-monitoring"],
+    children: [
+      { title: "Temperature", path: ["physiological-monitoring", "temperature"] },
+      {
+        title: "Physiological Monitoring Accessories",
+        path: ["physiological-monitoring", "physiological-monitoring-accessories"],
+      },
+    ],
+  },
+  {
+    title: "Rodent Identification",
+    path: ["rodent-identification"],
+    children: [
+      { title: "RFID Transponder System", path: ["rodent-identification", "rfid-transponder-system"] },
+      { title: "Ear Tags", path: ["rodent-identification", "ear-tags"] },
+    ],
+  },
+  {
+    title: "Surgery",
+    path: ["surgery"],
+    children: [
+      { title: "Surgical Instruments", path: ["surgery", "surgical-instruments"] },
+      { title: "Surgical Instrument Kits", path: ["surgery", "surgical-instrument-kits"] },
+      { title: "Surgical Accessories", path: ["surgery", "surgical-accessories"] },
+      { title: "Instrument Cleaning", path: ["surgery", "instrument-cleaning"] },
+    ],
+  },
+  { title: "Tail Vein Training Devices", path: ["tail-vein-training-materials"] },
+  {
+    title: "Tissue Collection",
+    path: ["tissue-collection"],
+    children: [
+      { title: "Brain Matricies", path: ["tissue-collection", "brain-matricies"] },
+      { title: "Blood Collection", path: ["tissue-collection", "blood-collection"] },
+    ],
+  },
+  {
+    title: "Ventilation",
+    path: ["ventilation"],
+    children: [{ title: "Intubation", path: ["ventilation", "intubation"] }],
+  },
+  {
+    title: "Warming",
+    path: ["warming"],
+    children: [
+      { title: "Water Recirculators", path: ["warming", "water-recirculators"] },
+      { title: "Warming Pads and Blankets", path: ["warming", "warming-pads-and-blankets"] },
+    ],
+  },
+  { title: "Warranties", path: ["warranty"] },
+];
+
+function flattenMenu(nodes: StaticMenuNode[]): StaticMenuNode[] {
+  const out: StaticMenuNode[] = [];
+  for (const node of nodes) {
+    out.push(node);
+    if (node.children?.length) out.push(...flattenMenu(node.children));
+  }
+  return out;
+}
+
+const STATIC_LABEL_BY_PATH = new Map(
+  flattenMenu(KENT_STATIC_MENU).map((node) => [node.path.join("/"), node.title]),
+);
+
+const LANDING_FALLBACK_PATHS = new Set(["anesthesia"]);
 
 function buildCategoryHref(path: string[]) {
   return path.length ? `/products/${BRAND_KEY}/${path.join("/")}` : `/products/${BRAND_KEY}`;
 }
 
+function sanitizeKentItemSlug(input: string) {
+  let s = String(input || "").trim();
+  if (!s) return "";
+
+  s = s.replace(/^https?:\/\/[^/]+/i, "");
+  s = s.replace(/^\/+/, "");
+  s = s.replace(/^products\/kent\/item\//i, "");
+  s = s.replace(/^kent\/item\//i, "");
+  s = s.replace(/^item\//i, "");
+
+  const match = s.match(/(?:^|\/)item\/(.+)$/i);
+  if (match?.[1]) s = match[1];
+
+  return s.replace(/^\/+|\/+$/g, "");
+}
+
 function buildProductHref(slug: string) {
-  return `/products/${BRAND_KEY}/item/${slug}`;
+  const clean = sanitizeKentItemSlug(slug);
+  return clean ? `/products/${BRAND_KEY}/item/${clean}` : "#";
 }
 
 function legacyHref(url: string) {
@@ -190,25 +351,11 @@ function kentCategoryPathFromUrl(url: string) {
 function kentProductSlugFromUrl(url: string) {
   const abs = normalizeUrl(url);
   if (!isKentProductUrl(abs)) return "";
-  return abs.replace(`${BRAND_BASE}/products/`, "").replace(/\/$/, "").trim();
-}
-
-function slugifyLoose(input: string) {
-  return (input || "")
-    .toLowerCase()
-    .replace(/&amp;/gi, "and")
-    .replace(/&/g, "and")
-    .replace(/[®™]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+  return sanitizeKentItemSlug(abs.replace(`${BRAND_BASE}/products/`, "").replace(/\/$/, "").trim());
 }
 
 function humanizeSegment(seg: string) {
   return (seg || "").replaceAll("-", " ").replaceAll("_", " ").trim();
-}
-
-function titleCaseFromSlug(seg: string) {
-  return humanizeSegment(seg).replace(/\b[a-z]/g, (c) => c.toUpperCase());
 }
 
 function decodeHtmlEntities(input: string) {
@@ -233,11 +380,40 @@ function looksLikeSlugTitle(title: string) {
   return /^[a-z0-9]+(-[a-z0-9]+)*$/.test((title || "").trim());
 }
 
+function titleCaseFromSlug(seg: string) {
+  return humanizeSegment(seg).replace(/\b[a-z]/g, (c) => c.toUpperCase());
+}
+
 function normalizeTitle(title: string, fallbackSeg = "") {
   const clean = stripBrandSuffix(title || "");
   if (!clean) return titleCaseFromSlug(fallbackSeg);
   if (looksLikeSlugTitle(clean)) return titleCaseFromSlug(clean);
   return clean;
+}
+
+function stripKentPromoHtml(html: string) {
+  let out = String(html || "");
+  const phrases = [
+    "login to see prices",
+    "get early access to info, updates, and discounts",
+  ];
+
+  const tags = ["section", "div", "p", "li", "span", "aside", "article"];
+
+  for (const phrase of phrases) {
+    for (const tag of tags) {
+      const re = new RegExp(
+        `<${tag}[^>]*>[\\s\\S]{0,1500}?${phrase}[\\s\\S]{0,1500}?<\\/${tag}>`,
+        "gi",
+      );
+      out = out.replace(re, "");
+    }
+
+    const textRe = new RegExp(phrase, "gi");
+    out = out.replace(textRe, "");
+  }
+
+  return out;
 }
 
 function rewriteRelativeUrls(html: string, baseUrl: string) {
@@ -256,22 +432,31 @@ function rewriteRelativeUrls(html: string, baseUrl: string) {
 }
 
 function resolveKentHref(href: string) {
-  if (!href) return "#";
+  const raw = String(href || "").trim();
+  if (!raw) return "#";
 
-  if (
-    href.startsWith(`/products/${BRAND_KEY}`) ||
-    href.startsWith(`/products/${BRAND_KEY}/item/`) ||
-    href.startsWith(`/products/${BRAND_KEY}/legacy`)
-  ) {
-    return href;
+  if (/^\/?products\/kent\/item\//i.test(raw) || /^\/?kent\/item\//i.test(raw) || /^\/?item\//i.test(raw)) {
+    return buildProductHref(raw);
   }
 
-  const abs = normalizeUrl(href);
+  if (/\/item\//i.test(raw) && !/^https?:\/\//i.test(raw)) {
+    return buildProductHref(raw);
+  }
+
+  if (/^\/?products\/kent\/legacy/i.test(raw)) {
+    return raw.startsWith("/") ? raw : `/${raw}`;
+  }
+
+  if (/^\/?products\/kent\//i.test(raw) && !/\/item\//i.test(raw)) {
+    return raw.startsWith("/") ? raw : `/${raw}`;
+  }
+
+  const abs = normalizeUrl(raw);
   if (!abs) return "#";
 
   if (isKentProductUrl(abs)) {
     const slug = kentProductSlugFromUrl(abs);
-    return slug ? buildProductHref(slug) : legacyHref(abs);
+    return buildProductHref(slug);
   }
 
   if (isKentCategoryUrl(abs)) {
@@ -284,13 +469,12 @@ function resolveKentHref(href: string) {
 
 function rewriteAnchorsToInternalAware(html: string) {
   if (!html) return "";
-  return html.replace(/\shref=["']([^"']+)["']/gi, (_m, url) => {
-    return ` href="${resolveKentHref(url)}"`;
-  });
+  return html.replace(/\shref=["']([^"']+)["']/gi, (_m, url) => ` href="${resolveKentHref(url)}"`);
 }
 
 function safeHtmlForRender(html: string) {
   let out = html || "";
+  out = stripKentPromoHtml(out);
   out = out.replace(/<script[\s\S]*?<\/script>/gi, "");
   out = out.replace(/<style[\s\S]*?<\/style>/gi, "");
   out = rewriteRelativeUrls(out, BRAND_BASE);
@@ -311,75 +495,8 @@ function normalizeInlineText(input: string) {
 
 function normalizePathSegments(path: string[]) {
   return Array.isArray(path)
-    ? path
-        .map((seg) => String(seg || "").trim().replace(/^\/+|\/+$/g, ""))
-        .filter(Boolean)
+    ? path.map((seg) => String(seg || "").trim().replace(/^\/+|\/+$/g, "")).filter(Boolean)
     : [];
-}
-
-function categoryScore(cat: CategoryDoc) {
-  const path = normalizePathSegments(cat.path);
-  const last = path[path.length - 1] || "";
-  const title = normalizeTitle(cat.title || "", last);
-  const titleSlug = slugifyLoose(title);
-  const sourceUrl = normalizeUrl(cat.sourceUrl || "");
-  const exactSourceMatch =
-    !!sourceUrl &&
-    isKentCategoryUrl(sourceUrl) &&
-    kentCategoryPathFromUrl(sourceUrl).join("/") === path.join("/");
-
-  let score = 0;
-  if (exactSourceMatch) score += 100;
-  if (titleSlug === last) score += 60;
-  if (titleSlug && last && titleSlug.includes(last)) score += 20;
-  if (!looksLikeSlugTitle(title)) score += 8;
-  if (typeof cat.order === "number") score += 3;
-  if (title.length >= 3 && title.length <= 80) score += 2;
-  return score;
-}
-
-function dedupeCategories(items: CategoryDoc[]) {
-  const byPath = new Map<string, CategoryDoc>();
-
-  for (const raw of items) {
-    const path = normalizePathSegments(raw.path);
-    if (!path.length) continue;
-
-    const key = path.join("/");
-    const next: CategoryDoc = {
-      ...raw,
-      path,
-      title: normalizeTitle(raw.title || "", path[path.length - 1] || ""),
-    };
-
-    const prev = byPath.get(key);
-    if (!prev) {
-      byPath.set(key, next);
-      continue;
-    }
-
-    const prevScore = categoryScore(prev);
-    const nextScore = categoryScore(next);
-
-    if (nextScore > prevScore) {
-      byPath.set(key, {
-        ...prev,
-        ...next,
-        contentBlocks: next.contentBlocks?.length ? next.contentBlocks : prev.contentBlocks,
-        legacyHtml: next.legacyHtml || prev.legacyHtml,
-        summary: next.summary || prev.summary,
-      });
-    } else {
-      byPath.set(key, {
-        ...prev,
-        contentBlocks: prev.contentBlocks?.length ? prev.contentBlocks : next.contentBlocks,
-        legacyHtml: prev.legacyHtml || next.legacyHtml,
-        summary: prev.summary || next.summary,
-      });
-    }
-  }
-
-  return [...byPath.values()];
 }
 
 function dedupeLandingItems(items: CardItem[]) {
@@ -387,13 +504,13 @@ function dedupeLandingItems(items: CardItem[]) {
   const out: CardItem[] = [];
 
   for (const item of items) {
-    const href = String(item?.href || "").trim();
+    const href = resolveKentHref(String(item?.href || "").trim());
     const title = normalizeInlineText(String(item?.title || ""));
     const imageUrl = String(item?.imageUrl || "").trim();
     const key = [href, title, imageUrl].join("|");
     if (!href || !title || seen.has(key)) continue;
     seen.add(key);
-    out.push(item);
+    out.push({ ...item, href });
   }
 
   return out;
@@ -434,96 +551,299 @@ function dedupeLandingBlocks(blocks: ContentBlock[]) {
   return out;
 }
 
-function makeNodeKey(path: string[]) {
-  return path.join("/");
+function mergeLandingBlocks(blocks: ContentBlock[]) {
+  const deduped = dedupeLandingBlocks(blocks);
+  const out: ContentBlock[] = [];
+
+  for (const block of deduped) {
+    if (!out.length) {
+      out.push(block);
+      continue;
+    }
+
+    const prev = out[out.length - 1];
+    const sameTitle =
+      normalizeInlineText(String(prev?.title || "")) === normalizeInlineText(String(block?.title || ""));
+
+    if (
+      prev?._type === "contentBlockCards" &&
+      block?._type === "contentBlockCards" &&
+      sameTitle &&
+      String(prev.kind || "") === String(block.kind || "")
+    ) {
+      out[out.length - 1] = {
+        ...prev,
+        items: dedupeLandingItems([...(prev.items || []), ...(block.items || [])]),
+      };
+      continue;
+    }
+
+    if (prev?._type === "contentBlockHtml" && block?._type === "contentBlockHtml" && sameTitle) {
+      const prevHtml = String(prev.html || "").trim();
+      const nextHtml = String(block.html || "").trim();
+      const prevNorm = normalizeInlineText(prevHtml);
+      const nextNorm = normalizeInlineText(nextHtml);
+
+      if (!nextNorm) continue;
+      if (!prevNorm) {
+        out[out.length - 1] = block;
+        continue;
+      }
+      if (prevNorm === nextNorm || prevNorm.includes(nextNorm)) continue;
+      if (nextNorm.includes(prevNorm)) {
+        out[out.length - 1] = block;
+        continue;
+      }
+    }
+
+    out.push(block);
+  }
+
+  return out;
 }
 
-function buildTreeFromAllCategories(roots: CategoryDoc[], descendants: CategoryDoc[]) {
-  const nodes = new Map<string, TreeNode>();
+function isKentProductHrefLike(href: string) {
+  const v = String(href || "").trim();
+  return v.startsWith(`/products/${BRAND_KEY}/item/`) || isKentProductUrl(v);
+}
 
-  function ensureNode(path: string[], meta?: Partial<CategoryDoc>) {
-    const key = makeNodeKey(path);
-    const seg = path[path.length - 1] || "";
+function isKentCategoryHrefLike(href: string) {
+  const v = String(href || "").trim();
+  return v.startsWith(`/products/${BRAND_KEY}/`) && !v.includes("/item/") && !v.includes("/legacy")
+    ? true
+    : isKentCategoryUrl(v);
+}
 
-    if (!nodes.has(key)) {
-      nodes.set(key, {
-        key,
-        _id: meta?._id || `virtual-${key}`,
-        title: normalizeTitle(meta?.title || "", seg),
-        path,
-        order: meta?.order,
-        sourceUrl: meta?.sourceUrl,
-        isVirtual: !meta?._id,
-        children: [],
-      });
-    } else if (meta?._id) {
-      const cur = nodes.get(key)!;
-      nodes.set(key, {
-        ...cur,
-        _id: meta._id,
-        title: normalizeTitle(meta.title || cur.title, seg),
-        order: typeof meta.order === "number" ? meta.order : cur.order,
-        sourceUrl: meta.sourceUrl || cur.sourceUrl,
-        isVirtual: false,
-      });
-    }
-
-    return nodes.get(key)!;
-  }
-
-  for (const r of roots) {
-    if (!Array.isArray(r.path) || r.path.length !== 1) continue;
-    ensureNode(r.path, r);
-  }
-
-  for (const d of descendants) {
-    if (!Array.isArray(d.path) || d.path.length < 2) continue;
-    for (let i = 0; i < d.path.length; i += 1) {
-      const slice = d.path.slice(0, i + 1);
-      if (i === d.path.length - 1) ensureNode(slice, d);
-      else ensureNode(slice);
-    }
-  }
-
-  for (const node of nodes.values()) {
-    if (node.path.length === 1) continue;
-    const parentKey = makeNodeKey(node.path.slice(0, node.path.length - 1));
-    const parent = nodes.get(parentKey);
-    if (parent && !parent.children.some((child) => child.key === node.key)) {
-      parent.children.push(node);
-    }
-  }
-
-  function sortRec(node: TreeNode) {
-    node.children.sort((a, b) => {
-      const ao = typeof a.order === "number" ? a.order : 999999;
-      const bo = typeof b.order === "number" ? b.order : 999999;
-      if (ao !== bo) return ao - bo;
-      return String(a.title).localeCompare(String(b.title));
-    });
-    node.children.forEach(sortRec);
-  }
-
-  const nestedLeaves = new Set(
-    [...nodes.values()]
-      .filter((n) => n.path.length > 1)
-      .map((n) => n.path[n.path.length - 1])
+function isResourceishText(input: string) {
+  const t = normalizeInlineText(input || "");
+  return (
+    t.includes("resource") ||
+    t.includes("white paper") ||
+    t.includes("whitepaper") ||
+    t.includes("user guide") ||
+    t.includes("brochure") ||
+    t.includes("application note") ||
+    t.includes("publication") ||
+    t.includes("manual") ||
+    t.includes("pdf") ||
+    t.includes("webinar") ||
+    t.includes("guide")
   );
+}
 
-  const rootNodes = [...nodes.values()]
-    .filter((n) => n.path.length === 1)
-    .filter((n) => !nestedLeaves.has(n.path[0]));
+function looksPromoNoise(input: string) {
+  const t = normalizeInlineText(input || "");
+  return (
+    t.includes("login to see prices") ||
+    t.includes("get your accessories") ||
+    t.includes("get early access") ||
+    t.includes("updates and discounts") ||
+    t.includes("don't miss") ||
+    t.includes("dont miss") ||
+    t.includes("early access") ||
+    t.includes("newsletter")
+  );
+}
 
-  rootNodes.sort((a, b) => {
-    const ao = typeof a.order === "number" ? a.order : 999999;
-    const bo = typeof b.order === "number" ? b.order : 999999;
-    if (ao !== bo) return ao - bo;
-    return String(a.title).localeCompare(String(b.title));
+function normalizeBlocksForKentView(blocks: ContentBlock[]) {
+  const merged = mergeLandingBlocks(Array.isArray(blocks) ? blocks : []);
+  const out: ContentBlock[] = [];
+
+  for (const block of merged) {
+    if (block?._type !== "contentBlockCards") {
+      out.push(block);
+      continue;
+    }
+
+    const kind = String(block.kind || "") as CardsKind;
+    let items = dedupeLandingItems(Array.isArray(block.items) ? block.items : []).filter((item) => {
+      const joined = `${String(item?.title || "")} ${String(item?.subtitle || "")}`;
+      return !looksPromoNoise(joined);
+    });
+
+    if (!items.length) continue;
+
+    if (kind === "resource") {
+      items = items.filter((item) => {
+        const joined = `${String(item?.title || "")} ${String(item?.subtitle || "")}`;
+        if (isResourceishText(joined)) return true;
+        return !isKentProductHrefLike(String(item?.href || ""));
+      });
+      if (!items.length) continue;
+    }
+
+    if (kind === "publication") {
+      items = items.filter((item) => {
+        const joined = `${String(item?.title || "")} ${String(item?.subtitle || "")}`;
+        if (looksPromoNoise(joined)) return false;
+        return !isKentCategoryHrefLike(String(item?.href || ""));
+      });
+      if (!items.length) continue;
+    }
+
+    out.push({ ...block, items });
+  }
+
+  return out;
+}
+
+function dedupeProducts(products: ProductLite[]) {
+  const out: ProductLite[] = [];
+  const seen = new Set<string>();
+
+  for (const product of products || []) {
+    const key = String(product?.slug || product?._id || "").trim().toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(product);
+  }
+
+  return out;
+}
+
+function resolvePageType(category: CategoryDoc | null, pathStr: string): PageType {
+  const raw = String(category?.pageType || "").trim().toLowerCase();
+  if (raw === "landing" || raw === "listing") return raw as PageType;
+  return LANDING_FALLBACK_PATHS.has(pathStr) ? "landing" : "listing";
+}
+
+function getFirstHtmlBlock(blocks: ContentBlock[]) {
+  return (
+    (Array.isArray(blocks) ? blocks : []).find(
+      (block) =>
+        block?._type === "contentBlockHtml" &&
+        roughTextLenFromHtml(safeHtmlForRender(String(block.html || ""))) >= 20,
+    ) || null
+  );
+}
+
+function getListingTailBlocks(blocks: ContentBlock[]) {
+  return (Array.isArray(blocks) ? blocks : []).filter((block) => {
+    if (block?._type !== "contentBlockCards") return false;
+    const kind = String(block.kind || "");
+    return kind === "resource" || kind === "publication";
   });
+}
 
-  rootNodes.forEach(sortRec);
+function isPrefix(prefix: string[], target: string[]) {
+  if (prefix.length > target.length) return false;
+  return prefix.every((seg, idx) => seg === target[idx]);
+}
 
-  return { rootNodes, nodes };
+function ListingIntro({
+  html,
+  summary,
+}: {
+  html?: string;
+  summary?: string;
+}) {
+  const safe = safeHtmlForRender(String(html || ""));
+
+  if (roughTextLenFromHtml(safe) >= 20) {
+    return (
+      <section className="mt-6 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+        <ArticleHtml html={safe} />
+      </section>
+    );
+  }
+
+  if (summary?.trim()) {
+    return (
+      <section className="mt-6 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+        <p className="text-[15px] leading-8 text-slate-700">{summary}</p>
+      </section>
+    );
+  }
+
+  return null;
+}
+
+function ListingHeader({
+  count,
+  theme,
+}: {
+  count: number;
+  theme: Theme;
+}) {
+  return (
+    <section className="mt-8 rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold text-slate-900">Products</div>
+          <div className="mt-1 text-sm text-slate-600">
+            {count > 0 ? `${count} product${count > 1 ? "s" : ""}` : "No products found"}
+          </div>
+        </div>
+
+        <div
+          className={[
+            "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold",
+            theme.accentBorder,
+            theme.accentSoftBg,
+            theme.accentText,
+          ].join(" ")}
+        >
+          Kent Scientific
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function KentProductGrid({
+  products,
+  theme,
+}: {
+  products: ProductLite[];
+  theme: Theme;
+}) {
+  const items = dedupeProducts(products);
+  if (!items.length) return null;
+
+  return (
+    <section className="mt-5">
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        {items.map((product) => (
+          <Link
+            key={product._id}
+            href={buildProductHref(product.slug)}
+            prefetch={false}
+            className="group overflow-hidden rounded-[24px] border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-md"
+          >
+            <div className="relative aspect-[4/3] border-b border-slate-100 bg-white">
+              {product.thumb ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={toAbs(product.thumb)}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-contain p-6"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-slate-50" />
+              )}
+            </div>
+
+            <div className="px-5 py-5">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                {product.sku ? `Cat.No ${product.sku}` : "Kent Scientific"}
+              </div>
+
+              <div className="mt-2 min-h-[56px] text-[20px] font-semibold leading-snug tracking-tight text-slate-900 group-hover:text-blue-700">
+                {stripBrandSuffix(product.title)}
+              </div>
+
+              <div className="mt-5 flex items-center justify-between">
+                <span className={`inline-flex items-center gap-2 text-sm font-semibold ${theme.accentText}`}>
+                  View Product <span aria-hidden>›</span>
+                </span>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function HeroBanner({ brandTitle }: { brandTitle: string }) {
@@ -548,158 +868,110 @@ function HeroBanner({ brandTitle }: { brandTitle: string }) {
   );
 }
 
-function SideNavTree({
+function KentSideNav({
   activePath,
-  tree,
-  titleByPathStr,
   theme,
 }: {
   activePath: string[];
-  tree: TreeNode[];
-  titleByPathStr: Map<string, string>;
   theme: Theme;
 }) {
-  const activePathStr = activePath.join("/");
-
-  const isPrefix = (full: string, prefix: string) => full === prefix || full.startsWith(`${prefix}/`);
+  const activeRoot = activePath[0] || "";
+  const activeRootNode = KENT_STATIC_MENU.find((node) => node.path[0] === activeRoot) || null;
+  const activeRootTree = activeRootNode?.children || [];
 
   const LINE_LEFT = "left-[18px]";
   const DOT_LEFT = "left-[18px]";
   const ARROW_LEFT = "left-[28px]";
   const TEXT_OFFSET = "ml-[34px]";
 
-  function nodeHref(n: { path: string[] }) {
-    return buildCategoryHref(n.path);
-  }
-
-  function displayNodeTitle(n: TreeNode) {
-    const pathStr = n.path.join("/");
-    const t = titleByPathStr.get(pathStr) || n.title;
-    return normalizeTitle(t, n.path[n.path.length - 1] || "");
-  }
-
-  function Children({ nodes }: { nodes: TreeNode[] }) {
+  function renderChildren(nodes: StaticMenuNode[], depth = 1): React.ReactNode {
     if (!nodes?.length) return null;
 
     return (
-      <div className="relative">
-        <div className={`pointer-events-none absolute ${LINE_LEFT} top-0 h-full border-l border-dashed border-neutral-400`} />
-        <div className="space-y-1">
-          {nodes.map((n) => {
-            const p = n.path.join("/");
-            const isActive = activePathStr === p;
-            const hasChildren = !!n.children?.length;
+      <div className={depth === 1 ? "mt-1" : "mt-1"}>
+        <div className="relative">
+          <div className={`pointer-events-none absolute ${LINE_LEFT} top-0 h-full border-l border-dashed border-neutral-400`} />
+          <div className="space-y-1">
+            {nodes.map((node) => {
+              const p = node.path.join("/");
+              const hasChildren = !!node.children?.length;
+              const isActive = activePath.join("/") === p;
+              const isOnTrail = isPrefix(node.path, activePath) && !isActive;
+              const isOpen = hasChildren && (isActive || isOnTrail);
 
-            return (
-              <Link key={n.key} href={nodeHref(n)} prefetch={false} className="group/item relative block">
-                <span
-                  aria-hidden
-                  className={[
-                    "pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2",
-                    DOT_LEFT,
-                    "h-1.5 w-1.5 rounded-full transition",
-                    theme.accentDotBg,
-                    isActive ? "opacity-100 scale-125" : "opacity-0",
-                    "group-hover/item:opacity-100 group-hover/item:scale-110",
-                  ].join(" ")}
-                />
-                <span
-                  aria-hidden
-                  className={[
-                    "pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2",
-                    DOT_LEFT,
-                    "h-2.5 w-2.5 rounded-full border transition",
-                    theme.accentDotBorder,
-                    isActive ? "opacity-100" : "opacity-0",
-                    "group-hover/item:opacity-100",
-                  ].join(" ")}
-                />
-                <span
-                  aria-hidden
-                  className={[
-                    "pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2",
-                    ARROW_LEFT,
-                    "text-xs transition opacity-0 group-hover/item:opacity-100",
-                    theme.accentText,
-                    isActive ? "opacity-0" : "",
-                  ].join(" ")}
-                >
-                  {hasChildren ? "▸" : "›"}
-                </span>
+              return (
+                <div key={p} className="group/child relative">
+                  <Link href={buildCategoryHref(node.path)} prefetch={false} className="group/item relative block">
+                    <span
+                      aria-hidden
+                      className={[
+                        "pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2",
+                        DOT_LEFT,
+                        "h-1.5 w-1.5 rounded-full transition",
+                        theme.accentDotBg,
+                        isActive || isOnTrail ? "opacity-100 scale-110" : "opacity-0",
+                        "group-hover/item:opacity-100 group-hover/item:scale-110",
+                      ].join(" ")}
+                    />
+                    <span
+                      aria-hidden
+                      className={[
+                        "pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2",
+                        DOT_LEFT,
+                        "h-2.5 w-2.5 rounded-full border transition",
+                        theme.accentDotBorder,
+                        isActive || isOnTrail ? "opacity-100" : "opacity-0",
+                        "group-hover/item:opacity-100",
+                      ].join(" ")}
+                    />
+                    <span
+                      aria-hidden
+                      className={[
+                        "pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2",
+                        ARROW_LEFT,
+                        "text-xs transition",
+                        theme.accentText,
+                        isActive || isOnTrail ? "opacity-0" : "opacity-0 group-hover/item:opacity-100",
+                      ].join(" ")}
+                    >
+                      ›
+                    </span>
 
-                <span
-                  className={[
-                    "relative flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm leading-6 transition",
-                    TEXT_OFFSET,
-                    isActive
-                      ? `${theme.accentActiveBg} ${theme.accentActiveText} font-semibold`
-                      : "text-neutral-700 group-hover/item:bg-neutral-50",
-                  ].join(" ")}
-                >
-                  <span className="block min-w-0 truncate">{displayNodeTitle(n)}</span>
-                  <span className={hasChildren ? "shrink-0 text-xs text-neutral-300" : "shrink-0 text-neutral-300"}>
-                    {hasChildren ? "▸" : "›"}
-                  </span>
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
+                    <span
+                      className={[
+                        "relative flex items-start justify-between gap-3 rounded-xl px-3 py-2 text-sm leading-6 transition",
+                        TEXT_OFFSET,
+                        isActive || isOnTrail
+                          ? `${theme.accentActiveBg} ${theme.accentActiveText} font-semibold`
+                          : "text-neutral-700 group-hover/item:bg-neutral-50",
+                      ].join(" ")}
+                    >
+                      <span className="min-w-0 break-words">{stripBrandSuffix(node.title)}</span>
+                      {hasChildren ? (
+                        <span
+                          className={[
+                            "mt-1 shrink-0 text-xs",
+                            isActive || isOnTrail ? theme.accentText : "text-neutral-400",
+                          ].join(" ")}
+                          aria-hidden
+                        >
+                          {isOpen ? "▾" : "▸"}
+                        </span>
+                      ) : null}
+                    </span>
+                  </Link>
 
-  function NodeRow({ node }: { node: TreeNode }) {
-    const p = node.path.join("/");
-    const isActive = activePathStr === p;
-    const isOnTrail = isPrefix(activePathStr, p) && !isActive;
-    const hasChildren = !!node.children?.length;
-    const isOpen = hasChildren && (isActive || isOnTrail);
-
-    if (hasChildren) {
-      return (
-        <div className="group/section">
-          <Link
-            href={nodeHref(node)}
-            prefetch={false}
-            className={[
-              "flex items-center justify-between rounded-xl px-3 py-2 text-sm transition",
-              isOpen ? `${theme.accentText} font-semibold ${theme.accentSoftBg}` : "text-neutral-800 hover:bg-neutral-50",
-            ].join(" ")}
-          >
-            <div className="min-w-0 flex items-center gap-2">
-              <span className={isOpen ? `${theme.accentText} text-xs` : "text-xs text-neutral-300"} aria-hidden>
-                {isOpen ? "▾" : "▸"}
-              </span>
-              <span className="truncate">{displayNodeTitle(node)}</span>
-            </div>
-
-            <span className={isOpen ? `${theme.accentText} text-xs` : "text-xs text-neutral-300"} aria-hidden>
-              {isOpen ? "▾" : "▸"}
-            </span>
-          </Link>
-
-          <div className={[isOpen ? "block" : "hidden group-hover/section:block", "mt-1 pl-2"].join(" ")}>
-            <Children nodes={node.children} />
+                  {hasChildren ? (
+                    <div className={isOpen ? "block" : "hidden group-hover/child:block"}>
+                      <div className="ml-3 pl-3">{renderChildren(node.children!, depth + 1)}</div>
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
           </div>
         </div>
-      );
-    }
-
-    return (
-      <Link
-        href={nodeHref(node)}
-        prefetch={false}
-        className={[
-          "flex items-center justify-between rounded-xl px-3 py-2 text-sm transition",
-          isActive ? `${theme.accentActiveBg} ${theme.accentActiveText} font-semibold` : "text-neutral-800 hover:bg-neutral-50",
-        ].join(" ")}
-      >
-        <span className="min-w-0 truncate">{displayNodeTitle(node)}</span>
-        <span className="shrink-0 text-neutral-300" aria-hidden>
-          ›
-        </span>
-      </Link>
+      </div>
     );
   }
 
@@ -721,16 +993,50 @@ function SideNavTree({
         </div>
 
         <div className="relative">
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-5 bg-gradient-to-b from-white via-white/80 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-5 bg-gradient-to-b from-white via-white/85 to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-6 bg-gradient-to-t from-white via-white/90 to-transparent" />
 
           <div className="scrollbar-hidden max-h-[calc(100vh-180px)] overflow-y-auto overscroll-contain p-2">
             <div className="space-y-1 pr-1">
-              {tree?.length ? (
-                tree.map((n) => <NodeRow key={n.key} node={n} />)
-              ) : (
-                <div className="px-3 py-2 text-sm text-neutral-500">하위 카테고리가 없습니다.</div>
-              )}
+              {KENT_STATIC_MENU.map((root) => {
+                const p = root.path.join("/");
+                const isActiveRoot = root.path[0] === activeRoot;
+                const hasChildren = !!root.children?.length;
+
+                return (
+                  <div key={p} className="group/root">
+                    <Link
+                      href={buildCategoryHref(root.path)}
+                      prefetch={false}
+                      className={[
+                        "flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm transition",
+                        isActiveRoot
+                          ? `${theme.accentActiveBg} ${theme.accentActiveText} font-semibold`
+                          : "text-neutral-800 hover:bg-neutral-50",
+                      ].join(" ")}
+                    >
+                      <span className="min-w-0 truncate">{stripBrandSuffix(root.title)}</span>
+                      {hasChildren ? (
+                        <span
+                          className={[
+                            "shrink-0 text-xs",
+                            isActiveRoot ? theme.accentText : "text-neutral-400",
+                          ].join(" ")}
+                          aria-hidden
+                        >
+                          {isActiveRoot ? "▾" : "▸"}
+                        </span>
+                      ) : null}
+                    </Link>
+
+                    {isActiveRoot && activeRootTree.length ? (
+                      renderChildren(activeRootTree)
+                    ) : hasChildren ? (
+                      <div className="hidden group-hover/root:block">{renderChildren(root.children!)}</div>
+                    ) : null}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -799,18 +1105,28 @@ function KentHtmlFallback({ html }: { html: string }) {
   );
 }
 
+function ResourceBadge() {
+  return (
+    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
+      <svg viewBox="0 0 24 24" className="h-6 w-6 fill-current" aria-hidden>
+        <path d="M7 3.75A1.75 1.75 0 0 1 8.75 2h5.69c.46 0 .9.18 1.23.51l3.82 3.82c.33.33.51.77.51 1.23v12.69A1.75 1.75 0 0 1 18.25 22h-9.5A1.75 1.75 0 0 1 7 20.25V3.75Zm8 0v3.5c0 .41.34.75.75.75h3.5L15 3.75ZM9.5 11.25a.75.75 0 0 0 0 1.5h5a.75.75 0 0 0 0-1.5h-5Zm0 3.5a.75.75 0 0 0 0 1.5h5a.75.75 0 0 0 0-1.5h-5Z" />
+      </svg>
+    </div>
+  );
+}
+
 function renderLandingBlocks(blocks: ContentBlock[], theme: Theme) {
-  const dedupedBlocks = dedupeLandingBlocks(Array.isArray(blocks) ? blocks : []);
+  const viewBlocks = normalizeBlocksForKentView(blocks);
   const out: React.ReactNode[] = [];
   let first = true;
 
   const nextIsCardsWithSameTitle = (i: number, title: string) => {
-    const next = dedupedBlocks[i + 1];
+    const next = viewBlocks[i + 1];
     return !!(next && next._type === "contentBlockCards" && String(next.title || "").trim() === title);
   };
 
-  for (let i = 0; i < dedupedBlocks.length; i += 1) {
-    const block = dedupedBlocks[i];
+  for (let i = 0; i < viewBlocks.length; i += 1) {
+    const block = viewBlocks[i];
 
     if (block?._type === "contentBlockHtml") {
       const title = String(block.title || "").trim();
@@ -827,9 +1143,8 @@ function renderLandingBlocks(blocks: ContentBlock[], theme: Theme) {
           {title ? (
             <div className="mb-5">{isTextHeavyTitle(title) ? <KentH2>{title}</KentH2> : <KentH3>{title}</KentH3>}</div>
           ) : null}
-
           {len >= 10 ? <ArticleHtml html={html} /> : null}
-        </section>
+        </section>,
       );
       continue;
     }
@@ -841,7 +1156,7 @@ function renderLandingBlocks(blocks: ContentBlock[], theme: Theme) {
     const items = Array.isArray(block.items) ? block.items.filter(Boolean) : [];
     if (!items.length) continue;
 
-    const prev = dedupedBlocks[i - 1];
+    const prev = viewBlocks[i - 1];
     const prevIsSameSectionHtml =
       !!(prev && prev._type === "contentBlockHtml" && String(prev.title || "").trim() === title);
 
@@ -853,15 +1168,15 @@ function renderLandingBlocks(blocks: ContentBlock[], theme: Theme) {
         <section key={block._key || `prod-${title}-${i}`} className="mt-4">
           {!prevIsSameSectionHtml ? <KentH2>{title || "Products"}</KentH2> : null}
 
-          <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
             {items.map((item, idx) => (
               <Link
                 key={item._key || `${item.title}-${idx}`}
                 href={resolveKentHref(String(item.href || ""))}
                 prefetch={false}
-                className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-md"
+                className="group overflow-hidden rounded-[22px] border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-md"
               >
-                <div className="relative aspect-[4/3] bg-white">
+                <div className="relative aspect-[4/3] border-b border-slate-100 bg-white">
                   {item.imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -873,34 +1188,37 @@ function renderLandingBlocks(blocks: ContentBlock[], theme: Theme) {
                   ) : null}
 
                   {item.badge ? (
-                    <span className="absolute left-4 top-4 rounded-full bg-red-600 px-2.5 py-1 text-[11px] font-semibold text-white">
+                    <span className="absolute left-4 top-4 rounded-full bg-blue-600 px-2.5 py-1 text-[11px] font-semibold text-white">
                       {item.badge}
                     </span>
                   ) : null}
                 </div>
 
-                <div className="border-t border-slate-100 px-5 py-5">
+                <div className="px-5 py-5">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                    {item.sku ? `Cat.No ${item.sku}` : "Product"}
+                    {item.sku ? `Cat.No ${item.sku}` : "Kent Scientific"}
                   </div>
 
-                  <div className="mt-2 text-lg font-semibold leading-snug text-slate-900 group-hover:underline">
+                  <div className="mt-2 text-[22px] font-semibold leading-snug tracking-tight text-slate-900 group-hover:text-blue-700">
                     {item.title}
                   </div>
 
                   {item.subtitle ? (
-                    <div className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">{item.subtitle}</div>
-                  ) : null}
+                    <div className="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">{item.subtitle}</div>
+                  ) : (
+                    <div className="mt-3 h-12" />
+                  )}
 
                   <div className="mt-5 flex items-center justify-between">
-                    <span className={`text-sm font-semibold ${theme.accentText}`}>View product</span>
-                    <span className="text-slate-400 transition group-hover:translate-x-0.5">→</span>
+                    <span className={`inline-flex items-center gap-2 text-sm font-semibold ${theme.accentText}`}>
+                      Learn More <span aria-hidden>›</span>
+                    </span>
                   </div>
                 </div>
               </Link>
             ))}
           </div>
-        </section>
+        </section>,
       );
       continue;
     }
@@ -910,15 +1228,15 @@ function renderLandingBlocks(blocks: ContentBlock[], theme: Theme) {
         <section key={block._key || `cat-${title}-${i}`} className="mt-4">
           {!prevIsSameSectionHtml ? <KentH2>{title || "Additional equipment"}</KentH2> : null}
 
-          <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
             {items.map((item, idx) => (
               <Link
                 key={item._key || `${item.title}-${idx}`}
                 href={resolveKentHref(String(item.href || ""))}
                 prefetch={false}
-                className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:shadow-sm"
+                className="group overflow-hidden rounded-[22px] border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-md"
               >
-                <div className="relative aspect-[1/1] bg-slate-50">
+                <div className="relative aspect-[1/1] border-b border-slate-100 bg-white">
                   {item.imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -927,24 +1245,23 @@ function renderLandingBlocks(blocks: ContentBlock[], theme: Theme) {
                       className="absolute inset-0 h-full w-full object-cover"
                       loading="lazy"
                     />
-                  ) : null}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 p-4">
-                    <div className="text-sm font-semibold leading-snug text-white">{item.title}</div>
-                    {typeof item.count === "number" ? (
-                      <div className="mt-1 text-xs text-white/90">
-                        <span className="font-semibold">{item.count}</span> products
-                      </div>
-                    ) : null}
-                  </div>
+                  ) : (
+                    <div className="absolute inset-0 bg-slate-50" />
+                  )}
                 </div>
-                <div className="px-4 py-3">
-                  <span className={`text-xs font-semibold ${theme.accentText}`}>Open ›</span>
+                <div className="px-4 py-4">
+                  <div className="text-base font-semibold leading-snug text-slate-900 group-hover:text-blue-700">
+                    {item.title}
+                  </div>
+                  {typeof item.count === "number" ? (
+                    <div className="mt-2 text-sm text-slate-500">{item.count} products</div>
+                  ) : null}
+                  <div className={`mt-4 text-sm font-semibold ${theme.accentText}`}>Browse category ›</div>
                 </div>
               </Link>
             ))}
           </div>
-        </section>
+        </section>,
       );
       continue;
     }
@@ -954,29 +1271,37 @@ function renderLandingBlocks(blocks: ContentBlock[], theme: Theme) {
         <section key={block._key || `pub-${i}`} className="mt-10">
           <KentH2>{title || "Scientific articles and publications"}</KentH2>
 
-          <div className="mt-5 space-y-5">
+          <div className="mt-6 space-y-4">
             {items.map((item, idx) => (
-              <div key={item._key || `${item.title}-${idx}`} className="rounded-2xl border border-slate-200 bg-white p-5">
+              <div
+                key={item._key || `${item.title}-${idx}`}
+                className="rounded-[22px] border border-slate-200 bg-white px-6 py-5 transition hover:shadow-sm"
+              >
                 <Link
                   href={resolveKentHref(String(item.href || ""))}
                   prefetch={false}
-                  className="block text-xl font-semibold tracking-tight text-neutral-900 hover:underline"
+                  className="block text-lg font-semibold tracking-tight text-slate-900 hover:text-blue-700"
                 >
                   {item.title}
                 </Link>
+
+                {item.subtitle ? (
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{item.subtitle}</p>
+                ) : null}
+
                 <div className="mt-4">
                   <Link
                     href={resolveKentHref(String(item.href || ""))}
                     prefetch={false}
-                    className={`inline-flex items-center justify-center rounded-xl border border-blue-600 px-4 py-2 text-sm font-semibold ${theme.accentText} hover:bg-blue-50`}
+                    className={`inline-flex items-center gap-2 text-sm font-semibold ${theme.accentText}`}
                   >
-                    Continue Reading
+                    Continue Reading <span aria-hidden>›</span>
                   </Link>
                 </div>
               </div>
             ))}
           </div>
-        </section>
+        </section>,
       );
       continue;
     }
@@ -986,35 +1311,41 @@ function renderLandingBlocks(blocks: ContentBlock[], theme: Theme) {
         <section key={block._key || `res-${i}`} className="mt-10">
           <KentH2>{title || "Resources"}</KentH2>
 
-          <div className="mt-5 space-y-4">
+          <div className="mt-6 space-y-4">
             {items.map((item, idx) => (
               <Link
                 key={item._key || `${item.title}-${idx}`}
                 href={resolveKentHref(String(item.href || ""))}
                 prefetch={false}
-                className="group flex gap-4 rounded-2xl border border-slate-200 bg-white p-5 transition hover:shadow-sm"
+                className="group flex items-start gap-4 rounded-[22px] border border-slate-200 bg-white px-5 py-5 transition hover:-translate-y-0.5 hover:shadow-sm"
               >
-                <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-lg bg-slate-50">
-                  {item.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
+                {item.imageUrl ? (
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={toAbs(String(item.imageUrl || ""))}
                       alt=""
                       className="absolute inset-0 h-full w-full object-contain p-2"
                       loading="lazy"
                     />
-                  ) : null}
-                </div>
-                <div className="min-w-0">
-                  <div className="text-base font-semibold text-neutral-900 group-hover:underline">{item.title}</div>
+                  </div>
+                ) : (
+                  <ResourceBadge />
+                )}
+
+                <div className="min-w-0 flex-1">
+                  <div className="text-lg font-semibold tracking-tight text-slate-900 group-hover:text-blue-700">
+                    {item.title}
+                  </div>
                   {item.subtitle ? (
-                    <div className="mt-1 line-clamp-3 text-sm text-slate-600">{item.subtitle}</div>
+                    <div className="mt-1 text-sm leading-6 text-slate-600">{item.subtitle}</div>
                   ) : null}
+                  <div className={`mt-3 text-sm font-semibold ${theme.accentText}`}>Open resource ›</div>
                 </div>
               </Link>
             ))}
           </div>
-        </section>
+        </section>,
       );
     }
   }
@@ -1036,53 +1367,31 @@ export default async function KentProductsPathPage({
     brandKey: BRAND_KEY,
     hasPath,
     pathStr,
+    pathArr,
   });
 
   const brand = data?.brand;
   if (!brand?._id) notFound();
 
-  const rawRoots: CategoryDoc[] = Array.isArray(data?.roots) ? data.roots : [];
-  const rawDescendants: CategoryDoc[] = Array.isArray(data?.descendants) ? data.descendants : [];
-  const rawCategory: CategoryDoc | null = data?.category || null;
-
-  const dedupedAll = dedupeCategories([
-    ...rawRoots,
-    ...rawDescendants,
-    ...(rawCategory ? [rawCategory] : []),
-  ]);
-
-  const dedupedRoots = dedupeCategories(rawRoots);
-  const dedupedDescendants = dedupeCategories([
-    ...rawDescendants,
-    ...(rawCategory && rawCategory.path.length > 1 ? [rawCategory] : []),
-  ]);
-
-  const { rootNodes: tree, nodes } = buildTreeFromAllCategories(dedupedRoots, dedupedDescendants);
-
-  const titleByPathStr = new Map<string, string>();
-  for (const node of nodes.values()) {
-    titleByPathStr.set(node.path.join("/"), node.title);
-  }
-
-  const breadcrumbItems = [
-    { label: "Home", href: "/" },
-    { label: "Products", href: "/products" },
-    { label: brand.title, href: `/products/${BRAND_KEY}` },
-  ];
-
-  if (!pathArr.length) {
+  if (!hasPath) {
     return (
       <div>
         <HeroBanner brandTitle={brand.title} />
 
         <div className={PAGE_SHELL}>
           <div className="mt-6 flex justify-end">
-            <Breadcrumb items={breadcrumbItems} />
+            <Breadcrumb
+              items={[
+                { label: "Home", href: "/" },
+                { label: "Products", href: "/products" },
+                { label: brand.title, href: `/products/${BRAND_KEY}` },
+              ]}
+            />
           </div>
 
           <div className={`mt-10 ${CONTENT_LAYOUT}`}>
             <aside className="self-start lg:sticky lg:top-24">
-              <SideNavTree activePath={[]} tree={tree} titleByPathStr={titleByPathStr} theme={THEME} />
+              <KentSideNav activePath={[]} theme={THEME_KENT} />
             </aside>
 
             <main className="min-w-0">
@@ -1097,23 +1406,122 @@ export default async function KentProductsPathPage({
     );
   }
 
-  const category = dedupedAll.find((item) => item.path.join("/") === pathStr) || rawCategory;
+  const category: CategoryDoc | null = data?.category || null;
   if (!category?._id) notFound();
 
-  const pageTitle = normalizeTitle(category.title || "", pathArr[pathArr.length - 1] || "");
-  const blocks = dedupeLandingBlocks(Array.isArray(category.contentBlocks) ? category.contentBlocks : []);
-  const renderedBlocks = renderLandingBlocks(blocks, THEME);
+  const productsInCategory: ProductLite[] = Array.isArray(data?.products) ? data.products : [];
+  const pageType = resolvePageType(category, pathStr);
+
+  const pageTitle =
+    STATIC_LABEL_BY_PATH.get(pathStr) || normalizeTitle(category.title || "", pathArr[pathArr.length - 1] || "");
+
+  const blocks = Array.isArray(category.contentBlocks) ? category.contentBlocks : [];
+  const renderedBlocks = renderLandingBlocks(blocks, THEME_KENT);
   const fallbackHtml = typeof category.legacyHtml === "string" ? category.legacyHtml : "";
   const hasFallbackHtml = roughTextLenFromHtml(safeHtmlForRender(fallbackHtml)) >= 20;
 
-  const breadcrumbPathItems = pathArr.map((seg, index) => {
-    const slice = pathArr.slice(0, index + 1);
-    const key = slice.join("/");
-    return {
-      label: titleByPathStr.get(key) || normalizeTitle("", seg),
-      href: buildCategoryHref(slice),
-    };
-  });
+  const firstHtmlBlock = getFirstHtmlBlock(blocks);
+  const listingTailBlocks = getListingTailBlocks(blocks);
+  const renderedListingTail = renderLandingBlocks(listingTailBlocks, THEME_KENT);
+
+  const breadcrumbItems = [
+    { label: "Home", href: "/" },
+    { label: "Products", href: "/products" },
+    { label: brand.title, href: `/products/${BRAND_KEY}` },
+    ...pathArr.map((seg, index) => {
+      const slice = pathArr.slice(0, index + 1);
+      const key = slice.join("/");
+      return {
+        label:
+          STATIC_LABEL_BY_PATH.get(key) ||
+          (index === pathArr.length - 1 ? normalizeTitle(category.title || "", seg) : normalizeTitle("", seg)),
+        href: buildCategoryHref(slice),
+      };
+    }),
+  ];
+
+  let mainContent: React.ReactNode = null;
+
+  if (pageType === "landing") {
+    if (renderedBlocks) {
+      mainContent = <div className="mt-4">{renderedBlocks}</div>;
+    } else if (hasFallbackHtml) {
+      mainContent = <KentHtmlFallback html={fallbackHtml} />;
+    } else if (category.summary) {
+      mainContent = (
+        <div
+          className={`mt-6 rounded-2xl border ${THEME_KENT.accentBorder} ${THEME_KENT.accentSoftBg} p-6 text-sm leading-7 text-slate-800`}
+        >
+          {category.summary}
+          {category.sourceUrl ? (
+            <>
+              {" "}
+              <Link
+                className={`font-semibold underline underline-offset-4 ${THEME_KENT.accentUnderline}`}
+                href={legacyHref(category.sourceUrl)}
+                prefetch={false}
+              >
+                원문 보기
+              </Link>
+            </>
+          ) : null}
+        </div>
+      );
+    } else {
+      mainContent = (
+        <div
+          className={`mt-6 rounded-2xl border ${THEME_KENT.accentBorder} ${THEME_KENT.accentSoftBg} p-6 text-sm text-slate-800`}
+        >
+          본문 데이터가 아직 없습니다.
+          {category.sourceUrl ? (
+            <>
+              {" "}
+              <Link
+                className={`font-semibold underline underline-offset-4 ${THEME_KENT.accentUnderline}`}
+                href={legacyHref(category.sourceUrl)}
+                prefetch={false}
+              >
+                원문 보기
+              </Link>
+            </>
+          ) : null}
+        </div>
+      );
+    }
+  } else {
+    mainContent = (
+      <>
+        <ListingIntro html={firstHtmlBlock?.html} summary={category.summary} />
+        <ListingHeader count={dedupeProducts(productsInCategory).length} theme={THEME_KENT} />
+        <KentProductGrid products={productsInCategory} theme={THEME_KENT} />
+        {renderedListingTail ? <div className="mt-8">{renderedListingTail}</div> : null}
+
+        {!productsInCategory.length && !firstHtmlBlock && !renderedListingTail ? (
+          hasFallbackHtml ? (
+            <KentHtmlFallback html={fallbackHtml} />
+          ) : (
+            <div
+              className={`mt-6 rounded-2xl border ${THEME_KENT.accentBorder} ${THEME_KENT.accentSoftBg} p-6 text-sm text-slate-800`}
+            >
+              본문 데이터가 아직 없습니다.
+              {category.sourceUrl ? (
+                <>
+                  {" "}
+                  <Link
+                    className={`font-semibold underline underline-offset-4 ${THEME_KENT.accentUnderline}`}
+                    href={legacyHref(category.sourceUrl)}
+                    prefetch={false}
+                  >
+                    원문 보기
+                  </Link>
+                </>
+              ) : null}
+            </div>
+          )
+        ) : null}
+      </>
+    );
+  }
 
   return (
     <div>
@@ -1121,58 +1529,17 @@ export default async function KentProductsPathPage({
 
       <div className={PAGE_SHELL}>
         <div className="mt-6 flex justify-end">
-          <Breadcrumb items={[...breadcrumbItems, ...breadcrumbPathItems]} />
+          <Breadcrumb items={breadcrumbItems} />
         </div>
 
         <div className={`mt-10 ${CONTENT_LAYOUT}`}>
           <aside className="self-start lg:sticky lg:top-24">
-            <SideNavTree activePath={pathArr} tree={tree} titleByPathStr={titleByPathStr} theme={THEME} />
+            <KentSideNav activePath={pathArr} theme={THEME_KENT} />
           </aside>
 
           <main className="min-w-0 pb-14">
             <h2 className="text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">{pageTitle}</h2>
-
-            {renderedBlocks ? (
-              <div className="mt-4">{renderedBlocks}</div>
-            ) : hasFallbackHtml ? (
-              <KentHtmlFallback html={fallbackHtml} />
-            ) : category.summary ? (
-              <div
-                className={`mt-6 rounded-2xl border ${THEME.accentBorder} ${THEME.accentSoftBg} p-6 text-sm leading-7 text-slate-800`}
-              >
-                {category.summary}
-                {category.sourceUrl ? (
-                  <>
-                    {" "}
-                    <Link
-                      className={`font-semibold underline underline-offset-4 ${THEME.accentText}`}
-                      href={legacyHref(category.sourceUrl)}
-                      prefetch={false}
-                    >
-                      원문 보기
-                    </Link>
-                  </>
-                ) : null}
-              </div>
-            ) : (
-              <div
-                className={`mt-6 rounded-2xl border ${THEME.accentBorder} ${THEME.accentSoftBg} p-6 text-sm text-slate-800`}
-              >
-                본문 데이터가 아직 없습니다.
-                {category.sourceUrl ? (
-                  <>
-                    {" "}
-                    <Link
-                      className={`font-semibold underline underline-offset-4 ${THEME.accentText}`}
-                      href={legacyHref(category.sourceUrl)}
-                      prefetch={false}
-                    >
-                      원문 보기
-                    </Link>
-                  </>
-                ) : null}
-              </div>
-            )}
+            {mainContent}
           </main>
         </div>
       </div>
