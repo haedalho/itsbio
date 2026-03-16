@@ -6,8 +6,7 @@ import { notFound } from "next/navigation";
 import Breadcrumb from "@/components/site/Breadcrumb";
 import { sanityClient } from "@/lib/sanity/sanity.client";
 
-import ProductGalleryClient from "@/components/products/ProductGalleryClient";
-import ProductTabsClient from "@/components/products/ProductTabs";
+import KentProductDetailClient from "@/components/products/KentProductDetailClient";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -131,6 +130,7 @@ const ITEM_PAGE_QUERY = `
   ][0]{
     _id,
     title,
+    summary,
     "slug": slug.current,
     sku,
     sourceUrl,
@@ -146,6 +146,27 @@ const ITEM_PAGE_QUERY = `
     faqsHtml,
     referencesHtml,
     reviewsHtml,
+
+    productType,
+    defaultVariantId,
+    optionGroups[]{
+      key,
+      name,
+      label,
+      displayType,
+      options[]{ value, label }
+    },
+    variants[]{
+      variantId,
+      title,
+      sku,
+      catNo,
+      optionSummary,
+      optionValues,
+      attributes,
+      imageUrl,
+      sourceVariationId
+    },
 
     docs[]{ title, label, url },
 
@@ -472,7 +493,6 @@ export default async function KentProductDetailPage({
   const descendants: CatLite[] = Array.isArray(data2?.descendants) ? data2.descendants : [];
 
   const title = stripBrandSuffix(product?.title || "");
-  const catNo = decodeHtmlEntities((product?.sku || "").trim());
 
   const categoryHref = categoryPath.length ? buildHref(brandKey, categoryPath) : `/products/${brandKey}`;
 
@@ -573,34 +593,23 @@ export default async function KentProductDetailPage({
                 ) : null}
               </div>
 
-              <div className="mt-6 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
-                <div className="p-5">
-                  {catNo ? (
-                    <div className="mb-4 text-sm">
-                      <span className="font-semibold text-neutral-900">Cat. No.</span>
-                      <span className="ml-3 text-neutral-800">{catNo}</span>
-                    </div>
-                  ) : null}
-
-                  <ProductGalleryClient images={images} title={title} />
-                </div>
-
-                <div className="h-px bg-neutral-200" />
-
-                <div className="p-5">
-                  <div className="itsbio-product-tabs">
-                    <ProductTabsClient
-                      specsHtml={specsHtml}
-                      datasheetHtml={datasheetHtml}
-                      documentsHtml={documentsHtml}
-                      faqsHtml={faqsHtml}
-                      referencesHtml={referencesHtml}
-                      reviewsHtml={reviewsHtml}
-                      documents={documents as any}
-                    />
-                  </div>
-                </div>
-              </div>
+              <KentProductDetailClient
+                title={title}
+                summary={typeof product?.summary === "string" ? product.summary : ""}
+                sku={typeof product?.sku === "string" ? product.sku : ""}
+                images={images}
+                specsHtml={specsHtml}
+                datasheetHtml={datasheetHtml}
+                documentsHtml={documentsHtml}
+                faqsHtml={faqsHtml}
+                referencesHtml={referencesHtml}
+                reviewsHtml={reviewsHtml}
+                documents={documents as any}
+                productType={typeof product?.productType === "string" ? product.productType : "simple"}
+                defaultVariantId={typeof product?.defaultVariantId === "string" ? product.defaultVariantId : ""}
+                optionGroups={Array.isArray(product?.optionGroups) ? product.optionGroups : []}
+                variants={Array.isArray(product?.variants) ? product.variants : []}
+              />
 
               <div className="h-10" />
             </section>

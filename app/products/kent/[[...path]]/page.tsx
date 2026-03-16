@@ -1,4 +1,3 @@
-// app/products/kent/[[...path]]/page.tsx
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -8,9 +7,7 @@ import Breadcrumb from "@/components/site/Breadcrumb";
 import HtmlContent from "@/components/site/HtmlContent";
 import { sanityClient } from "@/lib/sanity/sanity.client";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
+export const revalidate = 300;
 
 const BRAND_KEY = "kent";
 const BRAND_BASE = "https://www.kentscientific.com";
@@ -64,6 +61,7 @@ type ContentBlock = {
   html?: string;
   kind?: string;
   items?: CardItem[];
+  [key: string]: unknown;
 };
 
 type ProductLite = {
@@ -73,6 +71,14 @@ type ProductLite = {
   slug: string;
   thumb?: string;
   sourceUrl?: string;
+};
+
+type CategoryLite = {
+  _id: string;
+  title: string;
+  path: string[];
+  order?: number;
+  summary?: string;
 };
 
 type CategoryDoc = {
@@ -125,20 +131,9 @@ const PAGE_QUERY = `
       legacyHtml,
       pageType,
       contentBlocks[] {
-        _key,
-        _type,
-        title,
-        html,
-        kind,
-        items[]{
-          _key,
-          title,
-          subtitle,
-          href,
-          imageUrl,
-          count,
-          badge,
-          sku
+        ...,
+        items[] {
+          ...
         }
       }
     },
@@ -156,7 +151,7 @@ const PAGE_QUERY = `
       )
       && defined(categoryPath)
       && categoryPath == $pathArr
-    ] | order(title asc) {
+    ] | order(title asc)[0...24] {
       _id,
       title,
       sku,
@@ -165,7 +160,25 @@ const PAGE_QUERY = `
       sourceUrl
     },
     []
-  )
+  ),
+
+  "allCategories": *[
+    _type=="category"
+    && (!defined(isActive) || isActive==true)
+    && (
+      brand->themeKey==$brandKey
+      || brand->slug.current==$brandKey
+      || themeKey==$brandKey
+      || brandSlug==$brandKey
+    )
+    && defined(path)
+  ] | order(order asc, title asc) {
+    _id,
+    title,
+    path,
+    order,
+    summary
+  }
 }
 `;
 
@@ -177,15 +190,15 @@ const KENT_STATIC_MENU: StaticMenuNode[] = [
       { title: "Anesthesia Accessories", path: ["anesthesia", "anesthesia-accessories"] },
       {
         title: "Anesthesia Accessories for SomnoFlo®",
-        path: ["anesthesia", "anesthesia-accessories", "anesthesia-accessories-for-somnoflo"],
+        path: ["anesthesia", "anesthesia-accessories-for-somnoflo"],
       },
       {
         title: "Anesthesia Accessories for SomnoSuite®",
-        path: ["anesthesia", "anesthesia-accessories", "anesthesia-accessories-for-somnosuite"],
+        path: ["anesthesia", "anesthesia-accessories-for-somnosuite"],
       },
       {
         title: "Anesthesia Accessories for VetFlo™",
-        path: ["anesthesia", "anesthesia-accessories", "anesthesia-accessories-for-vetflo"],
+        path: ["anesthesia", "anesthesia-accessories-for-vetflo"],
       },
     ],
   },
@@ -207,13 +220,21 @@ const KENT_STATIC_MENU: StaticMenuNode[] = [
     path: ["noninvasive-blood-pressure"],
     children: [
       {
-        title: "Accessories for CODA® Monitor",
-        path: ["noninvasive-blood-pressure", "accessories-for-coda-monitor"],
-      },
-      { title: "CODA® Cuffs", path: ["noninvasive-blood-pressure", "coda-cuffs"] },
-      {
         title: "Non-Invasive Blood Pressure Accessories",
-        path: ["noninvasive-blood-pressure", "non-invasive-blood-pressure-accessories"],
+        path: ["noninvasive-blood-pressure", "noninvasive-blood-pressure-accessories"],
+      },
+      {
+        title: "Accessories for CODA® Monitor",
+        path: ["noninvasive-blood-pressure", "noninvasive-blood-pressure-accessories", "accessories-for-coda-monitor"],
+      },
+      {
+        title: "CODA® Cuffs",
+        path: [
+          "noninvasive-blood-pressure",
+          "noninvasive-blood-pressure-accessories",
+          "accessories-for-coda-monitor",
+          "coda-cuffs",
+        ],
       },
     ],
   },
@@ -221,10 +242,17 @@ const KENT_STATIC_MENU: StaticMenuNode[] = [
     title: "Physiological Monitoring",
     path: ["physiological-monitoring"],
     children: [
-      { title: "Temperature", path: ["physiological-monitoring", "temperature"] },
       {
         title: "Physiological Monitoring Accessories",
         path: ["physiological-monitoring", "physiological-monitoring-accessories"],
+      },
+      {
+        title: "Pulse Oximetry",
+        path: ["physiological-monitoring", "physiological-monitoring-accessories", "pulse-oximetry"],
+      },
+      {
+        title: "Temperature",
+        path: ["physiological-monitoring", "physiological-monitoring-accessories", "temperature"],
       },
     ],
   },
@@ -241,7 +269,7 @@ const KENT_STATIC_MENU: StaticMenuNode[] = [
     path: ["surgery"],
     children: [
       { title: "Surgical Instruments", path: ["surgery", "surgical-instruments"] },
-      { title: "Surgical Instrument Kits", path: ["surgery", "surgical-instrument-kits"] },
+      { title: "Surgical Instrument Kits", path: ["surgery", "surgical-instruments", "surgical-instrument-kits"] },
       { title: "Surgical Accessories", path: ["surgery", "surgical-accessories"] },
       { title: "Instrument Cleaning", path: ["surgery", "instrument-cleaning"] },
     ],
@@ -265,7 +293,7 @@ const KENT_STATIC_MENU: StaticMenuNode[] = [
     path: ["warming"],
     children: [
       { title: "Water Recirculators", path: ["warming", "water-recirculators"] },
-      { title: "Warming Pads and Blankets", path: ["warming", "warming-pads-and-blankets"] },
+      { title: "Warming Pads and Blankets", path: ["warming", "warming-pads-blankets"] },
     ],
   },
   { title: "Warranties", path: ["warranty"] },
@@ -396,6 +424,9 @@ function stripKentPromoHtml(html: string) {
   const phrases = [
     "login to see prices",
     "get early access to info, updates, and discounts",
+    "get your accessories",
+    "don't miss",
+    "dont miss",
   ];
 
   const tags = ["section", "div", "p", "li", "span", "aside", "article"];
@@ -403,7 +434,7 @@ function stripKentPromoHtml(html: string) {
   for (const phrase of phrases) {
     for (const tag of tags) {
       const re = new RegExp(
-        `<${tag}[^>]*>[\\s\\S]{0,1500}?${phrase}[\\s\\S]{0,1500}?<\\/${tag}>`,
+        `<${tag}[^>]*>[\\s\\S]{0,2000}?${phrase}[\\s\\S]{0,2000}?<\\/${tag}>`,
         "gi",
       );
       out = out.replace(re, "");
@@ -499,6 +530,124 @@ function normalizePathSegments(path: string[]) {
     : [];
 }
 
+function isPrefix(prefix: string[], target: string[]) {
+  if (prefix.length > target.length) return false;
+  return prefix.every((seg, idx) => seg === target[idx]);
+}
+
+function getImageUrlLike(value: unknown): string {
+  if (!value) return "";
+  if (typeof value === "string") return toAbs(value);
+  if (typeof value !== "object") return "";
+  const record = value as Record<string, unknown>;
+  const direct = [record.imageUrl, record.image, record.url, record.src, record.thumbnail, record.thumb]
+    .find((v) => typeof v === "string" && String(v).trim());
+  if (typeof direct === "string") return toAbs(direct);
+  if (record.asset && typeof record.asset === "object") {
+    const asset = record.asset as Record<string, unknown>;
+    const nested = asset.url;
+    if (typeof nested === "string") return toAbs(nested);
+  }
+  return "";
+}
+
+function guessCardsKind(items: CardItem[]): CardsKind {
+  const hrefs = items.map((item) => String(item?.href || "").trim()).filter(Boolean);
+  if (!hrefs.length) return "category";
+
+  const productCount = hrefs.filter((href) => isKentProductHrefLike(href)).length;
+  const categoryCount = hrefs.filter((href) => isKentCategoryHrefLike(href)).length;
+  const resourceCount = hrefs.filter((href) => /pdf|whitepaper|brochure|guide|manual/i.test(href)).length;
+
+  if (resourceCount >= Math.max(1, Math.floor(hrefs.length / 2))) return "resource";
+  if (productCount >= categoryCount) return "product";
+  return "category";
+}
+
+function coerceCardItem(input: unknown): CardItem | null {
+  if (!input || typeof input !== "object") return null;
+  const src = input as Record<string, unknown>;
+
+  const title =
+    (typeof src.title === "string" && src.title.trim()) ||
+    (typeof src.name === "string" && src.name.trim()) ||
+    (typeof src.label === "string" && src.label.trim()) ||
+    "";
+
+  const subtitle =
+    (typeof src.subtitle === "string" && src.subtitle.trim()) ||
+    (typeof src.description === "string" && src.description.trim()) ||
+    (typeof src.excerpt === "string" && src.excerpt.trim()) ||
+    "";
+
+  const href =
+    (typeof src.href === "string" && src.href.trim()) ||
+    (typeof src.link === "string" && src.link.trim()) ||
+    (typeof src.url === "string" && src.url.trim()) ||
+    "";
+
+  const imageUrl = getImageUrlLike(src);
+  const sku = typeof src.sku === "string" ? src.sku : typeof src.catNo === "string" ? src.catNo : "";
+  const badge = typeof src.badge === "string" ? src.badge : "";
+  const rawCount = src.count;
+  const count = typeof rawCount === "number" ? rawCount : typeof rawCount === "string" && rawCount.trim() ? Number(rawCount) : undefined;
+
+  if (!title && !href) return null;
+
+  return {
+    _key: typeof src._key === "string" ? src._key : undefined,
+    title,
+    subtitle,
+    href,
+    imageUrl,
+    sku,
+    badge,
+    count: typeof count === "number" && Number.isFinite(count) ? count : undefined,
+  };
+}
+
+function coerceContentBlocks(blocks: ContentBlock[]) {
+  const out: ContentBlock[] = [];
+
+  for (const raw of Array.isArray(blocks) ? blocks : []) {
+    if (!raw || typeof raw !== "object") continue;
+    const src = raw as Record<string, unknown>;
+    const candidateItems = [src.items, src.cards, src.links, src.children].find((v) => Array.isArray(v));
+    const normalizedItems = Array.isArray(candidateItems)
+      ? candidateItems.map(coerceCardItem).filter(Boolean) as CardItem[]
+      : [];
+
+    const htmlCandidates = [src.html, src.body, src.content, src.description].filter((v) => typeof v === "string") as string[];
+    const html = htmlCandidates.find((v) => v.trim()) || "";
+
+    let type = typeof src._type === "string" ? src._type : "";
+    if (!type) {
+      if (normalizedItems.length) type = "contentBlockCards";
+      else if (html.trim()) type = "contentBlockHtml";
+    }
+
+    let kind = typeof src.kind === "string" ? src.kind : "";
+    if (!kind && normalizedItems.length) {
+      kind = guessCardsKind(normalizedItems);
+    }
+
+    out.push({
+      _key: typeof src._key === "string" ? src._key : undefined,
+      _type: type,
+      title:
+        (typeof src.title === "string" && src.title) ||
+        (typeof src.heading === "string" && src.heading) ||
+        (typeof src.label === "string" && src.label) ||
+        "",
+      html,
+      kind,
+      items: normalizedItems,
+    });
+  }
+
+  return out;
+}
+
 function dedupeLandingItems(items: CardItem[]) {
   const seen = new Set<string>();
   const out: CardItem[] = [];
@@ -510,7 +659,7 @@ function dedupeLandingItems(items: CardItem[]) {
     const key = [href, title, imageUrl].join("|");
     if (!href || !title || seen.has(key)) continue;
     seen.add(key);
-    out.push({ ...item, href });
+    out.push({ ...item, href, imageUrl: imageUrl ? toAbs(imageUrl) : "" });
   }
 
   return out;
@@ -520,7 +669,7 @@ function dedupeLandingBlocks(blocks: ContentBlock[]) {
   const seen = new Set<string>();
   const out: ContentBlock[] = [];
 
-  for (const block of blocks) {
+  for (const block of coerceContentBlocks(blocks)) {
     if (block?._type === "contentBlockHtml") {
       const title = normalizeInlineText(String(block?.title || ""));
       const html = normalizeInlineText(String(block?.html || ""));
@@ -645,12 +794,22 @@ function looksPromoNoise(input: string) {
   );
 }
 
+function looksCrossCategoryNoise(input: string) {
+  const t = normalizeInlineText(input || "");
+  return t.includes("rovent") || t.includes("ventilator") || t.includes("ventilation") || t.includes("anesthesia starter kit");
+}
+
 function normalizeBlocksForKentView(blocks: ContentBlock[]) {
-  const merged = mergeLandingBlocks(Array.isArray(blocks) ? blocks : []);
+  const merged = mergeLandingBlocks(blocks);
   const out: ContentBlock[] = [];
 
   for (const block of merged) {
     if (block?._type !== "contentBlockCards") {
+      if (block?._type === "contentBlockHtml") {
+        const html = String(block?.html || "");
+        const title = String(block?.title || "");
+        if (looksPromoNoise(`${title} ${html}`) || looksCrossCategoryNoise(`${title} ${html}`)) continue;
+      }
       out.push(block);
       continue;
     }
@@ -658,7 +817,7 @@ function normalizeBlocksForKentView(blocks: ContentBlock[]) {
     const kind = String(block.kind || "") as CardsKind;
     let items = dedupeLandingItems(Array.isArray(block.items) ? block.items : []).filter((item) => {
       const joined = `${String(item?.title || "")} ${String(item?.subtitle || "")}`;
-      return !looksPromoNoise(joined);
+      return !looksPromoNoise(joined) && !looksCrossCategoryNoise(joined);
     });
 
     if (!items.length) continue;
@@ -701,15 +860,31 @@ function dedupeProducts(products: ProductLite[]) {
   return out;
 }
 
-function resolvePageType(category: CategoryDoc | null, pathStr: string): PageType {
+function getDirectChildren(allCategories: CategoryLite[], currentPath: string[]) {
+  return (Array.isArray(allCategories) ? allCategories : [])
+    .filter((cat) => {
+      const path = normalizePathSegments(cat.path || []);
+      return path.length === currentPath.length + 1 && isPrefix(currentPath, path);
+    })
+    .sort((a, b) => {
+      const ao = typeof a.order === "number" ? a.order : Number.MAX_SAFE_INTEGER;
+      const bo = typeof b.order === "number" ? b.order : Number.MAX_SAFE_INTEGER;
+      if (ao !== bo) return ao - bo;
+      return String(a.title || "").localeCompare(String(b.title || ""));
+    });
+}
+
+function resolvePageType(category: CategoryDoc | null, pathStr: string, directChildrenCount: number, productCount: number): PageType {
   const raw = String(category?.pageType || "").trim().toLowerCase();
   if (raw === "landing" || raw === "listing") return raw as PageType;
-  return LANDING_FALLBACK_PATHS.has(pathStr) ? "landing" : "listing";
+  if (LANDING_FALLBACK_PATHS.has(pathStr)) return "landing";
+  if (directChildrenCount > 0 && productCount === 0) return "landing";
+  return "listing";
 }
 
 function getFirstHtmlBlock(blocks: ContentBlock[]) {
   return (
-    (Array.isArray(blocks) ? blocks : []).find(
+    normalizeBlocksForKentView(blocks).find(
       (block) =>
         block?._type === "contentBlockHtml" &&
         roughTextLenFromHtml(safeHtmlForRender(String(block.html || ""))) >= 20,
@@ -718,16 +893,68 @@ function getFirstHtmlBlock(blocks: ContentBlock[]) {
 }
 
 function getListingTailBlocks(blocks: ContentBlock[]) {
-  return (Array.isArray(blocks) ? blocks : []).filter((block) => {
+  return normalizeBlocksForKentView(blocks).filter((block) => {
     if (block?._type !== "contentBlockCards") return false;
     const kind = String(block.kind || "");
     return kind === "resource" || kind === "publication";
   });
 }
 
-function isPrefix(prefix: string[], target: string[]) {
-  if (prefix.length > target.length) return false;
-  return prefix.every((seg, idx) => seg === target[idx]);
+function KentChildCategoryGrid({
+  items,
+  title = "Subcategories",
+  theme,
+}: {
+  items: CategoryLite[];
+  title?: string;
+  theme: Theme;
+}) {
+  if (!items.length) return null;
+
+  return (
+    <section className="mt-8">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <KentH2>{title}</KentH2>
+        <div
+          className={[
+            "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold",
+            theme.accentBorder,
+            theme.accentSoftBg,
+            theme.accentText,
+          ].join(" ")}
+        >
+          {items.length} categor{items.length > 1 ? "ies" : "y"}
+        </div>
+      </div>
+
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        {items.map((item) => {
+          const path = normalizePathSegments(item.path || []);
+          const href = buildCategoryHref(path);
+          const titleText = STATIC_LABEL_BY_PATH.get(path.join("/")) || normalizeTitle(item.title || "", path[path.length - 1] || "");
+          const summary = String(item.summary || "").trim();
+
+          return (
+            <Link
+              key={item._id}
+              href={href}
+              prefetch={false}
+              className="group rounded-[22px] border border-slate-200 bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Kent Category</div>
+              <div className="mt-2 text-[22px] font-semibold leading-snug tracking-tight text-slate-900 group-hover:text-blue-700">
+                {titleText}
+              </div>
+              {summary ? <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">{summary}</p> : <div className="mt-3 h-[72px]" />}
+              <div className={`mt-5 inline-flex items-center gap-2 text-sm font-semibold ${theme.accentText}`}>
+                Browse category <span aria-hidden>›</span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
 }
 
 function ListingIntro({
@@ -1115,6 +1342,105 @@ function ResourceBadge() {
   );
 }
 
+
+function renderLooseBlocks(blocks: ContentBlock[], theme: Theme) {
+  const normalized = coerceContentBlocks(blocks).filter(Boolean);
+  if (!normalized.length) return null;
+
+  const sections: React.ReactNode[] = [];
+
+  for (let i = 0; i < normalized.length; i += 1) {
+    const block = normalized[i];
+    const title = String(block?.title || '').trim();
+
+    if (block?._type === 'contentBlockHtml') {
+      const html = safeHtmlForRender(String(block?.html || ''));
+      if (roughTextLenFromHtml(html) < 20) continue;
+      sections.push(
+        <section key={block._key || `loose-html-${i}`} className="mt-8 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+          {title ? <div className="mb-5"><KentH2>{title}</KentH2></div> : null}
+          <ArticleHtml html={html} />
+        </section>,
+      );
+      continue;
+    }
+
+    if (block?._type !== 'contentBlockCards') continue;
+    const kind = String(block?.kind || guessCardsKind(block.items || [])) as CardsKind;
+    const items = dedupeLandingItems(Array.isArray(block?.items) ? block.items : []);
+    if (!items.length) continue;
+
+    if (kind === 'category') {
+      sections.push(
+        <section key={block._key || `loose-cat-${i}`} className="mt-8">
+          {title ? <div className="mb-5"><KentH2>{title}</KentH2></div> : null}
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {items.map((item, idx) => {
+              const href = resolveKentHref(String(item?.href || ''));
+              const path = href.startsWith(`/products/${BRAND_KEY}/`) ? href.replace(`/products/${BRAND_KEY}/`, '').split('/').filter(Boolean) : [];
+              const titleText = STATIC_LABEL_BY_PATH.get(path.join('/')) || normalizeTitle(String(item?.title || ''), path[path.length - 1] || '');
+              return (
+                <Link key={item._key || `${titleText}-${idx}`} href={href} prefetch={false} className="group overflow-hidden rounded-[22px] border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-md">
+                  <div className="relative aspect-[1/1] border-b border-slate-100 bg-white">
+                    {item.imageUrl ? <img src={toAbs(String(item.imageUrl || ''))} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" /> : <div className="absolute inset-0 bg-slate-50" />}
+                  </div>
+                  <div className="px-4 py-4">
+                    <div className="text-base font-semibold leading-snug text-slate-900 group-hover:text-blue-700">{titleText}</div>
+                    {typeof item.count === 'number' ? <div className="mt-2 text-sm text-slate-500">{item.count} products</div> : null}
+                    <div className={`mt-4 text-sm font-semibold ${theme.accentText}`}>Browse category ›</div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>,
+      );
+      continue;
+    }
+
+    if (kind === 'product') {
+      sections.push(
+        <section key={block._key || `loose-prod-${i}`} className="mt-8">
+          {title ? <div className="mb-5"><KentH2>{title}</KentH2></div> : null}
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {items.map((item, idx) => (
+              <Link key={item._key || `${item.title}-${idx}`} href={resolveKentHref(String(item?.href || ''))} prefetch={false} className="group overflow-hidden rounded-[24px] border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-md">
+                <div className="relative aspect-[4/3] border-b border-slate-100 bg-white">
+                  {item.imageUrl ? <img src={toAbs(String(item.imageUrl || ''))} alt="" className="absolute inset-0 h-full w-full object-contain p-6" loading="lazy" /> : <div className="absolute inset-0 bg-slate-50" />}
+                </div>
+                <div className="px-5 py-5">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">{item.sku ? `Cat.No ${item.sku}` : 'Kent Scientific'}</div>
+                  <div className="mt-2 text-[20px] font-semibold leading-snug tracking-tight text-slate-900 group-hover:text-blue-700">{String(item.title || '')}</div>
+                  {item.subtitle ? <div className="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">{item.subtitle}</div> : <div className="mt-3 h-12" />}
+                  <div className={`mt-5 text-sm font-semibold ${theme.accentText}`}>Learn More ›</div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>,
+      );
+      continue;
+    }
+
+    if (kind === 'publication' || kind === 'resource') {
+      sections.push(
+        <section key={block._key || `loose-link-${i}`} className="mt-8 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+          {title ? <div className="mb-5"><KentH2>{title}</KentH2></div> : null}
+          <div className="space-y-4">
+            {items.map((item, idx) => (
+              <Link key={item._key || `${item.title}-${idx}`} href={resolveKentHref(String(item?.href || ''))} prefetch={false} className="block rounded-[20px] border border-slate-200 px-5 py-4 transition hover:bg-slate-50">
+                <div className="text-lg font-semibold tracking-tight text-slate-900 hover:text-blue-700">{String(item.title || '')}</div>
+                {item.subtitle ? <div className="mt-1 text-sm leading-6 text-slate-600">{item.subtitle}</div> : null}
+              </Link>
+            ))}
+          </div>
+        </section>,
+      );
+    }
+  }
+
+  return sections.length ? <>{sections}</> : null;
+}
 function renderLandingBlocks(blocks: ContentBlock[], theme: Theme) {
   const viewBlocks = normalizeBlocksForKentView(blocks);
   const out: React.ReactNode[] = [];
@@ -1226,7 +1552,7 @@ function renderLandingBlocks(blocks: ContentBlock[], theme: Theme) {
     if (kind === "category") {
       out.push(
         <section key={block._key || `cat-${title}-${i}`} className="mt-4">
-          {!prevIsSameSectionHtml ? <KentH2>{title || "Additional equipment"}</KentH2> : null}
+          {!prevIsSameSectionHtml ? <KentH2>{title || "Browse categories"}</KentH2> : null}
 
           <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
             {items.map((item, idx) => (
@@ -1251,7 +1577,7 @@ function renderLandingBlocks(blocks: ContentBlock[], theme: Theme) {
                 </div>
                 <div className="px-4 py-4">
                   <div className="text-base font-semibold leading-snug text-slate-900 group-hover:text-blue-700">
-                    {item.title}
+                    {normalizeTitle(String(item.title || ""))}
                   </div>
                   {typeof item.count === "number" ? (
                     <div className="mt-2 text-sm text-slate-500">{item.count} products</div>
@@ -1410,12 +1736,14 @@ export default async function KentProductsPathPage({
   if (!category?._id) notFound();
 
   const productsInCategory: ProductLite[] = Array.isArray(data?.products) ? data.products : [];
-  const pageType = resolvePageType(category, pathStr);
+  const allCategories: CategoryLite[] = Array.isArray(data?.allCategories) ? data.allCategories : [];
+  const directChildren = getDirectChildren(allCategories, pathArr);
+  const pageType = resolvePageType(category, pathStr, directChildren.length, dedupeProducts(productsInCategory).length);
 
   const pageTitle =
     STATIC_LABEL_BY_PATH.get(pathStr) || normalizeTitle(category.title || "", pathArr[pathArr.length - 1] || "");
 
-  const blocks = Array.isArray(category.contentBlocks) ? category.contentBlocks : [];
+  const blocks = coerceContentBlocks(Array.isArray(category.contentBlocks) ? category.contentBlocks : []);
   const renderedBlocks = renderLandingBlocks(blocks, THEME_KENT);
   const fallbackHtml = typeof category.legacyHtml === "string" ? category.legacyHtml : "";
   const hasFallbackHtml = roughTextLenFromHtml(safeHtmlForRender(fallbackHtml)) >= 20;
@@ -1447,6 +1775,8 @@ export default async function KentProductsPathPage({
       mainContent = <div className="mt-4">{renderedBlocks}</div>;
     } else if (hasFallbackHtml) {
       mainContent = <KentHtmlFallback html={fallbackHtml} />;
+    } else if (directChildren.length) {
+      mainContent = <KentChildCategoryGrid items={directChildren} title="Explore categories" theme={THEME_KENT} />;
     } else if (category.summary) {
       mainContent = (
         <div
@@ -1493,10 +1823,13 @@ export default async function KentProductsPathPage({
       <>
         <ListingIntro html={firstHtmlBlock?.html} summary={category.summary} />
         <ListingHeader count={dedupeProducts(productsInCategory).length} theme={THEME_KENT} />
+        {!productsInCategory.length && directChildren.length ? (
+          <KentChildCategoryGrid items={directChildren} title="Subcategories" theme={THEME_KENT} />
+        ) : null}
         <KentProductGrid products={productsInCategory} theme={THEME_KENT} />
         {renderedListingTail ? <div className="mt-8">{renderedListingTail}</div> : null}
 
-        {!productsInCategory.length && !firstHtmlBlock && !renderedListingTail ? (
+        {!productsInCategory.length && !directChildren.length && !firstHtmlBlock && !renderedListingTail ? (
           hasFallbackHtml ? (
             <KentHtmlFallback html={fallbackHtml} />
           ) : (

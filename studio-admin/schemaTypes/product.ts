@@ -2,12 +2,94 @@
 import { defineType, defineField } from "sanity";
 import { fieldTitle, fieldOrder, fieldSourceUrl, fieldLegacyHtml, fieldContentBlocks } from "./common";
 
+const optionValueFields = [
+  defineField({ name: "value", title: "Value", type: "string" }),
+  defineField({ name: "label", title: "Label", type: "string" }),
+];
+
+const optionGroupFields = [
+  defineField({ name: "key", title: "Key", type: "string" }),
+  defineField({ name: "name", title: "Name", type: "string" }),
+  defineField({ name: "label", title: "Label", type: "string" }),
+  defineField({
+    name: "displayType",
+    title: "Display Type",
+    type: "string",
+    options: {
+      list: [
+        { title: "Buttons", value: "button" },
+        { title: "Select", value: "select" },
+      ],
+      layout: "radio",
+    },
+    initialValue: "button",
+  }),
+  defineField({
+    name: "options",
+    title: "Options",
+    type: "array",
+    of: [
+      defineField({
+        name: "optionValue",
+        title: "Option Value",
+        type: "object",
+        fields: optionValueFields,
+        preview: {
+          select: { title: "label", subtitle: "value" },
+        },
+      }),
+    ],
+  }),
+];
+
+const variantFields = [
+  defineField({ name: "variantId", title: "Variant ID", type: "string" }),
+  defineField({ name: "title", title: "Title", type: "string" }),
+  defineField({ name: "sku", title: "SKU / Item #", type: "string" }),
+  defineField({ name: "catNo", title: "Cat. No. / Item #", type: "string" }),
+  defineField({ name: "optionSummary", title: "Option Summary", type: "string" }),
+  defineField({
+      name: "optionValues",
+      title: "Option Values",
+      type: "array",
+      of: [
+        defineField({
+          name: "optionValuePair",
+          title: "Option Value Pair",
+          type: "object",
+          fields: [
+            defineField({ name: "key", title: "Key", type: "string" }),
+            defineField({ name: "label", title: "Label", type: "string" }),
+            defineField({ name: "value", title: "Value", type: "string" }),
+          ],
+        }),
+      ],
+    }),
+    defineField({
+      name: "attributes",
+      title: "Raw Attributes",
+      type: "array",
+      of: [
+        defineField({
+          name: "attributePair",
+          title: "Attribute Pair",
+          type: "object",
+          fields: [
+            defineField({ name: "key", title: "Key", type: "string" }),
+            defineField({ name: "value", title: "Value", type: "string" }),
+          ],
+        }),
+      ],
+    }),
+  defineField({ name: "imageUrl", title: "Variant Image URL", type: "url" }),
+  defineField({ name: "sourceVariationId", title: "Source Variation ID", type: "string" }),
+];
+
 export default defineType({
   name: "product",
   title: "Product(제품)",
   type: "document",
   fields: [
-    // ✅ 기본
     fieldTitle(),
 
     defineField({
@@ -25,7 +107,13 @@ export default defineType({
       validation: (r) => r.required(),
     }),
 
-    // ✅ ABM Cat.No 등
+    defineField({
+      name: "summary",
+      title: "Summary",
+      type: "text",
+      rows: 4,
+    }),
+
     defineField({
       name: "sku",
       title: "SKU / Cat.No",
@@ -40,7 +128,6 @@ export default defineType({
       validation: (r) => r.required(),
     }),
 
-    // ✅ 카테고리 매핑
     defineField({
       name: "categoryRef",
       title: "Category",
@@ -56,13 +143,37 @@ export default defineType({
       description: `예: ["general-materials","genetic-materials"]`,
     }),
 
-    fieldOrder(),
+    defineField({
+      name: "listingPaths",
+      title: "Listing Paths",
+      type: "array",
+      of: [{ type: "string" }],
+      description: `상위 listing 페이지 조회용 path. 예: ["anesthesia", "anesthesia/anesthesia-accessories"]`,
+    }),
 
-    // ✅ 원본 보관(이미 common에 있음)
+    defineField({
+      name: "categoryPathTitles",
+      title: "Category Path Titles",
+      type: "array",
+      of: [{ type: "string" }],
+    }),
+
+    fieldOrder(),
     fieldSourceUrl(),
     fieldLegacyHtml(),
 
-    // ✅ 2단계(enrich) 결과 저장 (요구사항: Tabs 5개만)
+    defineField({
+      name: "extraHtml",
+      title: "Extra / Overview HTML",
+      type: "text",
+      rows: 16,
+    }),
+    defineField({
+      name: "specsHtml",
+      title: "Specifications HTML",
+      type: "text",
+      rows: 16,
+    }),
     defineField({
       name: "datasheetHtml",
       title: "Datasheet HTML",
@@ -94,7 +205,6 @@ export default defineType({
       rows: 16,
     }),
 
-    // ✅ 외부 이미지 URL(가볍게) - 로고/태극기 등은 파서에서 제외
     defineField({
       name: "imageUrls",
       title: "Image URLs",
@@ -102,15 +212,6 @@ export default defineType({
       of: [{ type: "url" }],
     }),
 
-    // ✅ 카테고리 경로(브레드크럼에서 추출)
-    defineField({
-      name: "categoryPathTitles",
-      title: "Category Path Titles",
-      type: "array",
-      of: [{ type: "string" }],
-    }),
-
-    // (기존 Sanity image 업로드 방식은 유지 가능하지만, ABM 온디맨드에서는 imageUrls 권장)
     defineField({
       name: "images",
       title: "Images (Uploaded)",
@@ -140,8 +241,70 @@ export default defineType({
           type: "object",
           fields: [
             defineField({ name: "title", title: "Title", type: "string" }),
+            defineField({ name: "label", title: "Label", type: "string" }),
             defineField({ name: "url", title: "URL", type: "url" }),
           ],
+        }),
+      ],
+    }),
+
+    defineField({
+      name: "productType",
+      title: "Product Type",
+      type: "string",
+      options: {
+        list: [
+          { title: "Simple", value: "simple" },
+          { title: "Variant", value: "variant" },
+        ],
+        layout: "radio",
+      },
+      initialValue: "simple",
+    }),
+
+    defineField({
+      name: "defaultVariantId",
+      title: "Default Variant ID",
+      type: "string",
+      description: "Kent 옵션형 상품에서 기본 선택될 variant ID",
+    }),
+
+    defineField({
+      name: "optionGroups",
+      title: "Option Groups",
+      type: "array",
+      of: [
+        defineField({
+          name: "optionGroup",
+          title: "Option Group",
+          type: "object",
+          fields: optionGroupFields,
+          preview: {
+            select: { title: "label", subtitle: "key" },
+          },
+        }),
+      ],
+    }),
+
+    defineField({
+      name: "variants",
+      title: "Variants",
+      type: "array",
+      of: [
+        defineField({
+          name: "variant",
+          title: "Variant",
+          type: "object",
+          fields: variantFields,
+          preview: {
+            select: { title: "title", subtitle: "sku", media: "imageUrl" },
+            prepare({ title, subtitle }) {
+              return {
+                title: title || "Variant",
+                subtitle: subtitle || "",
+              };
+            },
+          },
         }),
       ],
     }),
@@ -153,7 +316,6 @@ export default defineType({
       readOnly: true,
     }),
 
-    // ✅ 통합 본문(너희 기존 구조 유지)
     fieldContentBlocks(false),
   ],
 });

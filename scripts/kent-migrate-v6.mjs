@@ -187,6 +187,26 @@ function slugifyLoose(input) {
     .replace(/^-+|-+$/g, "");
 }
 
+function normalizeOptionKey(input) {
+  return String(input || "")
+    .replace(/^attribute_/i, "")
+    .replace(/^pa_/i, "")
+    .trim();
+}
+
+function humanizeOptionKey(input) {
+  return normalizeOptionKey(input)
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b[a-z]/g, (c) => c.toUpperCase());
+}
+
+function makeVariantId(raw, idx = 0) {
+  const base = slugifyLoose(String(raw || ""));
+  return base ? `kent-variant-${base}` : `kent-variant-${idx + 1}`;
+}
+
 function textClean(input) {
   return String(input || "").replace(/\s+/g, " ").trim();
 }
@@ -847,18 +867,19 @@ function extractImages($root, $) {
   return found;
 }
 
-function extractVariantData($root, $) {
+function extractVariantData($root, $, baseTitle = "", baseSku = "") {
   const optionGroups = [];
   const variants = [];
 
   $root.find("form.variations_form select, form.cart select").each((_, select) => {
     const $select = $(select);
-    const name = ($select.attr("name") || "option").trim();
+    const rawName = ($select.attr("name") || "option").trim();
+    const key = normalizeOptionKey(rawName) || "option";
 
     const label = textClean(
       $select.closest("tr, .value, .variations, .cart").prev("label, th").first().text() ||
         $select.closest("tr").find("th,label").first().text() ||
-        name.replace(/^attribute_/, "")
+        humanizeOptionKey(rawName)
     );
 
     const options = $select
@@ -872,8 +893,10 @@ function extractVariantData($root, $) {
 
     if (options.length) {
       optionGroups.push({
-        name,
-        label: label || name,
+        key,
+        name: key,
+        label: label || humanizeOptionKey(key) || "Option",
+        displayType: "button",
         options,
       });
     }
@@ -884,19 +907,41 @@ function extractVariantData($root, $) {
     try {
       const parsed = JSON.parse(formAttr.replaceAll("&quot;", '"'));
       if (Array.isArray(parsed)) {
-        for (const item of parsed) {
+        parsed.forEach((item, idx) => {
+          const rawAttrs = item?.attributes && typeof item.attributes === "object" ? item.attributes : {};
+          const optionValues = {};
+
+          for (const [rawKey, rawValue] of Object.entries(rawAttrs)) {
+            const key = normalizeOptionKey(rawKey);
+            const value = textClean(rawValue || "");
+            if (key && value) optionValues[key] = value;
+          }
+
+          const optionSummary = Object.entries(optionValues)
+            .map(([key, value]) => {
+              const group = optionGroups.find((g) => g.key === key || g.name === key);
+              const label = group?.options?.find((opt) => (opt.value || opt.label) === value)?.label || value;
+              return label;
+            })
+            .filter(Boolean)
+            .join(" / ");
+
+          const sku = textClean(item?.sku || item?.variation_id || "");
+          const variantTitle = textClean(item?.variation_description || optionSummary || sku || baseTitle);
+          const variantId = makeVariantId(item?.variation_id || `${sku}-${optionSummary}`, idx);
+
           variants.push({
-            sku: textClean(item?.sku || item?.variation_id || ""),
-            title: textClean(item?.variation_description || item?.sku || ""),
-            optionSummary: Object.values(item?.attributes || {})
-              .map((v) => textClean(v))
-              .filter(Boolean)
-              .join(" / "),
-            attributes: item?.attributes || {},
+            variantId,
+            sku,
+            catNo: sku,
+            title: variantTitle,
+            optionSummary,
+            optionValues,
+            attributes: rawAttrs,
             imageUrl: item?.image?.src ? toAbs(item.image.src) : "",
             sourceVariationId: item?.variation_id ? String(item.variation_id) : "",
           });
-        }
+        });
       }
     } catch {
       // noop
@@ -915,27 +960,33 @@ function extractVariantData($root, $) {
     });
 
     if (labels.length) {
-      optionGroups.push({ name: "option", label: "Option", options: labels });
+      optionGroups.push({ key: "option", name: "option", label: "Option", displayType: "button", options: labels });
     }
   }
 
   if (!variants.length && optionGroups.length === 1) {
-    for (const option of optionGroups[0].options) {
+    for (const [idx, option] of optionGroups[0].options.entries()) {
       variants.push({
+        variantId: makeVariantId(option.value || option.label, idx),
         sku: "",
-        title: option.label,
-        optionSummary: option.label,
-        attributes: { [optionGroups[0].name]: option.value || option.label },
+        catNo: "",
+        title: option.label || option.value || baseTitle,
+        optionSummary: option.label || option.value || "",
+        optionValues: { [optionGroups[0].key || optionGroups[0].name || "option"]: option.value || option.label },
+        attributes: { [optionGroups[0].name || "option"]: option.value || option.label },
         imageUrl: "",
         sourceVariationId: "",
       });
     }
   }
 
+  const defaultVariant = variants.find((variant) => variant.sku && baseSku && variant.sku === baseSku) || variants[0] || null;
+
   return {
-    hasVariants: optionGroups.some((group) => group.options.length > 1),
+    hasVariants: optionGroups.some((group) => group.options.length > 1) || variants.length > 1,
     optionGroups,
     variants,
+    defaultVariantId: defaultVariant?.variantId || "",
   };
 }
 
@@ -993,7 +1044,7 @@ function extractProductContent(html, sourceUrl) {
   const sku = extractSku($root, $);
   const { categoryPath, categoryPathTitles } = extractCategoryTrail($);
   const imageUrls = extractImages($root, $);
-  const variantData = extractVariantData($root, $);
+  const variantData = extractVariantData($root, $, normalizeTitle(title, slug), sku);
   const docs = extractDocsAndPdfLinks($root, $);
 
   const descriptionHtml = safeHtmlForStorage(
@@ -1036,6 +1087,7 @@ function extractProductContent(html, sourceUrl) {
     reviewsHtml: "",
     legacyHtml: safeHtmlForStorage($root.html() || html),
     productType: variantData.hasVariants ? "variant" : "simple",
+    defaultVariantId: variantData.defaultVariantId,
     optionGroups: variantData.optionGroups,
     variants: variantData.variants,
   };
@@ -1109,6 +1161,7 @@ async function upsertProduct({ brandId, url }) {
     brand: { _type: "reference", _ref: brandId },
     isActive: true,
     title: parsed.title,
+    summary: parsed.summary || "",
     sku: parsed.sku || "",
     slug: { _type: "slug", current: slug },
     categoryRef: categoryId ? { _type: "reference", _ref: categoryId } : undefined,
@@ -1127,8 +1180,9 @@ async function upsertProduct({ brandId, url }) {
     docs: parsed.docs,
     enrichedAt: new Date().toISOString(),
 
-    // variant 지원
+    // Kent variant 지원
     productType: parsed.productType,
+    defaultVariantId: parsed.defaultVariantId || "",
     optionGroups: parsed.optionGroups,
     variants: parsed.variants,
   };
