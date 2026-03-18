@@ -38,86 +38,141 @@ const ROOT_SEEDS = [
 ];
 
 const CATEGORY_TREE = new Map([
-  ["anesthesia", [
-    "anesthesia/anesthesia-accessories",
-    "anesthesia/anesthesia-accessories-for-somnoflo",
-    "anesthesia/anesthesia-accessories-for-somnosuite",
-    "anesthesia/anesthesia-accessories-for-vetflo",
-  ]],
-  ["laboratory-animal-handling", [
-    "laboratory-animal-handling/animal-holders",
-    "laboratory-animal-handling/clippers",
-    "laboratory-animal-handling/scales",
-  ]],
+  [
+    "anesthesia",
+    [
+      "anesthesia/anesthesia-accessories",
+      "anesthesia/anesthesia-accessories-for-somnoflo",
+      "anesthesia/anesthesia-accessories-for-somnosuite",
+      "anesthesia/anesthesia-accessories-for-vetflo",
+    ],
+  ],
+  [
+    "laboratory-animal-handling",
+    [
+      "laboratory-animal-handling/animal-holders",
+      "laboratory-animal-handling/clippers",
+      "laboratory-animal-handling/scales",
+    ],
+  ],
   ["body-composition-analysis", []],
   ["feeding-needles", []],
   ["mobile-carts", ["mobile-carts/carts"]],
   ["nebulizers", []],
-  ["noninvasive-blood-pressure", ["noninvasive-blood-pressure/noninvasive-blood-pressure-accessories"]],
-  ["noninvasive-blood-pressure/noninvasive-blood-pressure-accessories", ["noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor"]],
-  ["noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor", ["noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/coda-cuffs"]],
-  ["noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/coda-cuffs", []],
-  ["physiological-monitoring", ["physiological-monitoring/physiological-monitoring-accessories"]],
-  ["physiological-monitoring/physiological-monitoring-accessories", [
-    "physiological-monitoring/physiological-monitoring-accessories/pulse-oximetry",
-    "physiological-monitoring/physiological-monitoring-accessories/temperature",
-  ]],
+  [
+    "noninvasive-blood-pressure",
+    ["noninvasive-blood-pressure/noninvasive-blood-pressure-accessories"],
+  ],
+  [
+    "noninvasive-blood-pressure/noninvasive-blood-pressure-accessories",
+    [
+      "noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor",
+    ],
+  ],
+  [
+    "noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor",
+    [
+      "noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/coda-cuffs",
+    ],
+  ],
+  [
+    "noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/coda-cuffs",
+    [],
+  ],
+  [
+    "physiological-monitoring",
+    ["physiological-monitoring/physiological-monitoring-accessories"],
+  ],
+  [
+    "physiological-monitoring/physiological-monitoring-accessories",
+    [
+      "physiological-monitoring/physiological-monitoring-accessories/pulse-oximetry",
+      "physiological-monitoring/physiological-monitoring-accessories/temperature",
+    ],
+  ],
   ["physiological-monitoring/physiological-monitoring-accessories/pulse-oximetry", []],
   ["physiological-monitoring/physiological-monitoring-accessories/temperature", []],
-  ["rodent-identification", [
-    "rodent-identification/ear-tags",
-    "rodent-identification/rfid-transponder-system",
-  ]],
+  [
+    "rodent-identification",
+    [
+      "rodent-identification/ear-tags",
+      "rodent-identification/rfid-transponder-system",
+    ],
+  ],
   ["rodent-identification/ear-tags", []],
   ["rodent-identification/rfid-transponder-system", []],
-  ["surgery", [
-    "surgery/instrument-cleaning",
-    "surgery/surgical-accessories",
-    "surgery/surgical-instruments",
-  ]],
+  [
+    "surgery",
+    [
+      "surgery/instrument-cleaning",
+      "surgery/surgical-accessories",
+      "surgery/surgical-instruments",
+    ],
+  ],
   ["surgery/instrument-cleaning", []],
-  ["surgery/surgical-accessories", ["surgery/surgical-accessories/surgical-accessories-for-surgisuite"]],
+  [
+    "surgery/surgical-accessories",
+    ["surgery/surgical-accessories/surgical-accessories-for-surgisuite"],
+  ],
   ["surgery/surgical-accessories/surgical-accessories-for-surgisuite", []],
-  ["surgery/surgical-instruments", [
+  [
+    "surgery/surgical-instruments",
+    [
+      "surgery/surgical-instruments/forceps",
+      "surgery/surgical-instruments/laboratory-scissors",
+      "surgery/surgical-instruments/needle-holders",
+      "surgery/surgical-instruments/surgical-instrument-kits",
+      "surgery/surgical-instruments/surgical-tweezers",
+      "surgery/surgical-instruments/wound-closure",
+    ],
+  ],
+  [
     "surgery/surgical-instruments/forceps",
-    "surgery/surgical-instruments/laboratory-scissors",
-    "surgery/surgical-instruments/needle-holders",
-    "surgery/surgical-instruments/surgical-instrument-kits",
-    "surgery/surgical-instruments/surgical-tweezers",
-    "surgery/surgical-instruments/wound-closure",
-  ]],
-  ["surgery/surgical-instruments/forceps", [
-    "surgery/surgical-instruments/forceps/dressing-forceps",
-    "surgery/surgical-instruments/forceps/hemostat-forceps",
-  ]],
+    [
+      "surgery/surgical-instruments/forceps/dressing-forceps",
+      "surgery/surgical-instruments/forceps/hemostat-forceps",
+    ],
+  ],
   ["surgery/surgical-instruments/forceps/dressing-forceps", []],
   ["surgery/surgical-instruments/forceps/hemostat-forceps", []],
-  ["surgery/surgical-instruments/laboratory-scissors", ["surgery/surgical-instruments/laboratory-scissors/micro-scissors"]],
+  [
+    "surgery/surgical-instruments/laboratory-scissors",
+    ["surgery/surgical-instruments/laboratory-scissors/micro-scissors"],
+  ],
   ["surgery/surgical-instruments/laboratory-scissors/micro-scissors", []],
   ["surgery/surgical-instruments/needle-holders", []],
   ["surgery/surgical-instruments/surgical-instrument-kits", []],
   ["surgery/surgical-instruments/surgical-tweezers", []],
-  ["surgery/surgical-instruments/wound-closure", [
-    "surgery/surgical-instruments/wound-closure/autoclips",
-    "surgery/surgical-instruments/wound-closure/bull-dog-clamps",
-    "surgery/surgical-instruments/wound-closure/reflex-clips",
-  ]],
+  [
+    "surgery/surgical-instruments/wound-closure",
+    [
+      "surgery/surgical-instruments/wound-closure/autoclips",
+      "surgery/surgical-instruments/wound-closure/bull-dog-clamps",
+      "surgery/surgical-instruments/wound-closure/reflex-clips",
+    ],
+  ],
   ["surgery/surgical-instruments/wound-closure/autoclips", []],
   ["surgery/surgical-instruments/wound-closure/bull-dog-clamps", []],
   ["surgery/surgical-instruments/wound-closure/reflex-clips", []],
   ["tail-vein-training-materials", []],
-  ["tissue-collection", [
-    "tissue-collection/blood-collection",
-    "tissue-collection/brain-matricies",
-  ]],
+  [
+    "tissue-collection",
+    [
+      "tissue-collection/blood-collection",
+      "tissue-collection/brain-matricies",
+    ],
+  ],
   ["tissue-collection/blood-collection", []],
   ["tissue-collection/brain-matricies", []],
   ["ventilation", ["ventilation/intubation"]],
   ["ventilation/intubation", []],
-  ["warming", [
-    "warming/warming-pads-blankets",
-    "warming/water-recirculators",
-  ]],
+  [
+    "warming",
+    [
+      "warming/warming-pads-blankets",
+      "warming/water-recirculators",
+    ],
+  ],
   ["warming/warming-pads-blankets", []],
   ["warming/water-recirculators", []],
   ["warranty", []],
@@ -140,8 +195,18 @@ const FORCED_LANDING = new Set([
 ]);
 
 const OFF_TOPIC_RULES = [
-  { paths: ["laboratory-animal-handling", "physiological-monitoring"], containsAny: ["rovent", "ventilator"] },
-  { paths: ["physiological-monitoring"], containsAny: ["anesthesia accessories for somnosuite", "anesthesia accessories for somnoflo", "accessories for coda monitor"] },
+  {
+    paths: ["laboratory-animal-handling", "physiological-monitoring"],
+    containsAny: ["rovent", "ventilator"],
+  },
+  {
+    paths: ["physiological-monitoring"],
+    containsAny: [
+      "anesthesia accessories for somnosuite",
+      "anesthesia accessories for somnoflo",
+      "accessories for coda monitor",
+    ],
+  },
 ];
 
 const PROMO_PHRASES = [
@@ -150,37 +215,96 @@ const PROMO_PHRASES = [
   "don't miss",
   "dont miss",
   "optional induction chambers and anesthesia masks are available for purchase",
+  "get early access to info, updates, and discounts",
+  "sign up for our enewsletter",
 ];
+
+const LANDING_INCLUDE_SELF_CATEGORY_CARD = new Set([
+  "laboratory-animal-handling",
+]);
+
+const LANDING_FALLBACK_PROFILES = {
+  warming: {
+    mode: "showcase",
+    minBlocks: 4,
+    ensureProducts: true,
+    ensureText: true,
+    textMinLen: 120,
+  },
+  "laboratory-animal-handling/animal-holders": {
+    mode: "showcase",
+    minBlocks: 3,
+    ensureProducts: true,
+    ensureText: true,
+    textMinLen: 160,
+  },
+  "tissue-collection/brain-matricies": {
+    mode: "textual",
+    minBlocks: 2,
+    ensureProducts: true,
+    ensureText: true,
+    textMinLen: 110,
+  },
+  "ventilation/intubation": {
+    mode: "showcase",
+    minBlocks: 3,
+    ensureProducts: true,
+    ensureText: true,
+    textMinLen: 120,
+  },
+  "physiological-monitoring/physiological-monitoring-accessories/temperature": {
+    mode: "textual",
+    minBlocks: 2,
+    ensureProducts: true,
+    ensureText: true,
+    textMinLen: 110,
+  },
+  "warming/warming-pads-blankets": {
+    mode: "showcase",
+    minBlocks: 3,
+    ensureProducts: true,
+    ensureText: true,
+    textMinLen: 120,
+  },
+};
 
 const LAB_HANDLING_OVERRIDE = {
   introHtml: `
     <p class="category-brief">
-      Kent Scientific’s animal handling products offer a variety devices to safely immobilize mice, rats and other small animals for research applications.
+      Kent Scientific’s animal handling products offer a variety of devices to safely immobilize mice, rats and other small animals for research applications.
       <a href="https://www.kentscientific.com/products/animal-handling/#About">Learn more about animal handling…</a>
     </p>
   `,
   categoryCards: [
     {
+      title: "Laboratory Animal Handling",
+      childPath: "laboratory-animal-handling",
+      count: 11,
+      imageUrl: "",
+    },
+    {
       title: "Animal Holders",
       childPath: "laboratory-animal-handling/animal-holders",
       count: 6,
-      imageUrl: "https://www.kentscientific.com/wp-content/uploads/2025/09/all-holders-3-300x300.png",
+      imageUrl:
+        "https://www.kentscientific.com/wp-content/uploads/2025/09/all-holders-3-300x300.png",
     },
     {
       title: "Clippers",
       childPath: "laboratory-animal-handling/clippers",
       count: 3,
-      imageUrl: "https://www.kentscientific.com/wp-content/uploads/2025/09/ARCO-SE-clipper-2-300x300.png",
+      imageUrl:
+        "https://www.kentscientific.com/wp-content/uploads/2025/09/ARCO-SE-clipper-2-300x300.png",
     },
     {
       title: "Scales",
       childPath: "laboratory-animal-handling/scales",
       count: 2,
-      imageUrl: "https://www.kentscientific.com/wp-content/uploads/2025/09/W4000-2-300x300.png",
+      imageUrl:
+        "https://www.kentscientific.com/wp-content/uploads/2025/09/W4000-2-300x300.png",
     },
   ],
   aboutHtml: `
-    <h2 id="About" class="heading-1">About laboratory animal handling</h2>
     <p>There are several different methods of animal handling. It is important to note that improper handling causes distress and/or pain. Minimal animal handling should be the research objective. Different animals require specific methods of handling.</p>
     <section>
       <h3>Physical restraint</h3>
@@ -216,8 +340,12 @@ const REQUIRED_ENV = {
 if (!REQUIRED_ENV.projectId || !REQUIRED_ENV.dataset || !REQUIRED_ENV.token) {
   console.error("Missing Sanity env.");
   console.error("Required:");
-  console.error("- NEXT_PUBLIC_SANITY_PROJECT_ID (or SANITY_STUDIO_PROJECT_ID / SANITY_PROJECT_ID)");
-  console.error("- NEXT_PUBLIC_SANITY_DATASET (or SANITY_STUDIO_DATASET / SANITY_DATASET)");
+  console.error(
+    "- NEXT_PUBLIC_SANITY_PROJECT_ID (or SANITY_STUDIO_PROJECT_ID / SANITY_PROJECT_ID)",
+  );
+  console.error(
+    "- NEXT_PUBLIC_SANITY_DATASET (or SANITY_STUDIO_DATASET / SANITY_DATASET)",
+  );
   console.error("- SANITY_API_TOKEN (or SANITY_WRITE_TOKEN / SANITY_TOKEN)");
   process.exit(1);
 }
@@ -247,10 +375,7 @@ function stripTags(html) {
 }
 
 function normalizeText(text) {
-  return stripTags(text)
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
+  return stripTags(text).toLowerCase().replace(/\s+/g, " ").trim();
 }
 
 function decodeHtmlEntities(text) {
@@ -332,9 +457,7 @@ function titleFromPath(pathStr) {
     .split("/")
     .filter(Boolean)
     .map((seg) =>
-      seg
-        .replace(/-/g, " ")
-        .replace(/\b[a-z]/g, (c) => c.toUpperCase()),
+      seg.replace(/-/g, " ").replace(/\b[a-z]/g, (c) => c.toUpperCase()),
     )
     .join(" / ");
 }
@@ -559,13 +682,48 @@ function getScopedRoot($) {
 }
 
 function hasCardsBlock(blocks, kind) {
-  return (blocks || []).some((b) => b?._type === "contentBlockCards" && b?.kind === kind && (b.items || []).length);
+  return (blocks || []).some(
+    (b) => b?._type === "contentBlockCards" && b?.kind === kind && (b.items || []).length,
+  );
 }
 
-async function buildLabHandlingOverrideCards() {
+function hasMeaningfulHtmlBlock(blocks, minLen = 120) {
+  return (blocks || []).some(
+    (b) => b?._type === "contentBlockHtml" && stripTags(b?.html || "").length >= minLen,
+  );
+}
+
+function getExistingCardHrefSet(blocks) {
+  const set = new Set();
+  for (const block of blocks || []) {
+    if (block?._type !== "contentBlockCards") continue;
+    for (const item of block.items || []) {
+      const href = String(item?.href || "").trim();
+      if (href) set.add(href);
+    }
+  }
+  return set;
+}
+
+function prettifyLeafTitle(currentPath) {
+  const leaf = currentPath.split("/").filter(Boolean).slice(-1)[0] || currentPath;
+  return titleFromPath(leaf).replace(/^\s*\/\s*/, "");
+}
+
+function isProbablyPromoNode(currentPath, html) {
+  const txt = normalizeText(html);
+  if (!txt) return true;
+  if (shouldSkipByText(currentPath, txt)) return true;
+  if (/get early access to info, updates, and discounts/i.test(txt)) return true;
+  if (/sign up for our enewsletter/i.test(txt)) return true;
+  if (/login to see prices/i.test(txt)) return true;
+  return false;
+}
+
+async function buildFallbackCategoryCardItems(cards) {
   const items = [];
 
-  for (const card of LAB_HANDLING_OVERRIDE.categoryCards) {
+  for (const card of cards || []) {
     const uploaded = await uploadImageToSanity(card.imageUrl);
     items.push(
       makeCardItem({
@@ -581,58 +739,262 @@ async function buildLabHandlingOverrideCards() {
   return items;
 }
 
-async function extractLaboratoryAnimalHandlingBlocks() {
-  const categoryItems = await buildLabHandlingOverrideCards();
+async function extractCategoryCardsFromArea(currentPath, $, scope, { includeSelf = false } = {}) {
+  const directChildren = new Set(CATEGORY_TREE.get(currentPath) || []);
+  const allowedPaths = new Set(directChildren);
+  if (includeSelf) allowedPaths.add(currentPath);
+
+  const rawItems = [];
+  scope.find("li.product-category").each((_i, li) => {
+    const $li = $(li);
+    const hrefAbs = ensureAbs($li.find("a").attr("href"));
+    if (!isCategoryUrl(hrefAbs)) return;
+
+    const childPath = normalizeCategoryPath(hrefAbs);
+    if (!childPath || !allowedPaths.has(childPath)) return;
+
+    const title =
+      stripTags($li.find(".thumb-info-inner").first().text()) ||
+      stripTags($li.find("h3").first().text()) ||
+      titleFromPath(childPath);
+
+    const countText = stripTags($li.find(".count").first().text());
+    const count = Number.parseInt(countText, 10);
+    const imageSrc = $li.find("img").attr("src") || $li.find("img").attr("data-src") || "";
+
+    rawItems.push({
+      title,
+      href: categoryPathToInternal(childPath),
+      count: Number.isFinite(count) ? count : undefined,
+      imageSrc,
+    });
+  });
+
+  const uploadedItems = [];
+  for (const item of uniqueBy(rawItems, (it) => `${it.href}|${it.title}`)) {
+    const uploaded = await uploadImageToSanity(item.imageSrc);
+    uploadedItems.push(
+      makeCardItem({
+        title: item.title,
+        href: item.href,
+        imageUrl: uploaded.imageUrl,
+        image: uploaded.image,
+        count: item.count,
+      }),
+    );
+  }
+
+  return uploadedItems;
+}
+
+async function extractProductCardsFromLooseArea(currentPath, $, scope, existingHrefs = new Set()) {
+  const rawItems = [];
+  scope.find("li.product-col.product, li.product").each((_i, li) => {
+    const $li = $(li);
+
+    const hrefAbs = ensureAbs(
+      $li.find(".product-loop-title").attr("href") ||
+        $li.find(".product-image a").attr("href") ||
+        $li.find("a[href*='/products/']").first().attr("href"),
+    );
+    if (!isProductUrl(hrefAbs)) return;
+
+    const href = productUrlToInternal(hrefAbs);
+    if (!href || existingHrefs.has(href)) return;
+
+    const title =
+      stripTags($li.find(".woocommerce-loop-product__title").first().text()) ||
+      stripTags($li.find(".product-loop-title").first().text()) ||
+      stripTags($li.find("h2").first().text()) ||
+      stripTags($li.find("h3").first().text()) ||
+      titleFromPath(productUrlToSlug(hrefAbs));
+
+    const subtitle =
+      stripTags($li.find(".product-short-description").first().html() || "") ||
+      stripTags($li.find(".description").first().html() || "");
+
+    const imageSrc =
+      $li.find(".product-image img").attr("src") ||
+      $li.find(".product-image img").attr("data-src") ||
+      $li.find("img").first().attr("src") ||
+      $li.find("img").first().attr("data-src") ||
+      "";
+
+    const gtmJson = $li.find(".gtm4wp_productdata").attr("data-gtm4wp_product_data") || "";
+    let sku = "";
+    if (gtmJson) {
+      try {
+        const parsed = JSON.parse(gtmJson);
+        sku = String(parsed.sku || parsed.item_id || parsed.id || "").trim();
+      } catch {}
+    }
+
+    rawItems.push({ href, title, subtitle, imageSrc, sku });
+  });
+
+  const uploadedItems = [];
+  for (const item of uniqueBy(rawItems, (it) => `${it.href}|${it.title}|${it.sku || ""}`)) {
+    const uploaded = await uploadImageToSanity(item.imageSrc);
+    uploadedItems.push(
+      makeCardItem({
+        title: item.title,
+        subtitle: item.subtitle,
+        href: item.href,
+        imageUrl: uploaded.imageUrl,
+        image: uploaded.image,
+        sku: item.sku,
+      }),
+    );
+  }
+
+  return uploadedItems;
+}
+
+function collectLooseTextCandidates(currentPath, $, area) {
+  const candidates = [];
+  const selectors = [
+    ".term-description",
+    ".woocommerce-products-header__description",
+    ".archive-description",
+    ".elementor-widget-text-editor",
+  ];
+
+  for (const selector of selectors) {
+    area.find(selector).each((_i, node) => {
+      const $node = $(node);
+      if (
+        $node.closest(
+          "header, footer, nav, aside, .woocommerce-pagination, .shop-loop-before, .shop-loop-after",
+        ).length
+      ) {
+        return;
+      }
+      if ($node.find("li.product, li.product-col.product, li.product-category").length) return;
+
+      const rawHtml =
+        selector === ".elementor-widget-text-editor"
+          ? htmlFragmentToString($node, $)
+          : ($node.html() || "").trim();
+
+      if (!rawHtml) return;
+      if (isProbablyPromoNode(currentPath, rawHtml)) return;
+
+      const textLen = stripTags(rawHtml).length;
+      if (textLen < 80) return;
+
+      let title = "";
+      let bodyHtml = rawHtml;
+      const hasHeading = $node.find("h2,h3,h4").length > 0;
+
+      if (hasHeading) {
+        const split = splitHeadingAndBody(rawHtml);
+        title = split.title;
+        bodyHtml = split.html || rawHtml;
+      } else if ($node.find("h1").length > 0) {
+        const root = cheerio.load(`<div id="root">${rawHtml}</div>`);
+        root("#root h1").first().remove();
+        bodyHtml = root("#root").html()?.trim() || "";
+      }
+
+      const normalized = normalizeText(bodyHtml);
+      if (!normalized || normalized.length < 80) return;
+
+      candidates.push({ title, html: bodyHtml, textLen: normalized.length });
+    });
+  }
+
+  return uniqueBy(candidates, (it) => `${normalizeText(it.title)}|${normalizeText(it.html).slice(0, 240)}`)
+    .sort((a, b) => b.textLen - a.textLen);
+}
+
+function chooseLooseTextBlock(currentPath, blocks, candidates, minLen = 120) {
+  const existingHtmlNorm = new Set(
+    (blocks || [])
+      .filter((b) => b?._type === "contentBlockHtml")
+      .map((b) => normalizeText(b?.html || ""))
+      .filter(Boolean),
+  );
+
+  for (const candidate of candidates || []) {
+    const norm = normalizeText(candidate.html);
+    if (!norm || norm.length < minLen) continue;
+    if (existingHtmlNorm.has(norm)) continue;
+    if ([...existingHtmlNorm].some((txt) => txt.includes(norm) || norm.includes(txt))) continue;
+
+    const title = candidate.title || `About ${prettifyLeafTitle(currentPath).toLowerCase()}`;
+    return makeHtmlBlock(title, candidate.html, `${currentPath}|loose-text-fallback|${title}`);
+  }
+
+  return null;
+}
+
+async function buildLabHandlingOverrideCards(html) {
+  const $ = cheerio.load(html);
+  const area = getScopedRoot($);
+
+  const parsedItems = await extractCategoryCardsFromArea(
+    "laboratory-animal-handling",
+    $,
+    area,
+    { includeSelf: true },
+  );
+  if (parsedItems.length >= 4) return parsedItems;
+
+  const fallbackItems = await buildFallbackCategoryCardItems(LAB_HANDLING_OVERRIDE.categoryCards);
+  return uniqueBy([...parsedItems, ...fallbackItems], (item) => `${item.href}|${item.title}`);
+}
+
+async function extractLaboratoryAnimalHandlingBlocks(html) {
+  const categoryItems = await buildLabHandlingOverrideCards(html);
 
   return orderBlocks([
     makeHtmlBlock("", LAB_HANDLING_OVERRIDE.introHtml, "laboratory-animal-handling|intro-override"),
     makeCardsBlock("category", "", categoryItems, "laboratory-animal-handling|cats-override"),
-    makeHtmlBlock("About laboratory animal handling", LAB_HANDLING_OVERRIDE.aboutHtml, "laboratory-animal-handling|about-override"),
+    makeHtmlBlock(
+      "About laboratory animal handling",
+      LAB_HANDLING_OVERRIDE.aboutHtml,
+      "laboratory-animal-handling|about-override",
+    ),
   ]);
 }
 
 async function applyPathSpecificLandingFallbacks(currentPath, $, area, blocks) {
-  if (currentPath === "warming/warming-pads-blankets") {
-    if (!hasCardsBlock(blocks, "product")) {
-      const items = [];
-      area.find("li.product-col.product").each((_i, li) => {
-        const $li = $(li);
-        const hrefAbs = ensureAbs(
-          $li.find(".product-loop-title").attr("href") || $li.find(".product-image a").attr("href"),
-        );
-        if (!isProductUrl(hrefAbs)) return;
+  const profile = LANDING_FALLBACK_PROFILES[currentPath];
+  if (!profile) return blocks;
 
-        const title =
-          stripTags($li.find(".woocommerce-loop-product__title").first().text()) ||
-          stripTags($li.find("h3").first().text());
+  const existingHrefs = getExistingCardHrefSet(blocks);
 
-        const subtitle = stripTags($li.find(".product-short-description").html() || "");
-        const imageSrc =
-          $li.find(".product-image img").attr("src") || $li.find(".product-image img").attr("data-src") || "";
-
-        items.push({ hrefAbs, title, subtitle, imageSrc });
-      });
-
-      const uploadedItems = [];
-      for (const item of uniqueBy(items, (it) => `${it.hrefAbs}|${it.title}`)) {
-        const uploaded = await uploadImageToSanity(item.imageSrc);
-        uploadedItems.push(
-          makeCardItem({
-            title: item.title,
-            subtitle: item.subtitle,
-            href: productUrlToInternal(item.hrefAbs),
-            imageUrl: uploaded.imageUrl,
-            image: uploaded.image,
-          }),
-        );
-      }
-
-      const blk = makeCardsBlock("product", "", uploadedItems, `${currentPath}|product-explicit`);
-      if (blk) blocks.unshift(blk);
+  if (profile.ensureProducts && !hasCardsBlock(blocks, "product")) {
+    const looseProductItems = await extractProductCardsFromLooseArea(currentPath, $, area, existingHrefs);
+    const productBlock = makeCardsBlock(
+      "product",
+      profile.mode === "showcase" ? "" : "Related products",
+      looseProductItems,
+      `${currentPath}|product-fallback`,
+    );
+    if (productBlock) {
+      const insertAt = blocks.findIndex((b) => b?._type === "contentBlockHtml");
+      if (insertAt >= 1) blocks.splice(insertAt, 0, productBlock);
+      else blocks.unshift(productBlock);
     }
   }
 
-  return blocks;
+  if (profile.ensureText && !hasMeaningfulHtmlBlock(blocks, profile.textMinLen || 120)) {
+    const looseTextCandidates = collectLooseTextCandidates(currentPath, $, area);
+    const textBlock = chooseLooseTextBlock(
+      currentPath,
+      blocks,
+      looseTextCandidates,
+      profile.textMinLen || 120,
+    );
+    if (textBlock) blocks.push(textBlock);
+  } else if (profile.ensureText && blocks.length < (profile.minBlocks || 2)) {
+    const looseTextCandidates = collectLooseTextCandidates(currentPath, $, area);
+    const textBlock = chooseLooseTextBlock(currentPath, blocks, looseTextCandidates, 90);
+    if (textBlock) blocks.push(textBlock);
+  }
+
+  return orderBlocks(blocks);
 }
 
 async function extractLandingBlocks(currentPath, html) {
@@ -640,7 +1002,7 @@ async function extractLandingBlocks(currentPath, html) {
   const area = getScopedRoot($);
 
   if (currentPath === "laboratory-animal-handling") {
-    return extractLaboratoryAnimalHandlingBlocks();
+    return extractLaboratoryAnimalHandlingBlocks(html);
   }
 
   const blocks = [];
@@ -649,11 +1011,13 @@ async function extractLandingBlocks(currentPath, html) {
   const seenBlockKeys = new Set();
 
   const excludedClosest =
-    "header, footer, nav, aside, .shop-loop-before, .shop-loop-after, .archive-products, .woocommerce-pagination, .woocommerce-ordering, .porto-product-filters, .widget_product_categories, .widget_layered_nav, .woocommerce-viewing, .gridlist-toggle";
+    "header, footer, nav, aside, .shop-loop-before, .shop-loop-after, .woocommerce-pagination, .woocommerce-ordering, .porto-product-filters, .widget_product_categories, .widget_layered_nav, .woocommerce-viewing, .gridlist-toggle";
 
   function pushBlock(block) {
     if (!block) return;
-    const key = `${block._type}|${block.kind || ""}|${block.title || ""}|${stripTags(block.html || "").slice(0, 120)}|${(block.items || []).length}`;
+    const key = `${block._type}|${block.kind || ""}|${block.title || ""}|${stripTags(
+      block.html || "",
+    ).slice(0, 120)}|${(block.items || []).length}`;
     if (seenBlockKeys.has(key)) return;
     seenBlockKeys.add(key);
     blocks.push(block);
@@ -669,15 +1033,17 @@ async function extractLandingBlocks(currentPath, html) {
     const nodeHtml = htmlFragmentToString($node, $);
     const nodeText = stripTags(nodeHtml);
     if (!nodeText) continue;
-    if (shouldSkipByText(currentPath, nodeText)) continue;
 
     if (/heading\.default/i.test(widgetType)) {
+      if (shouldSkipByText(currentPath, nodeText)) continue;
       const title = blockTitleFromText($node.text());
       if (title) pendingTitle = title;
       continue;
     }
 
     if (/text-editor\.default/i.test(widgetType)) {
+      if (shouldSkipByText(currentPath, nodeText)) continue;
+
       const hasH1 = $node.find("h1").length > 0;
       const hasSectionHeading = $node.find("h2,h3,h4").length > 0;
 
@@ -713,47 +1079,16 @@ async function extractLandingBlocks(currentPath, html) {
         continue;
       }
 
-      if (stripTags(nodeHtml).length >= 120 && !/login to see prices/i.test(nodeText)) {
+      if (stripTags(nodeHtml).length >= 120) {
         pushBlock(makeHtmlBlock("", nodeHtml, `${currentPath}|loose-text`));
       }
       continue;
     }
 
     if (/wc-categories\.default/i.test(widgetType)) {
-      const items = [];
-      $node.find("li.product-category").each((_i, li) => {
-        const $li = $(li);
-        const hrefAbs = ensureAbs($li.find("a").attr("href"));
-        if (!isCategoryUrl(hrefAbs)) return;
-
-        const childPath = normalizeCategoryPath(hrefAbs);
-        if (!childPath || childPath === currentPath || !directChildren.has(childPath)) return;
-
-        const title =
-          stripTags($li.find(".thumb-info-inner").first().text()) ||
-          stripTags($li.find("h3").first().text()) ||
-          titleFromPath(childPath);
-
-        const countText = stripTags($li.find(".count").first().text());
-        const count = Number.parseInt(countText, 10);
-        const imageSrc = $li.find("img").attr("src") || $li.find("img").attr("data-src") || "";
-        items.push({ title, href: childPath, count, imageSrc });
+      const uploadedItems = await extractCategoryCardsFromArea(currentPath, $, $node, {
+        includeSelf: LANDING_INCLUDE_SELF_CATEGORY_CARD.has(currentPath),
       });
-
-      const deduped = uniqueBy(items, (item) => `${item.href}|${item.title}`);
-      const uploadedItems = [];
-      for (const item of deduped) {
-        const uploaded = await uploadImageToSanity(item.imageSrc);
-        uploadedItems.push(
-          makeCardItem({
-            title: item.title,
-            href: categoryPathToInternal(item.href),
-            imageUrl: uploaded.imageUrl,
-            image: uploaded.image,
-            count: Number.isFinite(item.count) ? item.count : undefined,
-          }),
-        );
-      }
 
       if (uploadedItems.length) {
         pushBlock(makeCardsBlock("category", pendingTitle || "", uploadedItems, `${currentPath}|cats`));
@@ -764,20 +1099,31 @@ async function extractLandingBlocks(currentPath, html) {
 
     if (/woocommerce-products\.default/i.test(widgetType)) {
       const items = [];
-      $node.find("li.product-col.product").each((_i, li) => {
+      $node.find("li.product-col.product, li.product").each((_i, li) => {
         const $li = $(li);
         const hrefAbs = ensureAbs(
-          $li.find(".product-loop-title").attr("href") || $li.find(".product-image a").attr("href"),
+          $li.find(".product-loop-title").attr("href") ||
+            $li.find(".product-image a").attr("href") ||
+            $li.find("a[href*='/products/']").first().attr("href"),
         );
         if (!isProductUrl(hrefAbs)) return;
 
         const title =
           stripTags($li.find(".woocommerce-loop-product__title").first().text()) ||
+          stripTags($li.find(".product-loop-title").first().text()) ||
+          stripTags($li.find("h2").first().text()) ||
           stripTags($li.find("h3").first().text());
 
-        const subtitle = stripTags($li.find(".product-short-description").html() || "");
+        const subtitle =
+          stripTags($li.find(".product-short-description").first().html() || "") ||
+          stripTags($li.find(".description").first().html() || "");
+
         const imageSrc =
-          $li.find(".product-image img").attr("src") || $li.find(".product-image img").attr("data-src") || "";
+          $li.find(".product-image img").attr("src") ||
+          $li.find(".product-image img").attr("data-src") ||
+          $li.find("img").first().attr("src") ||
+          $li.find("img").first().attr("data-src") ||
+          "";
 
         const gtmJson = $li.find(".gtm4wp_productdata").attr("data-gtm4wp_product_data") || "";
         let sku = "";
@@ -809,22 +1155,38 @@ async function extractLandingBlocks(currentPath, html) {
 
       if (uploadedItems.length) {
         pushBlock(
-          makeCardsBlock("product", pendingTitle || "", uploadedItems, `${currentPath}|prods|${pendingTitle}`),
+          makeCardsBlock(
+            "product",
+            pendingTitle || "",
+            uploadedItems,
+            `${currentPath}|prods|${pendingTitle}`,
+          ),
         );
       }
       pendingTitle = "";
       continue;
     }
+
+    if (shouldSkipByText(currentPath, nodeText)) {
+      continue;
+    }
   }
 
-  if (!blocks.some((b) => b?.kind === "category") && directChildren.size) {
-    const fallbackItems = [...directChildren].map((childPath) =>
-      makeCardItem({
-        title: titleFromPath(childPath),
-        href: categoryPathToInternal(childPath),
-      }),
-    );
-    pushBlock(makeCardsBlock("category", "", fallbackItems, `${currentPath}|cats-fallback`));
+  if (!blocks.some((b) => b?.kind === "category")) {
+    const fallbackPaths = [
+      ...(LANDING_INCLUDE_SELF_CATEGORY_CARD.has(currentPath) ? [currentPath] : []),
+      ...directChildren,
+    ];
+
+    if (fallbackPaths.length) {
+      const fallbackItems = uniqueBy(fallbackPaths, (p) => p).map((childPath) =>
+        makeCardItem({
+          title: titleFromPath(childPath),
+          href: categoryPathToInternal(childPath),
+        }),
+      );
+      pushBlock(makeCardsBlock("category", "", fallbackItems, `${currentPath}|cats-fallback`));
+    }
   }
 
   await applyPathSpecificLandingFallbacks(currentPath, $, area, blocks);
@@ -843,7 +1205,9 @@ function extractProductLinksFromPage(html) {
   const productUrls = new Set();
 
   root
-    .find(".archive-products .product-col.product a[href], #archive-product-block .product-col.product a[href], .elementor-widget-woocommerce-products .product-col.product a[href]")
+    .find(
+      ".archive-products .product-col.product a[href], #archive-product-block .product-col.product a[href], .elementor-widget-woocommerce-products .product-col.product a[href]",
+    )
     .each((_i, el) => {
       const href = ensureAbs($(el).attr("href"));
       if (isProductUrl(href)) productUrls.add(href);
@@ -937,7 +1301,11 @@ async function buildCategoryRecord(pathStr) {
   } else {
     const listingSummary = extractListingSummary(html);
     if (listingSummary) {
-      const summaryBlock = makeHtmlBlock("", `<p>${listingSummary}</p>`, `${pathStr}|listing-summary`);
+      const summaryBlock = makeHtmlBlock(
+        "",
+        `<p>${listingSummary}</p>`,
+        `${pathStr}|listing-summary`,
+      );
       if (summaryBlock) blocks.push(summaryBlock);
     }
   }
@@ -958,7 +1326,9 @@ async function buildCategoryRecord(pathStr) {
 
 async function main() {
   console.log(`[INFO] existing kent docs: categories=${(await getExistingCategories()).length}`);
-  console.log(`[INFO] brand=${BRAND_TITLE} seedScope=fixed seedCategories=${ROOT_SEEDS.length} createMissing=yes`);
+  console.log(
+    `[INFO] brand=${BRAND_TITLE} seedScope=fixed seedCategories=${ROOT_SEEDS.length} createMissing=yes`,
+  );
   console.log(`[INFO] forced landing paths=${FORCED_LANDING.size}`);
   console.log(`[INFO] cacheDir=${path.relative(process.cwd(), CACHE_DIR)}`);
 

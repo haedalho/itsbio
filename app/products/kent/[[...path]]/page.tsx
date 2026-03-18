@@ -312,7 +312,21 @@ const STATIC_LABEL_BY_PATH = new Map(
   flattenMenu(KENT_STATIC_MENU).map((node) => [node.path.join("/"), node.title]),
 );
 
-const LANDING_FALLBACK_PATHS = new Set(["anesthesia"]);
+const LANDING_FALLBACK_PATHS = new Set([
+  "anesthesia",
+  "laboratory-animal-handling",
+  "laboratory-animal-handling/animal-holders",
+  "noninvasive-blood-pressure",
+  "physiological-monitoring",
+  "physiological-monitoring/physiological-monitoring-accessories/temperature",
+  "rodent-identification",
+  "surgery",
+  "tissue-collection/brain-matricies",
+  "ventilation",
+  "ventilation/intubation",
+  "warming",
+  "warming/warming-pads-blankets",
+]);
 
 function buildCategoryHref(path: string[]) {
   return path.length ? `/products/${BRAND_KEY}/${path.join("/")}` : `/products/${BRAND_KEY}`;
