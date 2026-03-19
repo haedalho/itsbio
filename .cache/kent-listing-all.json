@@ -1,0 +1,2848 @@
+{
+  "generatedAt": "2026-03-19T06:47:28.161Z",
+  "source": "Kent Scientific listing pages",
+  "sitemapUrl": "https://www.kentscientific.com/site-map/",
+  "seedCount": 76,
+  "visitedListingPages": 74,
+  "ok": 74,
+  "fail": 0,
+  "skipped": 23,
+  "categories": [
+    {
+      "rootUrl": "https://www.kentscientific.com/product/anesthesia/",
+      "categoryPath": [
+        "anesthesia"
+      ],
+      "title": "Anesthesia",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/anesthesia/"
+      ],
+      "subcategoryUrls": [
+        "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/",
+        "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnoflo/",
+        "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnosuite/",
+        "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-vetflo/"
+      ],
+      "productUrls": [
+        "https://www.kentscientific.com/products/somnoflo-o2care/",
+        "https://www.kentscientific.com/products/somnoflo/",
+        "https://www.kentscientific.com/products/somnosuite/",
+        "https://www.kentscientific.com/products/vaporizer-with-vetflo-single-channel-anesthesia-stand/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/anesthesia/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/somnoflo-o2care/",
+            "https://www.kentscientific.com/products/somnoflo/",
+            "https://www.kentscientific.com/products/somnosuite/",
+            "https://www.kentscientific.com/products/vaporizer-with-vetflo-single-channel-anesthesia-stand/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/",
+            "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnoflo/",
+            "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnosuite/",
+            "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-vetflo/"
+          ]
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/",
+      "categoryPath": [
+        "anesthesia",
+        "anesthesia-accessories"
+      ],
+      "title": "Anesthesia Accessories",
+      "description": "Any accessory for anesthesia is included here as well.",
+      "pageCount": 4,
+      "maxSeenPage": 4,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/",
+        "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/page/2/",
+        "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/page/3/",
+        "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/page/4/"
+      ],
+      "subcategoryUrls": [
+        "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnoflo/",
+        "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnosuite/",
+        "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-vetflo/"
+      ],
+      "productUrls": [
+        "https://www.kentscientific.com/products/3-accessory-connector/",
+        "https://www.kentscientific.com/products/ac-adapters-and-power-cords/",
+        "https://www.kentscientific.com/products/activated-charcoal-absorption-filters-1/",
+        "https://www.kentscientific.com/products/anesthesia-masks-breathing-circuits-for-somnosuite/",
+        "https://www.kentscientific.com/products/anesthesia-masks-breathing-circuits-for-traditional-vaporizers/",
+        "https://www.kentscientific.com/products/anesthetic-depth-indicator/",
+        "https://www.kentscientific.com/products/anti-spill-device-for-funnel-filled-vaporizers/",
+        "https://www.kentscientific.com/products/glass-syringe-10-ml/",
+        "https://www.kentscientific.com/products/glass-syringe-5-ml/",
+        "https://www.kentscientific.com/products/holder-for-activated-charcoal-absorption-filter/",
+        "https://www.kentscientific.com/products/low-cost-chambers-for-somnosuite/",
+        "https://www.kentscientific.com/products/low-cost-chambers-for-traditional-vaporizers/",
+        "https://www.kentscientific.com/products/low-profile-anesthesia-masks-for-somnosuite/",
+        "https://www.kentscientific.com/products/low-profile-anesthesia-masks-for-traditional-vaporizers/",
+        "https://www.kentscientific.com/products/oxygen-concentrator-filters/",
+        "https://www.kentscientific.com/products/oxygen-concentrator/",
+        "https://www.kentscientific.com/products/preset-pressure-reducer-for-somnosuite/",
+        "https://www.kentscientific.com/products/replacement-diaphragms-for-somnosuite-anesthesia-masks/",
+        "https://www.kentscientific.com/products/sliding-top-chambers-for-somnosuite/",
+        "https://www.kentscientific.com/products/sliding-top-chambers-for-traditional-vaporizers/",
+        "https://www.kentscientific.com/products/somnosuite-anti-spill-anti-vapor-bottle-top-adapter/",
+        "https://www.kentscientific.com/products/somnosuite-delivery-tube/",
+        "https://www.kentscientific.com/products/somnosuite-y-adapter/",
+        "https://www.kentscientific.com/products/stereotaxic-adapter-kit/",
+        "https://www.kentscientific.com/products/vaporizer-for-isoflurane-funnel-filled/",
+        "https://www.kentscientific.com/products/vaporizer-for-isoflurane-key-filled/",
+        "https://www.kentscientific.com/products/vaporizer-for-sevoflurane-key-filled/",
+        "https://www.kentscientific.com/products/vetflo-four-channel-anesthesia-stand/",
+        "https://www.kentscientific.com/products/vetflo-single-channel-anesthesia-stand/",
+        "https://www.kentscientific.com/products/vetflo-six-channel-anesthesia-stand/",
+        "https://www.kentscientific.com/products/vetflo-two-channel-anesthesia-stand/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/3-accessory-connector/",
+            "https://www.kentscientific.com/products/ac-adapters-and-power-cords/",
+            "https://www.kentscientific.com/products/activated-charcoal-absorption-filters-1/",
+            "https://www.kentscientific.com/products/anesthesia-masks-breathing-circuits-for-somnosuite/",
+            "https://www.kentscientific.com/products/anesthesia-masks-breathing-circuits-for-traditional-vaporizers/",
+            "https://www.kentscientific.com/products/anesthetic-depth-indicator/",
+            "https://www.kentscientific.com/products/anti-spill-device-for-funnel-filled-vaporizers/",
+            "https://www.kentscientific.com/products/glass-syringe-10-ml/",
+            "https://www.kentscientific.com/products/somnosuite-anti-spill-anti-vapor-bottle-top-adapter/",
+            "https://www.kentscientific.com/products/somnosuite-y-adapter/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnoflo/",
+            "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnosuite/",
+            "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-vetflo/"
+          ]
+        },
+        {
+          "pageUrl": "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/page/2/",
+          "pageNumber": 2,
+          "productUrls": [
+            "https://www.kentscientific.com/products/glass-syringe-5-ml/",
+            "https://www.kentscientific.com/products/holder-for-activated-charcoal-absorption-filter/",
+            "https://www.kentscientific.com/products/low-cost-chambers-for-somnosuite/",
+            "https://www.kentscientific.com/products/low-cost-chambers-for-traditional-vaporizers/",
+            "https://www.kentscientific.com/products/low-profile-anesthesia-masks-for-somnosuite/",
+            "https://www.kentscientific.com/products/low-profile-anesthesia-masks-for-traditional-vaporizers/",
+            "https://www.kentscientific.com/products/oxygen-concentrator-filters/",
+            "https://www.kentscientific.com/products/oxygen-concentrator/",
+            "https://www.kentscientific.com/products/preset-pressure-reducer-for-somnosuite/",
+            "https://www.kentscientific.com/products/replacement-diaphragms-for-somnosuite-anesthesia-masks/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnoflo/",
+            "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnosuite/",
+            "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-vetflo/"
+          ]
+        },
+        {
+          "pageUrl": "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/page/3/",
+          "pageNumber": 3,
+          "productUrls": [
+            "https://www.kentscientific.com/products/sliding-top-chambers-for-somnosuite/",
+            "https://www.kentscientific.com/products/sliding-top-chambers-for-traditional-vaporizers/",
+            "https://www.kentscientific.com/products/somnosuite-delivery-tube/",
+            "https://www.kentscientific.com/products/stereotaxic-adapter-kit/",
+            "https://www.kentscientific.com/products/vaporizer-for-isoflurane-funnel-filled/",
+            "https://www.kentscientific.com/products/vaporizer-for-isoflurane-key-filled/",
+            "https://www.kentscientific.com/products/vaporizer-for-sevoflurane-key-filled/",
+            "https://www.kentscientific.com/products/vetflo-four-channel-anesthesia-stand/",
+            "https://www.kentscientific.com/products/vetflo-single-channel-anesthesia-stand/",
+            "https://www.kentscientific.com/products/vetflo-six-channel-anesthesia-stand/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnoflo/",
+            "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnosuite/",
+            "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-vetflo/"
+          ]
+        },
+        {
+          "pageUrl": "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/page/4/",
+          "pageNumber": 4,
+          "productUrls": [
+            "https://www.kentscientific.com/products/vetflo-two-channel-anesthesia-stand/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnoflo/",
+            "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnosuite/",
+            "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-vetflo/"
+          ]
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnoflo/",
+      "categoryPath": [
+        "anesthesia",
+        "anesthesia-accessories",
+        "anesthesia-accessories-for-somnoflo"
+      ],
+      "title": "Anesthesia Accessories for SomnoFlo®",
+      "description": "",
+      "pageCount": 2,
+      "maxSeenPage": 2,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnoflo/",
+        "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnoflo/page/2/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/3-accessory-connector/",
+        "https://www.kentscientific.com/products/ac-adapters-and-power-cords/",
+        "https://www.kentscientific.com/products/anesthesia-masks-breathing-circuits-for-somnosuite/",
+        "https://www.kentscientific.com/products/anesthetic-depth-indicator/",
+        "https://www.kentscientific.com/products/glass-syringe-10-ml/",
+        "https://www.kentscientific.com/products/glass-syringe-5-ml/",
+        "https://www.kentscientific.com/products/holder-for-activated-charcoal-absorption-filter/",
+        "https://www.kentscientific.com/products/low-cost-chambers-for-somnosuite/",
+        "https://www.kentscientific.com/products/low-profile-anesthesia-masks-for-somnosuite/",
+        "https://www.kentscientific.com/products/oxygen-concentrator/",
+        "https://www.kentscientific.com/products/replacement-diaphragms-for-somnosuite-anesthesia-masks/",
+        "https://www.kentscientific.com/products/sliding-top-chambers-for-somnosuite/",
+        "https://www.kentscientific.com/products/somnosuite-delivery-tube/",
+        "https://www.kentscientific.com/products/somnosuite-y-adapter/",
+        "https://www.kentscientific.com/products/stereotaxic-adapter-kit/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnoflo/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/3-accessory-connector/",
+            "https://www.kentscientific.com/products/ac-adapters-and-power-cords/",
+            "https://www.kentscientific.com/products/anesthesia-masks-breathing-circuits-for-somnosuite/",
+            "https://www.kentscientific.com/products/anesthetic-depth-indicator/",
+            "https://www.kentscientific.com/products/glass-syringe-10-ml/",
+            "https://www.kentscientific.com/products/glass-syringe-5-ml/",
+            "https://www.kentscientific.com/products/holder-for-activated-charcoal-absorption-filter/",
+            "https://www.kentscientific.com/products/low-cost-chambers-for-somnosuite/",
+            "https://www.kentscientific.com/products/low-profile-anesthesia-masks-for-somnosuite/",
+            "https://www.kentscientific.com/products/somnosuite-y-adapter/"
+          ],
+          "subcategoryUrls": []
+        },
+        {
+          "pageUrl": "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnoflo/page/2/",
+          "pageNumber": 2,
+          "productUrls": [
+            "https://www.kentscientific.com/products/oxygen-concentrator/",
+            "https://www.kentscientific.com/products/replacement-diaphragms-for-somnosuite-anesthesia-masks/",
+            "https://www.kentscientific.com/products/sliding-top-chambers-for-somnosuite/",
+            "https://www.kentscientific.com/products/somnosuite-delivery-tube/",
+            "https://www.kentscientific.com/products/stereotaxic-adapter-kit/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnosuite/",
+      "categoryPath": [
+        "anesthesia",
+        "anesthesia-accessories",
+        "anesthesia-accessories-for-somnosuite"
+      ],
+      "title": "Anesthesia Accessories for SomnoSuite®",
+      "description": "",
+      "pageCount": 2,
+      "maxSeenPage": 2,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnosuite/",
+        "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnosuite/page/2/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/3-accessory-connector/",
+        "https://www.kentscientific.com/products/ac-adapters-and-power-cords/",
+        "https://www.kentscientific.com/products/anesthetic-depth-indicator/",
+        "https://www.kentscientific.com/products/glass-syringe-10-ml/",
+        "https://www.kentscientific.com/products/glass-syringe-5-ml/",
+        "https://www.kentscientific.com/products/holder-for-activated-charcoal-absorption-filter/",
+        "https://www.kentscientific.com/products/oxygen-concentrator/",
+        "https://www.kentscientific.com/products/preset-pressure-reducer-for-somnosuite/",
+        "https://www.kentscientific.com/products/replacement-diaphragms-for-somnosuite-anesthesia-masks/",
+        "https://www.kentscientific.com/products/somnosuite-anti-spill-anti-vapor-bottle-top-adapter/",
+        "https://www.kentscientific.com/products/somnosuite-delivery-tube/",
+        "https://www.kentscientific.com/products/somnosuite-y-adapter/",
+        "https://www.kentscientific.com/products/stereotaxic-adapter-kit/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnosuite/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/3-accessory-connector/",
+            "https://www.kentscientific.com/products/ac-adapters-and-power-cords/",
+            "https://www.kentscientific.com/products/anesthetic-depth-indicator/",
+            "https://www.kentscientific.com/products/glass-syringe-10-ml/",
+            "https://www.kentscientific.com/products/glass-syringe-5-ml/",
+            "https://www.kentscientific.com/products/holder-for-activated-charcoal-absorption-filter/",
+            "https://www.kentscientific.com/products/oxygen-concentrator/",
+            "https://www.kentscientific.com/products/preset-pressure-reducer-for-somnosuite/",
+            "https://www.kentscientific.com/products/somnosuite-anti-spill-anti-vapor-bottle-top-adapter/",
+            "https://www.kentscientific.com/products/somnosuite-y-adapter/"
+          ],
+          "subcategoryUrls": []
+        },
+        {
+          "pageUrl": "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnosuite/page/2/",
+          "pageNumber": 2,
+          "productUrls": [
+            "https://www.kentscientific.com/products/replacement-diaphragms-for-somnosuite-anesthesia-masks/",
+            "https://www.kentscientific.com/products/somnosuite-delivery-tube/",
+            "https://www.kentscientific.com/products/stereotaxic-adapter-kit/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-vetflo/",
+      "categoryPath": [
+        "anesthesia",
+        "anesthesia-accessories",
+        "anesthesia-accessories-for-vetflo"
+      ],
+      "title": "Anesthesia Accessories for VetFlo™",
+      "description": "",
+      "pageCount": 2,
+      "maxSeenPage": 2,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-vetflo/",
+        "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-vetflo/page/2/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/activated-charcoal-absorption-filters-1/",
+        "https://www.kentscientific.com/products/anesthesia-masks-breathing-circuits-for-traditional-vaporizers/",
+        "https://www.kentscientific.com/products/anti-spill-device-for-funnel-filled-vaporizers/",
+        "https://www.kentscientific.com/products/low-cost-chambers-for-traditional-vaporizers/",
+        "https://www.kentscientific.com/products/low-profile-anesthesia-masks-for-traditional-vaporizers/",
+        "https://www.kentscientific.com/products/oxygen-concentrator/",
+        "https://www.kentscientific.com/products/sliding-top-chambers-for-traditional-vaporizers/",
+        "https://www.kentscientific.com/products/vaporizer-for-isoflurane-funnel-filled/",
+        "https://www.kentscientific.com/products/vaporizer-for-isoflurane-key-filled/",
+        "https://www.kentscientific.com/products/vaporizer-for-sevoflurane-key-filled/",
+        "https://www.kentscientific.com/products/vetflo-four-channel-anesthesia-stand/",
+        "https://www.kentscientific.com/products/vetflo-single-channel-anesthesia-stand/",
+        "https://www.kentscientific.com/products/vetflo-six-channel-anesthesia-stand/",
+        "https://www.kentscientific.com/products/vetflo-two-channel-anesthesia-stand/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-vetflo/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/activated-charcoal-absorption-filters-1/",
+            "https://www.kentscientific.com/products/anesthesia-masks-breathing-circuits-for-traditional-vaporizers/",
+            "https://www.kentscientific.com/products/anti-spill-device-for-funnel-filled-vaporizers/",
+            "https://www.kentscientific.com/products/low-cost-chambers-for-traditional-vaporizers/",
+            "https://www.kentscientific.com/products/low-profile-anesthesia-masks-for-traditional-vaporizers/",
+            "https://www.kentscientific.com/products/oxygen-concentrator/",
+            "https://www.kentscientific.com/products/sliding-top-chambers-for-traditional-vaporizers/",
+            "https://www.kentscientific.com/products/vaporizer-for-isoflurane-funnel-filled/",
+            "https://www.kentscientific.com/products/vaporizer-for-isoflurane-key-filled/",
+            "https://www.kentscientific.com/products/vaporizer-for-sevoflurane-key-filled/"
+          ],
+          "subcategoryUrls": []
+        },
+        {
+          "pageUrl": "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-vetflo/page/2/",
+          "pageNumber": 2,
+          "productUrls": [
+            "https://www.kentscientific.com/products/vetflo-four-channel-anesthesia-stand/",
+            "https://www.kentscientific.com/products/vetflo-single-channel-anesthesia-stand/",
+            "https://www.kentscientific.com/products/vetflo-six-channel-anesthesia-stand/",
+            "https://www.kentscientific.com/products/vetflo-two-channel-anesthesia-stand/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/anesthesia/mouse-rat-anesthesia-machines/",
+      "categoryPath": [
+        "anesthesia",
+        "mouse-rat-anesthesia-machines"
+      ],
+      "title": "Mouse and Rat Anesthesia Machines",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/anesthesia/mouse-rat-anesthesia-machines/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/anesthesia/mouse-rat-anesthesia-machines/",
+          "pageNumber": 1,
+          "productUrls": [],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/anesthesia/vaporizers-for-small-animals/",
+      "categoryPath": [
+        "anesthesia",
+        "vaporizers-for-small-animals"
+      ],
+      "title": "Vaporizers",
+      "description": "Kent Scientific’s mouse and rat vaporizers offer a variety of options to provide the best results and the most accurate readings while protecting the safety of you and your animals.",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/anesthesia/vaporizers-for-small-animals/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/anesthesia/vaporizers-for-small-animals/",
+          "pageNumber": 1,
+          "productUrls": [],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/anesthesia/vetflo-isoflurane-vaporizers-for-small-animals-rodents/",
+      "categoryPath": [
+        "anesthesia",
+        "vetflo-isoflurane-vaporizers-for-small-animals-rodents"
+      ],
+      "title": "VetFlo™ Isoflurane Vaporizers for Small Animals and Rodents",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/anesthesia/vetflo-isoflurane-vaporizers-for-small-animals-rodents/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/anesthesia/vetflo-isoflurane-vaporizers-for-small-animals-rodents/",
+          "pageNumber": 1,
+          "productUrls": [],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/animal-handling/",
+      "categoryPath": [
+        "animal-handling"
+      ],
+      "title": "Animal Handling",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/animal-handling/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/animal-handling/",
+          "pageNumber": 1,
+          "productUrls": [],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/animal-holders/",
+      "categoryPath": [
+        "animal-holders"
+      ],
+      "title": "Animal Holders",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/laboratory-animal-handling/animal-holders/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/elizabethan-collars/",
+        "https://www.kentscientific.com/products/flat-bottom-rodent-holders/",
+        "https://www.kentscientific.com/products/mouse-handling-tunnels/",
+        "https://www.kentscientific.com/products/nebulizer-animal-holders/",
+        "https://www.kentscientific.com/products/nose-cone-animal-holders-with-stand/",
+        "https://www.kentscientific.com/products/tube-rodent-holders/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/laboratory-animal-handling/animal-holders/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/elizabethan-collars/",
+            "https://www.kentscientific.com/products/flat-bottom-rodent-holders/",
+            "https://www.kentscientific.com/products/mouse-handling-tunnels/",
+            "https://www.kentscientific.com/products/nebulizer-animal-holders/",
+            "https://www.kentscientific.com/products/nose-cone-animal-holders-with-stand/",
+            "https://www.kentscientific.com/products/tube-rodent-holders/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/blood-collection/",
+      "categoryPath": [
+        "blood-collection"
+      ],
+      "title": "Blood Collection",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/tissue-collection/blood-collection/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/humaneway-winged-infusion-sets/",
+        "https://www.kentscientific.com/products/microvette-100-capillary-blood-collection-with-round-bottom-inner-tube-edta/",
+        "https://www.kentscientific.com/products/microvette-200-capillary-blood-collection-with-round-bottom-inner-tube-edta/",
+        "https://www.kentscientific.com/products/microvette-cb-300-blood-collection-system/",
+        "https://www.kentscientific.com/products/microvette-prepared-micro-tubes-with-screw-cap-closure-edta/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/tissue-collection/blood-collection/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/humaneway-winged-infusion-sets/",
+            "https://www.kentscientific.com/products/microvette-100-capillary-blood-collection-with-round-bottom-inner-tube-edta/",
+            "https://www.kentscientific.com/products/microvette-200-capillary-blood-collection-with-round-bottom-inner-tube-edta/",
+            "https://www.kentscientific.com/products/microvette-cb-300-blood-collection-system/",
+            "https://www.kentscientific.com/products/microvette-prepared-micro-tubes-with-screw-cap-closure-edta/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/body-composition-analysis/",
+      "categoryPath": [
+        "body-composition-analysis"
+      ],
+      "title": "Body Composition Analysis",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/body-composition-analysis/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/skinscanner-1/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/body-composition-analysis/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/skinscanner-1/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/carts/",
+      "categoryPath": [
+        "carts"
+      ],
+      "title": "Carts",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/mobile-carts/carts/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/mobile-cart-for-laboratory-equipment-large/",
+        "https://www.kentscientific.com/products/mobile-cart-for-laboratory-equipment-small/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/mobile-carts/carts/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/mobile-cart-for-laboratory-equipment-large/",
+            "https://www.kentscientific.com/products/mobile-cart-for-laboratory-equipment-small/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/clippers/",
+      "categoryPath": [
+        "clippers"
+      ],
+      "title": "Clippers",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/laboratory-animal-handling/clippers/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/arco-se/",
+        "https://www.kentscientific.com/products/bravmini-professional-cordless-trimmer-kit/",
+        "https://www.kentscientific.com/products/miniarco-clipper/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/laboratory-animal-handling/clippers/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/arco-se/",
+            "https://www.kentscientific.com/products/bravmini-professional-cordless-trimmer-kit/",
+            "https://www.kentscientific.com/products/miniarco-clipper/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/ear-tags/",
+      "categoryPath": [
+        "ear-tags"
+      ],
+      "title": "Ear Tags",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/rodent-identification/ear-tags/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/ear-tag-applicator-with-spring-1/",
+        "https://www.kentscientific.com/products/la-pias-ear-tag-applicator/",
+        "https://www.kentscientific.com/products/la-pias-ear-tags-extra-backs/",
+        "https://www.kentscientific.com/products/la-pias-mouse-ear-tags/",
+        "https://www.kentscientific.com/products/la-pias-rat-ear-tags/",
+        "https://www.kentscientific.com/products/laser-etched-ear-tags-one-sided/",
+        "https://www.kentscientific.com/products/laser-etched-ear-tags-two-sided/",
+        "https://www.kentscientific.com/products/stamped-ear-tags/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/rodent-identification/ear-tags/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/ear-tag-applicator-with-spring-1/",
+            "https://www.kentscientific.com/products/la-pias-ear-tag-applicator/",
+            "https://www.kentscientific.com/products/la-pias-ear-tags-extra-backs/",
+            "https://www.kentscientific.com/products/la-pias-mouse-ear-tags/",
+            "https://www.kentscientific.com/products/la-pias-rat-ear-tags/",
+            "https://www.kentscientific.com/products/laser-etched-ear-tags-one-sided/",
+            "https://www.kentscientific.com/products/laser-etched-ear-tags-two-sided/",
+            "https://www.kentscientific.com/products/stamped-ear-tags/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/feeding-needles/",
+      "categoryPath": [
+        "feeding-needles"
+      ],
+      "title": "Rat and Mouse Oral Gavage Feeding Needles",
+      "description": "Kent Scientific oral gavage needles, or feeding needles, are designed to meet the needs of researchers working with laboratory mice and rats. Available in both curved and straight varieties in sizes that can accommodate animals from 15 to 600 grams, feeding needles are ideal for feeding and dosing laboratory animals. Assembly of a stainless steel ball on the tip of each tube ensures a quality needle suited for feeding and dosing without injury to sensitive tissues.",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/feeding-needles/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/curved-feeding-needles/",
+        "https://www.kentscientific.com/products/straight-feeding-needles/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/feeding-needles/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/curved-feeding-needles/",
+            "https://www.kentscientific.com/products/straight-feeding-needles/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/instrument-cleaning/",
+      "categoryPath": [
+        "instrument-cleaning"
+      ],
+      "title": "Instrument Cleaning",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/surgery/instrument-cleaning/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/instrument-micro-bead-sterilizer/",
+        "https://www.kentscientific.com/products/replacement-glass-beads/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/instrument-cleaning/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/instrument-micro-bead-sterilizer/",
+            "https://www.kentscientific.com/products/replacement-glass-beads/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/laboratory-animal-handling/",
+      "categoryPath": [
+        "laboratory-animal-handling"
+      ],
+      "title": "Laboratory Animal Handling",
+      "description": "",
+      "pageCount": 2,
+      "maxSeenPage": 2,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/laboratory-animal-handling/",
+        "https://www.kentscientific.com/product/laboratory-animal-handling/page/2/"
+      ],
+      "subcategoryUrls": [
+        "https://www.kentscientific.com/product/laboratory-animal-handling/animal-holders/",
+        "https://www.kentscientific.com/product/laboratory-animal-handling/clippers/",
+        "https://www.kentscientific.com/product/laboratory-animal-handling/scales/"
+      ],
+      "productUrls": [
+        "https://www.kentscientific.com/products/accuris-mini-balances/",
+        "https://www.kentscientific.com/products/animal-weighing-scale/",
+        "https://www.kentscientific.com/products/arco-se/",
+        "https://www.kentscientific.com/products/bravmini-professional-cordless-trimmer-kit/",
+        "https://www.kentscientific.com/products/elizabethan-collars/",
+        "https://www.kentscientific.com/products/flat-bottom-rodent-holders/",
+        "https://www.kentscientific.com/products/miniarco-clipper/",
+        "https://www.kentscientific.com/products/mouse-handling-tunnels/",
+        "https://www.kentscientific.com/products/nebulizer-animal-holders/",
+        "https://www.kentscientific.com/products/nose-cone-animal-holders-with-stand/",
+        "https://www.kentscientific.com/products/tube-rodent-holders/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/laboratory-animal-handling/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/accuris-mini-balances/",
+            "https://www.kentscientific.com/products/animal-weighing-scale/",
+            "https://www.kentscientific.com/products/arco-se/",
+            "https://www.kentscientific.com/products/elizabethan-collars/",
+            "https://www.kentscientific.com/products/flat-bottom-rodent-holders/",
+            "https://www.kentscientific.com/products/miniarco-clipper/",
+            "https://www.kentscientific.com/products/mouse-handling-tunnels/",
+            "https://www.kentscientific.com/products/nebulizer-animal-holders/",
+            "https://www.kentscientific.com/products/nose-cone-animal-holders-with-stand/",
+            "https://www.kentscientific.com/products/tube-rodent-holders/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/laboratory-animal-handling/animal-holders/",
+            "https://www.kentscientific.com/product/laboratory-animal-handling/clippers/",
+            "https://www.kentscientific.com/product/laboratory-animal-handling/scales/"
+          ]
+        },
+        {
+          "pageUrl": "https://www.kentscientific.com/product/laboratory-animal-handling/page/2/",
+          "pageNumber": 2,
+          "productUrls": [
+            "https://www.kentscientific.com/products/bravmini-professional-cordless-trimmer-kit/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/laboratory-animal-handling/animal-holders/",
+            "https://www.kentscientific.com/product/laboratory-animal-handling/clippers/",
+            "https://www.kentscientific.com/product/laboratory-animal-handling/scales/"
+          ]
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/laboratory-animal-handling/mouse-rat-restraints/",
+      "categoryPath": [
+        "laboratory-animal-handling",
+        "mouse-rat-restraints"
+      ],
+      "title": "Mouse and Rat Restraints",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/laboratory-animal-handling/mouse-rat-restraints/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/laboratory-animal-handling/mouse-rat-restraints/",
+          "pageNumber": 1,
+          "productUrls": [],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/laboratory-animal-handling/scales/",
+      "categoryPath": [
+        "laboratory-animal-handling",
+        "scales"
+      ],
+      "title": "Scales",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/laboratory-animal-handling/scales/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/accuris-mini-balances/",
+        "https://www.kentscientific.com/products/animal-weighing-scale/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/laboratory-animal-handling/scales/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/accuris-mini-balances/",
+            "https://www.kentscientific.com/products/animal-weighing-scale/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/mobile-carts/",
+      "categoryPath": [
+        "mobile-carts"
+      ],
+      "title": "Mobile Carts",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/mobile-carts/"
+      ],
+      "subcategoryUrls": [
+        "https://www.kentscientific.com/product/mobile-carts/carts/"
+      ],
+      "productUrls": [
+        "https://www.kentscientific.com/products/cylinder-bracket/",
+        "https://www.kentscientific.com/products/mobile-cart-for-laboratory-equipment-large/",
+        "https://www.kentscientific.com/products/mobile-cart-for-laboratory-equipment-small/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/mobile-carts/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/cylinder-bracket/",
+            "https://www.kentscientific.com/products/mobile-cart-for-laboratory-equipment-large/",
+            "https://www.kentscientific.com/products/mobile-cart-for-laboratory-equipment-small/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/mobile-carts/carts/"
+          ]
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/nebulizers/",
+      "categoryPath": [
+        "nebulizers"
+      ],
+      "title": "Nebulizers",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/nebulizers/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/aeroneb-lab-control-module-kit/",
+        "https://www.kentscientific.com/products/aeroneb-lab-control-module/",
+        "https://www.kentscientific.com/products/aeroneb-lab-nebulizer-unit/",
+        "https://www.kentscientific.com/products/anesthesia-mask-nebulizer-delivery-system/",
+        "https://www.kentscientific.com/products/chamber-nebulizer-delivery-system/",
+        "https://www.kentscientific.com/products/lung-instillation-nebulizer-delivery-system/",
+        "https://www.kentscientific.com/products/nebulizer-adapter-kit/",
+        "https://www.kentscientific.com/products/nebulizer-animal-holders/",
+        "https://www.kentscientific.com/products/nose-cone-nebulizer-delivery-system/",
+        "https://www.kentscientific.com/products/standalone-flowmeter-with-stand-0-05lpm/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/nebulizers/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/aeroneb-lab-control-module-kit/",
+            "https://www.kentscientific.com/products/aeroneb-lab-control-module/",
+            "https://www.kentscientific.com/products/aeroneb-lab-nebulizer-unit/",
+            "https://www.kentscientific.com/products/anesthesia-mask-nebulizer-delivery-system/",
+            "https://www.kentscientific.com/products/chamber-nebulizer-delivery-system/",
+            "https://www.kentscientific.com/products/lung-instillation-nebulizer-delivery-system/",
+            "https://www.kentscientific.com/products/nebulizer-adapter-kit/",
+            "https://www.kentscientific.com/products/nebulizer-animal-holders/",
+            "https://www.kentscientific.com/products/nose-cone-nebulizer-delivery-system/",
+            "https://www.kentscientific.com/products/standalone-flowmeter-with-stand-0-05lpm/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/nebulizers/aerosol-nebulizers/",
+      "categoryPath": [
+        "nebulizers",
+        "aerosol-nebulizers"
+      ],
+      "title": "Aerosol Nebulizers",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/nebulizers/aerosol-nebulizers/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/nebulizers/aerosol-nebulizers/",
+          "pageNumber": 1,
+          "productUrls": [],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/noninvasive-blood-pressure-accessories/",
+      "categoryPath": [
+        "noninvasive-blood-pressure-accessories"
+      ],
+      "title": "Non-Invasive Blood Pressure Accessories",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/"
+      ],
+      "subcategoryUrls": [
+        "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/",
+        "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/coda-cuffs/"
+      ],
+      "productUrls": [
+        "https://www.kentscientific.com/products/coda-animal-holders/",
+        "https://www.kentscientific.com/products/coda-cuff-storage-container/",
+        "https://www.kentscientific.com/products/coda-data-acquisition-software/",
+        "https://www.kentscientific.com/products/coda-high-throughput-cuff-kits/",
+        "https://www.kentscientific.com/products/coda-high-throughput-occlusion-cuffs/",
+        "https://www.kentscientific.com/products/coda-high-throughput-vpr-cuffs/",
+        "https://www.kentscientific.com/products/coda-monitor-cuff-kits/",
+        "https://www.kentscientific.com/products/coda-monitor-occlusion-cuff-kits/",
+        "https://www.kentscientific.com/products/coda-monitor-vpr-cuff-kits/",
+        "https://www.kentscientific.com/products/nose-cone-animal-holders-with-stand/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/coda-animal-holders/",
+            "https://www.kentscientific.com/products/coda-cuff-storage-container/",
+            "https://www.kentscientific.com/products/coda-data-acquisition-software/",
+            "https://www.kentscientific.com/products/coda-high-throughput-cuff-kits/",
+            "https://www.kentscientific.com/products/coda-high-throughput-occlusion-cuffs/",
+            "https://www.kentscientific.com/products/coda-high-throughput-vpr-cuffs/",
+            "https://www.kentscientific.com/products/coda-monitor-cuff-kits/",
+            "https://www.kentscientific.com/products/coda-monitor-occlusion-cuff-kits/",
+            "https://www.kentscientific.com/products/coda-monitor-vpr-cuff-kits/",
+            "https://www.kentscientific.com/products/nose-cone-animal-holders-with-stand/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/",
+            "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/coda-cuffs/"
+          ]
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/noninvasive-blood-pressure/",
+      "categoryPath": [
+        "noninvasive-blood-pressure"
+      ],
+      "title": "Non-Invasive Blood Pressure",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/noninvasive-blood-pressure/"
+      ],
+      "subcategoryUrls": [
+        "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/",
+        "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/",
+        "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/coda-cuffs/"
+      ],
+      "productUrls": [
+        "https://www.kentscientific.com/products/coda-animal-holders/",
+        "https://www.kentscientific.com/products/coda-cuff-storage-container/",
+        "https://www.kentscientific.com/products/coda-data-acquisition-software/",
+        "https://www.kentscientific.com/products/coda-high-throughput-cuff-kits/",
+        "https://www.kentscientific.com/products/coda-high-throughput-occlusion-cuffs/",
+        "https://www.kentscientific.com/products/coda-high-throughput-system/",
+        "https://www.kentscientific.com/products/coda-high-throughput-vpr-cuffs/",
+        "https://www.kentscientific.com/products/coda-monitor-cuff-kits/",
+        "https://www.kentscientific.com/products/coda-monitor-occlusion-cuff-kits/",
+        "https://www.kentscientific.com/products/coda-monitor-vpr-cuff-kits/",
+        "https://www.kentscientific.com/products/coda-monitor/",
+        "https://www.kentscientific.com/products/nose-cone-animal-holders-with-stand/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/noninvasive-blood-pressure/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/coda-animal-holders/",
+            "https://www.kentscientific.com/products/coda-cuff-storage-container/",
+            "https://www.kentscientific.com/products/coda-data-acquisition-software/",
+            "https://www.kentscientific.com/products/coda-high-throughput-cuff-kits/",
+            "https://www.kentscientific.com/products/coda-high-throughput-occlusion-cuffs/",
+            "https://www.kentscientific.com/products/coda-high-throughput-system/",
+            "https://www.kentscientific.com/products/coda-high-throughput-vpr-cuffs/",
+            "https://www.kentscientific.com/products/coda-monitor-cuff-kits/",
+            "https://www.kentscientific.com/products/coda-monitor-occlusion-cuff-kits/",
+            "https://www.kentscientific.com/products/coda-monitor-vpr-cuff-kits/",
+            "https://www.kentscientific.com/products/coda-monitor/",
+            "https://www.kentscientific.com/products/nose-cone-animal-holders-with-stand/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/",
+            "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/",
+            "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/coda-cuffs/"
+          ]
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/",
+      "categoryPath": [
+        "noninvasive-blood-pressure",
+        "noninvasive-blood-pressure-accessories",
+        "accessories-for-coda-monitor"
+      ],
+      "title": "Accessories for CODA® Monitor",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/"
+      ],
+      "subcategoryUrls": [
+        "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/coda-cuffs/"
+      ],
+      "productUrls": [
+        "https://www.kentscientific.com/products/coda-cuff-storage-container/",
+        "https://www.kentscientific.com/products/coda-data-acquisition-software/",
+        "https://www.kentscientific.com/products/coda-high-throughput-cuff-kits/",
+        "https://www.kentscientific.com/products/coda-high-throughput-occlusion-cuffs/",
+        "https://www.kentscientific.com/products/coda-high-throughput-vpr-cuffs/",
+        "https://www.kentscientific.com/products/coda-monitor-cuff-kits/",
+        "https://www.kentscientific.com/products/coda-monitor-occlusion-cuff-kits/",
+        "https://www.kentscientific.com/products/coda-monitor-vpr-cuff-kits/",
+        "https://www.kentscientific.com/products/nose-cone-animal-holders-with-stand/",
+        "https://www.kentscientific.com/products/replacement-bladder-kits/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/coda-cuff-storage-container/",
+            "https://www.kentscientific.com/products/coda-data-acquisition-software/",
+            "https://www.kentscientific.com/products/coda-high-throughput-cuff-kits/",
+            "https://www.kentscientific.com/products/coda-high-throughput-occlusion-cuffs/",
+            "https://www.kentscientific.com/products/coda-high-throughput-vpr-cuffs/",
+            "https://www.kentscientific.com/products/coda-monitor-cuff-kits/",
+            "https://www.kentscientific.com/products/coda-monitor-occlusion-cuff-kits/",
+            "https://www.kentscientific.com/products/coda-monitor-vpr-cuff-kits/",
+            "https://www.kentscientific.com/products/nose-cone-animal-holders-with-stand/",
+            "https://www.kentscientific.com/products/replacement-bladder-kits/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/coda-cuffs/"
+          ]
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/coda-cuffs/",
+      "categoryPath": [
+        "noninvasive-blood-pressure",
+        "noninvasive-blood-pressure-accessories",
+        "accessories-for-coda-monitor",
+        "coda-cuffs"
+      ],
+      "title": "CODA® Cuffs",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/coda-cuffs/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/coda-cuff-storage-container/",
+        "https://www.kentscientific.com/products/coda-high-throughput-cuff-kits/",
+        "https://www.kentscientific.com/products/coda-high-throughput-occlusion-cuffs/",
+        "https://www.kentscientific.com/products/coda-high-throughput-vpr-cuffs/",
+        "https://www.kentscientific.com/products/replacement-bladder-kits/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/coda-cuffs/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/coda-cuff-storage-container/",
+            "https://www.kentscientific.com/products/coda-high-throughput-cuff-kits/",
+            "https://www.kentscientific.com/products/coda-high-throughput-occlusion-cuffs/",
+            "https://www.kentscientific.com/products/coda-high-throughput-vpr-cuffs/",
+            "https://www.kentscientific.com/products/replacement-bladder-kits/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-monitoring-systems/",
+      "categoryPath": [
+        "noninvasive-blood-pressure",
+        "noninvasive-blood-pressure-monitoring-systems"
+      ],
+      "title": "Non-Invasive Blood Pressure Monitoring Systems",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-monitoring-systems/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-monitoring-systems/",
+          "pageNumber": 1,
+          "productUrls": [],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/physiological-monitoring-accessories/",
+      "categoryPath": [
+        "physiological-monitoring-accessories"
+      ],
+      "title": "Physiological Monitoring Accessories",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/"
+      ],
+      "subcategoryUrls": [
+        "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/pulse-oximetry/",
+        "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/temperature/"
+      ],
+      "productUrls": [
+        "https://www.kentscientific.com/products/analog-output-cable/",
+        "https://www.kentscientific.com/products/cannula-adapter/",
+        "https://www.kentscientific.com/products/external-powerbank/",
+        "https://www.kentscientific.com/products/large-animal-sensors/",
+        "https://www.kentscientific.com/products/mouse-paw-pulse-oximeter-sensors/",
+        "https://www.kentscientific.com/products/mousestat-pulse-oximeter-whole-body-sensors-for-mouse-pups/",
+        "https://www.kentscientific.com/products/mousestat-pulse-oximeter-whole-body-sensors-for-rat-pups/",
+        "https://www.kentscientific.com/products/non-contact-infrared-thermometer-with-laser-sight/",
+        "https://www.kentscientific.com/products/pulse-oximeter-paw-sensors-mri-compatible/",
+        "https://www.kentscientific.com/products/pulse-oximeter-sensor-extension-cable/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/analog-output-cable/",
+            "https://www.kentscientific.com/products/cannula-adapter/",
+            "https://www.kentscientific.com/products/external-powerbank/",
+            "https://www.kentscientific.com/products/large-animal-sensors/",
+            "https://www.kentscientific.com/products/mouse-paw-pulse-oximeter-sensors/",
+            "https://www.kentscientific.com/products/mousestat-pulse-oximeter-whole-body-sensors-for-mouse-pups/",
+            "https://www.kentscientific.com/products/mousestat-pulse-oximeter-whole-body-sensors-for-rat-pups/",
+            "https://www.kentscientific.com/products/non-contact-infrared-thermometer-with-laser-sight/",
+            "https://www.kentscientific.com/products/pulse-oximeter-paw-sensors-mri-compatible/",
+            "https://www.kentscientific.com/products/pulse-oximeter-sensor-extension-cable/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/pulse-oximetry/",
+            "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/temperature/"
+          ]
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/physiological-monitoring/",
+      "categoryPath": [
+        "physiological-monitoring"
+      ],
+      "title": "Physiological Monitoring",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/physiological-monitoring/"
+      ],
+      "subcategoryUrls": [
+        "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/",
+        "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/pulse-oximetry/",
+        "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/temperature/"
+      ],
+      "productUrls": [
+        "https://www.kentscientific.com/products/anipill/",
+        "https://www.kentscientific.com/products/physiosuite/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/physiological-monitoring/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/anipill/",
+            "https://www.kentscientific.com/products/physiosuite/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/",
+            "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/pulse-oximetry/",
+            "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/temperature/"
+          ]
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/pulse-oximetry/",
+      "categoryPath": [
+        "physiological-monitoring",
+        "physiological-monitoring-accessories",
+        "pulse-oximetry"
+      ],
+      "title": "Pulse Oximetry",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/pulse-oximetry/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/mousestat-jr/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/pulse-oximetry/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/mousestat-jr/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/temperature/",
+      "categoryPath": [
+        "physiological-monitoring",
+        "physiological-monitoring-accessories",
+        "temperature"
+      ],
+      "title": "Temperature",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/temperature/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/non-contact-infrared-thermometer-with-laser-sight/",
+        "https://www.kentscientific.com/products/rectal-probe-for-mice/",
+        "https://www.kentscientific.com/products/rectal-probe-for-rats/",
+        "https://www.kentscientific.com/products/righttemp-jr/",
+        "https://www.kentscientific.com/products/righttemp-sensor-for-animal-or-warming-pad/",
+        "https://www.kentscientific.com/products/righttemp/",
+        "https://www.kentscientific.com/products/type-jkt-thermocouple-meter/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/temperature/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/non-contact-infrared-thermometer-with-laser-sight/",
+            "https://www.kentscientific.com/products/rectal-probe-for-mice/",
+            "https://www.kentscientific.com/products/rectal-probe-for-rats/",
+            "https://www.kentscientific.com/products/righttemp-jr/",
+            "https://www.kentscientific.com/products/righttemp-sensor-for-animal-or-warming-pad/",
+            "https://www.kentscientific.com/products/righttemp/",
+            "https://www.kentscientific.com/products/type-jkt-thermocouple-meter/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/rfid-transponder-system/",
+      "categoryPath": [
+        "rfid-transponder-system"
+      ],
+      "title": "RFID Transponder System",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/rodent-identification/rfid-transponder-system/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/bluetooth-low-energy-handheld-reader/",
+        "https://www.kentscientific.com/products/micro-transponder-with-lancet-for-direct-implantation/",
+        "https://www.kentscientific.com/products/mid-range-reader-usb/",
+        "https://www.kentscientific.com/products/pistol-grip-implanter/",
+        "https://www.kentscientific.com/products/pocket-reader-with-usb-connection/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/rodent-identification/rfid-transponder-system/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/bluetooth-low-energy-handheld-reader/",
+            "https://www.kentscientific.com/products/micro-transponder-with-lancet-for-direct-implantation/",
+            "https://www.kentscientific.com/products/mid-range-reader-usb/",
+            "https://www.kentscientific.com/products/pistol-grip-implanter/",
+            "https://www.kentscientific.com/products/pocket-reader-with-usb-connection/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/rodent-identification/",
+      "categoryPath": [
+        "rodent-identification"
+      ],
+      "title": "Rodent Identification",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/rodent-identification/"
+      ],
+      "subcategoryUrls": [
+        "https://www.kentscientific.com/product/rodent-identification/ear-tags/",
+        "https://www.kentscientific.com/product/rodent-identification/rfid-transponder-system/"
+      ],
+      "productUrls": [],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/rodent-identification/",
+          "pageNumber": 1,
+          "productUrls": [],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/rodent-identification/ear-tags/",
+            "https://www.kentscientific.com/product/rodent-identification/rfid-transponder-system/"
+          ]
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/surgery/",
+      "categoryPath": [
+        "surgery"
+      ],
+      "title": "Surgery",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/surgery/"
+      ],
+      "subcategoryUrls": [
+        "https://www.kentscientific.com/product/surgery/instrument-cleaning/",
+        "https://www.kentscientific.com/product/surgery/surgical-accessories/",
+        "https://www.kentscientific.com/product/surgery/surgical-accessories/surgical-accessories-for-surgisuite/",
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/",
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/surgical-instrument-kits/"
+      ],
+      "productUrls": [
+        "https://www.kentscientific.com/products/angled-5-tweezer-kit/",
+        "https://www.kentscientific.com/products/autoclip-applier/",
+        "https://www.kentscientific.com/products/autoclips-9-mm/",
+        "https://www.kentscientific.com/products/castroviejo-needle-holder-serrated/",
+        "https://www.kentscientific.com/products/dissecting-scissors-straight-10-cm-long/",
+        "https://www.kentscientific.com/products/elastic-wire-positioner/",
+        "https://www.kentscientific.com/products/fine-dressing-forceps-10-cm-long/",
+        "https://www.kentscientific.com/products/fine-dressing-forceps-155-cm-long/",
+        "https://www.kentscientific.com/products/hartman-mosquito-hemostatic-forceps-curved/",
+        "https://www.kentscientific.com/products/hartman-mosquito-hemostatic-forceps-straight/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/angled-5-tweezer-kit/",
+            "https://www.kentscientific.com/products/autoclip-applier/",
+            "https://www.kentscientific.com/products/autoclips-9-mm/",
+            "https://www.kentscientific.com/products/castroviejo-needle-holder-serrated/",
+            "https://www.kentscientific.com/products/dissecting-scissors-straight-10-cm-long/",
+            "https://www.kentscientific.com/products/elastic-wire-positioner/",
+            "https://www.kentscientific.com/products/fine-dressing-forceps-10-cm-long/",
+            "https://www.kentscientific.com/products/fine-dressing-forceps-155-cm-long/",
+            "https://www.kentscientific.com/products/hartman-mosquito-hemostatic-forceps-curved/",
+            "https://www.kentscientific.com/products/hartman-mosquito-hemostatic-forceps-straight/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/surgery/instrument-cleaning/",
+            "https://www.kentscientific.com/product/surgery/surgical-accessories/",
+            "https://www.kentscientific.com/product/surgery/surgical-accessories/surgical-accessories-for-surgisuite/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/surgical-instrument-kits/"
+          ]
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/surgery/surgical-accessories/",
+      "categoryPath": [
+        "surgery",
+        "surgical-accessories"
+      ],
+      "title": "Surgical Accessories",
+      "description": "",
+      "pageCount": 3,
+      "maxSeenPage": 3,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/surgery/surgical-accessories/",
+        "https://www.kentscientific.com/product/surgery/surgical-accessories/page/2/",
+        "https://www.kentscientific.com/product/surgery/surgical-accessories/page/3/"
+      ],
+      "subcategoryUrls": [
+        "https://www.kentscientific.com/product/surgery/surgical-accessories/surgical-accessories-for-surgisuite/"
+      ],
+      "productUrls": [
+        "https://www.kentscientific.com/products/elastic-wire-positioner/",
+        "https://www.kentscientific.com/products/led-lighting-kit/",
+        "https://www.kentscientific.com/products/magnetic-fixators-with-spring-locks/",
+        "https://www.kentscientific.com/products/magnetic-positioners-and-stabilizers/",
+        "https://www.kentscientific.com/products/mouse-and-rat-vessel-cannulation-kit/",
+        "https://www.kentscientific.com/products/mouse-retractor-set/",
+        "https://www.kentscientific.com/products/mouse-surgical-kit/",
+        "https://www.kentscientific.com/products/procedure-bowl/",
+        "https://www.kentscientific.com/products/rat-retractor-set/",
+        "https://www.kentscientific.com/products/reflex-clip-applier/",
+        "https://www.kentscientific.com/products/reflex-clips-7-mm/",
+        "https://www.kentscientific.com/products/reflex-clips-9-mm/",
+        "https://www.kentscientific.com/products/removing-forceps/",
+        "https://www.kentscientific.com/products/replacement-surgical-field-covers/",
+        "https://www.kentscientific.com/products/retractor-tips/",
+        "https://www.kentscientific.com/products/retractor-wires/",
+        "https://www.kentscientific.com/products/small-bulldog-clamp/",
+        "https://www.kentscientific.com/products/spring-scissors-straight-12-cm-long-extra-fine/",
+        "https://www.kentscientific.com/products/sterile-disposable-towel-drapes/",
+        "https://www.kentscientific.com/products/straight-5-tweezer-kit/",
+        "https://www.kentscientific.com/products/straight-serrated-needle-holder-14-cm-long/",
+        "https://www.kentscientific.com/products/supercut-iris-scissors-straight-125-cm-long/",
+        "https://www.kentscientific.com/products/surgical-magnifier-glasses/",
+        "https://www.kentscientific.com/products/tweezer-5-001-mm-tips/",
+        "https://www.kentscientific.com/products/tweezer-5-0025-mm-tips/",
+        "https://www.kentscientific.com/products/tweezer-5-006-mm-tips-curved/",
+        "https://www.kentscientific.com/products/tweezer-5-006-mm-tips/",
+        "https://www.kentscientific.com/products/tweezer-5b-001-mm-tips-45-angle/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/surgical-accessories/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/elastic-wire-positioner/",
+            "https://www.kentscientific.com/products/led-lighting-kit/",
+            "https://www.kentscientific.com/products/magnetic-fixators-with-spring-locks/",
+            "https://www.kentscientific.com/products/magnetic-positioners-and-stabilizers/",
+            "https://www.kentscientific.com/products/mouse-retractor-set/",
+            "https://www.kentscientific.com/products/mouse-surgical-kit/",
+            "https://www.kentscientific.com/products/procedure-bowl/",
+            "https://www.kentscientific.com/products/rat-retractor-set/",
+            "https://www.kentscientific.com/products/reflex-clip-applier/",
+            "https://www.kentscientific.com/products/reflex-clips-7-mm/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/surgery/surgical-accessories/surgical-accessories-for-surgisuite/"
+          ]
+        },
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/surgical-accessories/page/2/",
+          "pageNumber": 2,
+          "productUrls": [
+            "https://www.kentscientific.com/products/reflex-clips-9-mm/",
+            "https://www.kentscientific.com/products/removing-forceps/",
+            "https://www.kentscientific.com/products/replacement-surgical-field-covers/",
+            "https://www.kentscientific.com/products/retractor-tips/",
+            "https://www.kentscientific.com/products/retractor-wires/",
+            "https://www.kentscientific.com/products/small-bulldog-clamp/",
+            "https://www.kentscientific.com/products/spring-scissors-straight-12-cm-long-extra-fine/",
+            "https://www.kentscientific.com/products/sterile-disposable-towel-drapes/",
+            "https://www.kentscientific.com/products/straight-5-tweezer-kit/",
+            "https://www.kentscientific.com/products/straight-serrated-needle-holder-14-cm-long/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/surgery/surgical-accessories/surgical-accessories-for-surgisuite/"
+          ]
+        },
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/surgical-accessories/page/3/",
+          "pageNumber": 3,
+          "productUrls": [
+            "https://www.kentscientific.com/products/mouse-and-rat-vessel-cannulation-kit/",
+            "https://www.kentscientific.com/products/supercut-iris-scissors-straight-125-cm-long/",
+            "https://www.kentscientific.com/products/surgical-magnifier-glasses/",
+            "https://www.kentscientific.com/products/tweezer-5-001-mm-tips/",
+            "https://www.kentscientific.com/products/tweezer-5-0025-mm-tips/",
+            "https://www.kentscientific.com/products/tweezer-5-006-mm-tips-curved/",
+            "https://www.kentscientific.com/products/tweezer-5-006-mm-tips/",
+            "https://www.kentscientific.com/products/tweezer-5b-001-mm-tips-45-angle/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/surgery/surgical-accessories/surgical-accessories-for-surgisuite/"
+          ]
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/surgery/surgical-accessories/surgical-accessories-for-surgisuite/",
+      "categoryPath": [
+        "surgery",
+        "surgical-accessories",
+        "surgical-accessories-for-surgisuite"
+      ],
+      "title": "Surgical Accessories for SurgiSuite",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/surgery/surgical-accessories/surgical-accessories-for-surgisuite/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/elastic-wire-positioner/",
+        "https://www.kentscientific.com/products/mouse-retractor-set/",
+        "https://www.kentscientific.com/products/procedure-bowl/",
+        "https://www.kentscientific.com/products/rat-retractor-set/",
+        "https://www.kentscientific.com/products/replacement-surgical-field-covers/",
+        "https://www.kentscientific.com/products/retractor-tips/",
+        "https://www.kentscientific.com/products/retractor-wires/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/surgical-accessories/surgical-accessories-for-surgisuite/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/elastic-wire-positioner/",
+            "https://www.kentscientific.com/products/mouse-retractor-set/",
+            "https://www.kentscientific.com/products/procedure-bowl/",
+            "https://www.kentscientific.com/products/rat-retractor-set/",
+            "https://www.kentscientific.com/products/replacement-surgical-field-covers/",
+            "https://www.kentscientific.com/products/retractor-tips/",
+            "https://www.kentscientific.com/products/retractor-wires/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments"
+      ],
+      "title": "Surgical Instruments",
+      "description": "",
+      "pageCount": 4,
+      "maxSeenPage": 4,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/",
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/page/2/",
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/page/3/",
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/page/4/"
+      ],
+      "subcategoryUrls": [
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/",
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/dressing-forceps/",
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/hemostat-forceps/",
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/laboratory-scissors/",
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/laboratory-scissors/micro-scissors/",
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/needle-holders/",
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/surgical-instrument-kits/",
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/surgical-tweezers/",
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/",
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/autoclips/",
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/bull-dog-clamps/",
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/reflex-clips/"
+      ],
+      "productUrls": [
+        "https://www.kentscientific.com/products/angled-5-tweezer-kit/",
+        "https://www.kentscientific.com/products/autoclip-applier/",
+        "https://www.kentscientific.com/products/autoclips-9-mm/",
+        "https://www.kentscientific.com/products/castroviejo-needle-holder-serrated/",
+        "https://www.kentscientific.com/products/dissecting-scissors-straight-10-cm-long/",
+        "https://www.kentscientific.com/products/fine-dressing-forceps-10-cm-long/",
+        "https://www.kentscientific.com/products/fine-dressing-forceps-155-cm-long/",
+        "https://www.kentscientific.com/products/hartman-mosquito-hemostatic-forceps-curved/",
+        "https://www.kentscientific.com/products/hartman-mosquito-hemostatic-forceps-straight/",
+        "https://www.kentscientific.com/products/iris-dressing-forceps/",
+        "https://www.kentscientific.com/products/iris-scissors-straight-11-cm-long/",
+        "https://www.kentscientific.com/products/mayo-operating-scissors-straight/",
+        "https://www.kentscientific.com/products/mcpherson-vannas-micro-scissors-7-cm-long/",
+        "https://www.kentscientific.com/products/mcpherson-vannas-micro-scissors-8-cm-long/",
+        "https://www.kentscientific.com/products/micro-bulldog-clamp/",
+        "https://www.kentscientific.com/products/micro-dissecting-forceps-serrated-straight/",
+        "https://www.kentscientific.com/products/mouse-and-rat-vessel-cannulation-kit/",
+        "https://www.kentscientific.com/products/mouse-surgical-kit/",
+        "https://www.kentscientific.com/products/rat-surgical-kit/",
+        "https://www.kentscientific.com/products/reflex-clip-applier/",
+        "https://www.kentscientific.com/products/reflex-clips-7-mm/",
+        "https://www.kentscientific.com/products/reflex-clips-9-mm/",
+        "https://www.kentscientific.com/products/removing-forceps/",
+        "https://www.kentscientific.com/products/small-bulldog-clamp/",
+        "https://www.kentscientific.com/products/spring-scissors-straight-12-cm-long-extra-fine/",
+        "https://www.kentscientific.com/products/straight-5-tweezer-kit/",
+        "https://www.kentscientific.com/products/straight-serrated-needle-holder-14-cm-long/",
+        "https://www.kentscientific.com/products/super-fine-dressing-forceps-125-cm-long/",
+        "https://www.kentscientific.com/products/supercut-iris-scissors-straight-125-cm-long/",
+        "https://www.kentscientific.com/products/tweezer-5-001-mm-tips/",
+        "https://www.kentscientific.com/products/tweezer-5-0025-mm-tips/",
+        "https://www.kentscientific.com/products/tweezer-5-006-mm-tips-curved/",
+        "https://www.kentscientific.com/products/tweezer-5-006-mm-tips/",
+        "https://www.kentscientific.com/products/tweezer-5b-001-mm-tips-45-angle/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/angled-5-tweezer-kit/",
+            "https://www.kentscientific.com/products/autoclip-applier/",
+            "https://www.kentscientific.com/products/autoclips-9-mm/",
+            "https://www.kentscientific.com/products/castroviejo-needle-holder-serrated/",
+            "https://www.kentscientific.com/products/dissecting-scissors-straight-10-cm-long/",
+            "https://www.kentscientific.com/products/fine-dressing-forceps-10-cm-long/",
+            "https://www.kentscientific.com/products/fine-dressing-forceps-155-cm-long/",
+            "https://www.kentscientific.com/products/hartman-mosquito-hemostatic-forceps-curved/",
+            "https://www.kentscientific.com/products/hartman-mosquito-hemostatic-forceps-straight/",
+            "https://www.kentscientific.com/products/iris-dressing-forceps/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/dressing-forceps/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/hemostat-forceps/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/laboratory-scissors/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/laboratory-scissors/micro-scissors/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/needle-holders/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/surgical-instrument-kits/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/surgical-tweezers/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/autoclips/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/bull-dog-clamps/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/reflex-clips/"
+          ]
+        },
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/page/2/",
+          "pageNumber": 2,
+          "productUrls": [
+            "https://www.kentscientific.com/products/iris-scissors-straight-11-cm-long/",
+            "https://www.kentscientific.com/products/mayo-operating-scissors-straight/",
+            "https://www.kentscientific.com/products/mcpherson-vannas-micro-scissors-7-cm-long/",
+            "https://www.kentscientific.com/products/mcpherson-vannas-micro-scissors-8-cm-long/",
+            "https://www.kentscientific.com/products/micro-bulldog-clamp/",
+            "https://www.kentscientific.com/products/micro-dissecting-forceps-serrated-straight/",
+            "https://www.kentscientific.com/products/mouse-surgical-kit/",
+            "https://www.kentscientific.com/products/rat-surgical-kit/",
+            "https://www.kentscientific.com/products/reflex-clip-applier/",
+            "https://www.kentscientific.com/products/reflex-clips-7-mm/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/dressing-forceps/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/hemostat-forceps/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/laboratory-scissors/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/laboratory-scissors/micro-scissors/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/needle-holders/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/surgical-instrument-kits/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/surgical-tweezers/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/autoclips/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/bull-dog-clamps/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/reflex-clips/"
+          ]
+        },
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/page/3/",
+          "pageNumber": 3,
+          "productUrls": [
+            "https://www.kentscientific.com/products/reflex-clips-9-mm/",
+            "https://www.kentscientific.com/products/removing-forceps/",
+            "https://www.kentscientific.com/products/small-bulldog-clamp/",
+            "https://www.kentscientific.com/products/spring-scissors-straight-12-cm-long-extra-fine/",
+            "https://www.kentscientific.com/products/straight-5-tweezer-kit/",
+            "https://www.kentscientific.com/products/straight-serrated-needle-holder-14-cm-long/",
+            "https://www.kentscientific.com/products/super-fine-dressing-forceps-125-cm-long/",
+            "https://www.kentscientific.com/products/supercut-iris-scissors-straight-125-cm-long/",
+            "https://www.kentscientific.com/products/tweezer-5-001-mm-tips/",
+            "https://www.kentscientific.com/products/tweezer-5-006-mm-tips/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/dressing-forceps/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/hemostat-forceps/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/laboratory-scissors/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/laboratory-scissors/micro-scissors/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/needle-holders/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/surgical-instrument-kits/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/surgical-tweezers/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/autoclips/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/bull-dog-clamps/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/reflex-clips/"
+          ]
+        },
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/page/4/",
+          "pageNumber": 4,
+          "productUrls": [
+            "https://www.kentscientific.com/products/mouse-and-rat-vessel-cannulation-kit/",
+            "https://www.kentscientific.com/products/tweezer-5-0025-mm-tips/",
+            "https://www.kentscientific.com/products/tweezer-5-006-mm-tips-curved/",
+            "https://www.kentscientific.com/products/tweezer-5b-001-mm-tips-45-angle/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/dressing-forceps/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/hemostat-forceps/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/laboratory-scissors/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/laboratory-scissors/micro-scissors/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/needle-holders/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/surgical-instrument-kits/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/surgical-tweezers/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/autoclips/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/bull-dog-clamps/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/reflex-clips/"
+          ]
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "forceps"
+      ],
+      "title": "Forceps",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/"
+      ],
+      "subcategoryUrls": [
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/dressing-forceps/",
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/hemostat-forceps/"
+      ],
+      "productUrls": [
+        "https://www.kentscientific.com/products/fine-dressing-forceps-10-cm-long/",
+        "https://www.kentscientific.com/products/fine-dressing-forceps-155-cm-long/",
+        "https://www.kentscientific.com/products/hartman-mosquito-hemostatic-forceps-curved/",
+        "https://www.kentscientific.com/products/hartman-mosquito-hemostatic-forceps-straight/",
+        "https://www.kentscientific.com/products/iris-dressing-forceps/",
+        "https://www.kentscientific.com/products/micro-dissecting-forceps-serrated-straight/",
+        "https://www.kentscientific.com/products/super-fine-dressing-forceps-125-cm-long/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/fine-dressing-forceps-10-cm-long/",
+            "https://www.kentscientific.com/products/fine-dressing-forceps-155-cm-long/",
+            "https://www.kentscientific.com/products/hartman-mosquito-hemostatic-forceps-curved/",
+            "https://www.kentscientific.com/products/hartman-mosquito-hemostatic-forceps-straight/",
+            "https://www.kentscientific.com/products/iris-dressing-forceps/",
+            "https://www.kentscientific.com/products/micro-dissecting-forceps-serrated-straight/",
+            "https://www.kentscientific.com/products/super-fine-dressing-forceps-125-cm-long/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/dressing-forceps/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/hemostat-forceps/"
+          ]
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/dressing-forceps/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "forceps",
+        "dressing-forceps"
+      ],
+      "title": "Dressing Forceps",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/dressing-forceps/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/fine-dressing-forceps-10-cm-long/",
+        "https://www.kentscientific.com/products/fine-dressing-forceps-155-cm-long/",
+        "https://www.kentscientific.com/products/iris-dressing-forceps/",
+        "https://www.kentscientific.com/products/super-fine-dressing-forceps-125-cm-long/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/dressing-forceps/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/fine-dressing-forceps-10-cm-long/",
+            "https://www.kentscientific.com/products/fine-dressing-forceps-155-cm-long/",
+            "https://www.kentscientific.com/products/iris-dressing-forceps/",
+            "https://www.kentscientific.com/products/super-fine-dressing-forceps-125-cm-long/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/hemostat-forceps/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "forceps",
+        "hemostat-forceps"
+      ],
+      "title": "Hemostat Forceps",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/hemostat-forceps/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/hartman-mosquito-hemostatic-forceps-curved/",
+        "https://www.kentscientific.com/products/hartman-mosquito-hemostatic-forceps-straight/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/hemostat-forceps/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/hartman-mosquito-hemostatic-forceps-curved/",
+            "https://www.kentscientific.com/products/hartman-mosquito-hemostatic-forceps-straight/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/laboratory-scissors/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "laboratory-scissors"
+      ],
+      "title": "Laboratory Scissors",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/laboratory-scissors/"
+      ],
+      "subcategoryUrls": [
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/laboratory-scissors/micro-scissors/"
+      ],
+      "productUrls": [
+        "https://www.kentscientific.com/products/dissecting-scissors-straight-10-cm-long/",
+        "https://www.kentscientific.com/products/iris-scissors-straight-11-cm-long/",
+        "https://www.kentscientific.com/products/mayo-operating-scissors-straight/",
+        "https://www.kentscientific.com/products/mcpherson-vannas-micro-scissors-7-cm-long/",
+        "https://www.kentscientific.com/products/mcpherson-vannas-micro-scissors-8-cm-long/",
+        "https://www.kentscientific.com/products/spring-scissors-straight-12-cm-long-extra-fine/",
+        "https://www.kentscientific.com/products/supercut-iris-scissors-straight-125-cm-long/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/laboratory-scissors/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/dissecting-scissors-straight-10-cm-long/",
+            "https://www.kentscientific.com/products/iris-scissors-straight-11-cm-long/",
+            "https://www.kentscientific.com/products/mayo-operating-scissors-straight/",
+            "https://www.kentscientific.com/products/mcpherson-vannas-micro-scissors-7-cm-long/",
+            "https://www.kentscientific.com/products/mcpherson-vannas-micro-scissors-8-cm-long/",
+            "https://www.kentscientific.com/products/spring-scissors-straight-12-cm-long-extra-fine/",
+            "https://www.kentscientific.com/products/supercut-iris-scissors-straight-125-cm-long/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/laboratory-scissors/micro-scissors/"
+          ]
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/laboratory-scissors/micro-scissors/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "laboratory-scissors",
+        "micro-scissors"
+      ],
+      "title": "Micro Scissors",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/laboratory-scissors/micro-scissors/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/mcpherson-vannas-micro-scissors-7-cm-long/",
+        "https://www.kentscientific.com/products/mcpherson-vannas-micro-scissors-8-cm-long/",
+        "https://www.kentscientific.com/products/spring-scissors-straight-12-cm-long-extra-fine/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/laboratory-scissors/micro-scissors/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/mcpherson-vannas-micro-scissors-7-cm-long/",
+            "https://www.kentscientific.com/products/mcpherson-vannas-micro-scissors-8-cm-long/",
+            "https://www.kentscientific.com/products/spring-scissors-straight-12-cm-long-extra-fine/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/needle-holders/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "needle-holders"
+      ],
+      "title": "Needle Holders",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/needle-holders/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/castroviejo-needle-holder-serrated/",
+        "https://www.kentscientific.com/products/straight-serrated-needle-holder-14-cm-long/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/needle-holders/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/castroviejo-needle-holder-serrated/",
+            "https://www.kentscientific.com/products/straight-serrated-needle-holder-14-cm-long/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/surgical-instrument-kits/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "surgical-instrument-kits"
+      ],
+      "title": "Surgical Instrument Kits",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/surgical-instrument-kits/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/mouse-and-rat-vessel-cannulation-kit/",
+        "https://www.kentscientific.com/products/mouse-surgical-kit/",
+        "https://www.kentscientific.com/products/rat-surgical-kit/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/surgical-instrument-kits/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/mouse-and-rat-vessel-cannulation-kit/",
+            "https://www.kentscientific.com/products/mouse-surgical-kit/",
+            "https://www.kentscientific.com/products/rat-surgical-kit/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/surgical-tweezers/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "surgical-tweezers"
+      ],
+      "title": "Surgical Tweezers",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/surgical-tweezers/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/angled-5-tweezer-kit/",
+        "https://www.kentscientific.com/products/straight-5-tweezer-kit/",
+        "https://www.kentscientific.com/products/tweezer-5-001-mm-tips/",
+        "https://www.kentscientific.com/products/tweezer-5-0025-mm-tips/",
+        "https://www.kentscientific.com/products/tweezer-5-006-mm-tips-curved/",
+        "https://www.kentscientific.com/products/tweezer-5-006-mm-tips/",
+        "https://www.kentscientific.com/products/tweezer-5b-001-mm-tips-45-angle/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/surgical-tweezers/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/angled-5-tweezer-kit/",
+            "https://www.kentscientific.com/products/straight-5-tweezer-kit/",
+            "https://www.kentscientific.com/products/tweezer-5-001-mm-tips/",
+            "https://www.kentscientific.com/products/tweezer-5-0025-mm-tips/",
+            "https://www.kentscientific.com/products/tweezer-5-006-mm-tips-curved/",
+            "https://www.kentscientific.com/products/tweezer-5-006-mm-tips/",
+            "https://www.kentscientific.com/products/tweezer-5b-001-mm-tips-45-angle/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "wound-closure"
+      ],
+      "title": "Wound Closure",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/"
+      ],
+      "subcategoryUrls": [
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/autoclips/",
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/bull-dog-clamps/",
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/reflex-clips/"
+      ],
+      "productUrls": [
+        "https://www.kentscientific.com/products/autoclip-applier/",
+        "https://www.kentscientific.com/products/autoclips-9-mm/",
+        "https://www.kentscientific.com/products/micro-bulldog-clamp/",
+        "https://www.kentscientific.com/products/reflex-clip-applier/",
+        "https://www.kentscientific.com/products/reflex-clips-7-mm/",
+        "https://www.kentscientific.com/products/reflex-clips-9-mm/",
+        "https://www.kentscientific.com/products/removing-forceps/",
+        "https://www.kentscientific.com/products/small-bulldog-clamp/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/autoclip-applier/",
+            "https://www.kentscientific.com/products/autoclips-9-mm/",
+            "https://www.kentscientific.com/products/micro-bulldog-clamp/",
+            "https://www.kentscientific.com/products/reflex-clip-applier/",
+            "https://www.kentscientific.com/products/reflex-clips-7-mm/",
+            "https://www.kentscientific.com/products/reflex-clips-9-mm/",
+            "https://www.kentscientific.com/products/removing-forceps/",
+            "https://www.kentscientific.com/products/small-bulldog-clamp/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/autoclips/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/bull-dog-clamps/",
+            "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/reflex-clips/"
+          ]
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/autoclips/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "wound-closure",
+        "autoclips"
+      ],
+      "title": "Autoclips",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/autoclips/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/autoclip-applier/",
+        "https://www.kentscientific.com/products/autoclips-9-mm/",
+        "https://www.kentscientific.com/products/removing-forceps/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/autoclips/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/autoclip-applier/",
+            "https://www.kentscientific.com/products/autoclips-9-mm/",
+            "https://www.kentscientific.com/products/removing-forceps/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/bull-dog-clamps/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "wound-closure",
+        "bull-dog-clamps"
+      ],
+      "title": "Bull Dog Clamps",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/bull-dog-clamps/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/micro-bulldog-clamp/",
+        "https://www.kentscientific.com/products/small-bulldog-clamp/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/bull-dog-clamps/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/micro-bulldog-clamp/",
+            "https://www.kentscientific.com/products/small-bulldog-clamp/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/reflex-clips/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "wound-closure",
+        "reflex-clips"
+      ],
+      "title": "Reflex Clips",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/reflex-clips/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/reflex-clip-applier/",
+        "https://www.kentscientific.com/products/reflex-clips-7-mm/",
+        "https://www.kentscientific.com/products/reflex-clips-9-mm/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/reflex-clips/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/reflex-clip-applier/",
+            "https://www.kentscientific.com/products/reflex-clips-7-mm/",
+            "https://www.kentscientific.com/products/reflex-clips-9-mm/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/tail-vein-training-materials/",
+      "categoryPath": [
+        "tail-vein-training-materials"
+      ],
+      "title": "Tail Vein Training Materials",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/tail-vein-training-materials/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/humaneway-blood-collection-needles/",
+        "https://www.kentscientific.com/products/humaneway-rodent-restraint/",
+        "https://www.kentscientific.com/products/humaneway-winged-infusion-sets/",
+        "https://www.kentscientific.com/products/tail-vein-simulator/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/tail-vein-training-materials/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/humaneway-blood-collection-needles/",
+            "https://www.kentscientific.com/products/humaneway-rodent-restraint/",
+            "https://www.kentscientific.com/products/humaneway-winged-infusion-sets/",
+            "https://www.kentscientific.com/products/tail-vein-simulator/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/tissue-collection/",
+      "categoryPath": [
+        "tissue-collection"
+      ],
+      "title": "Tissue Collection",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/tissue-collection/"
+      ],
+      "subcategoryUrls": [
+        "https://www.kentscientific.com/product/tissue-collection/blood-collection/",
+        "https://www.kentscientific.com/product/tissue-collection/brain-matricies/"
+      ],
+      "productUrls": [
+        "https://www.kentscientific.com/products/acrylic-brain-matrices/",
+        "https://www.kentscientific.com/products/humaneway-winged-infusion-sets/",
+        "https://www.kentscientific.com/products/microvette-100-capillary-blood-collection-with-round-bottom-inner-tube-edta/",
+        "https://www.kentscientific.com/products/microvette-200-capillary-blood-collection-with-round-bottom-inner-tube-edta/",
+        "https://www.kentscientific.com/products/microvette-cb-300-blood-collection-system/",
+        "https://www.kentscientific.com/products/microvette-prepared-micro-tubes-with-screw-cap-closure-edta/",
+        "https://www.kentscientific.com/products/stainless-steel-brain-matrices/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/tissue-collection/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/acrylic-brain-matrices/",
+            "https://www.kentscientific.com/products/humaneway-winged-infusion-sets/",
+            "https://www.kentscientific.com/products/microvette-100-capillary-blood-collection-with-round-bottom-inner-tube-edta/",
+            "https://www.kentscientific.com/products/microvette-200-capillary-blood-collection-with-round-bottom-inner-tube-edta/",
+            "https://www.kentscientific.com/products/microvette-cb-300-blood-collection-system/",
+            "https://www.kentscientific.com/products/microvette-prepared-micro-tubes-with-screw-cap-closure-edta/",
+            "https://www.kentscientific.com/products/stainless-steel-brain-matrices/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/tissue-collection/blood-collection/",
+            "https://www.kentscientific.com/product/tissue-collection/brain-matricies/"
+          ]
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/tissue-collection/brain-matricies/",
+      "categoryPath": [
+        "tissue-collection",
+        "brain-matricies"
+      ],
+      "title": "Brain Matricies",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/tissue-collection/brain-matricies/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/acrylic-brain-matrices/",
+        "https://www.kentscientific.com/products/stainless-steel-brain-matrices/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/tissue-collection/brain-matricies/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/acrylic-brain-matrices/",
+            "https://www.kentscientific.com/products/stainless-steel-brain-matrices/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/ventilation/",
+      "categoryPath": [
+        "ventilation"
+      ],
+      "title": "Ventilation",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/ventilation/"
+      ],
+      "subcategoryUrls": [
+        "https://www.kentscientific.com/product/ventilation/intubation/"
+      ],
+      "productUrls": [
+        "https://www.kentscientific.com/products/3-accessory-connector/",
+        "https://www.kentscientific.com/products/anesthesia-mask-tubing-kits-for-intubation/",
+        "https://www.kentscientific.com/products/endotracheal-intubation-kits/",
+        "https://www.kentscientific.com/products/endotracheal-tubes/",
+        "https://www.kentscientific.com/products/fiber-optic-lighting-assembly/",
+        "https://www.kentscientific.com/products/fiber-optic-lighting-kits/",
+        "https://www.kentscientific.com/products/intubation-stands/",
+        "https://www.kentscientific.com/products/rovent-jr/",
+        "https://www.kentscientific.com/products/rovent/",
+        "https://www.kentscientific.com/products/somnosuite/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/ventilation/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/3-accessory-connector/",
+            "https://www.kentscientific.com/products/anesthesia-mask-tubing-kits-for-intubation/",
+            "https://www.kentscientific.com/products/endotracheal-intubation-kits/",
+            "https://www.kentscientific.com/products/endotracheal-tubes/",
+            "https://www.kentscientific.com/products/fiber-optic-lighting-assembly/",
+            "https://www.kentscientific.com/products/fiber-optic-lighting-kits/",
+            "https://www.kentscientific.com/products/intubation-stands/",
+            "https://www.kentscientific.com/products/rovent-jr/",
+            "https://www.kentscientific.com/products/rovent/",
+            "https://www.kentscientific.com/products/somnosuite/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/ventilation/intubation/"
+          ]
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/ventilation/intubation/",
+      "categoryPath": [
+        "ventilation",
+        "intubation"
+      ],
+      "title": "Intubation",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/ventilation/intubation/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/anesthesia-mask-tubing-kits-for-intubation/",
+        "https://www.kentscientific.com/products/endotracheal-intubation-kits/",
+        "https://www.kentscientific.com/products/endotracheal-tubes/",
+        "https://www.kentscientific.com/products/fiber-optic-lighting-assembly/",
+        "https://www.kentscientific.com/products/fiber-optic-lighting-kits/",
+        "https://www.kentscientific.com/products/intubation-stands/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/ventilation/intubation/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/anesthesia-mask-tubing-kits-for-intubation/",
+            "https://www.kentscientific.com/products/endotracheal-intubation-kits/",
+            "https://www.kentscientific.com/products/endotracheal-tubes/",
+            "https://www.kentscientific.com/products/fiber-optic-lighting-assembly/",
+            "https://www.kentscientific.com/products/fiber-optic-lighting-kits/",
+            "https://www.kentscientific.com/products/intubation-stands/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/warming-pads-blankets/",
+      "categoryPath": [
+        "warming-pads-blankets"
+      ],
+      "title": "Warming Pads and Blankets",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/warming/warming-pads-blankets/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/disposable-sleeve-protectors-for-dct-15-and-dct-20-far-infrared-warming-pads/",
+        "https://www.kentscientific.com/products/disposable-warming-pads/",
+        "https://www.kentscientific.com/products/far-infrared-warming-pad/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/warming/warming-pads-blankets/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/disposable-sleeve-protectors-for-dct-15-and-dct-20-far-infrared-warming-pads/",
+            "https://www.kentscientific.com/products/disposable-warming-pads/",
+            "https://www.kentscientific.com/products/far-infrared-warming-pad/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/warming/",
+      "categoryPath": [
+        "warming"
+      ],
+      "title": "Warming",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/warming/"
+      ],
+      "subcategoryUrls": [
+        "https://www.kentscientific.com/product/warming/warming-pads-blankets/",
+        "https://www.kentscientific.com/product/warming/water-recirculators/"
+      ],
+      "productUrls": [
+        "https://www.kentscientific.com/products/disposable-sleeve-protectors-for-dct-15-and-dct-20-far-infrared-warming-pads/",
+        "https://www.kentscientific.com/products/disposable-warming-pads/",
+        "https://www.kentscientific.com/products/far-infrared-warming-pad/",
+        "https://www.kentscientific.com/products/far-infrared-warming-pads-with-controller/",
+        "https://www.kentscientific.com/products/htp-1500-heat-therapy-pump/",
+        "https://www.kentscientific.com/products/righttemp-jr/",
+        "https://www.kentscientific.com/products/righttemp/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/warming/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/disposable-sleeve-protectors-for-dct-15-and-dct-20-far-infrared-warming-pads/",
+            "https://www.kentscientific.com/products/disposable-warming-pads/",
+            "https://www.kentscientific.com/products/far-infrared-warming-pad/",
+            "https://www.kentscientific.com/products/far-infrared-warming-pads-with-controller/",
+            "https://www.kentscientific.com/products/htp-1500-heat-therapy-pump/",
+            "https://www.kentscientific.com/products/righttemp-jr/",
+            "https://www.kentscientific.com/products/righttemp/"
+          ],
+          "subcategoryUrls": [
+            "https://www.kentscientific.com/product/warming/warming-pads-blankets/",
+            "https://www.kentscientific.com/product/warming/water-recirculators/"
+          ]
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/warming/animal-warming/",
+      "categoryPath": [
+        "warming",
+        "animal-warming"
+      ],
+      "title": "Animal Warming",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/warming/animal-warming/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/warming/animal-warming/",
+          "pageNumber": 1,
+          "productUrls": [],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/warming/small-animal-heating-pads-warming-systems/",
+      "categoryPath": [
+        "warming",
+        "small-animal-heating-pads-warming-systems"
+      ],
+      "title": "Small Animal Heating Pads and Warming Systems",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/warming/small-animal-heating-pads-warming-systems/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/warming/small-animal-heating-pads-warming-systems/",
+          "pageNumber": 1,
+          "productUrls": [],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/warming/water-recirculators/",
+      "categoryPath": [
+        "warming",
+        "water-recirculators"
+      ],
+      "title": "Water Recirculators",
+      "description": "",
+      "pageCount": 1,
+      "maxSeenPage": 1,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/warming/water-recirculators/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/htp-1500-heat-therapy-pump/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/warming/water-recirculators/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/htp-1500-heat-therapy-pump/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    },
+    {
+      "rootUrl": "https://www.kentscientific.com/product/warranty/",
+      "categoryPath": [
+        "warranty"
+      ],
+      "title": "Warranty",
+      "description": "",
+      "pageCount": 2,
+      "maxSeenPage": 2,
+      "pageUrls": [
+        "https://www.kentscientific.com/product/warranty/",
+        "https://www.kentscientific.com/product/warranty/page/2/"
+      ],
+      "subcategoryUrls": [],
+      "productUrls": [
+        "https://www.kentscientific.com/products/warranty-coda-high-throughput-system-extended/",
+        "https://www.kentscientific.com/products/warranty-coda-high-throughput-system-premium/",
+        "https://www.kentscientific.com/products/warranty-coda-monitor-extended/",
+        "https://www.kentscientific.com/products/warranty-coda-monitor-premium/",
+        "https://www.kentscientific.com/products/warranty-physiosuite-extended/",
+        "https://www.kentscientific.com/products/warranty-physiosuite-with-1-module-extended/",
+        "https://www.kentscientific.com/products/warranty-physiosuite-with-1-module-premium/",
+        "https://www.kentscientific.com/products/warranty-rovent-extended/",
+        "https://www.kentscientific.com/products/warranty-rovent-premium/",
+        "https://www.kentscientific.com/products/warranty-skinscanner-extended/",
+        "https://www.kentscientific.com/products/warranty-somnoflo-extended/",
+        "https://www.kentscientific.com/products/warranty-somnoflo-premium/",
+        "https://www.kentscientific.com/products/warranty-somnosuite-extended/",
+        "https://www.kentscientific.com/products/warranty-somnosuite-premium/",
+        "https://www.kentscientific.com/products/warranty-somnosuite-with-1-module-extended/",
+        "https://www.kentscientific.com/products/warranty-somnosuite-with-1-module-premium/",
+        "https://www.kentscientific.com/products/warranty-somnosuite-with-2-modules-extended/",
+        "https://www.kentscientific.com/products/warranty-somnosuite-with-2-modules-premium/"
+      ],
+      "pages": [
+        {
+          "pageUrl": "https://www.kentscientific.com/product/warranty/",
+          "pageNumber": 1,
+          "productUrls": [
+            "https://www.kentscientific.com/products/warranty-coda-high-throughput-system-premium/",
+            "https://www.kentscientific.com/products/warranty-coda-monitor-premium/",
+            "https://www.kentscientific.com/products/warranty-rovent-extended/",
+            "https://www.kentscientific.com/products/warranty-rovent-premium/",
+            "https://www.kentscientific.com/products/warranty-skinscanner-extended/",
+            "https://www.kentscientific.com/products/warranty-somnoflo-extended/",
+            "https://www.kentscientific.com/products/warranty-somnoflo-premium/",
+            "https://www.kentscientific.com/products/warranty-somnosuite-extended/",
+            "https://www.kentscientific.com/products/warranty-somnosuite-premium/",
+            "https://www.kentscientific.com/products/warranty-somnosuite-with-2-modules-extended/"
+          ],
+          "subcategoryUrls": []
+        },
+        {
+          "pageUrl": "https://www.kentscientific.com/product/warranty/page/2/",
+          "pageNumber": 2,
+          "productUrls": [
+            "https://www.kentscientific.com/products/warranty-coda-high-throughput-system-extended/",
+            "https://www.kentscientific.com/products/warranty-coda-monitor-extended/",
+            "https://www.kentscientific.com/products/warranty-physiosuite-extended/",
+            "https://www.kentscientific.com/products/warranty-physiosuite-with-1-module-extended/",
+            "https://www.kentscientific.com/products/warranty-physiosuite-with-1-module-premium/",
+            "https://www.kentscientific.com/products/warranty-somnosuite-with-1-module-extended/",
+            "https://www.kentscientific.com/products/warranty-somnosuite-with-1-module-premium/",
+            "https://www.kentscientific.com/products/warranty-somnosuite-with-2-modules-premium/"
+          ],
+          "subcategoryUrls": []
+        }
+      ]
+    }
+  ],
+  "productUrlCount": 194,
+  "productUrls": [
+    "https://www.kentscientific.com/products/3-accessory-connector/",
+    "https://www.kentscientific.com/products/ac-adapters-and-power-cords/",
+    "https://www.kentscientific.com/products/accuris-mini-balances/",
+    "https://www.kentscientific.com/products/acrylic-brain-matrices/",
+    "https://www.kentscientific.com/products/activated-charcoal-absorption-filters-1/",
+    "https://www.kentscientific.com/products/aeroneb-lab-control-module-kit/",
+    "https://www.kentscientific.com/products/aeroneb-lab-control-module/",
+    "https://www.kentscientific.com/products/aeroneb-lab-nebulizer-unit/",
+    "https://www.kentscientific.com/products/analog-output-cable/",
+    "https://www.kentscientific.com/products/anesthesia-mask-nebulizer-delivery-system/",
+    "https://www.kentscientific.com/products/anesthesia-mask-tubing-kits-for-intubation/",
+    "https://www.kentscientific.com/products/anesthesia-masks-breathing-circuits-for-somnosuite/",
+    "https://www.kentscientific.com/products/anesthesia-masks-breathing-circuits-for-traditional-vaporizers/",
+    "https://www.kentscientific.com/products/anesthetic-depth-indicator/",
+    "https://www.kentscientific.com/products/angled-5-tweezer-kit/",
+    "https://www.kentscientific.com/products/animal-weighing-scale/",
+    "https://www.kentscientific.com/products/anipill/",
+    "https://www.kentscientific.com/products/anti-spill-device-for-funnel-filled-vaporizers/",
+    "https://www.kentscientific.com/products/arco-se/",
+    "https://www.kentscientific.com/products/autoclip-applier/",
+    "https://www.kentscientific.com/products/autoclips-9-mm/",
+    "https://www.kentscientific.com/products/bluetooth-low-energy-handheld-reader/",
+    "https://www.kentscientific.com/products/bravmini-professional-cordless-trimmer-kit/",
+    "https://www.kentscientific.com/products/cannula-adapter/",
+    "https://www.kentscientific.com/products/castroviejo-needle-holder-serrated/",
+    "https://www.kentscientific.com/products/chamber-nebulizer-delivery-system/",
+    "https://www.kentscientific.com/products/coda-animal-holders/",
+    "https://www.kentscientific.com/products/coda-cuff-storage-container/",
+    "https://www.kentscientific.com/products/coda-data-acquisition-software/",
+    "https://www.kentscientific.com/products/coda-high-throughput-cuff-kits/",
+    "https://www.kentscientific.com/products/coda-high-throughput-occlusion-cuffs/",
+    "https://www.kentscientific.com/products/coda-high-throughput-system/",
+    "https://www.kentscientific.com/products/coda-high-throughput-vpr-cuffs/",
+    "https://www.kentscientific.com/products/coda-monitor-cuff-kits/",
+    "https://www.kentscientific.com/products/coda-monitor-occlusion-cuff-kits/",
+    "https://www.kentscientific.com/products/coda-monitor-vpr-cuff-kits/",
+    "https://www.kentscientific.com/products/coda-monitor/",
+    "https://www.kentscientific.com/products/curved-feeding-needles/",
+    "https://www.kentscientific.com/products/cylinder-bracket/",
+    "https://www.kentscientific.com/products/disposable-sleeve-protectors-for-dct-15-and-dct-20-far-infrared-warming-pads/",
+    "https://www.kentscientific.com/products/disposable-warming-pads/",
+    "https://www.kentscientific.com/products/dissecting-scissors-straight-10-cm-long/",
+    "https://www.kentscientific.com/products/ear-tag-applicator-with-spring-1/",
+    "https://www.kentscientific.com/products/elastic-wire-positioner/",
+    "https://www.kentscientific.com/products/elizabethan-collars/",
+    "https://www.kentscientific.com/products/endotracheal-intubation-kits/",
+    "https://www.kentscientific.com/products/endotracheal-tubes/",
+    "https://www.kentscientific.com/products/external-powerbank/",
+    "https://www.kentscientific.com/products/far-infrared-warming-pad/",
+    "https://www.kentscientific.com/products/far-infrared-warming-pads-with-controller/",
+    "https://www.kentscientific.com/products/fiber-optic-lighting-assembly/",
+    "https://www.kentscientific.com/products/fiber-optic-lighting-kits/",
+    "https://www.kentscientific.com/products/fine-dressing-forceps-10-cm-long/",
+    "https://www.kentscientific.com/products/fine-dressing-forceps-155-cm-long/",
+    "https://www.kentscientific.com/products/flat-bottom-rodent-holders/",
+    "https://www.kentscientific.com/products/glass-syringe-10-ml/",
+    "https://www.kentscientific.com/products/glass-syringe-5-ml/",
+    "https://www.kentscientific.com/products/hartman-mosquito-hemostatic-forceps-curved/",
+    "https://www.kentscientific.com/products/hartman-mosquito-hemostatic-forceps-straight/",
+    "https://www.kentscientific.com/products/holder-for-activated-charcoal-absorption-filter/",
+    "https://www.kentscientific.com/products/htp-1500-heat-therapy-pump/",
+    "https://www.kentscientific.com/products/humaneway-blood-collection-needles/",
+    "https://www.kentscientific.com/products/humaneway-rodent-restraint/",
+    "https://www.kentscientific.com/products/humaneway-winged-infusion-sets/",
+    "https://www.kentscientific.com/products/instrument-micro-bead-sterilizer/",
+    "https://www.kentscientific.com/products/intubation-stands/",
+    "https://www.kentscientific.com/products/iris-dressing-forceps/",
+    "https://www.kentscientific.com/products/iris-scissors-straight-11-cm-long/",
+    "https://www.kentscientific.com/products/la-pias-ear-tag-applicator/",
+    "https://www.kentscientific.com/products/la-pias-ear-tags-extra-backs/",
+    "https://www.kentscientific.com/products/la-pias-mouse-ear-tags/",
+    "https://www.kentscientific.com/products/la-pias-rat-ear-tags/",
+    "https://www.kentscientific.com/products/large-animal-sensors/",
+    "https://www.kentscientific.com/products/laser-etched-ear-tags-one-sided/",
+    "https://www.kentscientific.com/products/laser-etched-ear-tags-two-sided/",
+    "https://www.kentscientific.com/products/led-lighting-kit/",
+    "https://www.kentscientific.com/products/low-cost-chambers-for-somnosuite/",
+    "https://www.kentscientific.com/products/low-cost-chambers-for-traditional-vaporizers/",
+    "https://www.kentscientific.com/products/low-profile-anesthesia-masks-for-somnosuite/",
+    "https://www.kentscientific.com/products/low-profile-anesthesia-masks-for-traditional-vaporizers/",
+    "https://www.kentscientific.com/products/lung-instillation-nebulizer-delivery-system/",
+    "https://www.kentscientific.com/products/magnetic-fixators-with-spring-locks/",
+    "https://www.kentscientific.com/products/magnetic-positioners-and-stabilizers/",
+    "https://www.kentscientific.com/products/mayo-operating-scissors-straight/",
+    "https://www.kentscientific.com/products/mcpherson-vannas-micro-scissors-7-cm-long/",
+    "https://www.kentscientific.com/products/mcpherson-vannas-micro-scissors-8-cm-long/",
+    "https://www.kentscientific.com/products/micro-bulldog-clamp/",
+    "https://www.kentscientific.com/products/micro-dissecting-forceps-serrated-straight/",
+    "https://www.kentscientific.com/products/micro-transponder-with-lancet-for-direct-implantation/",
+    "https://www.kentscientific.com/products/microvette-100-capillary-blood-collection-with-round-bottom-inner-tube-edta/",
+    "https://www.kentscientific.com/products/microvette-200-capillary-blood-collection-with-round-bottom-inner-tube-edta/",
+    "https://www.kentscientific.com/products/microvette-cb-300-blood-collection-system/",
+    "https://www.kentscientific.com/products/microvette-prepared-micro-tubes-with-screw-cap-closure-edta/",
+    "https://www.kentscientific.com/products/mid-range-reader-usb/",
+    "https://www.kentscientific.com/products/miniarco-clipper/",
+    "https://www.kentscientific.com/products/mobile-cart-for-laboratory-equipment-large/",
+    "https://www.kentscientific.com/products/mobile-cart-for-laboratory-equipment-small/",
+    "https://www.kentscientific.com/products/mouse-and-rat-vessel-cannulation-kit/",
+    "https://www.kentscientific.com/products/mouse-handling-tunnels/",
+    "https://www.kentscientific.com/products/mouse-paw-pulse-oximeter-sensors/",
+    "https://www.kentscientific.com/products/mouse-retractor-set/",
+    "https://www.kentscientific.com/products/mouse-surgical-kit/",
+    "https://www.kentscientific.com/products/mousestat-jr/",
+    "https://www.kentscientific.com/products/mousestat-pulse-oximeter-whole-body-sensors-for-mouse-pups/",
+    "https://www.kentscientific.com/products/mousestat-pulse-oximeter-whole-body-sensors-for-rat-pups/",
+    "https://www.kentscientific.com/products/nebulizer-adapter-kit/",
+    "https://www.kentscientific.com/products/nebulizer-animal-holders/",
+    "https://www.kentscientific.com/products/non-contact-infrared-thermometer-with-laser-sight/",
+    "https://www.kentscientific.com/products/nose-cone-animal-holders-with-stand/",
+    "https://www.kentscientific.com/products/nose-cone-nebulizer-delivery-system/",
+    "https://www.kentscientific.com/products/oxygen-concentrator-filters/",
+    "https://www.kentscientific.com/products/oxygen-concentrator/",
+    "https://www.kentscientific.com/products/physiosuite/",
+    "https://www.kentscientific.com/products/pistol-grip-implanter/",
+    "https://www.kentscientific.com/products/pocket-reader-with-usb-connection/",
+    "https://www.kentscientific.com/products/preset-pressure-reducer-for-somnosuite/",
+    "https://www.kentscientific.com/products/procedure-bowl/",
+    "https://www.kentscientific.com/products/pulse-oximeter-paw-sensors-mri-compatible/",
+    "https://www.kentscientific.com/products/pulse-oximeter-sensor-extension-cable/",
+    "https://www.kentscientific.com/products/rat-retractor-set/",
+    "https://www.kentscientific.com/products/rat-surgical-kit/",
+    "https://www.kentscientific.com/products/rectal-probe-for-mice/",
+    "https://www.kentscientific.com/products/rectal-probe-for-rats/",
+    "https://www.kentscientific.com/products/reflex-clip-applier/",
+    "https://www.kentscientific.com/products/reflex-clips-7-mm/",
+    "https://www.kentscientific.com/products/reflex-clips-9-mm/",
+    "https://www.kentscientific.com/products/removing-forceps/",
+    "https://www.kentscientific.com/products/replacement-bladder-kits/",
+    "https://www.kentscientific.com/products/replacement-diaphragms-for-somnosuite-anesthesia-masks/",
+    "https://www.kentscientific.com/products/replacement-glass-beads/",
+    "https://www.kentscientific.com/products/replacement-surgical-field-covers/",
+    "https://www.kentscientific.com/products/retractor-tips/",
+    "https://www.kentscientific.com/products/retractor-wires/",
+    "https://www.kentscientific.com/products/righttemp-jr/",
+    "https://www.kentscientific.com/products/righttemp-sensor-for-animal-or-warming-pad/",
+    "https://www.kentscientific.com/products/righttemp/",
+    "https://www.kentscientific.com/products/rovent-jr/",
+    "https://www.kentscientific.com/products/rovent/",
+    "https://www.kentscientific.com/products/skinscanner-1/",
+    "https://www.kentscientific.com/products/sliding-top-chambers-for-somnosuite/",
+    "https://www.kentscientific.com/products/sliding-top-chambers-for-traditional-vaporizers/",
+    "https://www.kentscientific.com/products/small-bulldog-clamp/",
+    "https://www.kentscientific.com/products/somnoflo-o2care/",
+    "https://www.kentscientific.com/products/somnoflo/",
+    "https://www.kentscientific.com/products/somnosuite-anti-spill-anti-vapor-bottle-top-adapter/",
+    "https://www.kentscientific.com/products/somnosuite-delivery-tube/",
+    "https://www.kentscientific.com/products/somnosuite-y-adapter/",
+    "https://www.kentscientific.com/products/somnosuite/",
+    "https://www.kentscientific.com/products/spring-scissors-straight-12-cm-long-extra-fine/",
+    "https://www.kentscientific.com/products/stainless-steel-brain-matrices/",
+    "https://www.kentscientific.com/products/stamped-ear-tags/",
+    "https://www.kentscientific.com/products/standalone-flowmeter-with-stand-0-05lpm/",
+    "https://www.kentscientific.com/products/stereotaxic-adapter-kit/",
+    "https://www.kentscientific.com/products/sterile-disposable-towel-drapes/",
+    "https://www.kentscientific.com/products/straight-5-tweezer-kit/",
+    "https://www.kentscientific.com/products/straight-feeding-needles/",
+    "https://www.kentscientific.com/products/straight-serrated-needle-holder-14-cm-long/",
+    "https://www.kentscientific.com/products/super-fine-dressing-forceps-125-cm-long/",
+    "https://www.kentscientific.com/products/supercut-iris-scissors-straight-125-cm-long/",
+    "https://www.kentscientific.com/products/surgical-magnifier-glasses/",
+    "https://www.kentscientific.com/products/tail-vein-simulator/",
+    "https://www.kentscientific.com/products/tube-rodent-holders/",
+    "https://www.kentscientific.com/products/tweezer-5-001-mm-tips/",
+    "https://www.kentscientific.com/products/tweezer-5-0025-mm-tips/",
+    "https://www.kentscientific.com/products/tweezer-5-006-mm-tips-curved/",
+    "https://www.kentscientific.com/products/tweezer-5-006-mm-tips/",
+    "https://www.kentscientific.com/products/tweezer-5b-001-mm-tips-45-angle/",
+    "https://www.kentscientific.com/products/type-jkt-thermocouple-meter/",
+    "https://www.kentscientific.com/products/vaporizer-for-isoflurane-funnel-filled/",
+    "https://www.kentscientific.com/products/vaporizer-for-isoflurane-key-filled/",
+    "https://www.kentscientific.com/products/vaporizer-for-sevoflurane-key-filled/",
+    "https://www.kentscientific.com/products/vaporizer-with-vetflo-single-channel-anesthesia-stand/",
+    "https://www.kentscientific.com/products/vetflo-four-channel-anesthesia-stand/",
+    "https://www.kentscientific.com/products/vetflo-single-channel-anesthesia-stand/",
+    "https://www.kentscientific.com/products/vetflo-six-channel-anesthesia-stand/",
+    "https://www.kentscientific.com/products/vetflo-two-channel-anesthesia-stand/",
+    "https://www.kentscientific.com/products/warranty-coda-high-throughput-system-extended/",
+    "https://www.kentscientific.com/products/warranty-coda-high-throughput-system-premium/",
+    "https://www.kentscientific.com/products/warranty-coda-monitor-extended/",
+    "https://www.kentscientific.com/products/warranty-coda-monitor-premium/",
+    "https://www.kentscientific.com/products/warranty-physiosuite-extended/",
+    "https://www.kentscientific.com/products/warranty-physiosuite-with-1-module-extended/",
+    "https://www.kentscientific.com/products/warranty-physiosuite-with-1-module-premium/",
+    "https://www.kentscientific.com/products/warranty-rovent-extended/",
+    "https://www.kentscientific.com/products/warranty-rovent-premium/",
+    "https://www.kentscientific.com/products/warranty-skinscanner-extended/",
+    "https://www.kentscientific.com/products/warranty-somnoflo-extended/",
+    "https://www.kentscientific.com/products/warranty-somnoflo-premium/",
+    "https://www.kentscientific.com/products/warranty-somnosuite-extended/",
+    "https://www.kentscientific.com/products/warranty-somnosuite-premium/",
+    "https://www.kentscientific.com/products/warranty-somnosuite-with-1-module-extended/",
+    "https://www.kentscientific.com/products/warranty-somnosuite-with-1-module-premium/",
+    "https://www.kentscientific.com/products/warranty-somnosuite-with-2-modules-extended/",
+    "https://www.kentscientific.com/products/warranty-somnosuite-with-2-modules-premium/"
+  ],
+  "errors": []
+}

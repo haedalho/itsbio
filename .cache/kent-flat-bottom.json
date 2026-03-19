@@ -1,0 +1,218 @@
+{
+  "generatedAt": "2026-03-19T04:13:30.366Z",
+  "source": "Kent Scientific product pages",
+  "sitemapUrl": "https://www.kentscientific.com/site-map/",
+  "count": 1,
+  "ok": 1,
+  "fail": 0,
+  "results": [
+    {
+      "title": "Flat Bottom Rodent Holders",
+      "slug": "flat-bottom-rodent-holders",
+      "sourceUrl": "https://www.kentscientific.com/products/flat-bottom-rodent-holders/",
+      "sku": "RSTR541",
+      "metaText": "Item # RSTR541 Categories: Animal Holders, Laboratory Animal Handling Tag: Mouse & Rat Restraints",
+      "categoryPath": [
+        "laboratory-animal-handling",
+        "animal-holders"
+      ],
+      "categoryLinks": [
+        {
+          "href": "https://www.kentscientific.com/product/laboratory-animal-handling/animal-holders/",
+          "pathArr": [
+            "laboratory-animal-handling",
+            "animal-holders"
+          ]
+        },
+        {
+          "href": "https://www.kentscientific.com/product/laboratory-animal-handling/",
+          "pathArr": [
+            "laboratory-animal-handling"
+          ]
+        }
+      ],
+      "breadcrumbs": [
+        {
+          "label": "Home",
+          "href": "https://www.kentscientific.com/"
+        },
+        {
+          "label": "Laboratory Animal Handling",
+          "href": "https://www.kentscientific.com/product/laboratory-animal-handling/"
+        },
+        {
+          "label": "Animal Holders",
+          "href": "https://www.kentscientific.com/product/laboratory-animal-handling/animal-holders/"
+        }
+      ],
+      "commerce": {
+        "model": "optionSelector",
+        "hasSelect": true,
+        "hasQty": true,
+        "hasVariationForm": true,
+        "hasAddToCart": true,
+        "hasItemNa": false
+      },
+      "optionGroups": [
+        {
+          "label": "Use",
+          "options": [
+            {
+              "value": "Holder for 15 to 30 g Rodents",
+              "text": "Holder for 15 to 30 g Rodents"
+            },
+            {
+              "value": "Holder for 30 to 125 g Rodents",
+              "text": "Holder for 30 to 125 g Rodents"
+            },
+            {
+              "value": "Holder for 125 to 250 g Rodents",
+              "text": "Holder for 125 to 250 g Rodents"
+            },
+            {
+              "value": "Holder for 250 to 500 g Rodents",
+              "text": "Holder for 250 to 500 g Rodents"
+            }
+          ]
+        }
+      ],
+      "quickFacts": {
+        "h2Count": 5,
+        "h3Count": 5,
+        "tableCount": 2,
+        "pdfCount": 0,
+        "videoCount": 1,
+        "imageCount": 4,
+        "relatedCount": 0,
+        "hasFaq": false,
+        "hasComparison": false,
+        "hasPublications": false,
+        "hasResources": false
+      },
+      "sections": [
+        {
+          "heading": "Flat Bottom Rodent Holders",
+          "type": "richText",
+          "textPreview": "",
+          "htmlPreview": "",
+          "tableCount": 0,
+          "bulletCount": 0,
+          "pdfCount": 0,
+          "videoCount": 0,
+          "tables": []
+        },
+        {
+          "heading": "123 4567 890",
+          "type": "richText",
+          "textPreview": "Call Us",
+          "htmlPreview": "<p>Call Us</p>",
+          "tableCount": 0,
+          "bulletCount": 0,
+          "pdfCount": 0,
+          "videoCount": 0,
+          "tables": []
+        },
+        {
+          "heading": "What you get on day one",
+          "type": "included",
+          "textPreview": "",
+          "htmlPreview": "",
+          "tableCount": 0,
+          "bulletCount": 0,
+          "pdfCount": 0,
+          "videoCount": 0,
+          "tables": []
+        },
+        {
+          "heading": "Adjustable tail piece provides flexibility while holding rodents securely",
+          "type": "richText",
+          "textPreview": "",
+          "htmlPreview": "",
+          "tableCount": 0,
+          "bulletCount": 0,
+          "pdfCount": 0,
+          "videoCount": 0,
+          "tables": []
+        },
+        {
+          "heading": "Openings in the top and bottom allow easy access and waste disposal",
+          "type": "richText",
+          "textPreview": "",
+          "htmlPreview": "",
+          "tableCount": 0,
+          "bulletCount": 0,
+          "pdfCount": 0,
+          "videoCount": 0,
+          "tables": []
+        },
+        {
+          "heading": "Front hopper is ideal for feeding, watering, and anesthesia",
+          "type": "richText",
+          "textPreview": "",
+          "htmlPreview": "",
+          "tableCount": 0,
+          "bulletCount": 0,
+          "pdfCount": 0,
+          "videoCount": 0,
+          "tables": []
+        },
+        {
+          "heading": "How to clean",
+          "type": "instructions",
+          "textPreview": "",
+          "htmlPreview": "",
+          "tableCount": 0,
+          "bulletCount": 0,
+          "pdfCount": 0,
+          "videoCount": 0,
+          "tables": []
+        },
+        {
+          "heading": "Product specifications",
+          "type": "specifications",
+          "textPreview": "",
+          "htmlPreview": "",
+          "tableCount": 0,
+          "bulletCount": 0,
+          "pdfCount": 0,
+          "videoCount": 0,
+          "tables": []
+        },
+        {
+          "heading": "Need Help With Your Order?",
+          "type": "richText",
+          "textPreview": "",
+          "htmlPreview": "",
+          "tableCount": 0,
+          "bulletCount": 0,
+          "pdfCount": 0,
+          "videoCount": 0,
+          "tables": []
+        },
+        {
+          "heading": "Call 888-572-8887",
+          "type": "richText",
+          "textPreview": "",
+          "htmlPreview": "",
+          "tableCount": 0,
+          "bulletCount": 0,
+          "pdfCount": 0,
+          "videoCount": 0,
+          "tables": []
+        }
+      ],
+      "imageUrls": [
+        "https://www.kentscientific.com/wp-content/uploads/2025/09/FLAT_BOT_ANI_HOLDER_GROUP_silo-2.png",
+        "https://www.kentscientific.com/wp-content/uploads/2025/09/FLAT_BOT_ANI_HOLDER_GROUP_silo-2-100x100.png",
+        "https://www.kentscientific.com/wp-content/uploads/2025/09/ELIZABETHAN_COLLARS_silo-2-100x100.png",
+        "https://www.kentscientific.com/wp-content/uploads/2025/09/miniARCO-clipper-2-100x100.png"
+      ],
+      "pdfs": [],
+      "videos": [
+        "https://www.youtube.com/user/KentScientific"
+      ],
+      "relatedProducts": [],
+      "bodyTextPreview": "Elizabethan Collars MiniARCO® Clipper Kit Flat Bottom Rodent Holders .single_variation_wrap{display:none !important;}Login to see prices Item # RSTR541 Categories: Animal Holders, Laboratory Animal Handling Tag: Mouse & Rat Restraints Our low-cost, high-quality economy line of rodent holders is very useful for procedures requiring access to the tail, such as when performing simple injections and blood sampling. To use, remove the tailgate and position the restrainer so the open end makes a 45° angle with the tabletop. Secure the rodent by the base of the tail and gently guide into the restrainer, forelimbs first. Apply gentle pressure to prevent the rodent from backing out of the restrainer. Once positioned, replace the tailgate into the groove to hold the animal in place. If you are looking for CODA® Animal Holders, ideal for non-invasive blood pressure measurement and enhanced access to the tail, click here. Use Holder for 15 to 30 g RodentsHolder for 30 to 125 g RodentsHolder for 125 to 250 g RodentsHolder for 250 to 500 g RodentsChoose an optionHolder for 15 to 30 g RodentsHolder for 30 to 125 g RodentsHolder for 125 to 250 g RodentsHolder for 250 to 500 g RodentsClear - + Add to cart Need Help? Chat with an Expert 123 4567 890Call Us gtag(\"event\", \"view_item\", { send_to: \"GLA\", ecomm_pagetype: \"product\", value: 118.000000, items:[{ id: \"gla_7175\", price: 118.000000, google_business_vertical: \"retail\", name: \"Flat Bottom Rodent Holders\", category: \"Animal Holders &amp; Laboratory Animal Handling\", }]}); What you get on day one Adjustable tail piece provides flexibility while holding rodents securely Openings in the top and bottom allow easy access and waste disposal Front hopper is ideal for feeding, watering, and anesthesia How to clean Clean-up is simple with a solution of 30% isopropyl alcohol and 70% water. Product specifications Item IDInside heightHolder length RSTR541 0.900\" 3.000\"RSTR542 1.375\"4.125\" RSTR543 1.625\"4.625\"RSTR5441.875\"6.875\" Need Help With Your Order? Our product specialists are here to help with additional information on our products, grant proposals, orders and more. Give us a call today! Call 888-572-8887"
+    }
+  ]
+}

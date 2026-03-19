@@ -71,6 +71,8 @@ type ProductLite = {
   slug: string;
   thumb?: string;
   sourceUrl?: string;
+  summary?: string;
+  categoryPathTitles?: string[];
 };
 
 type CategoryLite = {
@@ -155,6 +157,8 @@ const PAGE_QUERY = `
       _id,
       title,
       sku,
+      summary,
+      categoryPathTitles,
       "slug": slug.current,
       "thumb": coalesce(imageUrls[0], images[0].asset->url, ""),
       sourceUrl
@@ -312,21 +316,7 @@ const STATIC_LABEL_BY_PATH = new Map(
   flattenMenu(KENT_STATIC_MENU).map((node) => [node.path.join("/"), node.title]),
 );
 
-const LANDING_FALLBACK_PATHS = new Set([
-  "anesthesia",
-  "laboratory-animal-handling",
-  "laboratory-animal-handling/animal-holders",
-  "noninvasive-blood-pressure",
-  "physiological-monitoring",
-  "physiological-monitoring/physiological-monitoring-accessories/temperature",
-  "rodent-identification",
-  "surgery",
-  "tissue-collection/brain-matricies",
-  "ventilation",
-  "ventilation/intubation",
-  "warming",
-  "warming/warming-pads-blankets",
-]);
+const LANDING_FALLBACK_PATHS = new Set(["anesthesia"]);
 
 function buildCategoryHref(path: string[]) {
   return path.length ? `/products/${BRAND_KEY}/${path.join("/")}` : `/products/${BRAND_KEY}`;
@@ -982,15 +972,23 @@ function ListingIntro({
 
   if (roughTextLenFromHtml(safe) >= 20) {
     return (
-      <section className="mt-6 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-        <ArticleHtml html={safe} />
+      <section className="mt-5 border-b border-slate-200 pb-6">
+        <div
+          className="
+            max-w-none text-[15px] leading-8 text-slate-700
+            [&_p]:m-0 [&_p]:leading-8
+            [&_a]:font-medium [&_a]:text-blue-700 [&_a]:underline-offset-4 hover:[&_a]:underline
+          "
+        >
+          <HtmlContent html={safe} />
+        </div>
       </section>
     );
   }
 
   if (summary?.trim()) {
     return (
-      <section className="mt-6 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+      <section className="mt-5 border-b border-slate-200 pb-6">
         <p className="text-[15px] leading-8 text-slate-700">{summary}</p>
       </section>
     );
@@ -1007,25 +1005,23 @@ function ListingHeader({
   theme: Theme;
 }) {
   return (
-    <section className="mt-8 rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <div className="text-sm font-semibold text-slate-900">Products</div>
-          <div className="mt-1 text-sm text-slate-600">
-            {count > 0 ? `${count} product${count > 1 ? "s" : ""}` : "No products found"}
-          </div>
-        </div>
+    <section className="mt-6 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
+      <div className="text-sm text-slate-600">
+        {count > 0 ? `${count} product${count > 1 ? "s" : ""}` : "No products found"}
+      </div>
 
-        <div
+      <div className="inline-flex items-center gap-2 text-sm text-slate-500">
+        <span className="font-medium text-slate-700">View:</span>
+        <span
           className={[
-            "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold",
+            "rounded-md border px-2 py-1 text-xs font-semibold",
             theme.accentBorder,
             theme.accentSoftBg,
             theme.accentText,
           ].join(" ")}
         >
-          Kent Scientific
-        </div>
+          Grid
+        </span>
       </div>
     </section>
   );
@@ -1042,46 +1038,68 @@ function KentProductGrid({
   if (!items.length) return null;
 
   return (
-    <section className="mt-5">
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-        {items.map((product) => (
-          <Link
-            key={product._id}
-            href={buildProductHref(product.slug)}
-            prefetch={false}
-            className="group overflow-hidden rounded-[24px] border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-md"
-          >
-            <div className="relative aspect-[4/3] border-b border-slate-100 bg-white">
-              {product.thumb ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={toAbs(product.thumb)}
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-contain p-6"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="absolute inset-0 bg-slate-50" />
-              )}
-            </div>
+    <section className="mt-8">
+      <div className="grid gap-x-6 gap-y-8 sm:grid-cols-2 xl:grid-cols-3">
+        {items.map((product) => {
+          const title = stripBrandSuffix(product.title);
+          const categories = Array.isArray(product.categoryPathTitles)
+            ? product.categoryPathTitles.filter(Boolean)
+            : [];
+          const summary = String(product.summary || "").trim();
 
-            <div className="px-5 py-5">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                {product.sku ? `Cat.No ${product.sku}` : "Kent Scientific"}
-              </div>
+          return (
+            <Link
+              key={product._id}
+              href={buildProductHref(product.slug)}
+              prefetch={false}
+              className="group block"
+            >
+              <article className="border border-slate-200 bg-white transition hover:shadow-md">
+                <div className="relative aspect-square border-b border-slate-100 bg-white">
+                  {product.thumb ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={toAbs(product.thumb)}
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-contain p-5"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-slate-50" />
+                  )}
+                </div>
 
-              <div className="mt-2 min-h-[56px] text-[20px] font-semibold leading-snug tracking-tight text-slate-900 group-hover:text-blue-700">
-                {stripBrandSuffix(product.title)}
-              </div>
+                <div className="px-5 py-5">
+                  {categories.length ? (
+                    <div className="line-clamp-2 text-[12px] leading-5 text-slate-500">
+                      {categories.join(", ")}
+                    </div>
+                  ) : null}
 
-              <div className="mt-5 flex items-center justify-between">
-                <span className={`inline-flex items-center gap-2 text-sm font-semibold ${theme.accentText}`}>
-                  View Product <span aria-hidden>›</span>
-                </span>
-              </div>
-            </div>
-          </Link>
-        ))}
+                  <div className="mt-2 text-[22px] font-semibold leading-[1.35] tracking-tight text-slate-900 group-hover:text-blue-700">
+                    {title}
+                  </div>
+
+                  {summary ? (
+                    <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">{summary}</p>
+                  ) : (
+                    <div className="mt-3 h-12" />
+                  )}
+
+                  <div className="mt-5 flex items-center justify-between gap-3">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      {product.sku ? `Cat.No ${product.sku}` : "Kent Scientific"}
+                    </div>
+
+                    <span className={`text-sm font-semibold ${theme.accentText}`}>
+                      Learn More <span aria-hidden>›</span>
+                    </span>
+                  </div>
+                </div>
+              </article>
+            </Link>
+          );
+        })}
       </div>
     </section>
   );
@@ -1356,7 +1374,6 @@ function ResourceBadge() {
   );
 }
 
-
 function renderLooseBlocks(blocks: ContentBlock[], theme: Theme) {
   const normalized = coerceContentBlocks(blocks).filter(Boolean);
   if (!normalized.length) return null;
@@ -1365,10 +1382,10 @@ function renderLooseBlocks(blocks: ContentBlock[], theme: Theme) {
 
   for (let i = 0; i < normalized.length; i += 1) {
     const block = normalized[i];
-    const title = String(block?.title || '').trim();
+    const title = String(block?.title || "").trim();
 
-    if (block?._type === 'contentBlockHtml') {
-      const html = safeHtmlForRender(String(block?.html || ''));
+    if (block?._type === "contentBlockHtml") {
+      const html = safeHtmlForRender(String(block?.html || ""));
       if (roughTextLenFromHtml(html) < 20) continue;
       sections.push(
         <section key={block._key || `loose-html-${i}`} className="mt-8 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
@@ -1379,28 +1396,28 @@ function renderLooseBlocks(blocks: ContentBlock[], theme: Theme) {
       continue;
     }
 
-    if (block?._type !== 'contentBlockCards') continue;
+    if (block?._type !== "contentBlockCards") continue;
     const kind = String(block?.kind || guessCardsKind(block.items || [])) as CardsKind;
     const items = dedupeLandingItems(Array.isArray(block?.items) ? block.items : []);
     if (!items.length) continue;
 
-    if (kind === 'category') {
+    if (kind === "category") {
       sections.push(
         <section key={block._key || `loose-cat-${i}`} className="mt-8">
           {title ? <div className="mb-5"><KentH2>{title}</KentH2></div> : null}
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {items.map((item, idx) => {
-              const href = resolveKentHref(String(item?.href || ''));
-              const path = href.startsWith(`/products/${BRAND_KEY}/`) ? href.replace(`/products/${BRAND_KEY}/`, '').split('/').filter(Boolean) : [];
-              const titleText = STATIC_LABEL_BY_PATH.get(path.join('/')) || normalizeTitle(String(item?.title || ''), path[path.length - 1] || '');
+              const href = resolveKentHref(String(item?.href || ""));
+              const path = href.startsWith(`/products/${BRAND_KEY}/`) ? href.replace(`/products/${BRAND_KEY}/`, "").split("/").filter(Boolean) : [];
+              const titleText = STATIC_LABEL_BY_PATH.get(path.join("/")) || normalizeTitle(String(item?.title || ""), path[path.length - 1] || "");
               return (
                 <Link key={item._key || `${titleText}-${idx}`} href={href} prefetch={false} className="group overflow-hidden rounded-[22px] border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-md">
                   <div className="relative aspect-[1/1] border-b border-slate-100 bg-white">
-                    {item.imageUrl ? <img src={toAbs(String(item.imageUrl || ''))} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" /> : <div className="absolute inset-0 bg-slate-50" />}
+                    {item.imageUrl ? <img src={toAbs(String(item.imageUrl || ""))} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" /> : <div className="absolute inset-0 bg-slate-50" />}
                   </div>
                   <div className="px-4 py-4">
                     <div className="text-base font-semibold leading-snug text-slate-900 group-hover:text-blue-700">{titleText}</div>
-                    {typeof item.count === 'number' ? <div className="mt-2 text-sm text-slate-500">{item.count} products</div> : null}
+                    {typeof item.count === "number" ? <div className="mt-2 text-sm text-slate-500">{item.count} products</div> : null}
                     <div className={`mt-4 text-sm font-semibold ${theme.accentText}`}>Browse category ›</div>
                   </div>
                 </Link>
@@ -1412,19 +1429,19 @@ function renderLooseBlocks(blocks: ContentBlock[], theme: Theme) {
       continue;
     }
 
-    if (kind === 'product') {
+    if (kind === "product") {
       sections.push(
         <section key={block._key || `loose-prod-${i}`} className="mt-8">
           {title ? <div className="mb-5"><KentH2>{title}</KentH2></div> : null}
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {items.map((item, idx) => (
-              <Link key={item._key || `${item.title}-${idx}`} href={resolveKentHref(String(item?.href || ''))} prefetch={false} className="group overflow-hidden rounded-[24px] border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-md">
+              <Link key={item._key || `${item.title}-${idx}`} href={resolveKentHref(String(item?.href || ""))} prefetch={false} className="group overflow-hidden rounded-[24px] border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-md">
                 <div className="relative aspect-[4/3] border-b border-slate-100 bg-white">
-                  {item.imageUrl ? <img src={toAbs(String(item.imageUrl || ''))} alt="" className="absolute inset-0 h-full w-full object-contain p-6" loading="lazy" /> : <div className="absolute inset-0 bg-slate-50" />}
+                  {item.imageUrl ? <img src={toAbs(String(item.imageUrl || ""))} alt="" className="absolute inset-0 h-full w-full object-contain p-6" loading="lazy" /> : <div className="absolute inset-0 bg-slate-50" />}
                 </div>
                 <div className="px-5 py-5">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">{item.sku ? `Cat.No ${item.sku}` : 'Kent Scientific'}</div>
-                  <div className="mt-2 text-[20px] font-semibold leading-snug tracking-tight text-slate-900 group-hover:text-blue-700">{String(item.title || '')}</div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">{item.sku ? `Cat.No ${item.sku}` : "Kent Scientific"}</div>
+                  <div className="mt-2 text-[20px] font-semibold leading-snug tracking-tight text-slate-900 group-hover:text-blue-700">{String(item.title || "")}</div>
                   {item.subtitle ? <div className="mt-3 line-clamp-2 text-sm leading-6 text-slate-600">{item.subtitle}</div> : <div className="mt-3 h-12" />}
                   <div className={`mt-5 text-sm font-semibold ${theme.accentText}`}>Learn More ›</div>
                 </div>
@@ -1436,14 +1453,14 @@ function renderLooseBlocks(blocks: ContentBlock[], theme: Theme) {
       continue;
     }
 
-    if (kind === 'publication' || kind === 'resource') {
+    if (kind === "publication" || kind === "resource") {
       sections.push(
         <section key={block._key || `loose-link-${i}`} className="mt-8 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
           {title ? <div className="mb-5"><KentH2>{title}</KentH2></div> : null}
           <div className="space-y-4">
             {items.map((item, idx) => (
-              <Link key={item._key || `${item.title}-${idx}`} href={resolveKentHref(String(item?.href || ''))} prefetch={false} className="block rounded-[20px] border border-slate-200 px-5 py-4 transition hover:bg-slate-50">
-                <div className="text-lg font-semibold tracking-tight text-slate-900 hover:text-blue-700">{String(item.title || '')}</div>
+              <Link key={item._key || `${item.title}-${idx}`} href={resolveKentHref(String(item?.href || ""))} prefetch={false} className="block rounded-[20px] border border-slate-200 px-5 py-4 transition hover:bg-slate-50">
+                <div className="text-lg font-semibold tracking-tight text-slate-900 hover:text-blue-700">{String(item.title || "")}</div>
                 {item.subtitle ? <div className="mt-1 text-sm leading-6 text-slate-600">{item.subtitle}</div> : null}
               </Link>
             ))}
@@ -1455,6 +1472,7 @@ function renderLooseBlocks(blocks: ContentBlock[], theme: Theme) {
 
   return sections.length ? <>{sections}</> : null;
 }
+
 function renderLandingBlocks(blocks: ContentBlock[], theme: Theme) {
   const viewBlocks = normalizeBlocksForKentView(blocks);
   const out: React.ReactNode[] = [];
@@ -1518,7 +1536,6 @@ function renderLandingBlocks(blocks: ContentBlock[], theme: Theme) {
               >
                 <div className="relative aspect-[4/3] border-b border-slate-100 bg-white">
                   {item.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={toAbs(String(item.imageUrl || ""))}
                       alt=""
@@ -1578,7 +1595,6 @@ function renderLandingBlocks(blocks: ContentBlock[], theme: Theme) {
               >
                 <div className="relative aspect-[1/1] border-b border-slate-100 bg-white">
                   {item.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={toAbs(String(item.imageUrl || ""))}
                       alt=""
@@ -1661,7 +1677,6 @@ function renderLandingBlocks(blocks: ContentBlock[], theme: Theme) {
               >
                 {item.imageUrl ? (
                   <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={toAbs(String(item.imageUrl || ""))}
                       alt=""
@@ -1870,16 +1885,18 @@ export default async function KentProductsPathPage({
     );
   }
 
+  const showHero = pageType === "landing";
+
   return (
     <div>
-      <HeroBanner brandTitle={brand.title} />
+      {showHero ? <HeroBanner brandTitle={brand.title} /> : null}
 
       <div className={PAGE_SHELL}>
-        <div className="mt-6 flex justify-end">
+        <div className={`${showHero ? "mt-6" : "mt-2"} flex justify-end`}>
           <Breadcrumb items={breadcrumbItems} />
         </div>
 
-        <div className={`mt-10 ${CONTENT_LAYOUT}`}>
+        <div className={`${showHero ? "mt-10" : "mt-6"} ${CONTENT_LAYOUT}`}>
           <aside className="self-start lg:sticky lg:top-24">
             <KentSideNav activePath={pathArr} theme={THEME_KENT} />
           </aside>
