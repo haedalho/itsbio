@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import * as React from "react";
+import * as cheerio from "cheerio";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
 import HtmlContent from "@/components/site/HtmlContent";
@@ -72,7 +73,10 @@ type ProductLite = {
   thumb?: string;
   sourceUrl?: string;
   summary?: string;
+  categoryPath?: string[];
+  listingPaths?: string[];
   categoryPathTitles?: string[];
+  href?: string;
 };
 
 type CategoryLite = {
@@ -142,29 +146,26 @@ const PAGE_QUERY = `
     null
   ),
 
-  "products": select(
-    $hasPath => *[
-      _type=="product"
-      && (!defined(isActive) || isActive==true)
-      && (
-        brandSlug==$brandKey
-        || brand->slug.current==$brandKey
-        || brand->themeKey==$brandKey
-      )
-      && defined(categoryPath)
-      && categoryPath == $pathArr
-    ] | order(title asc)[0...24] {
-      _id,
-      title,
-      sku,
-      summary,
-      categoryPathTitles,
-      "slug": slug.current,
-      "thumb": coalesce(imageUrls[0], images[0].asset->url, ""),
-      sourceUrl
-    },
-    []
-  ),
+  "allProducts": *[
+    _type=="product"
+    && (!defined(isActive) || isActive==true)
+    && (
+      brandSlug==$brandKey
+      || brand->slug.current==$brandKey
+      || brand->themeKey==$brandKey
+    )
+  ] | order(title asc)[0...400] {
+    _id,
+    title,
+    sku,
+    summary,
+    categoryPath,
+    listingPaths,
+    categoryPathTitles,
+    "slug": slug.current,
+    "thumb": coalesce(imageUrls[0], images[0].asset->url, ""),
+    sourceUrl
+  },
 
   "allCategories": *[
     _type=="category"
@@ -886,6 +887,191 @@ function resolvePageType(category: CategoryDoc | null, pathStr: string, directCh
   return "listing";
 }
 
+
+function normalizeMatchPath(path?: string[]) {
+  return normalizePathSegments(path || []).join("/");
+}
+
+function getLeafSlugFromPath(path?: string[]) {
+  const normalized = normalizePathSegments(path || []);
+  return normalized[normalized.length - 1] || "";
+}
+
+type ParsedLegacyCard = {
+  title: string;
+  href: string;
+  imageUrl?: string;
+  sku?: string;
+  summary?: string;
+};
+
+function parseLegacyProductCards(html?: string | null): ParsedLegacyCard[] {
+  const source = String(html || "").trim();
+  if (!source) return [];
+
+  const $ = cheerio.load(source);
+  const out: ParsedLegacyCard[] = [];
+  const seen = new Set<string>();
+
+  const selectors = [
+    ".products .product",
+    ".woocommerce ul.products li.product",
+    "ul.products li.product",
+    ".archive-products .product",
+    ".content-products .product",
+  ].join(",");
+
+  $(selectors).each((_, el) => {
+    const node = $(el);
+    const anchor = node.find("a").first();
+    const href = toAbs(String(anchor.attr("href") || "").trim());
+    const title = normalizeTitle(
+      String(
+        node.find(".woocommerce-loop-product__title").first().text() ||
+          node.find("h2").first().text() ||
+          node.find("h3").first().text() ||
+          anchor.text() ||
+          ""
+      ).trim(),
+    );
+    const imageUrl = toAbs(
+      String(
+        node.find("img").first().attr("data-lazy-src") ||
+          node.find("img").first().attr("data-src") ||
+          node.find("img").first().attr("src") ||
+          ""
+      ).trim(),
+    );
+    const sku = String(
+      node.find(".sku").first().text() ||
+        node.find(".product-sku").first().text() ||
+        node.find("[class*='sku']").first().text() ||
+        ""
+    ).trim();
+    const summary = String(
+      node.find(".excerpt").first().text() ||
+        node.find(".description").first().text() ||
+        node.find("p").first().text() ||
+        ""
+    ).trim();
+
+    if (!href && !title) return;
+
+    const key = `${href}__${title}`.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+
+    out.push({ title, href, imageUrl, sku, summary });
+  });
+
+  return out;
+}
+
+function matchProductsForListing(pathArr: string[], category: CategoryDoc | null, allProducts: ProductLite[]) {
+  const exactCandidates = new Set<string>();
+  const leafCandidates = new Set<string>();
+
+  const addCandidate = (parts?: string[]) => {
+    const normalized = normalizePathSegments(parts || []);
+    if (!normalized.length) return;
+    exactCandidates.add(normalized.join("/"));
+    const leaf = normalized[normalized.length - 1];
+    if (leaf) leafCandidates.add(leaf);
+  };
+
+  addCandidate(pathArr);
+  addCandidate(category?.path || []);
+  addCandidate(kentCategoryPathFromUrl(String(category?.sourceUrl || "")));
+
+  const matched = allProducts.filter((product) => {
+    const categoryPath = normalizePathSegments(product.categoryPath || []);
+    const categoryJoined = categoryPath.join("/");
+    const categoryLeaf = categoryPath[categoryPath.length - 1] || "";
+
+    const listingPathParts = Array.isArray(product.listingPaths)
+      ? product.listingPaths
+          .map((entry) => normalizePathSegments(String(entry || "").split("/")))
+          .filter((parts) => parts.length)
+      : [];
+    const listingJoined = listingPathParts.map((parts) => parts.join("/"));
+    const listingLeafs = listingPathParts.map((parts) => parts[parts.length - 1] || "").filter(Boolean);
+
+    if (categoryJoined && exactCandidates.has(categoryJoined)) return true;
+    if (listingJoined.some((joined) => exactCandidates.has(joined))) return true;
+    if (categoryLeaf && leafCandidates.has(categoryLeaf)) return true;
+    if (listingLeafs.some((leaf) => leafCandidates.has(leaf))) return true;
+
+    return false;
+  });
+
+  return dedupeProducts(matched);
+}
+
+function hydrateProductsFromLegacyCards(baseProducts: ProductLite[], legacyCards: ParsedLegacyCard[]) {
+  const bySlug = new Map<string, ProductLite>();
+  const bySourceUrl = new Map<string, ProductLite>();
+
+  for (const product of baseProducts) {
+    const slug = String(product.slug || "").trim().toLowerCase();
+    if (slug) bySlug.set(slug, product);
+
+    const source = normalizeUrl(String(product.sourceUrl || ""));
+    if (source) bySourceUrl.set(source.toLowerCase(), product);
+  }
+
+  const out: ProductLite[] = [...baseProducts];
+  const seen = new Set(out.map((product) => String(product.slug || product._id || "").trim().toLowerCase()));
+
+  for (const card of legacyCards) {
+    const href = toAbs(String(card.href || "").trim());
+    const sourceKey = normalizeUrl(href).toLowerCase();
+    const slug = kentProductSlugFromUrl(href);
+    const matched = bySourceUrl.get(sourceKey) || (slug ? bySlug.get(slug.toLowerCase()) : undefined);
+
+    if (matched) {
+      const idx = out.findIndex((item) => item._id === matched._id);
+      const merged: ProductLite = {
+        ...matched,
+        thumb: matched.thumb || card.imageUrl || "",
+        sku: matched.sku || card.sku || "",
+        summary: matched.summary || card.summary || "",
+      };
+      if (idx >= 0) out[idx] = merged;
+      continue;
+    }
+
+    if (!slug) continue;
+    const key = slug.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    out.push({
+      _id: `legacy-${key}`,
+      title: normalizeTitle(card.title || "", slug),
+      slug,
+      thumb: card.imageUrl || "",
+      sku: card.sku || "",
+      summary: card.summary || "",
+      sourceUrl: href,
+      href: buildProductHref(slug),
+      categoryPathTitles: [],
+    });
+  }
+
+  return dedupeProducts(out);
+}
+
+function resolveListingProducts(pathArr: string[], category: CategoryDoc | null, allProducts: ProductLite[]) {
+  const matched = matchProductsForListing(pathArr, category, allProducts);
+  const legacyCards = parseLegacyProductCards(category?.legacyHtml);
+
+  if (legacyCards.length) {
+    return hydrateProductsFromLegacyCards(matched, legacyCards);
+  }
+
+  return matched;
+}
+
 function getFirstHtmlBlock(blocks: ContentBlock[]) {
   return (
     normalizeBlocksForKentView(blocks).find(
@@ -1050,7 +1236,7 @@ function KentProductGrid({
           return (
             <Link
               key={product._id}
-              href={buildProductHref(product.slug)}
+              href={product.href || buildProductHref(product.slug)}
               prefetch={false}
               className="group block"
             >
@@ -1764,8 +1950,9 @@ export default async function KentProductsPathPage({
   const category: CategoryDoc | null = data?.category || null;
   if (!category?._id) notFound();
 
-  const productsInCategory: ProductLite[] = Array.isArray(data?.products) ? data.products : [];
+  const allProducts: ProductLite[] = Array.isArray(data?.allProducts) ? data.allProducts : [];
   const allCategories: CategoryLite[] = Array.isArray(data?.allCategories) ? data.allCategories : [];
+  const productsInCategory = resolveListingProducts(pathArr, category, allProducts);
   const directChildren = getDirectChildren(allCategories, pathArr);
   const pageType = resolvePageType(category, pathStr, directChildren.length, dedupeProducts(productsInCategory).length);
 
@@ -1885,7 +2072,7 @@ export default async function KentProductsPathPage({
     );
   }
 
-  const showHero = pageType === "landing";
+  const showHero = true;
 
   return (
     <div>

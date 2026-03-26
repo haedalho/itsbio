@@ -1,132 +1,37 @@
 // app/products/kent/item/[...slug]/page.tsx
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
-import { sanityClient } from "@/lib/sanity/sanity.client";
-
 import KentProductDetailClient from "@/components/products/KentProductDetailClient";
+import { sanityClient } from "@/lib/sanity/sanity.client";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
-const THEME = {
-  accentBg: "bg-orange-500",
-  accentText: "text-orange-600",
-  accentBorder: "border-orange-200",
-  accentSoftBg: "bg-orange-50",
-};
-
-function buildHref(brandKey: string, path: string[]) {
-  return path.length ? `/products/${brandKey}/${path.join("/")}` : `/products/${brandKey}`;
-}
-
-function humanizeSegment(seg: string) {
-  return (seg || "").replaceAll("-", " ").replaceAll("_", " ").trim();
-}
-
-function decodeHtmlEntities(input: string) {
-  if (!input) return "";
-  return input
-    .replaceAll("&amp;", "&")
-    .replaceAll("&lt;", "<")
-    .replaceAll("&gt;", ">")
-    .replaceAll("&quot;", '"')
-    .replaceAll("&#39;", "'")
-    .replaceAll("&#x27;", "'")
-    .replaceAll("&nbsp;", " ");
-}
-
-function stripCompanyNoise(input: string) {
-  let t = (input || "").trim();
-  t = t.replace(/Applied\s+Biological\s+Materials(?:\s*,?\s*Inc\.)?/gi, "");
-  t = t.replace(/\(\s*\)/g, "");
-  t = t.replace(/\s{2,}/g, " ");
-  return t.trim();
-}
-
-function stripBrandSuffix(title: string) {
-  const raw = decodeHtmlEntities((title || "").trim());
-  const idx = raw.indexOf("|");
-  const base = (idx >= 0 ? raw.slice(0, idx) : raw).trim();
-  return stripCompanyNoise(base);
-}
-
-function legacyHref(brandKey: string, url: string) {
-  return `/products/${brandKey}/legacy?u=${encodeURIComponent(url)}`;
-}
-
-/** Print 관련만 제거 */
-function stripPrintFromHtml(html: any) {
-  let out = typeof html === "string" ? html : "";
-  if (!out) return out;
-
-  out = out.replace(
-    /<a[^>]*(?:onclick=["'][^"']*print[^"']*["']|href=["'][^"']*print[^"']*["'])[^>]*>[\s\S]*?<\/a>/gi,
-    ""
-  );
-  out = out.replace(
-    /<button[^>]*(?:onclick=["'][^"']*print[^"']*["']|class=["'][^"']*print[^"']*["'])[^>]*>[\s\S]*?<\/button>/gi,
-    ""
-  );
-  out = out.replace(/<i[^>]*class=["'][^"']*fa-print[^"']*["'][^>]*>[\s\S]*?<\/i>/gi, "");
-  out = out.replace(/<svg[^>]*>[\s\S]*?<\/svg>/gi, (m) => (m.toLowerCase().includes("print") ? "" : m));
-  out = out.replace(/\bPrint\b/gi, "");
-
-  return out;
-}
-
-/** specsHtml 없을 때 fallback */
-function extractSpecsTableFromHtml(html: string) {
-  if (!html) return "";
-
-  const nearSpecs = html.match(/Specifications[\s\S]{0,5000}?(<table[\s\S]*?<\/table>)/i);
-  if (nearSpecs?.[1]) return nearSpecs[1];
-
-  const tables = html.match(/<table[\s\S]*?<\/table>/gi) || [];
-  for (const t of tables) {
-    const low = t.toLowerCase();
-    if (low.includes("spec") || low.includes("specification") || low.includes("parameter")) return t;
-  }
-  if (tables.length) return tables.reduce((a, b) => (a.length >= b.length ? a : b), "");
-
-  return "";
-}
-
-/** 갤러리 노이즈 제거 */
-function isGalleryNoiseUrl(u: string) {
-  const s = (u || "").toLowerCase();
-  if (!s) return true;
-
-  if (s.includes("request") && s.includes("sample")) return true;
-  if (s.includes("request") && s.includes("quote")) return true;
-  if (s.includes("intertek")) return true;
-  if (s.includes("badge")) return true;
-  if (s.includes("icon")) return true;
-
-  if (s.endsWith("/kr.png") || s.includes("/flag") || s.includes("flag-")) return true;
-  if (s.includes("abm") && s.includes("logo")) return true;
-
-  if (/-16x11\./.test(s)) return true;
-  if (/-229x65\./.test(s)) return true;
-
-  return false;
-}
-
-/** -------------------- GROQ -------------------- */
+const BRAND_KEY = "kent";
 
 const ITEM_PAGE_QUERY = `
 {
-  "brand": *[_type == "brand" && (themeKey == $brandKey || slug.current == $brandKey)][0]{
-    _id, title, themeKey, "slug": slug.current
+  "brand": *[
+    _type == "brand"
+    && (themeKey == $brandKey || slug.current == $brandKey)
+  ][0]{
+    _id,
+    title,
+    themeKey,
+    "slug": slug.current
   },
 
   "product": *[
-    _type=="product"
+    _type == "product"
     && slug.current == $slug
-    && (brand->slug.current==$brandKey || brand->themeKey==$brandKey)
+    && (
+      brand->slug.current == $brandKey
+      || brand->themeKey == $brandKey
+      || brandSlug == $brandKey
+    )
   ][0]{
     _id,
     title,
@@ -172,271 +77,161 @@ const ITEM_PAGE_QUERY = `
 
     imageUrls,
     imageFiles,
-    images[]{ _key, asset->{ url } },
-
-    enrichedAt
-  },
-
-  "roots": *[
-    _type == "category"
-    && (
-      themeKey == $brandKey
-      || brand->themeKey == $brandKey
-      || brand->slug.current == $brandKey
-    )
-    && count(path) == 1
-  ]
-  | order(order asc, title asc) { _id, title, path, order },
-
-  "descendants": select(
-    $hasActiveRoot => *[
-      _type == "category"
-      && (
-        themeKey == $brandKey
-        || brand->themeKey == $brandKey
-        || brand->slug.current == $brandKey
-      )
-      && count(path) > 1
-      && path[0] == $activeRoot
-    ]
-    | order(order asc, title asc) { _id, title, path, order },
-    []
-  )
+    images[]{ _key, asset->{ url } }
+  }
 }
 `;
 
-type CatLite = { _id: string; title: string; path: string[]; order?: number };
-
-type TreeNode = {
-  key: string;
-  _id: string;
-  title: string;
-  path: string[];
-  order?: number;
-  isVirtual?: boolean;
-  children: TreeNode[];
-};
-
-function makeNodeKey(path: string[]) {
-  return path.join("/");
+function buildHref(path: string[]) {
+  return path.length ? `/products/${BRAND_KEY}/${path.join("/")}` : `/products/${BRAND_KEY}`;
 }
 
-function buildTreeFromDescendants(rootPath: string[], descendants: CatLite[]) {
-  const rootKey = makeNodeKey(rootPath);
-  const nodes = new Map<string, TreeNode>();
-
-  function ensureNode(path: string[], meta?: Partial<CatLite>) {
-    const key = makeNodeKey(path);
-    const seg = path[path.length - 1] || "";
-
-    if (!nodes.has(key)) {
-      nodes.set(key, {
-        key,
-        _id: meta?._id || `virtual-${key}`,
-        title: meta?.title || humanizeSegment(seg),
-        path,
-        order: meta?.order,
-        isVirtual: !meta?._id,
-        children: [],
-      });
-    } else if (meta?._id) {
-      const cur = nodes.get(key)!;
-      nodes.set(key, {
-        ...cur,
-        _id: meta._id,
-        title: meta.title || cur.title,
-        order: typeof meta.order === "number" ? meta.order : cur.order,
-        isVirtual: false,
-      });
-    }
-    return nodes.get(key)!;
-  }
-
-  ensureNode(rootPath, {
-    _id: `virtual-${rootKey}`,
-    title: humanizeSegment(rootPath[rootPath.length - 1] || ""),
-  });
-
-  for (const d of descendants) {
-    if (!Array.isArray(d.path) || d.path.length <= rootPath.length) continue;
-    const prefixOk = rootPath.every((seg, i) => d.path[i] === seg);
-    if (!prefixOk) continue;
-
-    for (let i = rootPath.length; i < d.path.length; i++) {
-      const p = d.path.slice(0, i + 1);
-      if (i === d.path.length - 1) ensureNode(p, d);
-      else ensureNode(p);
-    }
-  }
-
-  for (const [key, node] of nodes.entries()) {
-    if (key === rootKey) continue;
-    const parentPath = node.path.slice(0, node.path.length - 1);
-    const parentKey = makeNodeKey(parentPath);
-    const parent = nodes.get(parentKey);
-    if (parent) parent.children.push(node);
-  }
-
-  function sortRec(n: TreeNode) {
-    n.children.sort((a, b) => {
-      const ao = typeof a.order === "number" ? a.order : 999999;
-      const bo = typeof b.order === "number" ? b.order : 999999;
-      if (ao !== bo) return ao - bo;
-      return String(a.title).localeCompare(String(b.title));
-    });
-    n.children.forEach(sortRec);
-  }
-
-  const root = nodes.get(rootKey)!;
-  sortRec(root);
-  return root.children;
+function cleanText(input?: string | null) {
+  return String(input || "")
+    .replace(/\u00a0/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-/** -------------------- SideNav -------------------- */
+function decodeHtmlEntities(input?: string | null) {
+  return String(input || "")
+    .replaceAll("&amp;", "&")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&#39;", "'")
+    .replaceAll("&#x27;", "'")
+    .replaceAll("&nbsp;", " ");
+}
 
-function SideNavTree({
-  brandKey,
-  roots,
-  activePath,
-  activeRootTree,
-}: {
-  brandKey: string;
-  roots: CatLite[];
-  activePath: string[];
-  activeRootTree: TreeNode[];
-}) {
-  const activePathStr = activePath.join("/");
-  const activeRoot = activePath[0] || "";
-  const INDENTS = ["ml-2", "ml-4", "ml-6", "ml-8", "ml-10", "ml-12"];
+function stripBrandSuffix(title?: string | null) {
+  const raw = decodeHtmlEntities(title);
+  const idx = raw.indexOf("|");
+  return cleanText(idx >= 0 ? raw.slice(0, idx) : raw);
+}
 
-  function NodeList({ nodes, depth }: { nodes: TreeNode[]; depth: number }) {
-    if (!nodes?.length) return null;
-    const indentClass = INDENTS[Math.min(depth, INDENTS.length - 1)];
+function humanizeSegment(seg: string) {
+  return cleanText(seg)
+    .replaceAll("-", " ")
+    .replaceAll("_", " ");
+}
 
-    return (
-      <div className="space-y-1">
-        {nodes.map((n) => {
-          const p = n.path.join("/");
-          const isActive = activePathStr === p;
-          const isOnTrail =
-            !isActive &&
-            activePath.length > n.path.length &&
-            activePath.slice(0, n.path.length).join("/") === p;
+function stripPrintFromHtml(html: unknown) {
+  let out = typeof html === "string" ? html : "";
+  if (!out) return out;
 
-          const childrenOpen = isActive || isOnTrail;
-
-          return (
-            <div key={n.key} className="group">
-              <Link
-                href={buildHref(brandKey, n.path)}
-                className={[
-                  `${indentClass} flex items-center justify-between rounded-xl px-3 py-2 text-sm`,
-                  isActive
-                    ? `${THEME.accentBg} text-white`
-                    : isOnTrail
-                    ? "bg-neutral-50 text-neutral-900"
-                    : "text-neutral-700 hover:bg-neutral-50",
-                ].join(" ")}
-              >
-                <span className="min-w-0 truncate">{stripBrandSuffix(n.title)}</span>
-                <span className={isActive ? "text-white/80" : "text-neutral-300"}>›</span>
-              </Link>
-
-              {n.children?.length ? (
-                <div className={[childrenOpen ? "block" : "hidden group-hover:block", "mt-1"].join(" ")}>
-                  <NodeList nodes={n.children} depth={depth + 1} />
-                </div>
-              ) : null}
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
-
-  return (
-    <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div className="border-b border-neutral-200 px-5 py-4">
-        <div className="text-sm font-semibold text-neutral-900">All Products</div>
-      </div>
-
-      <div className="space-y-2 p-2">
-        <div className="space-y-1">
-          {roots.map((r) => {
-            const isActive = activePath[0] === r.path[0];
-            return (
-              <Link
-                key={r._id}
-                href={buildHref(brandKey, r.path)}
-                className={[
-                  "flex items-center justify-between rounded-xl px-3 py-2 text-sm",
-                  isActive ? `${THEME.accentBg} text-white` : "text-neutral-700 hover:bg-neutral-50",
-                ].join(" ")}
-              >
-                <span className="min-w-0 truncate">{stripBrandSuffix(r.title)}</span>
-                <span className={isActive ? "text-white/80" : "text-neutral-300"}>›</span>
-              </Link>
-            );
-          })}
-        </div>
-
-        {activeRoot ? (
-          <div className="mt-2 border-t border-neutral-200 pt-2">
-            <div className={`px-3 py-2 text-xs font-semibold tracking-wide ${THEME.accentText}`}>
-              {humanizeSegment(activeRoot)}
-            </div>
-
-            {activeRootTree?.length ? (
-              <NodeList nodes={activeRootTree} depth={0} />
-            ) : (
-              <div className="px-3 py-2 text-sm text-neutral-500">하위 카테고리가 없습니다.</div>
-            )}
-          </div>
-        ) : null}
-      </div>
-    </div>
+  out = out.replace(
+    /<a[^>]*(?:onclick=["'][^"']*print[^"']*["']|href=["'][^"']*print[^"']*["'])[^>]*>[\s\S]*?<\/a>/gi,
+    "",
   );
+  out = out.replace(
+    /<button[^>]*(?:onclick=["'][^"']*print[^"']*["']|class=["'][^"']*print[^"']*["'])[^>]*>[\s\S]*?<\/button>/gi,
+    "",
+  );
+  out = out.replace(/<i[^>]*class=["'][^"']*fa-print[^"']*["'][^>]*>[\s\S]*?<\/i>/gi, "");
+  out = out.replace(/\bPrint\b/gi, "");
+
+  return out;
 }
 
-/** -------------------- Images normalize -------------------- */
+function sanitizeKentHtml(html: unknown) {
+  let out = typeof html === "string" ? html : "";
+  if (!out) return out;
+
+  out = stripPrintFromHtml(out);
+
+  out = out.replace(/<script[\s\S]*?<\/script>/gi, "");
+  out = out.replace(/<style[\s\S]*?<\/style>/gi, "");
+  out = out.replace(/<iframe[\s\S]*?<\/iframe>/gi, "");
+  out = out.replace(/<noscript[\s\S]*?<\/noscript>/gi, "");
+  out = out.replace(/<form[\s\S]*?<\/form>/gi, "");
+  out = out.replace(/<input[^>]*>/gi, "");
+  out = out.replace(/<button[\s\S]*?<\/button>/gi, "");
+
+  out = out.replace(/Login to see prices/gi, "");
+  out = out.replace(/Get early access to info, updates, and discounts/gi, "");
+  out = out.replace(/Need Help With Your Order\?/gi, "");
+
+  return out.trim();
+}
+
+function extractSpecsTableFromHtml(html: string) {
+  if (!html) return "";
+
+  const nearSpecs = html.match(/Specifications[\s\S]{0,7000}?(<table[\s\S]*?<\/table>)/i);
+  if (nearSpecs?.[1]) return nearSpecs[1];
+
+  const tables = html.match(/<table[\s\S]*?<\/table>/gi) || [];
+  for (const table of tables) {
+    const low = table.toLowerCase();
+    if (
+      low.includes("spec") ||
+      low.includes("specification") ||
+      low.includes("parameter") ||
+      low.includes("catalog")
+    ) {
+      return table;
+    }
+  }
+
+  return tables[0] || "";
+}
+
+function isGalleryNoiseUrl(url: string) {
+  const s = String(url || "").toLowerCase();
+  if (!s) return true;
+
+  if (s.includes("request") && s.includes("sample")) return true;
+  if (s.includes("request") && s.includes("quote")) return true;
+  if (s.includes("intertek")) return true;
+  if (s.includes("badge")) return true;
+  if (s.includes("icon")) return true;
+  if (s.includes("logo")) return true;
+  if (s.includes("banner")) return true;
+  if (s.endsWith("/kr.png")) return true;
+
+  return false;
+}
+
 function normalizeImages(product: any, title: string) {
-  const urls: string[] = Array.isArray(product?.imageUrls)
+  const rawUrls: string[] = Array.isArray(product?.imageUrls)
     ? product.imageUrls.filter((u: any) => typeof u === "string" && u.trim())
     : [];
 
-  if (urls.length) {
-    const cleaned = urls.filter((u) => !isGalleryNoiseUrl(u));
-    const seen = new Set<string>();
-    return cleaned
-      .map((u) => ({ url: u.trim(), alt: title }))
-      .filter((x) => (seen.has(x.url) ? false : (seen.add(x.url), true)));
-  }
+  const assetUrls: string[] = Array.isArray(product?.images)
+    ? product.images
+        .map((im: any) => im?.asset?.url)
+        .filter((u: any) => typeof u === "string" && u.trim())
+    : [];
 
-  const out: Array<{ url: string; alt: string }> = [];
-  if (Array.isArray(product?.images)) {
-    for (const im of product.images) {
-      const u = im?.asset?.url;
-      if (typeof u === "string" && u.trim() && !isGalleryNoiseUrl(u)) out.push({ url: u.trim(), alt: title });
-    }
-  }
+  const merged = [...rawUrls, ...assetUrls];
   const seen = new Set<string>();
-  return out.filter((x) => (seen.has(x.url) ? false : (seen.add(x.url), true)));
+
+  return merged
+    .map((u) => String(u).trim())
+    .filter((u) => u && !isGalleryNoiseUrl(u))
+    .filter((u) => {
+      if (seen.has(u)) return false;
+      seen.add(u);
+      return true;
+    })
+    .map((u) => ({ url: u, alt: title }));
 }
 
-/** -------------------- Hero -------------------- */
 function HeroBanner({ brandTitle }: { brandTitle: string }) {
   return (
-    <section className="relative">
-      <div className="relative h-[220px] w-full overflow-hidden md:h-[280px]">
+    <section className="relative overflow-hidden">
+      <div className="relative h-[220px] w-full md:h-[280px]">
         <Image src="/hero.png" alt="Products hero" fill priority className="object-cover" />
         <div className="absolute inset-0 bg-black/35" />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/45 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/55 via-slate-900/20 to-transparent" />
+
         <div className="absolute inset-0">
           <div className="mx-auto flex h-full max-w-6xl items-center px-6">
             <div>
-              <div className="text-xs font-semibold tracking-wide text-white/80">ITS BIO</div>
+              <div className="text-xs font-semibold tracking-[0.2em] text-white/80">ITS BIO</div>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">
-                {stripCompanyNoise(brandTitle)} Product
+                {cleanText(brandTitle)} Product
               </h1>
             </div>
           </div>
@@ -446,176 +241,103 @@ function HeroBanner({ brandTitle }: { brandTitle: string }) {
   );
 }
 
-/** -------------------- Page -------------------- */
-
 export default async function KentProductDetailPage({
   params,
 }: {
   params: Promise<{ slug: string[] }> | { slug: string[] };
 }) {
   const resolved = await Promise.resolve(params as any);
-
-  const brandKey: string = "kent";
-  const slugArr = (resolved?.slug ?? []) as string[];
+  const slugArr = Array.isArray(resolved?.slug) ? resolved.slug.filter(Boolean) : [];
   const slug = slugArr.join("/");
 
   if (!slug) notFound();
 
-  const client = (sanityClient as any).withConfig
-    ? (sanityClient as any).withConfig({ useCdn: false })
-    : sanityClient;
-
+  const client = (sanityClient as any).withConfig?.({ useCdn: false }) ?? sanityClient;
   const bundle = await client.fetch(ITEM_PAGE_QUERY, {
-    brandKey,
+    brandKey: BRAND_KEY,
     slug,
-    hasActiveRoot: false,
-    activeRoot: "",
   });
 
   const brand = bundle?.brand;
-  if (!brand?._id) notFound();
-
   const product = bundle?.product;
-  if (!product?._id) notFound();
 
-  const categoryPath: string[] = Array.isArray(product?.categoryPath) ? product.categoryPath : [];
-  const categoryPathTitles: string[] = Array.isArray(product?.categoryPathTitles) ? product.categoryPathTitles : [];
-  const activeRoot = categoryPath[0] || "";
-
-  const data2 = await client.fetch(ITEM_PAGE_QUERY, {
-    brandKey,
-    slug,
-    hasActiveRoot: !!activeRoot,
-    activeRoot,
-  });
-
-  const roots: CatLite[] = Array.isArray(data2?.roots) ? data2.roots : [];
-  const descendants: CatLite[] = Array.isArray(data2?.descendants) ? data2.descendants : [];
+  if (!brand?._id || !product?._id) notFound();
 
   const title = stripBrandSuffix(product?.title || "");
-
-  const categoryHref = categoryPath.length ? buildHref(brandKey, categoryPath) : `/products/${brandKey}`;
-
-  let activeRootTree: TreeNode[] = [];
-  if (activeRoot) {
-    activeRootTree = buildTreeFromDescendants([activeRoot], descendants);
-  }
+  const categoryPath: string[] = Array.isArray(product?.categoryPath) ? product.categoryPath : [];
+  const categoryPathTitles: string[] = Array.isArray(product?.categoryPathTitles)
+    ? product.categoryPathTitles
+    : [];
 
   const breadcrumbItems = [
     { label: "Home", href: "/" },
     { label: "Products", href: "/products" },
-    { label: stripCompanyNoise(brand.title), href: `/products/${brandKey}` },
+    { label: cleanText(brand.title), href: `/products/${BRAND_KEY}` },
     ...categoryPath.map((seg: string, i: number) => ({
       label: categoryPathTitles[i] ? stripBrandSuffix(categoryPathTitles[i]) : humanizeSegment(seg),
-      href: buildHref(brandKey, categoryPath.slice(0, i + 1)),
+      href: buildHref(categoryPath.slice(0, i + 1)),
     })),
-    { label: title, href: `/products/${brandKey}/item/${product.slug}` },
+    { label: title, href: `/products/${BRAND_KEY}/item/${product.slug}` },
   ];
-
-  const openOriginalUrl =
-    typeof product?.sourceUrl === "string" && product.sourceUrl.trim() ? product.sourceUrl.trim() : "";
 
   const images = normalizeImages(product, title);
 
-  const rawSpecs = typeof product?.specsHtml === "string" && product.specsHtml.trim() ? product.specsHtml : "";
-  const rawFallback =
-    typeof product?.extraHtml === "string" && product.extraHtml.trim()
+  const rawSpecs =
+    typeof product?.specsHtml === "string" && product.specsHtml.trim() ? product.specsHtml : "";
+
+  const fallbackSpecs = extractSpecsTableFromHtml(
+    [typeof product?.extraHtml === "string" ? product.extraHtml : "", typeof product?.legacyHtml === "string" ? product.legacyHtml : ""]
+      .filter(Boolean)
+      .join("\n"),
+  );
+
+  const specsHtml = sanitizeKentHtml(rawSpecs || fallbackSpecs || "");
+
+  const descriptionHtml = sanitizeKentHtml(
+    (typeof product?.extraHtml === "string" && product.extraHtml.trim()
       ? product.extraHtml
       : typeof product?.legacyHtml === "string"
-      ? product.legacyHtml
-      : "";
+        ? product.legacyHtml
+        : "") || "",
+  );
 
-  const derivedSpecs = rawSpecs ? "" : extractSpecsTableFromHtml(rawFallback);
-  const specsHtml = stripPrintFromHtml(rawSpecs || derivedSpecs);
+  const datasheetHtml = sanitizeKentHtml(product?.datasheetHtml || "");
+  const documentsHtml = sanitizeKentHtml(product?.documentsHtml || "");
+  const faqsHtml = sanitizeKentHtml(product?.faqsHtml || "");
+  const referencesHtml = sanitizeKentHtml(product?.referencesHtml || "");
+  const reviewsHtml = sanitizeKentHtml(product?.reviewsHtml || "");
 
-  const datasheetHtml = stripPrintFromHtml(product?.datasheetHtml);
-  const documentsHtml = stripPrintFromHtml(product?.documentsHtml);
-  const faqsHtml = stripPrintFromHtml(product?.faqsHtml);
-  const referencesHtml = stripPrintFromHtml(product?.referencesHtml);
-  const reviewsHtml = stripPrintFromHtml(product?.reviewsHtml);
-
-  const documents = Array.isArray(product?.docs)
-    ? product.docs
-        .map((d: any) => {
-          const url = typeof d?.url === "string" ? d.url.trim() : "";
-          const title2 = typeof d?.title === "string" ? d.title.trim() : "";
-          const label2 = typeof d?.label === "string" ? d.label.trim() : "";
-          if (!url) return null;
-          return { url, label: title2 || label2 || "Document" };
-        })
-        .filter(Boolean)
-    : [];
+  const documents = Array.isArray(product?.docs) ? product.docs : [];
 
   return (
-    <div>
+    <main className="pb-16">
       <HeroBanner brandTitle={brand.title} />
 
       <div className="mx-auto max-w-6xl px-6">
-        <div className="mt-6 flex justify-end">
+        <div className="py-6">
           <Breadcrumb items={breadcrumbItems} />
         </div>
 
-        <main className="mt-10 pb-14">
-          <div className="grid gap-8 lg:grid-cols-12">
-            <aside className="lg:col-span-4">
-              <SideNavTree
-                brandKey={brandKey}
-                roots={roots}
-                activePath={categoryPath}
-                activeRootTree={activeRootTree}
-              />
-            </aside>
-
-            <section className="lg:col-span-8">
-              <h2 className="text-4xl font-semibold tracking-tight text-neutral-900">{title}</h2>
-
-              {categoryPath.length ? (
-                <div className={`mt-3 inline-flex rounded-full ${THEME.accentSoftBg} px-3 py-1 text-xs ${THEME.accentText}`}>
-                  Category: {categoryPath.join(" / ")}
-                </div>
-              ) : null}
-
-              <div className="mt-5 flex flex-wrap gap-2">
-                <Link
-                  href={categoryHref}
-                  className="inline-flex h-10 items-center justify-center rounded-xl border border-neutral-200 bg-white px-4 text-sm font-semibold text-neutral-900 hover:bg-neutral-50"
-                >
-                  Back to Category
-                </Link>
-
-                {openOriginalUrl ? (
-                  <Link
-                    href={legacyHref(brandKey, openOriginalUrl)}
-                    className={`inline-flex h-10 items-center justify-center rounded-xl border px-4 text-sm font-semibold ${THEME.accentBorder} ${THEME.accentSoftBg} ${THEME.accentText}`}
-                  >
-                    Open Original
-                  </Link>
-                ) : null}
-              </div>
-
-              <KentProductDetailClient
-                title={title}
-                summary={typeof product?.summary === "string" ? product.summary : ""}
-                sku={typeof product?.sku === "string" ? product.sku : ""}
-                images={images}
-                specsHtml={specsHtml}
-                datasheetHtml={datasheetHtml}
-                documentsHtml={documentsHtml}
-                faqsHtml={faqsHtml}
-                referencesHtml={referencesHtml}
-                reviewsHtml={reviewsHtml}
-                documents={documents as any}
-                productType={typeof product?.productType === "string" ? product.productType : "simple"}
-                defaultVariantId={typeof product?.defaultVariantId === "string" ? product.defaultVariantId : ""}
-                optionGroups={Array.isArray(product?.optionGroups) ? product.optionGroups : []}
-                variants={Array.isArray(product?.variants) ? product.variants : []}
-              />
-
-              <div className="h-10" />
-            </section>
-          </div>
-        </main>
+        <KentProductDetailClient
+          title={title}
+          summary={product?.summary || ""}
+          sku={product?.sku || ""}
+          sourceUrl={product?.sourceUrl || ""}
+          images={images}
+          descriptionHtml={descriptionHtml}
+          specsHtml={specsHtml}
+          datasheetHtml={datasheetHtml}
+          documentsHtml={documentsHtml}
+          faqsHtml={faqsHtml}
+          referencesHtml={referencesHtml}
+          reviewsHtml={reviewsHtml}
+          documents={documents}
+          productType={product?.productType}
+          defaultVariantId={product?.defaultVariantId}
+          optionGroups={product?.optionGroups || []}
+          variants={product?.variants || []}
+        />
       </div>
-    </div>
+    </main>
   );
 }

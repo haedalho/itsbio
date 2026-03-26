@@ -2,8 +2,8 @@
 
 import * as React from "react";
 
-import ProductGalleryClient from "@/components/products/ProductGalleryClient";
-import ProductTabsClient from "@/components/products/ProductTabs";
+import KentProductGalleryClient from "@/components/products/KentProductGalleryClient";
+import KentProductTabs from "@/components/products/KentProductTabs";
 
 type Img = { url?: string; alt?: string };
 type Doc = { url?: string; label?: string; title?: string };
@@ -54,6 +54,15 @@ function normalizeValue(input: string) {
   return slugifyLoose(raw) || raw.toLowerCase();
 }
 
+function safeExternalUrl(url?: string) {
+  const raw = String(url || "").trim();
+  if (!raw) return "";
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (raw.startsWith("//")) return `https:${raw}`;
+  if (raw.startsWith("/")) return `https://www.kentscientific.com${raw}`;
+  return raw;
+}
+
 function dedupeImages(images: Img[]) {
   const seen = new Set<string>();
   return (images || []).filter((img) => {
@@ -66,6 +75,7 @@ function dedupeImages(images: Img[]) {
 
 function pairArrayToMap(input: Record<string, string> | VariantPair[] | undefined) {
   if (!input) return {} as Record<string, string>;
+
   if (Array.isArray(input)) {
     const out: Record<string, string> = {};
     for (const row of input) {
@@ -75,6 +85,7 @@ function pairArrayToMap(input: Record<string, string> | VariantPair[] | undefine
     }
     return out;
   }
+
   const out: Record<string, string> = {};
   for (const [rawKey, rawValue] of Object.entries(input)) {
     const k = normalizeKey(rawKey);
@@ -106,9 +117,16 @@ function findMatchingVariant(variants: Variant[], selections: Record<string, str
   );
 }
 
-function buildInitialSelections(optionGroups: OptionGroup[], variants: Variant[], defaultVariantId?: string) {
+function buildInitialSelections(
+  optionGroups: OptionGroup[],
+  variants: Variant[],
+  defaultVariantId?: string,
+) {
   const seed =
-    (defaultVariantId ? variants.find((row) => row.variantId === defaultVariantId) : null) || variants[0] || null;
+    (defaultVariantId ? variants.find((row) => row.variantId === defaultVariantId) : null) ||
+    variants[0] ||
+    null;
+
   const seedLookup = seed ? buildVariantLookup(seed) : {};
 
   const out: Record<string, string> = {};
@@ -122,16 +140,49 @@ function buildInitialSelections(optionGroups: OptionGroup[], variants: Variant[]
 
 function pickOptionLabel(group: OptionGroup, selectedValue: string) {
   const matched = (group.options || []).find(
-    (row) => normalizeValue(String(row?.value || row?.label || "")) === selectedValue
+    (row) => normalizeValue(String(row?.value || row?.label || "")) === selectedValue,
   );
   return matched?.label || matched?.value || selectedValue;
+}
+
+function normalizeDocs(documents?: Doc[]) {
+  return Array.isArray(documents)
+    ? documents
+        .filter((row) => row?.url)
+        .map((row) => ({
+          url: String(row.url),
+          label: String(row.label || row.title || row.url),
+        }))
+    : [];
+}
+
+function getQuickLinks(sourceUrl?: string, docs?: { url: string; label: string }[]) {
+  const links: Array<{ href: string; label: string }> = [];
+
+  if (sourceUrl) {
+    links.push({ href: sourceUrl, label: "Original Page" });
+  }
+
+  for (const doc of docs || []) {
+    links.push({ href: doc.url, label: doc.label });
+  }
+
+  const seen = new Set<string>();
+  return links.filter((link) => {
+    const key = `${link.href}__${link.label}`;
+    if (!link.href || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 export default function KentProductDetailClient({
   title,
   summary,
   sku,
+  sourceUrl,
   images,
+  descriptionHtml,
   specsHtml,
   datasheetHtml,
   documentsHtml,
@@ -147,7 +198,9 @@ export default function KentProductDetailClient({
   title: string;
   summary?: string;
   sku?: string;
+  sourceUrl?: string;
   images: Img[];
+  descriptionHtml?: string;
   specsHtml?: string;
   datasheetHtml?: string;
   documentsHtml?: string;
@@ -162,7 +215,7 @@ export default function KentProductDetailClient({
 }) {
   const safeGroups = React.useMemo(
     () => (Array.isArray(optionGroups) ? optionGroups.filter((row) => (row.options || []).length > 0) : []),
-    [optionGroups]
+    [optionGroups],
   );
 
   const safeVariants = React.useMemo(
@@ -170,11 +223,11 @@ export default function KentProductDetailClient({
       Array.isArray(variants)
         ? variants.filter((row) => row?.variantId || row?.sku || row?.catNo || row?.optionSummary)
         : [],
-    [variants]
+    [variants],
   );
 
   const [selections, setSelections] = React.useState<Record<string, string>>(() =>
-    buildInitialSelections(safeGroups, safeVariants, defaultVariantId)
+    buildInitialSelections(safeGroups, safeVariants, defaultVariantId),
   );
 
   React.useEffect(() => {
@@ -183,7 +236,7 @@ export default function KentProductDetailClient({
 
   const selectedVariant = React.useMemo(
     () => findMatchingVariant(safeVariants, selections) || safeVariants[0] || null,
-    [safeVariants, selections]
+    [safeVariants, selections],
   );
 
   const itemNo = selectedVariant?.catNo || selectedVariant?.sku || sku || "";
@@ -191,66 +244,80 @@ export default function KentProductDetailClient({
   const hasVariantButtons = (productType === "variant" || safeVariants.length > 0) && safeGroups.length > 0;
 
   const galleryImages = React.useMemo(() => {
-    const head = selectedVariant?.imageUrl
-      ? [{ url: selectedVariant.imageUrl, alt: selectedVariant.title || title }]
+    const variantImage = safeExternalUrl(selectedVariant?.imageUrl);
+    const head = variantImage
+      ? [{ url: variantImage, alt: selectedVariant?.title || title }]
       : [];
     return dedupeImages([...(head as Img[]), ...(images || [])]);
   }, [images, selectedVariant?.imageUrl, selectedVariant?.title, title]);
 
-  const safeDocs = React.useMemo(
-    () =>
-      Array.isArray(documents)
-        ? documents
-            .filter((row) => row?.url)
-            .map((row) => ({ url: String(row.url), label: String(row.label || row.title || row.url) }))
-        : [],
-    [documents]
-  );
+  const safeDocs = React.useMemo(() => normalizeDocs(documents), [documents]);
+  const quickLinks = React.useMemo(() => getQuickLinks(sourceUrl, safeDocs), [sourceUrl, safeDocs]);
 
   return (
-    <>
-      {summary ? <p className="mt-4 text-base leading-7 text-neutral-700">{summary}</p> : null}
-
-      <div className="mt-6 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
-        <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="p-5 lg:border-r lg:border-neutral-200">
-            <ProductGalleryClient images={galleryImages} title={title} />
+    <div className="pb-12">
+      <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm lg:p-8">
+        <div className="grid gap-10 xl:grid-cols-[minmax(0,1.05fr)_420px]">
+          <div>
+            <KentProductGalleryClient images={galleryImages} title={title} />
           </div>
 
-          <div className="p-5">
-            {itemNo ? (
-              <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-4">
-                <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Item # / Cat. No.</div>
-                <div className="mt-2 text-2xl font-semibold tracking-tight text-neutral-900">{itemNo}</div>
-                {selectedSummary ? <div className="mt-2 text-sm text-neutral-600">{selectedSummary}</div> : null}
-              </div>
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-blue-700">
+              Kent Scientific
+            </div>
+
+            <h1 className="mt-3 text-[30px] font-semibold tracking-[-0.03em] text-[#0b4fb3] lg:text-[40px]">
+              {title}
+            </h1>
+
+            {summary ? (
+              <p className="mt-3 text-[15px] leading-7 text-slate-600">
+                {summary}
+              </p>
+            ) : null}
+
+            <div className="mt-6 rounded-md bg-[#0b4fb3] px-7 py-4 text-center text-[17px] font-semibold text-white">
+              Login to see prices
+            </div>
+
+            <div className="mt-5 text-sm text-slate-700">
+              <span className="font-semibold text-slate-900">Item # </span>
+              {itemNo || "Contact for details"}
+            </div>
+
+            {selectedSummary ? (
+              <div className="mt-3 text-sm text-slate-600">{selectedSummary}</div>
             ) : null}
 
             {hasVariantButtons ? (
-              <div className="mt-5 space-y-5">
+              <div className="mt-7 space-y-5">
                 {safeGroups.map((group) => {
                   const key = normalizeKey(group.key || group.name || "option");
                   const selected = selections[key] || "";
+
                   return (
                     <div key={key}>
-                      <div className="mb-2 text-sm font-semibold text-neutral-900">
+                      <div className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-900">
                         {group.label || group.name || "Option"}
                       </div>
+
                       <div className="flex flex-wrap gap-2">
                         {(group.options || []).map((row, idx) => {
                           const value = normalizeValue(String(row?.value || row?.label || `option-${idx}`));
                           const active = value === selected;
                           const label = row?.label || row?.value || `Option ${idx + 1}`;
+
                           return (
                             <button
                               key={`${key}-${value}-${idx}`}
                               type="button"
                               onClick={() => setSelections((prev) => ({ ...prev, [key]: value }))}
                               className={[
-                                "inline-flex min-h-10 items-center justify-center rounded-xl border px-4 py-2 text-sm font-medium transition",
+                                "inline-flex min-h-[40px] items-center justify-center border px-4 py-2 text-sm transition",
                                 active
-                                  ? "border-orange-500 bg-orange-50 text-orange-700 ring-2 ring-orange-500/20"
-                                  : "border-neutral-200 bg-white text-neutral-800 hover:border-neutral-300 hover:bg-neutral-50",
+                                  ? "border-[#0b4fb3] bg-[#0b4fb3] text-white"
+                                  : "border-slate-300 bg-white text-slate-800 hover:border-slate-400 hover:bg-slate-50",
                               ].join(" ")}
                             >
                               {label}
@@ -264,38 +331,79 @@ export default function KentProductDetailClient({
               </div>
             ) : null}
 
-            {hasVariantButtons ? (
-              <div className="mt-6 rounded-2xl border border-dashed border-neutral-200 px-4 py-4 text-sm text-neutral-600">
+            {safeGroups.length ? (
+              <div className="mt-6 space-y-1 text-sm text-slate-600">
                 {safeGroups.map((group) => {
                   const key = normalizeKey(group.key || group.name || "option");
                   return (
                     <div key={`selected-${key}`} className="flex gap-2">
-                      <span className="font-semibold text-neutral-900">{group.label || group.name || "Option"}:</span>
+                      <span className="font-semibold uppercase text-slate-900">
+                        {group.label || group.name || "Option"}:
+                      </span>
                       <span>{pickOptionLabel(group, selections[key] || "")}</span>
                     </div>
                   );
                 })}
               </div>
             ) : null}
+
+            {quickLinks.length ? (
+              <div className="mt-7 border-t border-slate-200 pt-6">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  Resources
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {quickLinks.slice(0, 8).map((link, idx) => (
+                    <a
+                      key={`${link.href}-${idx}`}
+                      href={link.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            <div className="mt-8 rounded-[18px] border border-slate-200 bg-slate-50 p-5">
+              <div className="text-sm font-semibold text-slate-900">ITS BIO support</div>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Contact ITS BIO for pricing, compatibility questions, and availability for this Kent Scientific item.
+              </p>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <a
+                  href="mailto:info@itsbio.co.kr"
+                  className="inline-flex items-center justify-center bg-[#0b4fb3] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#093f8e]"
+                >
+                  Request Quote
+                </a>
+                <a
+                  href="tel:02-3462-8658"
+                  className="inline-flex items-center justify-center border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+                >
+                  Call ITS BIO
+                </a>
+              </div>
+            </div>
           </div>
         </div>
+      </section>
 
-        <div className="h-px bg-neutral-200" />
-
-        <div className="p-5">
-          <div className="itsbio-product-tabs">
-            <ProductTabsClient
-              specsHtml={specsHtml}
-              datasheetHtml={datasheetHtml}
-              documentsHtml={documentsHtml}
-              faqsHtml={faqsHtml}
-              referencesHtml={referencesHtml}
-              reviewsHtml={reviewsHtml}
-              documents={safeDocs as any}
-            />
-          </div>
-        </div>
-      </div>
-    </>
+      <KentProductTabs
+        title={title}
+        descriptionHtml={descriptionHtml}
+        specsHtml={specsHtml}
+        datasheetHtml={datasheetHtml}
+        documentsHtml={documentsHtml}
+        faqsHtml={faqsHtml}
+        referencesHtml={referencesHtml}
+        reviewsHtml={reviewsHtml}
+        documents={safeDocs}
+      />
+    </div>
   );
 }

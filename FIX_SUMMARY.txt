@@ -1,0 +1,38 @@
+ITS BIO fixed package
+
+Applied changes:
+- package.json: dev -> next dev --webpack
+- added dev:turbo script for optional Turbopack testing
+- .gitignore: added /.cache/ and /.turbo/ and *.log
+- removed suspicious zero-byte junk files from project root (28 files)
+- excluded local cache/build folders from this cleaned package
+
+Removed root junk files:
+- !isNoiseText(line))
+- !isNoiseText(opt.text)
+- ({
+- 0
+- 40
+- String(seg
+- [url
+- `${it.sourceUrl
+- `${item.href}__${item.title}`.toLowerCase())
+- `${v.value}
+- argv.includes(flag)
+- b.score
+- c.toUpperCase())
+- canonicalCategoryUrl(url)).filter(Boolean)
+- controller.abort()
+- item.pathArr.length
+- node
+- normalizeStoredPathStr(p)))
+- opt.text
+- p.set(doc))
+- re.test(s))
+- seg.trim())
+- setTimeout(resolve
+- textClean($(el).text()))
+- textClean(line))
+- url)
+- v.categoryPath
+- {
