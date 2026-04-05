@@ -19,7 +19,7 @@ function HtmlBlock({ html }: { html?: string }) {
 
   return (
     <div
-      className="prose prose-slate max-w-none prose-headings:text-[#0b4fb3] prose-p:leading-7 prose-li:leading-7 prose-table:w-full prose-table:border-collapse prose-th:border prose-th:border-slate-300 prose-th:bg-slate-50 prose-th:px-3 prose-th:py-2 prose-td:border prose-td:border-slate-300 prose-td:px-3 prose-td:py-2"
+      className="prose prose-slate max-w-none prose-a:text-[#0b4fb3] prose-a:underline prose-a:underline-offset-2 hover:prose-a:text-[#083b85] prose-headings:text-[#0b4fb3] prose-p:leading-7 prose-li:leading-7 prose-table:w-full prose-table:border-collapse prose-th:border prose-th:border-slate-300 prose-th:bg-slate-50 prose-th:px-3 prose-th:py-2 prose-td:border prose-td:border-slate-300 prose-td:px-3 prose-td:py-2"
       dangerouslySetInnerHTML={{ __html: String(html || "") }}
     />
   );

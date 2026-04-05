@@ -724,9 +724,13 @@ function buildProductDoc(inputProduct, ctx) {
     variants[0] ||
     null;
 
-  const summary = firstSummary(inputProduct?.bodyTextPreview || "");
-  const extraHtml = paragraphsToHtml(inputProduct?.bodyTextPreview || "");
-  const documentsHtml = buildDocumentsHtml(docs);
+  const summary =
+    firstSummary(stripHtmlTags(inputProduct?.overviewHtml || "")) ||
+    firstSummary(inputProduct?.bodyTextPreview || "");
+  const extraHtml = inputProduct?.overviewHtml || paragraphsToHtml(inputProduct?.bodyTextPreview || "");
+  const documentsHtml = inputProduct?.documentsHtml || buildDocumentsHtml(docs);
+  const resolvedSpecsHtml = inputProduct?.specsHtml || (variants.length ? buildVariantTableHtml(variants) : "");
+  const imageUrls = dedupeStrings((inputProduct?.imageUrls || []).map((u) => normalizeUrl(u))).slice(0, 40);
   const contentBlocks = buildContentBlocks(inputProduct, docs, variants, categoryTitles);
 
   const docId = existing?._id || `product-${BRAND_KEY}-${stableKey(sourceUrl || slugCurrent, 16)}`;
@@ -750,13 +754,13 @@ function buildProductDoc(inputProduct, ctx) {
     sourceUrl: sourceUrl || undefined,
     legacyHtml: undefined,
     extraHtml: extraHtml || undefined,
-    specsHtml: variants.length ? buildVariantTableHtml(variants) : undefined,
+    specsHtml: resolvedSpecsHtml || undefined,
     datasheetHtml: undefined,
     documentsHtml: documentsHtml || undefined,
     faqsHtml: undefined,
     referencesHtml: undefined,
     reviewsHtml: undefined,
-    imageUrls: dedupeStrings((inputProduct?.imageUrls || []).map((u) => normalizeUrl(u))).slice(0, 40),
+    imageUrls: imageUrls.length ? imageUrls : undefined,
     docs: docs.length ? docs : undefined,
     productType: variants.length || optionGroups.length ? "variant" : "simple",
     defaultVariantId: defaultVariant?.variantId || undefined,

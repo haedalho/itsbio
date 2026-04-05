@@ -42,6 +42,7 @@ const ITEM_PAGE_QUERY = `
     categoryPath,
     categoryPathTitles,
 
+    overviewHtml,
     specsHtml,
     extraHtml,
     legacyHtml,
@@ -134,6 +135,17 @@ function stripPrintFromHtml(html: unknown) {
   return out;
 }
 
+function decorateKentLinks(html: string) {
+  if (!html) return html;
+
+  return html.replace(/<a\s+([^>]*href=["'][^"']+["'][^>]*)>/gi, (match, attrs) => {
+    let nextAttrs = String(attrs || "");
+    if (!/\btarget=/i.test(nextAttrs)) nextAttrs += ` target="_blank"`;
+    if (!/\brel=/i.test(nextAttrs)) nextAttrs += ` rel="noreferrer"`;
+    return `<a ${nextAttrs}>`;
+  });
+}
+
 function sanitizeKentHtml(html: unknown) {
   let out = typeof html === "string" ? html : "";
   if (!out) return out;
@@ -151,6 +163,10 @@ function sanitizeKentHtml(html: unknown) {
   out = out.replace(/Login to see prices/gi, "");
   out = out.replace(/Get early access to info, updates, and discounts/gi, "");
   out = out.replace(/Need Help With Your Order\?/gi, "");
+  out = out.replace(/Choose an option/gi, "");
+  out = out.replace(/\bClear\b/gi, "");
+
+  out = decorateKentLinks(out);
 
   return out.trim();
 }
@@ -193,6 +209,13 @@ function isGalleryNoiseUrl(url: string) {
   return false;
 }
 
+function imageMasterKey(url: string) {
+  return String(url || "")
+    .split("?")[0]
+    .replace(/-\d{2,5}x\d{2,5}(?=\.[a-z0-9]+$)/i, "")
+    .toLowerCase();
+}
+
 function normalizeImages(product: any, title: string) {
   const rawUrls: string[] = Array.isArray(product?.imageUrls)
     ? product.imageUrls.filter((u: any) => typeof u === "string" && u.trim())
@@ -204,15 +227,16 @@ function normalizeImages(product: any, title: string) {
         .filter((u: any) => typeof u === "string" && u.trim())
     : [];
 
-  const merged = [...rawUrls, ...assetUrls];
+  const source = rawUrls.length ? rawUrls : assetUrls;
   const seen = new Set<string>();
 
-  return merged
+  return source
     .map((u) => String(u).trim())
     .filter((u) => u && !isGalleryNoiseUrl(u))
     .filter((u) => {
-      if (seen.has(u)) return false;
-      seen.add(u);
+      const key = imageMasterKey(u);
+      if (seen.has(key)) return false;
+      seen.add(key);
       return true;
     })
     .map((u) => ({ url: u, alt: title }));
@@ -286,7 +310,11 @@ export default async function KentProductDetailPage({
     typeof product?.specsHtml === "string" && product.specsHtml.trim() ? product.specsHtml : "";
 
   const fallbackSpecs = extractSpecsTableFromHtml(
-    [typeof product?.extraHtml === "string" ? product.extraHtml : "", typeof product?.legacyHtml === "string" ? product.legacyHtml : ""]
+    [
+      typeof product?.overviewHtml === "string" ? product.overviewHtml : "",
+      typeof product?.extraHtml === "string" ? product.extraHtml : "",
+      typeof product?.legacyHtml === "string" ? product.legacyHtml : "",
+    ]
       .filter(Boolean)
       .join("\n"),
   );
@@ -294,11 +322,13 @@ export default async function KentProductDetailPage({
   const specsHtml = sanitizeKentHtml(rawSpecs || fallbackSpecs || "");
 
   const descriptionHtml = sanitizeKentHtml(
-    (typeof product?.extraHtml === "string" && product.extraHtml.trim()
-      ? product.extraHtml
-      : typeof product?.legacyHtml === "string"
-        ? product.legacyHtml
-        : "") || "",
+    (typeof product?.overviewHtml === "string" && product.overviewHtml.trim()
+      ? product.overviewHtml
+      : typeof product?.extraHtml === "string" && product.extraHtml.trim()
+        ? product.extraHtml
+        : typeof product?.legacyHtml === "string"
+          ? product.legacyHtml
+          : "") || "",
   );
 
   const datasheetHtml = sanitizeKentHtml(product?.datasheetHtml || "");
@@ -320,7 +350,7 @@ export default async function KentProductDetailPage({
 
         <KentProductDetailClient
           title={title}
-          summary={product?.summary || ""}
+          summary={product?.summary || stripHtmlTags(descriptionHtml).slice(0, 220)}
           sku={product?.sku || ""}
           sourceUrl={product?.sourceUrl || ""}
           images={images}

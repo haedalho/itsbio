@@ -17,7 +17,7 @@ export default function KentProductGalleryClient({
 
   React.useEffect(() => {
     setActiveIndex(0);
-  }, [safeImages.length]);
+  }, [safeImages.length, safeImages[0]?.url]);
 
   const active = safeImages[activeIndex] || safeImages[0] || null;
 

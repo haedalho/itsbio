@@ -259,7 +259,11 @@ export default function KentProductDetailClient({
       <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm lg:p-8">
         <div className="grid gap-10 xl:grid-cols-[minmax(0,1.05fr)_420px]">
           <div>
-            <KentProductGalleryClient images={galleryImages} title={title} />
+            <KentProductGalleryClient
+              key={`${selectedVariant?.variantId || "base"}-${galleryImages[0]?.url || ""}`}
+              images={galleryImages}
+              title={title}
+            />
           </div>
 
           <div className="min-w-0">

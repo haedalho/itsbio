@@ -212,19 +212,33 @@ function cleanupPreviewText(text) {
 
 function collectImages($, canonical) {
   const imageUrls = [];
-  $(".woocommerce-product-gallery img, .summary img, main img").each((_, img) => {
-    const src =
-      $(img).attr("data-src") ||
-      $(img).attr("src") ||
-      $(img).attr("data-large_image") ||
-      $(img).attr("data-lazy-src") ||
-      "";
-    const u = normalizeTrailingSlashUrl(absUrl(canonical, src));
-    if (!u) return;
-    if (/logo|icon|favicon|badge|seal|trustpilot|review/i.test(u)) return;
-    imageUrls.push(u);
+
+  $(
+    [
+      ".woocommerce-product-gallery__image a",
+      ".woocommerce-product-gallery__image img",
+      ".woocommerce-product-gallery__wrapper img",
+      ".woocommerce-product-gallery img",
+    ].join(", ")
+  ).each((_, el) => {
+    const $el = $(el);
+    const candidates = [
+      $el.attr("data-large_image"),
+      $el.attr("data-src"),
+      parseSrcsetLargest($el.attr("srcset"), canonical),
+      $el.attr("href"),
+      $el.attr("src"),
+      $el.attr("data-lazy-src"),
+    ]
+      .filter(Boolean)
+      .map((v) => normalizeImageUrl(absUrl(canonical, v)));
+
+    const chosen = chooseBestImage(candidates);
+    if (!chosen) return;
+    imageUrls.push(chosen);
   });
-  return dedupeStrings(imageUrls).slice(0, 40);
+
+  return dedupeImageUrls(imageUrls).slice(0, 20);
 }
 
 function collectPdfs($, canonical) {
@@ -356,6 +370,24 @@ function collectOptionGroups($) {
 function collectVariationJson($) {
   const payloads = [];
 
+  function pickVariationImage(item) {
+    const imageObj = item?.image || {};
+    const candidates = [
+      imageObj.full_src,
+      imageObj.fullSrc,
+      imageObj.src,
+      imageObj.url,
+      imageObj.full,
+      imageObj.thumb_src,
+      imageObj.thumbnail_src,
+    ]
+      .filter(Boolean)
+      .map((v) => normalizeImageUrl(v));
+
+    const chosen = chooseBestImage(candidates);
+    return chosen ? normalizeImageUrl(removeResizeSuffix(chosen)) : "";
+  }
+
   $("form.variations_form").each((_, form) => {
     const raw = $(form).attr("data-product_variations");
     if (!raw) return;
@@ -381,7 +413,7 @@ function collectVariationJson($) {
             displayPrice: item?.display_price ?? "",
             displayRegularPrice: item?.display_regular_price ?? "",
             isInStock: item?.is_in_stock ?? "",
-            image: normalizeUrl(item?.image?.src || ""),
+            image: pickVariationImage(item),
             attributes: normalizedAttrs,
           };
         })
@@ -392,6 +424,139 @@ function collectVariationJson($) {
   });
 
   return payloads;
+}
+
+
+function absolutizeNodeUrls($scope, canonical) {
+  $scope.find("[href]").each((_, el) => {
+    const href = $scope(el).attr("href");
+    if (!href) return;
+    $scope(el).attr("href", normalizeUrl(absUrl(canonical, href)));
+  });
+
+  $scope.find("[src]").each((_, el) => {
+    const src = $scope(el).attr("src");
+    if (!src) return;
+    $scope(el).attr("src", normalizeImageUrl(absUrl(canonical, src)));
+  });
+}
+
+function cleanSectionHtml($, root, canonical) {
+  if (!root?.length) return "";
+
+  const $wrap = $("<div></div>");
+  root.each((_, el) => {
+    $wrap.append($(el).clone());
+  });
+
+  $wrap.find([
+    "script",
+    "style",
+    "noscript",
+    "form.cart",
+    "form.variations_form",
+    ".single_variation_wrap",
+    ".woocommerce-variation-add-to-cart",
+    ".product_meta",
+    ".related",
+    ".upsells",
+    ".share",
+    ".yith-wcwl-add-to-wishlist",
+    ".newsletter",
+    ".mc4wp-form",
+    ".woocommerce-tabs ul.tabs",
+    ".reset_variations",
+    ".quantity",
+    ".price",
+    ".posted_in",
+    ".tagged_as",
+    ".woocommerce-product-gallery",
+  ].join(", ")).remove();
+
+  $wrap.find("*").each((_, el) => {
+    const $el = $(el);
+    const txt = textClean($el.text());
+    if (txt && /get early access to info,\s*updates, and discounts/i.test(txt)) {
+      $el.remove();
+      return;
+    }
+    if (txt && /^(choose an option|clear|add to cart|qty|quantity)$/i.test(txt)) {
+      $el.remove();
+      return;
+    }
+    if (txt && /^login to see prices$/i.test(txt)) {
+      $el.remove();
+    }
+  });
+
+  absolutizeNodeUrls($.bind(null), canonical);
+
+  $wrap.find("[class],[style],[id]").each((_, el) => {
+    $(el).removeAttr("class").removeAttr("style").removeAttr("id");
+  });
+  $wrap.find("[data-product_id],[data-product_variations],[data-attribute_name]").each((_, el) => {
+    $(el).removeAttr("data-product_id").removeAttr("data-product_variations").removeAttr("data-attribute_name");
+  });
+
+  return ($wrap.html() || "").trim();
+}
+
+function extractOverviewHtml($, canonical) {
+  const candidates = [
+    $(".woocommerce-product-details__short-description").first(),
+    $("#tab-description").first(),
+    $(".woocommerce-Tabs-panel--description").first(),
+  ].filter((v) => v && v.length);
+
+  for (const root of candidates) {
+    const html = cleanSectionHtml($, root, canonical);
+    if (stripHtmlTags(html)) return html;
+  }
+  return "";
+}
+
+function extractSpecsHtml($, canonical) {
+  const candidates = [
+    $("#tab-additional_information").first(),
+    $(".woocommerce-Tabs-panel--additional_information").first(),
+    $("table.shop_attributes").first(),
+  ].filter((v) => v && v.length);
+
+  for (const root of candidates) {
+    const html = cleanSectionHtml($, root, canonical);
+    if (stripHtmlTags(html)) return html;
+  }
+  return "";
+}
+
+function extractDocumentsHtml($, canonical) {
+  const nodes = [];
+  $(
+    [
+      '#tab-description a[href$=".pdf"]',
+      '.woocommerce-Tabs-panel--description a[href$=".pdf"]',
+      'a[href*=".pdf?"]',
+      'a[href*="youtube.com"]',
+      'a[href*="youtu.be"]',
+      'a[href*="vimeo.com"]',
+    ].join(", ")
+  ).each((_, el) => {
+    nodes.push($(el).closest("p, li, div").first());
+  });
+
+  if (!nodes.length) return "";
+  const $wrap = $("<div></div>");
+  const seen = new Set();
+  nodes.forEach((node) => {
+    if (!node?.length) return;
+    const html = $.html(node);
+    if (!html || seen.has(html)) return;
+    seen.add(html);
+    $wrap.append(node.clone());
+  });
+
+  const html = cleanSectionHtml($, $wrap, canonical);
+  return stripHtmlTags(html) ? html : "";
 }
 
 function parseProduct(html, url) {
@@ -414,7 +579,11 @@ function parseProduct(html, url) {
   if (!$contentRoot.length) $contentRoot = $("main").first();
   if (!$contentRoot.length) $contentRoot = $("body");
 
-  const bodyTextPreview = cleanupPreviewText($contentRoot.text()).slice(0, 5000);
+  const overviewHtml = extractOverviewHtml($, canonical);
+  const specsHtml = extractSpecsHtml($, canonical);
+  const documentsHtml = extractDocumentsHtml($, canonical);
+  const bodyTextPreview = cleanupPreviewText(stripHtmlTags(overviewHtml) || $contentRoot.text()).slice(0, 5000);
+  const variantImageUrls = variationPayloads.map((v) => v.image).filter(Boolean);
 
   return {
     title,
@@ -433,10 +602,13 @@ function parseProduct(html, url) {
       rawVariationText,
       variationPayloads: variationPayloads.slice(0, 80),
     },
-    imageUrls: collectImages($, canonical),
+    imageUrls: dedupeImageUrls([...collectImages($, canonical), ...variantImageUrls]).slice(0, 24),
     pdfs: collectPdfs($, canonical),
     videos: collectVideos($, canonical),
     relatedProducts: collectRelatedProducts($, canonical),
+    overviewHtml,
+    specsHtml,
+    documentsHtml,
     bodyTextPreview,
   };
 }
