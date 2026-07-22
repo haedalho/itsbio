@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "kent:preflight": "node scripts/kent-preflight.mjs",
+    "kent:category:dry": "node scripts/kent-category-migrate.mjs --dryRun",
+    "kent:category:refresh:dry": "node scripts/kent-category-migrate.mjs --dryRun --refresh",
+    "kent:category:write": "node scripts/kent-category-migrate.mjs",
+    "kent:category:refresh:write": "node scripts/kent-category-migrate.mjs --refresh"
   },
   "dependencies": {
     "@portabletext/react": "^6.0.2",
