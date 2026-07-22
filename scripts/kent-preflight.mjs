@@ -11,6 +11,7 @@ const requiredFiles = [
   "components/products/KentProductTabs.tsx",
   "studio-admin/schemaTypes/category.ts",
   "studio-admin/schemaTypes/product.ts",
+  "scripts/catalog-audit.mjs",
   "scripts/kent-category-migrate.mjs",
 ];
 
@@ -39,7 +40,9 @@ function loadEnvFile(file) {
 const localEnv = loadEnvFile(path.join(root, ".env.local"));
 const env = { ...localEnv, ...process.env };
 const missingFiles = requiredFiles.filter((file) => !fs.existsSync(path.join(root, file)));
-const missingReadEnv = optionalEnvGroups.filter((group) => !group.some((key) => env[key])).map((group) => group.join(" / "));
+const missingReadEnv = optionalEnvGroups
+  .filter((group) => !group.some((key) => env[key]))
+  .map((group) => group.join(" / "));
 const hasWriteToken = writeTokenGroup.some((key) => env[key]);
 
 const detailFile = path.join(root, "components/products/KentProductDetailClient.tsx");
@@ -55,7 +58,7 @@ if (!/HeroBanner|hero\.png/i.test(categorySource)) {
   warnings.push("Kent 카테고리 라우트에서 Hero 유지 여부를 확인하세요.");
 }
 if (!fs.existsSync(path.join(root, ".cache"))) {
-  warnings.push("Kent migration 캐시가 아직 없습니다. 첫 refresh 실행은 네트워크 시간이 더 걸릴 수 있습니다.");
+  warnings.push("감사 및 migration 캐시가 아직 없습니다. 첫 실행은 네트워크 요청이 필요합니다.");
 }
 
 console.log("\n=== Kent preflight ===\n");
@@ -63,16 +66,16 @@ console.log(`Required files: ${missingFiles.length ? "FAIL" : "OK"}`);
 for (const file of missingFiles) console.log(`  - missing: ${file}`);
 console.log(`Sanity read env: ${missingReadEnv.length ? "FAIL" : "OK"}`);
 for (const group of missingReadEnv) console.log(`  - missing one of: ${group}`);
-console.log(`Sanity write token: ${hasWriteToken ? "OK" : "NOT SET (required for migration writes)"}`);
+console.log(`Sanity write token: ${hasWriteToken ? "OK" : "NOT SET (required only for migration writes)"}`);
 console.log(`Warnings: ${warnings.length}`);
 for (const warning of warnings) console.log(`  - ${warning}`);
 
 console.log("\nRecommended start order:");
-console.log("  1. npm run kent:preflight");
-console.log("  2. npm run lint");
-console.log("  3. npm run build");
-console.log("  4. npm run kent:category:dry");
-console.log("  5. Review category output before any write run");
+console.log("  1. npm run dev");
+console.log("  2. Open current Kent and ABM pages in the browser");
+console.log("  3. In another terminal: npm run catalog:audit");
+console.log("  4. Review .cache/content-audit/latest.md");
+console.log("  5. Run npm run kent:category:dry only after reviewing duplicates and missing items");
 console.log("");
 
 if (missingFiles.length || missingReadEnv.length) process.exitCode = 1;
