@@ -20,6 +20,9 @@
 # production
 /build
 
+# migration and scraper cache
+/.cache/
+
 # misc
 .DS_Store
 *.pem
