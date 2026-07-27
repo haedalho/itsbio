@@ -91,9 +91,9 @@ function normalizeGalleryImages(images: Img[]) {
   return gallery.length ? gallery : deduped.slice(0, 1);
 }
 
-function imageCandidates(input?: string) {
+function initialImageCandidates(input?: string) {
   const raw = String(input || "").trim();
-  if (!raw) return [PLACEHOLDER];
+  if (!raw) return [];
 
   const candidates = [raw];
 
@@ -103,16 +103,43 @@ function imageCandidates(input?: string) {
       (parsed.hostname === "www.kentscientific.com" || parsed.hostname === "kentscientific.com") &&
       parsed.pathname.startsWith("/wp-content/uploads/")
     ) {
-      // Direct Kent image URLs worked in the existing site. Keep them first and
-      // use our proxy only as a fallback for environments that block hotlinks.
+      // Preserve the previously working direct image first. The proxy is only
+      // a secondary fallback for environments that reject the hotlink.
       candidates.push(`/api/kent/asset?src=${encodeURIComponent(parsed.toString())}`);
     }
   } catch {
     // Local paths and Sanity CDN URLs are already valid candidates.
   }
 
-  candidates.push(PLACEHOLDER);
   return [...new Set(candidates)];
+}
+
+function currentKentProductSlug() {
+  if (typeof window === "undefined") return "";
+  const prefix = "/products/kent/item/";
+  const pathname = window.location.pathname;
+  if (!pathname.startsWith(prefix)) return "";
+  return decodeURIComponent(pathname.slice(prefix.length)).replace(/^\/+|\/+$/g, "");
+}
+
+async function fetchSanityImageCandidates() {
+  const slug = currentKentProductSlug();
+  if (!slug) return [] as string[];
+
+  try {
+    const key = `product:${slug.toLowerCase()}`;
+    const response = await fetch("/api/kent/product-images", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ targets: [{ key, type: "product", value: slug }] }),
+    });
+    if (!response.ok) return [];
+
+    const payload = (await response.json()) as { images?: Record<string, string[]> };
+    return Array.isArray(payload?.images?.[key]) ? payload.images![key].filter(Boolean) : [];
+  } catch {
+    return [];
+  }
 }
 
 function SafeGalleryImage({
@@ -126,14 +153,39 @@ function SafeGalleryImage({
   className: string;
   loading?: "eager" | "lazy";
 }) {
-  const candidates = React.useMemo(() => imageCandidates(src), [src]);
+  const baseCandidates = React.useMemo(() => initialImageCandidates(src), [src]);
+  const [candidates, setCandidates] = React.useState<string[]>(baseCandidates);
   const [candidateIndex, setCandidateIndex] = React.useState(0);
+  const recoveryAttempted = React.useRef(false);
 
   React.useEffect(() => {
+    setCandidates(baseCandidates);
     setCandidateIndex(0);
-  }, [candidates]);
+    recoveryAttempted.current = false;
+  }, [baseCandidates]);
 
-  const resolved = candidates[Math.min(candidateIndex, candidates.length - 1)] || PLACEHOLDER;
+  const resolved = candidates[candidateIndex] || PLACEHOLDER;
+
+  const handleError = React.useCallback(async () => {
+    if (candidateIndex + 1 < candidates.length) {
+      setCandidateIndex((current) => current + 1);
+      return;
+    }
+
+    if (!recoveryAttempted.current) {
+      recoveryAttempted.current = true;
+      const recovered = await fetchSanityImageCandidates();
+      const next = [...new Set([...candidates, ...recovered])].filter((url) => url && url !== PLACEHOLDER);
+      if (next.length > candidates.length) {
+        setCandidates(next);
+        setCandidateIndex(candidates.length);
+        return;
+      }
+    }
+
+    setCandidates([PLACEHOLDER]);
+    setCandidateIndex(0);
+  }, [candidateIndex, candidates]);
 
   return (
     <img
@@ -142,9 +194,7 @@ function SafeGalleryImage({
       className={className}
       loading={loading}
       referrerPolicy="no-referrer"
-      onError={() => {
-        setCandidateIndex((current) => Math.min(current + 1, candidates.length - 1));
-      }}
+      onError={handleError}
     />
   );
 }
