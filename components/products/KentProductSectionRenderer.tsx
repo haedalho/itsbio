@@ -103,7 +103,9 @@ function sectionItems(section: KentSection) {
 
   const seen = new Set<string>();
   return combined.filter((item) => {
-    const key = String(item?._key || item?.url || item?.href || item?.title || item?.label || item?.text || "").trim();
+    const key = String(
+      item?._key || item?.url || item?.href || item?.title || item?.label || item?.text || "",
+    ).trim();
     if (!key || seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -136,10 +138,17 @@ function ItemCards({ items }: { items: KentSectionItem[] }) {
         const title = String(item.title || item.label || item.text || `Item ${index + 1}`);
         const description = String(item.description || item.value || "");
         return (
-          <article key={item._key || `${title}-${index}`} className="rounded-[18px] border border-slate-200 bg-slate-50 p-5">
+          <article
+            key={item._key || `${title}-${index}`}
+            className="rounded-[18px] border border-slate-200 bg-slate-50 p-5"
+          >
             <div className="text-base font-semibold leading-6 text-slate-900">{title}</div>
             {description ? <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p> : null}
-            {item.html ? <div className="mt-3"><HtmlBlock html={item.html} /></div> : null}
+            {item.html ? (
+              <div className="mt-3">
+                <HtmlBlock html={item.html} />
+              </div>
+            ) : null}
           </article>
         );
       })}
@@ -154,7 +163,10 @@ function ItemList({ items }: { items: KentSectionItem[] }) {
         const title = String(item.title || item.label || item.text || item.value || `Item ${index + 1}`);
         const description = String(item.description || "");
         return (
-          <li key={item._key || `${title}-${index}`} className="flex gap-3 rounded-[16px] border border-slate-200 bg-white px-4 py-4">
+          <li
+            key={item._key || `${title}-${index}`}
+            className="flex gap-3 rounded-[16px] border border-slate-200 bg-white px-4 py-4"
+          >
             <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#0b4fb3]" aria-hidden />
             <div>
               <div className="font-medium leading-6 text-slate-900">{title}</div>
@@ -191,7 +203,10 @@ function LinkList({ items }: { items: KentSectionItem[] }) {
             {content}
           </a>
         ) : (
-          <div key={item._key || `${label}-${index}`} className="flex items-center justify-between rounded-[16px] border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-700">
+          <div
+            key={item._key || `${label}-${index}`}
+            className="flex items-center justify-between rounded-[16px] border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-700"
+          >
             {content}
           </div>
         );
@@ -201,7 +216,9 @@ function LinkList({ items }: { items: KentSectionItem[] }) {
 }
 
 function DataTable({ rows }: { rows: Array<Record<string, unknown>> }) {
-  const columns = Array.from(new Set(rows.flatMap((row) => Object.keys(row || {})).filter((key) => !key.startsWith("_"))));
+  const columns = Array.from(
+    new Set(rows.flatMap((row) => Object.keys(row || {})).filter((key) => !key.startsWith("_"))),
+  );
   if (!columns.length) return null;
 
   return (
@@ -209,13 +226,21 @@ function DataTable({ rows }: { rows: Array<Record<string, unknown>> }) {
       <table className="w-full border-collapse text-left text-sm">
         <thead className="bg-slate-50">
           <tr>
-            {columns.map((column) => <th key={column} className="border-b border-slate-200 px-4 py-3 font-semibold text-slate-900">{column}</th>)}
+            {columns.map((column) => (
+              <th key={column} className="border-b border-slate-200 px-4 py-3 font-semibold text-slate-900">
+                {column}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
           {rows.map((row, index) => (
             <tr key={String(row._key || index)} className="border-b border-slate-100 last:border-0">
-              {columns.map((column) => <td key={column} className="px-4 py-3 text-slate-700">{String(row[column] ?? "")}</td>)}
+              {columns.map((column) => (
+                <td key={column} className="px-4 py-3 text-slate-700">
+                  {String(row[column] ?? "")}
+                </td>
+              ))}
             </tr>
           ))}
         </tbody>
@@ -226,19 +251,55 @@ function DataTable({ rows }: { rows: Array<Record<string, unknown>> }) {
 
 function ProductSection({ section, index }: { section: SectionWithKey; index: number }) {
   const bucket = typeBucket(section);
-  const title = String(section.title || (bucket === "overview" ? "Product overview" : bucket.replaceAll("-", " ")));
+  const title = String(
+    section.title || (bucket === "overview" ? "Product overview" : bucket.replaceAll("-", " ")),
+  );
   const html = sectionHtml(section);
   const items = sectionItems(section);
   const rows = Array.isArray(section.rows) ? section.rows : [];
 
   const body = (() => {
     if (bucket === "features") return items.length ? <ItemCards items={items} /> : <HtmlBlock html={html} />;
-    if (bucket === "included" || bucket === "addons") return items.length ? <ItemList items={items} /> : <HtmlBlock html={html} />;
-    if (["documents", "datasheet", "videos", "references"].includes(bucket)) {
-      return <>{items.length ? <LinkList items={items} /> : null}{html ? <div className={items.length ? "mt-6" : ""}><HtmlBlock html={html} /></div> : null}</>;
+    if (bucket === "included" || bucket === "addons") {
+      return items.length ? <ItemList items={items} /> : <HtmlBlock html={html} />;
     }
-    if (rows.length) return <><DataTable rows={rows} />{html ? <div className="mt-6"><HtmlBlock html={html} /></div> : null}</>;
-    return <><HtmlBlock html={html} />{!html && section.description ? <p className="text-[15px] leading-8 text-slate-700">{String(section.description)}</p> : null}{items.length ? <div className={html ? "mt-6" : ""}><ItemList items={items} /></div> : null}</>;
+    if (["documents", "datasheet", "videos", "references"].includes(bucket)) {
+      return (
+        <>
+          {items.length ? <LinkList items={items} /> : null}
+          {html ? (
+            <div className={items.length ? "mt-6" : ""}>
+              <HtmlBlock html={html} />
+            </div>
+          ) : null}
+        </>
+      );
+    }
+    if (rows.length) {
+      return (
+        <>
+          <DataTable rows={rows} />
+          {html ? (
+            <div className="mt-6">
+              <HtmlBlock html={html} />
+            </div>
+          ) : null}
+        </>
+      );
+    }
+    return (
+      <>
+        <HtmlBlock html={html} />
+        {!html && section.description ? (
+          <p className="text-[15px] leading-8 text-slate-700">{String(section.description)}</p>
+        ) : null}
+        {items.length ? (
+          <div className={html ? "mt-6" : ""}>
+            <ItemList items={items} />
+          </div>
+        ) : null}
+      </>
+    );
   })();
 
   return (
@@ -251,7 +312,9 @@ function ProductSection({ section, index }: { section: SectionWithKey; index: nu
     >
       <div className="mb-5 flex items-center gap-3">
         <span className="h-6 w-1 rounded-full bg-[#0b4fb3]" aria-hidden />
-        <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-slate-900 md:text-[30px]">{title}</h2>
+        <h2 className="text-[26px] font-semibold tracking-[-0.02em] text-slate-900 md:text-[30px]">
+          {title}
+        </h2>
       </div>
       {body}
     </section>
@@ -279,16 +342,34 @@ function fallbackSections({
   reviewsHtml?: string;
   documents?: Doc[];
 }): SectionWithKey[] {
-  const docs = (documents || []).filter((doc) => doc?.url).map((doc) => ({ url: doc.url, label: doc.label || doc.title || doc.url }));
-  return [
+  const docs: KentSectionItem[] = (documents || []).flatMap((doc) => {
+    const url = String(doc?.url || "").trim();
+    if (!url) return [];
+    return [{ url, label: String(doc?.label || doc?.title || url) }];
+  });
+
+  const fallback: SectionWithKey[] = [
     { fallbackKey: "overview", type: "rich-text", title: `About ${title}`, html: descriptionHtml },
     { fallbackKey: "specs", type: "spec-table", title: "Specifications", html: specsHtml },
     { fallbackKey: "datasheet", type: "datasheet", title: "Datasheet", html: datasheetHtml },
-    { fallbackKey: "documents", type: "resources", title: "Documents & Resources", html: documentsHtml, items: docs },
+    {
+      fallbackKey: "documents",
+      type: "resources",
+      title: "Documents & Resources",
+      html: documentsHtml,
+      items: docs,
+    },
     { fallbackKey: "faqs", type: "faqs", title: "FAQs", html: faqsHtml },
-    { fallbackKey: "references", type: "publications", title: "References & Publications", html: referencesHtml },
+    {
+      fallbackKey: "references",
+      type: "publications",
+      title: "References & Publications",
+      html: referencesHtml,
+    },
     { fallbackKey: "reviews", type: "reviews", title: "Reviews", html: reviewsHtml },
-  ].filter(isRenderable);
+  ];
+
+  return fallback.filter(isRenderable);
 }
 
 export default function KentProductSectionRenderer({
@@ -316,7 +397,17 @@ export default function KentProductSectionRenderer({
 }) {
   const explicit = (Array.isArray(sections) ? sections : []).filter(isRenderable) as SectionWithKey[];
   const represented = new Set<SectionBucket>(explicit.map(typeBucket));
-  const legacy = fallbackSections({ title, descriptionHtml, specsHtml, datasheetHtml, documentsHtml, faqsHtml, referencesHtml, reviewsHtml, documents });
+  const legacy = fallbackSections({
+    title,
+    descriptionHtml,
+    specsHtml,
+    datasheetHtml,
+    documentsHtml,
+    faqsHtml,
+    referencesHtml,
+    reviewsHtml,
+    documents,
+  });
   const merged = [
     ...explicit,
     ...legacy.filter((section) => !represented.has(section.fallbackKey || typeBucket(section))),
@@ -327,7 +418,11 @@ export default function KentProductSectionRenderer({
   return (
     <div className="mt-10 space-y-7">
       {merged.map((section, index) => (
-        <ProductSection key={section._key || `${normalizeType(section)}-${index}`} section={section} index={index} />
+        <ProductSection
+          key={section._key || `${normalizeType(section)}-${index}`}
+          section={section}
+          index={index}
+        />
       ))}
     </div>
   );
