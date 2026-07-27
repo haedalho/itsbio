@@ -8,77 +8,57 @@
 4. 이미 정상인 `/products/kent/anesthesia`는 회귀 확인만 하고 불필요하게 수정하지 않는다.
 5. 원본 Kent 링크는 가능한 경우 ITS BIO 내부 category 또는 item route로 바꾼다.
 6. resource/publication처럼 category 또는 product로 판정할 수 없는 링크만 legacy fallback으로 보낸다.
-7. 실제 Sanity 쓰기 전에 반드시 audit와 dry-run 결과를 검토한다.
-8. Kent와 ABM 모두 동일한 category path, product slug, source URL이 중복되면 안 된다.
-9. 제목 또는 SKU 중복은 옵션형 상품일 수 있으므로 자동 삭제하지 않고 원본 기준으로 확인한다.
+7. 실제 Sanity 쓰기 전에 반드시 dry-run 결과를 검토한다.
+8. Kent와 ABM 모두 category path, product slug, source URL, 카드 링크가 중복되면 안 된다.
+9. 보안·개인정보·라우트 관련 P0 항목이 남은 상태에서는 정식 배포하지 않는다.
 
 ## 첫 실행
 
-세팅은 완료된 상태이므로 작업 시작은 개발 서버부터 실행한다.
+세팅은 완료되어 있으므로 개발 서버부터 시작한다.
 
 ```bash
 npm run dev
 ```
 
-브라우저에서 기존 ABM과 Kent의 정상 페이지를 먼저 확인한다. 별도 터미널에서 현재 Sanity 데이터의 중복과 Kent 원본 누락을 감사한다.
+다른 터미널에서 현재 데이터와 출시 차단 항목을 점검한다.
 
 ```bash
+npm run production:audit
 npm run catalog:audit
 ```
 
 결과 파일:
 
-- `.cache/content-audit/latest.md`: 사람이 검토하기 쉬운 요약
-- `.cache/content-audit/latest.json`: 문서 ID와 상세 비교 데이터
+```text
+.cache/content-audit/latest.md
+.cache/content-audit/latest.json
+```
 
-브랜드별로 따로 확인할 수도 있다.
+Kent 원본과 Sanity만 비교하려면:
 
 ```bash
 npm run kent:audit
+```
+
+ABM 내부 중복만 확인하려면:
+
+```bash
 npm run abm:audit
 ```
 
-## Audit 검사 범위
-
-### Kent 원본 비교
-
-- Kent WordPress sitemap의 `/product/` 카테고리와 Sanity category path 비교
-- Kent WordPress sitemap의 `/products/` 상품과 Sanity product slug 비교
-- ITS BIO에 없는 Kent 카테고리와 상품
-- Kent 원본에 없지만 ITS BIO에 남아 있는 카테고리와 상품
-- `sourceUrl`과 저장된 path/slug가 서로 다른 문서
-
-### Kent 및 ABM 중복 검사
-
-- 동일 브랜드 내 category path 중복
-- 동일 브랜드 내 category source URL 중복
-- 같은 상위 경로 아래 category title 중복
-- product slug 중복
-- product source URL 중복
-- SKU 및 정규화된 상품명 중복 후보
-- 한 category의 contentBlocks에 같은 카드 href가 여러 번 들어간 경우
-- 한 product의 listingPaths 배열 안에 같은 경로가 여러 번 들어간 경우
-
-`Sanity only` 항목은 sitemap 누락 가능성이 있으므로 바로 삭제하지 않는다. 원본 페이지 존재 여부를 확인한 다음 정리한다.
-
-## Category migration
-
-원본 비교 결과를 먼저 검토한 다음 category dry-run을 실행한다.
+실제 배포 전 차단 검사:
 
 ```bash
-npm run kent:category:dry
+npm run production:audit:strict
+npm run catalog:audit:strict
+npm run lint
+npm run build
 ```
 
 원본 Kent 페이지가 최근 변경됐다고 의심될 때만 캐시를 새로 받는다.
 
 ```bash
 npm run kent:category:refresh:dry
-```
-
-실제 쓰기는 audit와 dry-run에서 이상이 없는 범위에만 적용한다.
-
-```bash
-npm run kent:category:write
 ```
 
 ## Sanity 환경 변수
@@ -92,9 +72,9 @@ migration 쓰기:
 
 - `SANITY_API_TOKEN`, `SANITY_WRITE_TOKEN`, `SANITY_TOKEN` 중 하나
 
-환경 변수와 토큰은 저장소에 커밋하지 않는다.
+환경 변수와 토큰은 저장소에 커밋하지 않는다. 운영 웹 요청에서는 write token을 사용하지 않고 migration/admin 작업에만 사용한다.
 
-## Category 화면 검수
+## Category 검수 순서
 
 각 경로에서 아래 항목을 확인한다.
 
@@ -106,7 +86,6 @@ migration 쓰기:
 - listing 상품 수가 0건이 아닌지
 - 카드 이미지가 로고·배너·프로모션 이미지가 아닌지
 - 카드 링크가 `/products/kent/...` 내부 경로인지
-- 동일 상품 카드가 한 화면에 중복되지 않는지
 - 모바일에서 sidebar와 카드가 깨지지 않는지
 
 우선 검수 경로:
@@ -118,26 +97,51 @@ migration 쓰기:
 - `/products/kent/surgery`
 - `/products/kent/warming`
 
-ABM 회귀 확인 경로:
+## 중복 판정 기준
 
-- `/products/abm/general-materials`
-- `/products/abm/cellular-materials`
-- `/products/abm/genetic-materials`
+### 즉시 정리 대상
+
+- 동일 브랜드의 category `path` 중복
+- 동일 브랜드의 product `slug` 중복
+- 동일 원본 `sourceUrl`을 공유하는 여러 문서
+- 한 category의 content block에서 같은 카드 링크 반복
+- 한 product의 `listingPaths` 내부 동일 경로 반복
+
+### 자동 삭제 금지·검토 대상
+
+- 동일 상품명
+- 동일 SKU
+- Kent sitemap에는 없지만 Sanity에는 존재하는 legacy 문서
+- 옵션형 상품이 variant별로 동일한 기본 상품명을 사용하는 경우
+
+제목 또는 SKU가 같다는 이유만으로 자동 삭제하지 않는다. 옵션 구조와 source URL을 먼저 확인한다.
+
+## Kent 원본 비교
+
+`npm run kent:audit`는 Kent WordPress의 product/category sitemap과 Sanity를 비교해 다음을 보고한다.
+
+- 원본에는 있지만 Sanity에 없는 category
+- 원본에는 있지만 Sanity에 없는 product
+- Sanity에만 존재하는 category/product
+- 저장된 path 또는 slug와 source URL의 경로 불일치
+
+`Sanity only` 항목은 sitemap 제외나 legacy 페이지일 수 있으므로 바로 삭제하지 않는다.
 
 ## Product 착수 전 조건
 
 다음 조건이 충족되기 전에는 전체 product migration을 시작하지 않는다.
 
 - category tree와 sidebar 경로가 확정됨
-- Kent 원본 대비 누락 category 목록이 정리됨
 - listing별 상품 링크가 안정적으로 수집됨
-- Kent와 ABM의 중복 path/slug/source URL이 정리됨
 - 중복 및 0건 listing 목록이 정리됨
 - Sanity product 스키마의 `simple`/`variant` 구조가 실제 데이터와 맞음
 - 대표 이미지, gallery, docs, specifications의 저장 위치가 확정됨
+- `/products/{brand}/item/{slug}` canonical route가 확정됨
 
 ## 현재 확인된 주의사항
 
 - `components/products/KentProductDetailClient.tsx`에 원본 쇼핑몰 문구인 `Login to see prices`가 직접 출력되고 있다. Product 본작업 전에 ITS BIO 문의 UI만 남도록 제거해야 한다.
 - category migration은 `.cache/kent-category-v22`를 사용한다. `--refresh`는 모든 페이지와 이미지 요청을 다시 수행할 수 있으므로 기본 명령으로 사용하지 않는다.
-- 최근 원본 Kent HTML 변경이 커밋에 포함된 적이 있으므로 selector가 깨졌는지 audit와 dry-run 결과로 먼저 확인한다.
+- 최근 원본 Kent HTML 변경이 커밋에 포함된 적이 있으므로 selector가 깨졌는지 dry-run 결과로 먼저 확인한다.
+- 공개 검색·상품 페이지가 Sanity write token을 사용하는 현재 구조는 정식 배포 전에 관리자 작업으로 분리해야 한다.
+- 전체 출시 기준은 `docs/production-readiness.md`를 따른다.
