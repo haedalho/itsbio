@@ -50,6 +50,9 @@ function removePriceColumns(root: ParentNode) {
 }
 
 function removePriceNodes(root: ParentNode) {
+  // Remove full table columns while the Price header still exists.
+  removePriceColumns(root);
+
   root.querySelectorAll(PRICE_SELECTORS).forEach((node) => removeNode(node));
 
   root.querySelectorAll("body *").forEach((node) => {
@@ -61,8 +64,6 @@ function removePriceNodes(root: ParentNode) {
       removeNode(node);
     }
   });
-
-  removePriceColumns(root);
 }
 
 export default function HidePricesClient() {
