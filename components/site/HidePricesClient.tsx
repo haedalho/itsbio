@@ -26,14 +26,8 @@ function removeNode(node: Element | null) {
   node?.parentElement?.removeChild(node);
 }
 
-function queryAll(root: ParentNode, selector: string) {
-  const result = Array.from(root.querySelectorAll(selector));
-  if (root instanceof Element && root.matches(selector)) result.unshift(root);
-  return result;
-}
-
 function removePriceColumns(root: ParentNode) {
-  queryAll(root, "table").forEach((table) => {
+  root.querySelectorAll("table").forEach((table) => {
     const headerRow = table.querySelector("tr");
     if (!headerRow) return;
 
@@ -56,9 +50,9 @@ function removePriceColumns(root: ParentNode) {
 
 function removePriceNodes(root: ParentNode) {
   removePriceColumns(root);
-  queryAll(root, PRICE_SELECTORS).forEach((node) => removeNode(node));
+  root.querySelectorAll(PRICE_SELECTORS).forEach((node) => removeNode(node));
 
-  queryAll(root, "*").forEach((node) => {
+  root.querySelectorAll("body *").forEach((node) => {
     if (node.children.length > 0) return;
     const text = (node.textContent || "").replace(/\s+/g, " ").trim();
     if (!text) return;
@@ -69,17 +63,23 @@ function removePriceNodes(root: ParentNode) {
 
 export default function HidePricesClient() {
   React.useEffect(() => {
-    removePriceNodes(document);
+    let queued = false;
 
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        mutation.addedNodes.forEach((node) => {
-          if (node instanceof Element) removePriceNodes(node);
-        });
-      }
-    });
+    const run = () => {
+      queued = false;
+      removePriceNodes(document);
+    };
 
+    const queue = () => {
+      if (queued) return;
+      queued = true;
+      window.requestAnimationFrame(run);
+    };
+
+    run();
+    const observer = new MutationObserver(queue);
     observer.observe(document.body, { childList: true, subtree: true });
+
     return () => observer.disconnect();
   }, []);
 
