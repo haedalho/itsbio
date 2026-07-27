@@ -21,28 +21,8 @@ const COMMERCE_TEXT_RE = /^(?:(?:login|sign in)\s+(?:to|for)\s+(?:see\s+)?prices
 const PRICE_TEXT_RE = /^(?:starting\s+(?:at|from)|from\s+[$€£¥₩]|(?:price|pricing|cost|amount|msrp)\s*[:\-])/i;
 const MONEY_RE = /(?:[$€£¥₩]\s*\d[\d,.]*(?:\s*(?:USD|EUR|GBP|JPY|KRW))?|(?:USD|EUR|GBP|JPY|KRW)\s*\d[\d,.]*|\d[\d,.]*\s*(?:USD|EUR|GBP|JPY|KRW|원))/i;
 const NO_CHARGE_RE = /^(?:no charge|free|included at no charge)$/i;
-
-const SUPPLIER_SUPPORT_HEADING_RE = /^(?:
-  need\s+help(?:\s+with\s+your\s+order)?\??|
-  help\s*&\s*support|
-  we(?:'|’)?re\s+here\s+for\s+you|
-  chat\s+with\s+an\s+expert|
-  call\s+us|
-  contact\s+us|
-  ask\s+for\s+support|
-  we\s+reply\s+fast.*|
-  not\s+sure\s+which\s+.*\s+right\s+for\s+you\??|
-  want\s+to\s+see\s+how\s+.*\s+could\s+work\s+in\s+your\s+lab\??
-)$/ix;
-
-const EXCLUDED_PRODUCT_SECTION_RE = /^(?:
-  how\s+much\s+could\s+you\s+save(?:\s+with\s+.*)?\??|
-  calculate\s+your\s+savings.*|
-  estimated\s+yearly\s+operational\s+savings.*|
-  get\s+early\s+access.*|
-  newsletter|
-  supplier\s+support
-)$/ix;
+const SUPPLIER_SUPPORT_HEADING_RE = /^(?:need\s+help(?:\s+with\s+your\s+order)?\??|help\s*&\s*support|we(?:'|’)?re\s+here\s+for\s+you|chat\s+with\s+an\s+expert|call\s+us|contact\s+us|ask\s+for\s+support|we\s+reply\s+fast.*|not\s+sure\s+which\s+.*\s+right\s+for\s+you\??|want\s+to\s+see\s+how\s+.*\s+could\s+work\s+in\s+your\s+lab\??)$/i;
+const EXCLUDED_PRODUCT_SECTION_RE = /^(?:how\s+much\s+could\s+you\s+save(?:\s+with\s+.*)?\??|calculate\s+your\s+savings.*|estimated\s+yearly\s+operational\s+savings.*|get\s+early\s+access.*|newsletter|supplier\s+support)$/i;
 
 function cleanText(input?: unknown) {
   return String(input || "")
@@ -107,14 +87,12 @@ function removePriceColumns($: cheerio.CheerioAPI, root: any) {
     }
 
     rows.each((_rowIndex: number, row: any) => {
-      const cells = $(row).children("th,td");
-      const values = cells
+      const values = $(row)
+        .children("th,td")
         .map((_cellIndex: number, cell: any) => cleanText($(cell).text()))
         .get()
         .filter(Boolean);
-      if (values.some((value: string) => MONEY_RE.test(value) || NO_CHARGE_RE.test(value))) {
-        $(row).remove();
-      }
+      if (values.some((value: string) => MONEY_RE.test(value) || NO_CHARGE_RE.test(value))) $(row).remove();
     });
   });
 }
@@ -145,7 +123,6 @@ function removeCommerceNoise($: cheerio.CheerioAPI, root: any) {
 
 function dedupeRepeatedBlocks($: cheerio.CheerioAPI, root: any) {
   const seen = new Set<string>();
-
   root.find("p,li,blockquote,figure,table").each((_index: number, node: any) => {
     const element = $(node);
     const signature = contentSignature(element.html() || element.text());
@@ -177,37 +154,9 @@ export function sanitizeKentSourceHtml(input: unknown) {
 
   const cleaned = sanitizeHtml(root.html() || "", {
     allowedTags: [
-      "p",
-      "br",
-      "strong",
-      "b",
-      "em",
-      "i",
-      "u",
-      "sup",
-      "sub",
-      "h2",
-      "h3",
-      "h4",
-      "h5",
-      "ul",
-      "ol",
-      "li",
-      "blockquote",
-      "a",
-      "img",
-      "figure",
-      "figcaption",
-      "table",
-      "thead",
-      "tbody",
-      "tfoot",
-      "tr",
-      "th",
-      "td",
-      "div",
-      "span",
-      "hr",
+      "p", "br", "strong", "b", "em", "i", "u", "sup", "sub", "h2", "h3", "h4", "h5",
+      "ul", "ol", "li", "blockquote", "a", "img", "figure", "figcaption", "table", "thead", "tbody",
+      "tfoot", "tr", "th", "td", "div", "span", "hr",
     ],
     allowedAttributes: {
       a: ["href", "title", "target", "rel"],
@@ -224,10 +173,7 @@ export function sanitizeKentSourceHtml(input: unknown) {
           ...(String(attribs.href || "").startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {}),
         },
       }),
-      img: (_tagName, attribs) => ({
-        tagName: "img",
-        attribs: { ...attribs, loading: "lazy" },
-      }),
+      img: (_tagName, attribs) => ({ tagName: "img", attribs: { ...attribs, loading: "lazy" } }),
     },
   });
 
@@ -282,7 +228,6 @@ function extractLeadParagraphs(prefixHtml: string) {
 
   let remainder = prefixHtml;
   for (const block of selectedBlocks) remainder = remainder.replace(block, "");
-
   remainder = remainder
     .replace(/<h1\b[^>]*>[\s\S]*?<\/h1>/gi, "")
     .replace(/<div\b[^>]*>\s*<\/div>/gi, "")
@@ -326,19 +271,10 @@ export function deriveKentSourceContent(input: unknown): DerivedKentSourceConten
     if (seenBodies.has(bodySignature)) return;
     seenBodies.add(bodySignature);
 
-    sections.push({
-      _key: `source-${slugify(title)}-${index}`,
-      type,
-      title,
-      html: body,
-    });
+    sections.push({ _key: `source-${slugify(title)}-${index}`, type, title, html: body });
   });
 
-  return {
-    leadHtml: lead.leadHtml,
-    remainderHtml: lead.remainderHtml,
-    sections,
-  };
+  return { leadHtml: lead.leadHtml, remainderHtml: lead.remainderHtml, sections };
 }
 
 function sanitizeRow(row: Record<string, unknown>) {
@@ -389,13 +325,11 @@ export function sanitizeKentSections(input: unknown) {
     if (signature) seenBodies.add(signature);
 
     const hasContent = Boolean(
-      bodyText ||
-        cleanText(section.imageUrl) ||
-        (Array.isArray(section.rows) && section.rows.length) ||
-        (Array.isArray(section.items) && section.items.length),
+      bodyText || cleanText(section.imageUrl) ||
+      (Array.isArray(section.rows) && section.rows.length) ||
+      (Array.isArray(section.items) && section.items.length),
     );
     if (!hasContent) continue;
-
     output.push(section);
   }
 
@@ -407,9 +341,7 @@ export function pickKentSubtitle(summary: unknown, leadHtml: string) {
   if (!value || MONEY_RE.test(value) || PRICE_TEXT_RE.test(value)) return "";
 
   const leadText = cleanText(leadHtml).toLowerCase();
-  if (leadText && (leadText.startsWith(value.toLowerCase()) || value.toLowerCase().startsWith(leadText.slice(0, 80)))) {
-    return "";
-  }
+  if (leadText && (leadText.startsWith(value.toLowerCase()) || value.toLowerCase().startsWith(leadText.slice(0, 80)))) return "";
 
   const sentences = (value.match(/[.!?](?:\s|$)/g) || []).length;
   if (value.length > 170 || sentences > 1) return "";
