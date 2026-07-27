@@ -21,9 +21,10 @@ dotenv.config({ path: path.join(root, ".env.local") });
 const args = new Set(process.argv.slice(2));
 const write = args.has("--write");
 const refresh = args.has("--refresh");
-const skipShop = args.has("--skip-shop");
-const skipSitemap = args.has("--skip-sitemap");
-const skipProductPages = args.has("--skip-product-pages");
+const offline = args.has("--offline");
+const skipShop = offline || args.has("--skip-shop");
+const skipSitemap = offline || args.has("--skip-sitemap");
+const skipProductPages = offline || args.has("--skip-product-pages");
 
 const projectId =
   process.env.NEXT_PUBLIC_SANITY_PROJECT_ID ||
@@ -44,6 +45,10 @@ if (!projectId || !dataset) {
 }
 if (write && !token) {
   console.error("Write mode requires a Sanity write token.");
+  process.exit(1);
+}
+if (write && offline) {
+  console.error("Offline census is report-only. Do not combine --offline with --write.");
   process.exit(1);
 }
 
@@ -76,28 +81,41 @@ async function main() {
 
   const candidates = new Map();
   collectFromCategories(data.categories || [], candidates);
+  const categoryCandidateCount = candidates.size;
 
-  console.log("Collecting products from Kent Shop...");
+  if (offline) {
+    console.log("Offline mode: using the current Sanity category snapshot; Kent web requests are disabled.");
+  } else {
+    console.log("Collecting products from Kent Shop...");
+  }
   const shop = skipShop
-    ? { visited: [], errors: [], cardOccurrences: 0 }
+    ? { visited: [], errors: [], cardOccurrences: 0, skipped: true }
     : await collectFromShop(candidates, fetchPage);
 
-  console.log("Collecting product URLs from Kent sitemaps...");
+  if (!offline) console.log("Collecting product URLs from Kent sitemaps...");
   const sitemap = skipSitemap
-    ? { visited: [], errors: [], productLocOccurrences: 0 }
+    ? { visited: [], errors: [], productLocOccurrences: 0, skipped: true }
     : await collectFromSitemap(candidates, fetchPage);
 
-  // Sanity category links are discovery hints, not proof that the current Kent page is still a product.
-  // Only official Shop cards may survive a temporary product-page fetch failure without validation.
-  for (const candidate of candidates.values()) {
-    candidate.trustedSources = candidate.trustedSources.filter((source) => source === "shop");
+  if (!offline) {
+    // In live mode, category links remain discovery hints and must be confirmed by Shop or product-page validation.
+    for (const candidate of candidates.values()) {
+      candidate.trustedSources = candidate.trustedSources.filter((source) => source === "shop");
+    }
   }
 
-  console.log(`Validating and enriching ${candidates.size} product candidates...`);
+  console.log(
+    offline
+      ? `Comparing ${candidates.size} category-snapshot candidates with Sanity products...`
+      : `Validating and enriching ${candidates.size} product candidates...`,
+  );
   const validation = await enrichAndValidateCandidates(candidates, fetchPage, skipProductPages);
   const planned = makePlan(candidates, data.products || []);
   const plan = planned.plan;
+  const sourceMode = offline ? "offline-sanity-category-snapshot" : "live-source-validation";
   const counts = {
+    sanityProducts: (data.products || []).length,
+    categoryCandidates: categoryCandidateCount,
     discovered: plan.length,
     shopCardOccurrences: shop.cardOccurrences,
     shopPages: shop.visited.length,
@@ -113,11 +131,25 @@ async function main() {
     sanityOnly: planned.sanityOnly.length,
   };
 
+  const liveSourceFullyBlocked =
+    !offline &&
+    counts.checkedProductPages > 0 &&
+    counts.validatedProductPages === 0 &&
+    counts.fetchErrors === counts.checkedProductPages;
+
+  if (write && liveSourceFullyBlocked) {
+    throw new Error(
+      "Kent live source is fully blocked. Refusing Sanity write. Run the offline census for reporting only.",
+    );
+  }
+
   const applied = write ? await applyPlan(sanity, plan, data.brand._id) : null;
   const report = {
     generatedAt: new Date().toISOString(),
     write,
-    options: { refresh, skipShop, skipSitemap, skipProductPages },
+    sourceMode,
+    degraded: offline || liveSourceFullyBlocked,
+    options: { refresh, offline, skipShop, skipSitemap, skipProductPages },
     counts,
     applied,
     shop,
@@ -133,6 +165,9 @@ async function main() {
   fs.writeFileSync(path.join(outputDir, "latest.md"), renderMarkdown(report), "utf8");
 
   console.log("\n=== Kent product census v2 ===");
+  console.log(`Source mode: ${sourceMode}`);
+  console.log(`Sanity products: ${counts.sanityProducts}`);
+  console.log(`Category candidates: ${counts.categoryCandidates}`);
   console.log(`Discovered: ${counts.discovered}`);
   console.log(`Shop pages: ${counts.shopPages}, product cards: ${counts.shopCardOccurrences}`);
   console.log(`Validated product pages: ${counts.validatedProductPages}/${counts.checkedProductPages}`);
@@ -143,6 +178,10 @@ async function main() {
   console.log(`Unchanged: ${counts.unchanged}`);
   console.log(`Duplicate candidates: ${counts.duplicateCandidates}`);
   console.log(`Sanity only: ${counts.sanityOnly}`);
+  if (offline) console.log("Offline report only: Sanity write is disabled in this mode.");
+  if (liveSourceFullyBlocked) {
+    console.log("Kent live source is fully blocked (for example, HTTP 403). Use npm run kent:product:census:offline.");
+  }
   if (applied) console.log(`Applied: created=${applied.created}, patched=${applied.patched}`);
   if (validation.rejected[0]?.diagnostic) {
     console.log("First rejection diagnostic:");
