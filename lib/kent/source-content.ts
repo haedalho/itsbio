@@ -16,10 +16,11 @@ export type DerivedKentSourceContent = {
   sections: DerivedKentSection[];
 };
 
-const PRICE_COLUMN_RE = /^(?:price|unit price|list price|retail price|sale price|msrp|cost|amount)$/i;
-const COMMERCE_TEXT_RE = /^(?:login|sign in)\s+to\s+see\s+prices?$|^add to cart$|^choose an option$|^clear$|^quantity$/i;
+const PRICE_COLUMN_RE = /^(?:price|pricing|unit price|list price|retail price|sale price|dealer price|your price|online price|web price|net price|msrp|cost|amount)$/i;
+const COMMERCE_TEXT_RE = /^(?:(?:login|sign in)\s+(?:to|for)\s+(?:see\s+)?prices?|add to cart|choose an option|clear|quantity|(?:call|contact us)\s+for\s+pric(?:e|ing)|price on request)$/i;
+const PRICE_TEXT_RE = /^(?:starting\s+(?:at|from)|from\s+[$€£¥₩]|(?:price|pricing|cost|amount|msrp)\s*[:\-])/i;
 const SUPPORT_HEADING_RE = /^(?:need help(?: with your order)?|chat with an expert|call us|contact us|not sure which .* right for you)$/i;
-const MONEY_ONLY_RE = /^(?:[$€£¥₩]\s*\d[\d,.]*(?:\s*(?:USD|EUR|GBP|JPY|KRW))?|\d[\d,.]*\s*(?:USD|EUR|GBP|JPY|KRW|원))$/i;
+const MONEY_RE = /(?:[$€£¥₩]\s*\d[\d,.]*(?:\s*(?:USD|EUR|GBP|JPY|KRW))?|(?:USD|EUR|GBP|JPY|KRW)\s*\d[\d,.]*|\d[\d,.]*\s*(?:USD|EUR|GBP|JPY|KRW|원))/i;
 
 function cleanText(input?: unknown) {
   return String(input || "")
@@ -28,6 +29,15 @@ function cleanText(input?: unknown) {
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;|&#160;/gi, " ")
     .replace(/&amp;/gi, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function contentSignature(input?: unknown) {
+  return cleanText(input)
+    .toLowerCase()
+    .replace(/[®™©]/g, "")
+    .replace(/[^a-z0-9가-힣]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -45,10 +55,10 @@ function slugify(input: string) {
 function removePriceColumns($: cheerio.CheerioAPI, root: any) {
   root.find("table").each((_tableIndex: number, table: any) => {
     const rows = $(table).find("tr");
-    const firstRow = rows.first();
+    const headerRow = $(table).find("thead tr").first().length ? $(table).find("thead tr").first() : rows.first();
     const indexes: number[] = [];
 
-    firstRow.children("th,td").each((index: number, cell: any) => {
+    headerRow.children("th,td").each((index: number, cell: any) => {
       if (PRICE_COLUMN_RE.test(cleanText($(cell).text()))) indexes.push(index);
     });
 
@@ -66,25 +76,39 @@ function removePriceColumns($: cheerio.CheerioAPI, root: any) {
 function removeCommerceNoise($: cheerio.CheerioAPI, root: any) {
   root
     .find(
-      "script,style,noscript,iframe,form,input,button,select,option,.price,.product-price,.price-box,.price-wrapper,.woocommerce-Price-amount,.woocommerce-price-suffix,.woocommerce-variation-price,.single_variation_wrap",
+      "script,style,noscript,iframe,form,input,button,select,option,.price,.pricing,.product-price,.product_price,.price-box,.price-wrapper,.regular-price,.sale-price,.list-price,.retail-price,.unit-price,.msrp,.woocommerce-Price-amount,.woocommerce-price-suffix,.woocommerce-variation-price,.single_variation_wrap,[itemprop='price']",
     )
     .remove();
 
   removePriceColumns($, root);
 
-  root.find("*").each((_index: number, node: any) => {
+  root.find("p,li,td,th,span,strong,small,div").each((_index: number, node: any) => {
     const element = $(node);
     const text = cleanText(element.text());
     if (!text) return;
 
-    const childElements = element.children().length;
-    if (!childElements && (COMMERCE_TEXT_RE.test(text) || MONEY_ONLY_RE.test(text))) {
+    if (COMMERCE_TEXT_RE.test(text) || PRICE_TEXT_RE.test(text) || MONEY_RE.test(text)) {
       element.remove();
       return;
     }
 
     if (/^Get early access to info, updates, and discounts$/i.test(text)) element.remove();
     if (/^Our product specialists are here to help with additional information/i.test(text)) element.remove();
+  });
+}
+
+function dedupeRepeatedBlocks($: cheerio.CheerioAPI, root: any) {
+  const seen = new Set<string>();
+
+  root.find("p,li,blockquote,figure,table").each((_index: number, node: any) => {
+    const element = $(node);
+    const signature = contentSignature(element.html() || element.text());
+    if (!signature || signature.length < 18) return;
+    if (seen.has(signature)) {
+      element.remove();
+      return;
+    }
+    seen.add(signature);
   });
 }
 
@@ -102,6 +126,8 @@ export function sanitizeKentSourceHtml(input: unknown) {
     element.removeAttr("onclick").removeAttr("onerror").removeAttr("onload").removeAttr("data-price");
     if (element.attr("itemprop") === "price") element.remove();
   });
+
+  dedupeRepeatedBlocks($, root);
 
   const cleaned = sanitizeHtml(root.html() || "", {
     allowedTags: [
@@ -190,15 +216,19 @@ function extractLeadParagraphs(prefixHtml: string) {
   const paragraphPattern = /<p\b[^>]*>[\s\S]*?<\/p>/gi;
   const selected: string[] = [];
   const selectedBlocks: string[] = [];
+  const seen = new Set<string>();
 
   for (const match of prefixHtml.matchAll(paragraphPattern)) {
     const block = match[0];
     const text = cleanText(block);
-    if (!text || text.length < 18) continue;
-    if (COMMERCE_TEXT_RE.test(text) || MONEY_ONLY_RE.test(text)) continue;
+    const signature = contentSignature(text);
+    if (!text || text.length < 18 || !signature) continue;
+    if (COMMERCE_TEXT_RE.test(text) || PRICE_TEXT_RE.test(text) || MONEY_RE.test(text)) continue;
     if (/^(?:item|cat\.?\s*no\.?|sku|categor(?:y|ies)|tag)\s*#/i.test(text)) continue;
     if (/^customers who viewed/i.test(text)) break;
+    if (seen.has(signature)) continue;
 
+    seen.add(signature);
     selected.push(block);
     selectedBlocks.push(block);
     if (selected.length >= 6) break;
@@ -233,6 +263,7 @@ export function deriveKentSourceContent(input: unknown): DerivedKentSourceConten
   const prefix = matches.length ? html.slice(0, matches[0].index || 0) : html;
   const lead = extractLeadParagraphs(prefix);
   const sections: DerivedKentSection[] = [];
+  const seenSections = new Set<string>();
 
   matches.forEach((match, index) => {
     const title = cleanText(match[1]);
@@ -241,7 +272,12 @@ export function deriveKentSourceContent(input: unknown): DerivedKentSourceConten
     const start = (match.index || 0) + match[0].length;
     const end = index + 1 < matches.length ? matches[index + 1].index || html.length : html.length;
     const body = html.slice(start, end).trim();
-    if (!cleanText(body)) return;
+    const bodySignature = contentSignature(body);
+    if (!bodySignature) return;
+
+    const signature = `${contentSignature(title)}|${bodySignature}`;
+    if (seenSections.has(signature)) return;
+    seenSections.add(signature);
 
     sections.push({
       _key: `source-${slugify(title)}-${index}`,
@@ -260,7 +296,7 @@ export function deriveKentSourceContent(input: unknown): DerivedKentSourceConten
 
 export function pickKentSubtitle(summary: unknown, leadHtml: string) {
   const value = cleanText(summary);
-  if (!value) return "";
+  if (!value || MONEY_RE.test(value) || PRICE_TEXT_RE.test(value)) return "";
 
   const leadText = cleanText(leadHtml).toLowerCase();
   if (leadText && (leadText.startsWith(value.toLowerCase()) || value.toLowerCase().startsWith(leadText.slice(0, 80)))) {
