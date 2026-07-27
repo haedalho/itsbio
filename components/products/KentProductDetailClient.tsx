@@ -162,9 +162,13 @@ function shouldUseSelect(group: OptionGroup) {
 }
 
 export default function KentProductDetailClient({
+  slug,
   title,
   summary,
   sku,
+  badge,
+  leadHtml,
+  categoryLabel,
   images,
   kentSections,
   descriptionHtml,
@@ -180,9 +184,13 @@ export default function KentProductDetailClient({
   optionGroups,
   variants,
 }: {
+  slug: string;
   title: string;
   summary?: string;
   sku?: string;
+  badge?: string;
+  leadHtml?: string;
+  categoryLabel?: string;
   images: Img[];
   kentSections?: KentSection[];
   descriptionHtml?: string;
@@ -250,33 +258,56 @@ export default function KentProductDetailClient({
 
   return (
     <div className="pb-12">
-      <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm lg:p-8">
-        <div className="grid gap-10 xl:grid-cols-[minmax(0,1.05fr)_420px]">
+      <section className="rounded-[20px] border border-slate-200 bg-white p-6 shadow-sm lg:p-8">
+        <div className="grid gap-10 lg:grid-cols-2 xl:gap-12">
           <KentProductGalleryClient
             key={`${selectedVariant?.variantId || "base"}-${galleryImages[0]?.url || ""}`}
+            productSlug={slug}
             images={galleryImages}
             title={title}
           />
 
-          <div className="min-w-0">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-blue-700">
-              Kent Scientific
-            </div>
-            <h1 className="mt-3 text-[30px] font-semibold tracking-[-0.03em] text-[#0b4fb3] lg:text-[40px]">
+          <div className="min-w-0 lg:py-1">
+            {badge ? (
+              <div className="inline-flex rounded-sm bg-[#0b4fb3] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white">
+                {badge}
+              </div>
+            ) : (
+              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-blue-700">
+                Kent Scientific
+              </div>
+            )}
+
+            <h1 className="mt-4 text-[32px] font-semibold tracking-[-0.035em] text-[#0b4fb3] lg:text-[42px]">
               {title}
             </h1>
 
-            {summary ? <p className="mt-3 text-[15px] leading-7 text-slate-600">{summary}</p> : null}
+            {summary ? <p className="mt-3 text-[18px] font-medium leading-7 text-slate-700">{summary}</p> : null}
 
-            <div className="mt-6 text-sm text-slate-700">
-              <span className="font-semibold text-slate-900">Item # </span>
-              {invalidCombination ? "Select an available combination" : itemNo || "Contact for details"}
+            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-700">
+              <div>
+                <span className="font-semibold text-slate-900">Item # </span>
+                {invalidCombination ? "Select an available combination" : itemNo || "Contact for details"}
+              </div>
+              {categoryLabel ? (
+                <div>
+                  <span className="font-semibold text-slate-900">Category: </span>
+                  {categoryLabel}
+                </div>
+              ) : null}
             </div>
 
-            {selectedSummary ? <div className="mt-3 text-sm leading-6 text-slate-600">{selectedSummary}</div> : null}
+            {leadHtml ? (
+              <div
+                className="mt-6 space-y-3 text-[15px] leading-7 text-slate-600 [&_p]:mb-3 [&_p:last-child]:mb-0"
+                dangerouslySetInnerHTML={{ __html: leadHtml }}
+              />
+            ) : null}
+
+            {selectedSummary ? <div className="mt-4 text-sm leading-6 text-slate-600">{selectedSummary}</div> : null}
 
             {hasVariantControls ? (
-              <div className="mt-7 space-y-5">
+              <div className="mt-7 space-y-5 border-t border-slate-200 pt-6">
                 {safeGroups.map((group) => {
                   const key = normalizeKey(group.key || group.name || "option");
                   const selected = selections[key] || "";
@@ -362,10 +393,10 @@ export default function KentProductDetailClient({
               Request Quote
             </a>
 
-            <div className="mt-6 rounded-[18px] border border-slate-200 bg-slate-50 p-5">
+            <div className="mt-5 rounded-[16px] border border-slate-200 bg-slate-50 p-5">
               <div className="text-sm font-semibold text-slate-900">ITS BIO support</div>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                Contact ITS BIO for pricing, compatibility questions, and availability for this Kent Scientific item.
+                Contact ITS BIO for a quotation, compatibility guidance and product availability.
               </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <a
