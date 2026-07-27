@@ -66,34 +66,26 @@ function isDownstreamPageImage(url?: string) {
 }
 
 function normalizeGalleryImages(images: Img[]) {
-  const deduped: Img[] = [];
+  const gallery: Img[] = [];
   const seen = new Set<string>();
 
   for (const image of Array.isArray(images) ? images : []) {
     const url = String(image?.url || "").trim();
-    if (!url) continue;
+    if (!url || isDownstreamPageImage(url)) continue;
 
     const key = imageMasterKey(url) || url;
     if (seen.has(key)) continue;
     seen.add(key);
-    deduped.push({ ...image, url });
-  }
+    gallery.push({ ...image, url });
 
-  const gallery: Img[] = [];
-  for (const image of deduped) {
-    if (isDownstreamPageImage(image.url)) {
-      if (gallery.length) break;
-      continue;
-    }
-    gallery.push(image);
     if (gallery.length >= MAX_GALLERY_IMAGES) break;
   }
 
   return gallery;
 }
 
-async function recoverProductImages(productSlug: string) {
-  if (!productSlug) return [] as Img[];
+async function recoverOneProductImage(productSlug: string, title: string) {
+  if (!productSlug) return null as Img | null;
 
   try {
     const key = `product:${productSlug.toLowerCase()}`;
@@ -102,13 +94,14 @@ async function recoverProductImages(productSlug: string) {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ targets: [{ key, type: "product", value: productSlug }] }),
     });
-    if (!response.ok) return [];
+    if (!response.ok) return null;
 
     const payload = (await response.json()) as { images?: Record<string, string[]> };
     const urls = Array.isArray(payload?.images?.[key]) ? payload.images![key] : [];
-    return urls.filter(Boolean).map((url) => ({ url, alt: "" }));
+    const first = normalizeGalleryImages(urls.map((url) => ({ url, alt: title })))[0];
+    return first || null;
   } catch {
-    return [];
+    return null;
   }
 }
 
@@ -122,29 +115,34 @@ export default function KentProductGalleryClient({
   title: string;
 }) {
   const initialImages = React.useMemo(() => normalizeGalleryImages(images), [images]);
-  const [recoveredImages, setRecoveredImages] = React.useState<Img[]>([]);
+  const [recoveredImage, setRecoveredImage] = React.useState<Img | null>(null);
   const [failedUrls, setFailedUrls] = React.useState<Set<string>>(() => new Set());
   const [activeIndex, setActiveIndex] = React.useState(0);
 
   React.useEffect(() => {
     let cancelled = false;
-    setRecoveredImages([]);
+    setRecoveredImage(null);
     setFailedUrls(new Set());
     setActiveIndex(0);
 
-    recoverProductImages(productSlug).then((rows) => {
-      if (!cancelled) setRecoveredImages(rows.map((row) => ({ ...row, alt: row.alt || title })));
-    });
+    // Never append page-wide Sanity image arrays to a valid gallery. They may
+    // contain related products, article graphics, resources or support images.
+    // Recovery is only allowed when the server supplied no product image at all.
+    if (!initialImages.length) {
+      recoverOneProductImage(productSlug, title).then((row) => {
+        if (!cancelled) setRecoveredImage(row);
+      });
+    }
 
     return () => {
       cancelled = true;
     };
-  }, [productSlug, title]);
+  }, [initialImages.length, productSlug, title]);
 
-  const safeImages = React.useMemo(
-    () => normalizeGalleryImages([...initialImages, ...recoveredImages]).filter((image) => !failedUrls.has(String(image.url || ""))),
-    [failedUrls, initialImages, recoveredImages],
-  );
+  const safeImages = React.useMemo(() => {
+    const source = initialImages.length ? initialImages : recoveredImage ? [recoveredImage] : [];
+    return source.filter((image) => !failedUrls.has(String(image.url || "")));
+  }, [failedUrls, initialImages, recoveredImage]);
 
   React.useEffect(() => {
     if (activeIndex >= safeImages.length) setActiveIndex(0);
