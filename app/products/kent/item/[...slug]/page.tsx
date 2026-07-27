@@ -1,14 +1,11 @@
 // app/products/kent/item/[...slug]/page.tsx
-import Image from "next/image";
 import { notFound } from "next/navigation";
 
-import Breadcrumb from "@/components/site/Breadcrumb";
 import KentProductDetailClient from "@/components/products/KentProductDetailClient";
+import Breadcrumb from "@/components/site/Breadcrumb";
 import { sanityClient } from "@/lib/sanity/sanity.client";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
+export const revalidate = 300;
 
 const BRAND_KEY = "kent";
 
@@ -46,12 +43,12 @@ const ITEM_PAGE_QUERY = `
     specsHtml,
     extraHtml,
     legacyHtml,
-
     datasheetHtml,
     documentsHtml,
     faqsHtml,
     referencesHtml,
     reviewsHtml,
+    kentSections,
 
     productType,
     defaultVariantId,
@@ -75,7 +72,6 @@ const ITEM_PAGE_QUERY = `
     },
 
     docs[]{ title, label, url },
-
     imageUrls,
     imageFiles,
     images[]{ _key, asset->{ url } }
@@ -94,6 +90,17 @@ function cleanText(input?: string | null) {
     .trim();
 }
 
+function stripHtmlTags(input?: string | null) {
+  return cleanText(
+    String(input || "")
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;|&#160;/gi, " ")
+      .replace(/&amp;/gi, "&"),
+  );
+}
+
 function decodeHtmlEntities(input?: string | null) {
   return String(input || "")
     .replaceAll("&amp;", "&")
@@ -107,14 +114,12 @@ function decodeHtmlEntities(input?: string | null) {
 
 function stripBrandSuffix(title?: string | null) {
   const raw = decodeHtmlEntities(title);
-  const idx = raw.indexOf("|");
-  return cleanText(idx >= 0 ? raw.slice(0, idx) : raw);
+  const index = raw.indexOf("|");
+  return cleanText(index >= 0 ? raw.slice(0, index) : raw);
 }
 
-function humanizeSegment(seg: string) {
-  return cleanText(seg)
-    .replaceAll("-", " ")
-    .replaceAll("_", " ");
+function humanizeSegment(segment: string) {
+  return cleanText(segment).replaceAll("-", " ").replaceAll("_", " ");
 }
 
 function stripPrintFromHtml(html: unknown) {
@@ -130,15 +135,12 @@ function stripPrintFromHtml(html: unknown) {
     "",
   );
   out = out.replace(/<i[^>]*class=["'][^"']*fa-print[^"']*["'][^>]*>[\s\S]*?<\/i>/gi, "");
-  out = out.replace(/\bPrint\b/gi, "");
-
-  return out;
+  return out.replace(/\bPrint\b/gi, "");
 }
 
 function decorateKentLinks(html: string) {
   if (!html) return html;
-
-  return html.replace(/<a\s+([^>]*href=["'][^"']+["'][^>]*)>/gi, (match, attrs) => {
+  return html.replace(/<a\s+([^>]*href=["'][^"']+["'][^>]*)>/gi, (_match, attrs) => {
     let nextAttrs = String(attrs || "");
     if (!/\btarget=/i.test(nextAttrs)) nextAttrs += ` target="_blank"`;
     if (!/\brel=/i.test(nextAttrs)) nextAttrs += ` rel="noreferrer"`;
@@ -151,7 +153,6 @@ function sanitizeKentHtml(html: unknown) {
   if (!out) return out;
 
   out = stripPrintFromHtml(out);
-
   out = out.replace(/<script[\s\S]*?<\/script>/gi, "");
   out = out.replace(/<style[\s\S]*?<\/style>/gi, "");
   out = out.replace(/<iframe[\s\S]*?<\/iframe>/gi, "");
@@ -159,6 +160,8 @@ function sanitizeKentHtml(html: unknown) {
   out = out.replace(/<form[\s\S]*?<\/form>/gi, "");
   out = out.replace(/<input[^>]*>/gi, "");
   out = out.replace(/<button[\s\S]*?<\/button>/gi, "");
+  out = out.replace(/\son[a-z]+\s*=\s*(["']).*?\1/gi, "");
+  out = out.replace(/\shref\s*=\s*(["'])\s*javascript:[\s\S]*?\1/gi, "");
 
   out = out.replace(/Login to see prices/gi, "");
   out = out.replace(/Get early access to info, updates, and discounts/gi, "");
@@ -166,9 +169,22 @@ function sanitizeKentHtml(html: unknown) {
   out = out.replace(/Choose an option/gi, "");
   out = out.replace(/\bClear\b/gi, "");
 
-  out = decorateKentLinks(out);
+  return decorateKentLinks(out).trim();
+}
 
-  return out.trim();
+function sanitizeKentSectionValue(value: unknown, key = ""): unknown {
+  if (Array.isArray(value)) return value.map((item) => sanitizeKentSectionValue(item, key));
+  if (!value || typeof value !== "object") {
+    if (typeof value === "string" && /html$/i.test(key)) return sanitizeKentHtml(value);
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).map(([childKey, childValue]) => [
+      childKey,
+      sanitizeKentSectionValue(childValue, childKey),
+    ]),
+  );
 }
 
 function extractSpecsTableFromHtml(html: string) {
@@ -179,33 +195,30 @@ function extractSpecsTableFromHtml(html: string) {
 
   const tables = html.match(/<table[\s\S]*?<\/table>/gi) || [];
   for (const table of tables) {
-    const low = table.toLowerCase();
+    const lower = table.toLowerCase();
     if (
-      low.includes("spec") ||
-      low.includes("specification") ||
-      low.includes("parameter") ||
-      low.includes("catalog")
+      lower.includes("spec") ||
+      lower.includes("specification") ||
+      lower.includes("parameter") ||
+      lower.includes("catalog")
     ) {
       return table;
     }
   }
-
   return tables[0] || "";
 }
 
 function isGalleryNoiseUrl(url: string) {
-  const s = String(url || "").toLowerCase();
-  if (!s) return true;
-
-  if (s.includes("request") && s.includes("sample")) return true;
-  if (s.includes("request") && s.includes("quote")) return true;
-  if (s.includes("intertek")) return true;
-  if (s.includes("badge")) return true;
-  if (s.includes("icon")) return true;
-  if (s.includes("logo")) return true;
-  if (s.includes("banner")) return true;
-  if (s.endsWith("/kr.png")) return true;
-
+  const value = String(url || "").toLowerCase();
+  if (!value) return true;
+  if (value.includes("request") && value.includes("sample")) return true;
+  if (value.includes("request") && value.includes("quote")) return true;
+  if (value.includes("intertek")) return true;
+  if (value.includes("badge")) return true;
+  if (value.includes("icon")) return true;
+  if (value.includes("logo")) return true;
+  if (value.includes("banner")) return true;
+  if (value.endsWith("/kr.png")) return true;
   return false;
 }
 
@@ -218,51 +231,26 @@ function imageMasterKey(url: string) {
 
 function normalizeImages(product: any, title: string) {
   const rawUrls: string[] = Array.isArray(product?.imageUrls)
-    ? product.imageUrls.filter((u: any) => typeof u === "string" && u.trim())
+    ? product.imageUrls.filter((url: any) => typeof url === "string" && url.trim())
     : [];
-
   const assetUrls: string[] = Array.isArray(product?.images)
     ? product.images
-        .map((im: any) => im?.asset?.url)
-        .filter((u: any) => typeof u === "string" && u.trim())
+        .map((image: any) => image?.asset?.url)
+        .filter((url: any) => typeof url === "string" && url.trim())
     : [];
-
   const source = rawUrls.length ? rawUrls : assetUrls;
   const seen = new Set<string>();
 
   return source
-    .map((u) => String(u).trim())
-    .filter((u) => u && !isGalleryNoiseUrl(u))
-    .filter((u) => {
-      const key = imageMasterKey(u);
+    .map((url) => String(url).trim())
+    .filter((url) => url && !isGalleryNoiseUrl(url))
+    .filter((url) => {
+      const key = imageMasterKey(url);
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     })
-    .map((u) => ({ url: u, alt: title }));
-}
-
-function HeroBanner({ brandTitle }: { brandTitle: string }) {
-  return (
-    <section className="relative overflow-hidden">
-      <div className="relative h-[220px] w-full md:h-[280px]">
-        <Image src="/hero.png" alt="Products hero" fill priority className="object-cover" />
-        <div className="absolute inset-0 bg-black/35" />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/55 via-slate-900/20 to-transparent" />
-
-        <div className="absolute inset-0">
-          <div className="mx-auto flex h-full max-w-6xl items-center px-6">
-            <div>
-              <div className="text-xs font-semibold tracking-[0.2em] text-white/80">ITS BIO</div>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">
-                {cleanText(brandTitle)} Product
-              </h1>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+    .map((url) => ({ url, alt: title }));
 }
 
 export default async function KentProductDetailPage({
@@ -271,20 +259,14 @@ export default async function KentProductDetailPage({
   params: Promise<{ slug: string[] }> | { slug: string[] };
 }) {
   const resolved = await Promise.resolve(params as any);
-  const slugArr = Array.isArray(resolved?.slug) ? resolved.slug.filter(Boolean) : [];
-  const slug = slugArr.join("/");
-
+  const slugParts = Array.isArray(resolved?.slug) ? resolved.slug.filter(Boolean) : [];
+  const slug = slugParts.join("/");
   if (!slug) notFound();
 
   const client = (sanityClient as any).withConfig?.({ useCdn: false }) ?? sanityClient;
-  const bundle = await client.fetch(ITEM_PAGE_QUERY, {
-    brandKey: BRAND_KEY,
-    slug,
-  });
-
+  const bundle = await client.fetch(ITEM_PAGE_QUERY, { brandKey: BRAND_KEY, slug });
   const brand = bundle?.brand;
   const product = bundle?.product;
-
   if (!brand?._id || !product?._id) notFound();
 
   const title = stripBrandSuffix(product?.title || "");
@@ -297,54 +279,42 @@ export default async function KentProductDetailPage({
     { label: "Home", href: "/" },
     { label: "Products", href: "/products" },
     { label: cleanText(brand.title), href: `/products/${BRAND_KEY}` },
-    ...categoryPath.map((seg: string, i: number) => ({
-      label: categoryPathTitles[i] ? stripBrandSuffix(categoryPathTitles[i]) : humanizeSegment(seg),
-      href: buildHref(categoryPath.slice(0, i + 1)),
+    ...categoryPath.map((segment: string, index: number) => ({
+      label: categoryPathTitles[index] ? stripBrandSuffix(categoryPathTitles[index]) : humanizeSegment(segment),
+      href: buildHref(categoryPath.slice(0, index + 1)),
     })),
     { label: title, href: `/products/${BRAND_KEY}/item/${product.slug}` },
   ];
 
   const images = normalizeImages(product, title);
-
-  const rawSpecs =
-    typeof product?.specsHtml === "string" && product.specsHtml.trim() ? product.specsHtml : "";
-
-  const fallbackSpecs = extractSpecsTableFromHtml(
-    [
-      typeof product?.overviewHtml === "string" ? product.overviewHtml : "",
-      typeof product?.extraHtml === "string" ? product.extraHtml : "",
-      typeof product?.legacyHtml === "string" ? product.legacyHtml : "",
-    ]
-      .filter(Boolean)
-      .join("\n"),
-  );
-
-  const specsHtml = sanitizeKentHtml(rawSpecs || fallbackSpecs || "");
-
-  const descriptionHtml = sanitizeKentHtml(
+  const rawDescription =
     (typeof product?.overviewHtml === "string" && product.overviewHtml.trim()
       ? product.overviewHtml
       : typeof product?.extraHtml === "string" && product.extraHtml.trim()
         ? product.extraHtml
         : typeof product?.legacyHtml === "string"
           ? product.legacyHtml
-          : "") || "",
-  );
+          : "") || "";
+  const rawSpecs = typeof product?.specsHtml === "string" && product.specsHtml.trim() ? product.specsHtml : "";
+  const fallbackSpecs = rawSpecs ? "" : extractSpecsTableFromHtml(rawDescription);
+  const descriptionWithoutFallbackSpecs = fallbackSpecs ? rawDescription.replace(fallbackSpecs, "") : rawDescription;
 
+  const descriptionHtml = sanitizeKentHtml(descriptionWithoutFallbackSpecs);
+  const specsHtml = sanitizeKentHtml(rawSpecs || fallbackSpecs);
   const datasheetHtml = sanitizeKentHtml(product?.datasheetHtml || "");
   const documentsHtml = sanitizeKentHtml(product?.documentsHtml || "");
   const faqsHtml = sanitizeKentHtml(product?.faqsHtml || "");
   const referencesHtml = sanitizeKentHtml(product?.referencesHtml || "");
   const reviewsHtml = sanitizeKentHtml(product?.reviewsHtml || "");
-
   const documents = Array.isArray(product?.docs) ? product.docs : [];
+  const kentSections = Array.isArray(product?.kentSections)
+    ? (sanitizeKentSectionValue(product.kentSections) as any[])
+    : [];
 
   return (
     <main className="pb-16">
-      <HeroBanner brandTitle={brand.title} />
-
       <div className="mx-auto max-w-6xl px-6">
-        <div className="py-6">
+        <div className="py-7">
           <Breadcrumb items={breadcrumbItems} />
         </div>
 
@@ -352,8 +322,8 @@ export default async function KentProductDetailPage({
           title={title}
           summary={product?.summary || stripHtmlTags(descriptionHtml).slice(0, 220)}
           sku={product?.sku || ""}
-          sourceUrl={product?.sourceUrl || ""}
           images={images}
+          kentSections={kentSections}
           descriptionHtml={descriptionHtml}
           specsHtml={specsHtml}
           datasheetHtml={datasheetHtml}
