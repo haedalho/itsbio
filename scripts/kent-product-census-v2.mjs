@@ -85,6 +85,12 @@ async function main() {
     ? { visited: [], errors: [], productLocOccurrences: 0 }
     : await collectFromSitemap(candidates, fetchPage);
 
+  // Sanity category links are discovery hints, not proof that the current Kent page is still a product.
+  // Only official Shop cards may survive a temporary product-page fetch failure without validation.
+  for (const candidate of candidates.values()) {
+    candidate.trustedSources = candidate.trustedSources.filter((source) => source === "shop");
+  }
+
   console.log(`Validating and enriching ${candidates.size} product candidates...`);
   const validation = await enrichAndValidateCandidates(candidates, fetchPage, skipProductPages);
   const planned = makePlan(candidates, data.products || []);
