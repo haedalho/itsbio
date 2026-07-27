@@ -31,11 +31,19 @@ body {
   line-height: 1.6;
 }
 
-/* ITS BIO is quote-based. Hide only dedicated supplier-price elements. */
+/* ITS BIO is quote-based. Supplier prices never appear on public product pages. */
 .price,
+.pricing,
 .product-price,
+.product_price,
 .price-box,
 .price-wrapper,
+.regular-price,
+.sale-price,
+.list-price,
+.retail-price,
+.unit-price,
+.msrp,
 .woocommerce-Price-amount,
 .woocommerce-price-suffix,
 .woocommerce-variation-price,
@@ -44,7 +52,8 @@ body {
 [class~="amount"],
 [class*="productPrice"],
 [class*="product-price"],
-[class*="price__"] {
+[class*="price__"],
+[class*="__price"] {
   display: none !important;
 }
 
