@@ -12,14 +12,13 @@ const PRICE_SELECTORS = [
   ".woocommerce-variation-price",
   ".single_variation_wrap .price",
   "[itemprop='price']",
-  "[data-price]",
   "[class~='amount']",
   "[class*='productPrice']",
   "[class*='product-price']",
   "[class*='price__']",
 ].join(",");
 
-const PRICE_HEADER_RE = /^(?:price|unit price|list price|retail price|sale price|msrp)$/i;
+const PRICE_HEADER_RE = /^(?:price|unit price|list price|retail price|sale price|msrp|cost|amount)$/i;
 const MONEY_ONLY_RE = /^(?:[$€£¥₩]\s*\d[\d,.]*(?:\s*(?:USD|EUR|GBP|JPY|KRW))?|\d[\d,.]*\s*(?:USD|EUR|GBP|JPY|KRW|원))$/i;
 const LOGIN_PRICE_RE = /^(?:login|sign in)\s+to\s+see\s+prices?$/i;
 
@@ -27,8 +26,14 @@ function removeNode(node: Element | null) {
   node?.parentElement?.removeChild(node);
 }
 
+function queryAll(root: ParentNode, selector: string) {
+  const result = Array.from(root.querySelectorAll(selector));
+  if (root instanceof Element && root.matches(selector)) result.unshift(root);
+  return result;
+}
+
 function removePriceColumns(root: ParentNode) {
-  root.querySelectorAll("table").forEach((table) => {
+  queryAll(root, "table").forEach((table) => {
     const headerRow = table.querySelector("tr");
     if (!headerRow) return;
 
@@ -50,41 +55,31 @@ function removePriceColumns(root: ParentNode) {
 }
 
 function removePriceNodes(root: ParentNode) {
-  // Remove full table columns while the Price header still exists.
   removePriceColumns(root);
+  queryAll(root, PRICE_SELECTORS).forEach((node) => removeNode(node));
 
-  root.querySelectorAll(PRICE_SELECTORS).forEach((node) => removeNode(node));
-
-  root.querySelectorAll("body *").forEach((node) => {
+  queryAll(root, "*").forEach((node) => {
     if (node.children.length > 0) return;
     const text = (node.textContent || "").replace(/\s+/g, " ").trim();
     if (!text) return;
 
-    if (PRICE_HEADER_RE.test(text) || MONEY_ONLY_RE.test(text) || LOGIN_PRICE_RE.test(text)) {
-      removeNode(node);
-    }
+    if (MONEY_ONLY_RE.test(text) || LOGIN_PRICE_RE.test(text)) removeNode(node);
   });
 }
 
 export default function HidePricesClient() {
   React.useEffect(() => {
-    let queued = false;
+    removePriceNodes(document);
 
-    const run = () => {
-      queued = false;
-      removePriceNodes(document);
-    };
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        mutation.addedNodes.forEach((node) => {
+          if (node instanceof Element) removePriceNodes(node);
+        });
+      }
+    });
 
-    const queue = () => {
-      if (queued) return;
-      queued = true;
-      window.requestAnimationFrame(run);
-    };
-
-    run();
-    const observer = new MutationObserver(queue);
     observer.observe(document.body, { childList: true, subtree: true });
-
     return () => observer.disconnect();
   }, []);
 
