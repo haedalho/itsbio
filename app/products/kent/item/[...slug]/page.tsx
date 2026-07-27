@@ -252,22 +252,24 @@ function imageMasterKey(url: string) {
 }
 
 function normalizeImages(product: any, title: string) {
-  const verifiedUrls: string[] = Array.isArray(product?.galleryImageUrls)
-    ? product.galleryImageUrls.filter((url: any) => typeof url === "string" && url.trim())
-    : [];
   const assetUrls: string[] = Array.isArray(product?.images)
     ? product.images
         .map((image: any) => image?.asset?.url)
         .filter((url: any) => typeof url === "string" && url.trim())
     : [];
+  const verifiedUrls: string[] = Array.isArray(product?.galleryImageUrls)
+    ? product.galleryImageUrls.filter((url: any) => typeof url === "string" && url.trim())
+    : [];
   const rawUrls: string[] = Array.isArray(product?.imageUrls)
     ? product.imageUrls.filter((url: any) => typeof url === "string" && url.trim())
     : [];
 
-  const source = verifiedUrls.length
-    ? verifiedUrls
-    : assetUrls.length
-      ? assetUrls.slice(0, 1)
+  // Sanity-hosted assets are the most stable source. Curated gallery URLs are
+  // second, and legacy page-wide image arrays are used only as a last resort.
+  const source = assetUrls.length
+    ? assetUrls.slice(0, 1)
+    : verifiedUrls.length
+      ? verifiedUrls
       : rawUrls.slice(0, 1);
   const seen = new Set<string>();
 
@@ -305,6 +307,9 @@ export default async function KentProductDetailPage({
   const categoryPathTitles: string[] = Array.isArray(product?.categoryPathTitles)
     ? product.categoryPathTitles
     : [];
+  const categoryLabel = stripBrandSuffix(
+    categoryPathTitles[categoryPathTitles.length - 1] || humanizeSegment(categoryPath[categoryPath.length - 1] || ""),
+  );
 
   const breadcrumbItems = [
     { label: "Home", href: "/" },
@@ -333,7 +338,8 @@ export default async function KentProductDetailPage({
 
   const legacyDescriptionHtml = sanitizeKentHtml(descriptionWithoutFallbackSpecs);
   const legacySpecsHtml = sanitizeKentHtml(rawSpecs || fallbackSpecs);
-  const images = official?.images || normalizeImages(product, title);
+  const productImages = normalizeImages(product, title);
+  const images = productImages.length ? productImages : (official?.fallbackImages || []);
   const kentSections = official?.sections || (Array.isArray(product?.kentSections)
     ? (sanitizeKentSectionValue(product.kentSections) as any[])
     : []);
@@ -356,9 +362,13 @@ export default async function KentProductDetailPage({
         </div>
 
         <KentProductDetailClient
+          slug={product.slug}
           title={title}
           summary={official?.summary || product?.summary || stripHtmlTags(descriptionHtml).slice(0, 220)}
           sku={official?.sku || product?.sku || ""}
+          badge={official?.badge}
+          leadHtml={official?.leadHtml}
+          categoryLabel={categoryLabel}
           images={images}
           kentSections={kentSections as any[]}
           descriptionHtml={descriptionHtml}
