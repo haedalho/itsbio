@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import * as React from "react";
 
 type Img = { url?: string; alt?: string };
 
 const MAX_GALLERY_IMAGES = 12;
+const PLACEHOLDER = "/kent-product-placeholder.svg";
 
 const DOWNSTREAM_IMAGE_PATTERNS = [
   /(?:^|[\/_\-.])faq(?:[\/_\-.]|$)/i,
@@ -79,21 +79,66 @@ function normalizeGalleryImages(images: Img[]) {
   }
 
   const gallery: Img[] = [];
-
   for (const image of deduped) {
     if (isDownstreamPageImage(image.url)) {
-      // Kent image arrays are stored in page order. Once a clearly unrelated
-      // resource/support image appears after product images, later images are
-      // also outside the product gallery.
       if (gallery.length) break;
       continue;
     }
-
     gallery.push(image);
     if (gallery.length >= MAX_GALLERY_IMAGES) break;
   }
 
   return gallery.length ? gallery : deduped.slice(0, 1);
+}
+
+function resolveKentImageUrl(input?: string) {
+  const raw = String(input || "").trim();
+  if (!raw) return PLACEHOLDER;
+
+  try {
+    const parsed = new URL(raw);
+    if (
+      (parsed.hostname === "www.kentscientific.com" || parsed.hostname === "kentscientific.com") &&
+      parsed.pathname.startsWith("/wp-content/uploads/")
+    ) {
+      return `/api/kent/asset?src=${encodeURIComponent(parsed.toString())}`;
+    }
+  } catch {
+    // Local paths and Sanity URLs are used as-is.
+  }
+
+  return raw;
+}
+
+function SafeGalleryImage({
+  src,
+  alt,
+  className,
+  loading,
+}: {
+  src?: string;
+  alt: string;
+  className: string;
+  loading?: "eager" | "lazy";
+}) {
+  const original = React.useMemo(() => resolveKentImageUrl(src), [src]);
+  const [resolved, setResolved] = React.useState(original);
+
+  React.useEffect(() => {
+    setResolved(original);
+  }, [original]);
+
+  return (
+    <img
+      src={resolved}
+      alt={alt}
+      className={className}
+      loading={loading}
+      onError={() => {
+        if (resolved !== PLACEHOLDER) setResolved(PLACEHOLDER);
+      }}
+    />
+  );
 }
 
 export default function KentProductGalleryClient({
@@ -111,11 +156,12 @@ export default function KentProductGalleryClient({
   }, [safeImages.length, safeImages[0]?.url]);
 
   const active = safeImages[activeIndex] || safeImages[0] || null;
+  const hasThumbnails = safeImages.length > 1;
 
   return (
-    <div className="grid gap-4 md:grid-cols-[72px_minmax(0,1fr)]">
-      {safeImages.length > 1 ? (
-        <div className="order-2 flex gap-3 overflow-x-auto pb-1 md:order-1 md:max-h-[620px] md:flex-col md:overflow-y-auto md:overflow-x-hidden md:pr-1">
+    <div className={hasThumbnails ? "grid gap-4 md:grid-cols-[72px_minmax(0,1fr)]" : "grid"}>
+      {hasThumbnails ? (
+        <div className="order-2 flex max-w-full gap-3 overflow-x-auto pb-1 md:order-1 md:max-h-[560px] md:flex-col md:overflow-x-hidden md:overflow-y-auto">
           {safeImages.map((img, idx) => {
             const isActive = idx === activeIndex;
             return (
@@ -123,42 +169,35 @@ export default function KentProductGalleryClient({
                 key={`${img.url}-${idx}`}
                 type="button"
                 onClick={() => setActiveIndex(idx)}
+                aria-label={`View ${title} image ${idx + 1}`}
                 className={[
-                  "relative shrink-0 overflow-hidden border bg-white transition",
-                  isActive ? "border-[#0b4fb3]" : "border-slate-200 hover:border-slate-300",
+                  "relative h-[70px] w-[70px] shrink-0 overflow-hidden rounded-md border bg-white transition",
+                  isActive ? "border-[#0b4fb3] ring-2 ring-blue-100" : "border-slate-200 hover:border-slate-400",
                 ].join(" ")}
               >
-                <div className="relative h-[70px] w-[70px]">
-                  <Image
-                    src={String(img.url)}
-                    alt={img.alt || title}
-                    fill
-                    sizes="70px"
-                    className="object-contain p-2"
-                    unoptimized
-                  />
-                </div>
+                <SafeGalleryImage
+                  src={img.url}
+                  alt={img.alt || `${title} thumbnail ${idx + 1}`}
+                  className="absolute inset-0 h-full w-full object-contain p-2"
+                  loading="lazy"
+                />
               </button>
             );
           })}
         </div>
       ) : null}
 
-      <div className="order-1 relative overflow-hidden rounded-[8px] border border-slate-200 bg-[#f7f7f7] md:order-2">
+      <div className={`${hasThumbnails ? "order-1 md:order-2" : ""} relative overflow-hidden rounded-[12px] border border-slate-200 bg-[#f7f7f7]`}>
         <div className="relative aspect-square min-h-[360px] lg:min-h-[520px]">
           {active?.url ? (
-            <Image
+            <SafeGalleryImage
               src={active.url}
               alt={active.alt || title}
-              fill
-              sizes="(max-width: 1024px) 100vw, 700px"
-              className="object-contain p-8"
-              unoptimized
+              className="absolute inset-0 h-full w-full object-contain p-8 lg:p-10"
+              loading="eager"
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-sm text-slate-400">
-              No image
-            </div>
+            <div className="flex h-full items-center justify-center text-sm text-slate-400">No image</div>
           )}
         </div>
       </div>
