@@ -5,7 +5,7 @@
 현재 우선순위는 보안·SEO·전체 디자인 완성이 아니라 다음 세 가지다.
 
 1. Kent와 ABM의 실제 상품을 빠짐없이 Sanity에 올린다.
-2. 같은 상품이 여러 문서로 생기지 않게 한다.
+2. 같은 상품이 여러 문서나 여러 카드로 생기지 않게 한다.
 3. 빈약한 상품과 구조가 복잡한 상품을 자동으로 구분해 후속 보강 순서를 만든다.
 
 ## 가장 중요한 구조 변경
@@ -27,6 +27,27 @@
 - `unresolved`: 자동 분류가 어려워 사람이 확인해야 하는 제품
 
 브랜드별로 모든 상세 컴포넌트를 복사하지 않는다. 공통 상품 골격 위에 브랜드 테마와 표시 구조별 모듈을 조합한다.
+
+## Listing과 Landing의 데이터 원칙
+
+### Listing
+
+Listing 상품 카드는 반드시 Sanity `product` 문서에서만 생성한다.
+
+- `categoryPath` 또는 `listingPaths`로 product 조회
+- 같은 product가 여러 카테고리에 속하면 문서는 하나, listingPaths만 여러 개
+- legacy HTML에서 임시 카드를 런타임 생성하지 않음
+- 옵션 SKU를 별도 카드로 생성하지 않음
+
+### Landing
+
+Landing의 추천 상품 카드도 상품 데이터를 복사해 저장하지 않는다.
+
+- 가능하면 product reference 또는 canonical product href 사용
+- 같은 href는 landing 전체에서 한 번만 표시
+- category 카드와 product 카드를 명확히 구분
+
+현재 Kent listing의 `legacy-*` 임시 카드는 제품 census로 실제 skeleton product를 만든 뒤 제거한다.
 
 ## 2단계 이관 방식
 
@@ -214,14 +235,29 @@ Skeleton도 전체 제품 확보 단계에서는 유지한다. 상세 페이지�
 2. 기존 Sanity 상품과 sourceUrl 기준 대조
 3. 누락 상품 skeleton upsert
 4. sourceUrl·slug 실제 중복 정리
-5. 표시 구조 자동 추천 보고서 확인
+5. 상품 표시 구조 자동 추천 보고서 확인
 6. variant-selector 제품부터 옵션 정리
 7. model-table 제품의 SKU 행을 product 문서 하나로 병합
 8. simple 제품 대량 보강
 9. system/document 제품 수동 검수
-10. Kent 완료 후 같은 방식으로 ABM 정리
+10. census 완료 후 listing의 legacy 임시 카드 fallback 제거
+11. Kent 완료 후 같은 방식으로 ABM 정리
 
-## 자동 감사
+## 자동 감사와 census
+
+Kent 상품 전체 목록 dry-run:
+
+```bash
+npm run kent:product:census
+```
+
+검토 후 skeleton 반영:
+
+```bash
+npm run kent:product:census:write
+```
+
+상품 품질:
 
 ```bash
 npm run product:audit
@@ -242,12 +278,15 @@ npm run abm:product:audit
 보고서:
 
 ```text
+.cache/kent-product-census/latest.md
+.cache/kent-product-census/latest.json
 .cache/product-quality/latest.md
 .cache/product-quality/latest.json
 ```
 
 보고서는 다음을 보여준다.
 
+- 새 skeleton 생성 대상과 기존 문서 patch 대상
 - Ready/Thin/Needs fix/Skeleton 개수
 - 표시 구조 추천
 - 빈약한 필드 빈도
