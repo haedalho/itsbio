@@ -42,20 +42,20 @@ function slugify(input: string) {
     .slice(0, 80) || "section";
 }
 
-function removePriceColumns($: cheerio.CheerioAPI, root: cheerio.Cheerio<cheerio.AnyNode>) {
-  root.find("table").each((_tableIndex, table) => {
+function removePriceColumns($: cheerio.CheerioAPI, root: any) {
+  root.find("table").each((_tableIndex: number, table: any) => {
     const rows = $(table).find("tr");
     const firstRow = rows.first();
     const indexes: number[] = [];
 
-    firstRow.children("th,td").each((index, cell) => {
+    firstRow.children("th,td").each((index: number, cell: any) => {
       if (PRICE_COLUMN_RE.test(cleanText($(cell).text()))) indexes.push(index);
     });
 
     indexes.sort((a, b) => b - a);
     if (!indexes.length) return;
 
-    rows.each((_rowIndex, row) => {
+    rows.each((_rowIndex: number, row: any) => {
       indexes.forEach((index) => {
         $(row).children("th,td").eq(index).remove();
       });
@@ -63,7 +63,7 @@ function removePriceColumns($: cheerio.CheerioAPI, root: cheerio.Cheerio<cheerio
   });
 }
 
-function removeCommerceNoise($: cheerio.CheerioAPI, root: cheerio.Cheerio<cheerio.AnyNode>) {
+function removeCommerceNoise($: cheerio.CheerioAPI, root: any) {
   root
     .find(
       "script,style,noscript,iframe,form,input,button,select,option,.price,.product-price,.price-box,.price-wrapper,.woocommerce-Price-amount,.woocommerce-price-suffix,.woocommerce-variation-price,.single_variation_wrap",
@@ -72,7 +72,7 @@ function removeCommerceNoise($: cheerio.CheerioAPI, root: cheerio.Cheerio<cheeri
 
   removePriceColumns($, root);
 
-  root.find("*").each((_index, node) => {
+  root.find("*").each((_index: number, node: any) => {
     const element = $(node);
     const text = cleanText(element.text());
     if (!text) return;
@@ -97,7 +97,7 @@ export function sanitizeKentSourceHtml(input: unknown) {
   removeCommerceNoise($, root);
 
   root.find("[style]").removeAttr("style");
-  root.find("[onclick],[onerror],[onload],[data-price],[itemprop='price']").each((_index, node) => {
+  root.find("[onclick],[onerror],[onload],[data-price],[itemprop='price']").each((_index: number, node: any) => {
     const element = $(node);
     element.removeAttr("onclick").removeAttr("onerror").removeAttr("onload").removeAttr("data-price");
     if (element.attr("itemprop") === "price") element.remove();
@@ -138,7 +138,7 @@ export function sanitizeKentSourceHtml(input: unknown) {
       "hr",
     ],
     allowedAttributes: {
-      a: ["href", "title"],
+      a: ["href", "title", "target", "rel"],
       img: ["src", "alt", "width", "height", "loading"],
       th: ["colspan", "rowspan", "scope"],
       td: ["colspan", "rowspan"],
