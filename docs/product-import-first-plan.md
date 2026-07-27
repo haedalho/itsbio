@@ -2,31 +2,45 @@
 
 ## 목표
 
-현재 우선순위는 보안·SEO·전체 디자인 완성이 아니라 다음 세 가지다.
+현재 우선순위는 보안·SEO·전체 디자인 완성이 아니다.
 
 1. Kent와 ABM의 실제 상품을 빠짐없이 Sanity에 올린다.
 2. 같은 상품이 여러 문서나 여러 카드로 생기지 않게 한다.
-3. 빈약한 상품과 구조가 복잡한 상품을 자동으로 구분해 후속 보강 순서를 만든다.
+3. 브랜드별 원본 제품 페이지 구조를 보존한다.
+4. 빈약한 상품과 구조가 복잡한 상품을 자동으로 구분해 후속 보강 순서를 만든다.
 
-## 가장 중요한 구조 변경
+## 가장 중요한 수정
 
-상품의 `브랜드 디자인`과 `상품 표시 구조`를 분리한다.
+ABM과 Kent를 같은 상세 콘텐츠 틀로 보지 않는다.
 
-### 브랜드 디자인
+### ABM
 
-- ABM: 주황 테마, ABM 카테고리와 문서 탭
-- Kent: 파란 테마, Kent 카테고리와 옵션 UI
+ABM은 탭형 데이터가 중심이다.
 
-### 상품 표시 구조
+- Specifications
+- Datasheet
+- Documents
+- FAQs
+- References
+- Reviews
 
-- `simple`: 단일 SKU 또는 단일 모델
-- `variant-selector`: 색상·크기·모델 등 옵션 선택형
-- `model-table`: 한 페이지 안에 여러 Cat.No/SKU가 표로 존재
-- `system-config`: 본체·구성품·호환 액세서리를 함께 보여줘야 하는 시스템형
-- `document-info`: SKU보다 설명·문서·호환 정보가 중심인 제품
-- `unresolved`: 자동 분류가 어려워 사람이 확인해야 하는 제품
+### Kent
 
-브랜드별로 모든 상세 컴포넌트를 복사하지 않는다. 공통 상품 골격 위에 브랜드 테마와 표시 구조별 모듈을 조합한다.
+Kent는 제품에 따라 길이와 구성이 다른 세로형 페이지다.
+
+- 제품 이미지·제품명·Item #·옵션
+- 핵심 장점
+- About product
+- Base system includes
+- Product specifications가 있는 경우
+- Resources / product videos가 있는 경우
+- Optional add-ons가 있는 경우
+- Scientific publications가 있는 경우
+- Warranty information이 있는 경우
+
+Kent에서 위 섹션이 모두 존재해야 하는 것은 아니다. 단순 액세서리는 이미지·Item #·옵션·짧은 설명만으로도 정상 상품이다.
+
+Kent 상세 모델은 `docs/kent-product-page-model.md`를 따른다.
 
 ## Listing과 Landing의 데이터 원칙
 
@@ -43,7 +57,7 @@ Listing 상품 카드는 반드시 Sanity `product` 문서에서만 생성한다
 
 Landing의 추천 상품 카드도 상품 데이터를 복사해 저장하지 않는다.
 
-- 가능하면 product reference 또는 canonical product href 사용
+- product reference 또는 canonical product href 사용
 - 같은 href는 landing 전체에서 한 번만 표시
 - category 카드와 product 카드를 명확히 구분
 
@@ -67,26 +81,35 @@ Landing의 추천 상품 카드도 상품 데이터를 복사해 저장하지 �
 
 가능하면 함께 저장:
 
-- 대표 SKU
+- 대표 SKU 또는 Item #
 - 대표 이미지
-- 짧은 원본 요약
+- 짧은 원본 소개
+- variants
+- 브랜드별 표시 유형
 
-이 단계에서는 specs, FAQ, documents가 비어 있어도 상품 문서는 생성한다. 대신 상세 화면에서 빈 탭은 렌더하지 않는다.
+이 단계에서는 상세 섹션이 비어 있어도 상품 문서를 생성한다.
 
-### 2차: 상세 보강
+### 2차: 브랜드별 상세 보강
 
-전체 상품 문서가 확보된 후 아래 항목을 채운다.
+#### Kent
 
-- summary/overview
-- gallery
-- specifications
-- documents/datasheet
-- options/variants
-- compatibility
-- related products
-- FAQs/references/reviews
+1. 옵션형 상품의 optionGroups/variants
+2. 장비형 제품의 원본 섹션 순서
+3. 이미지/gallery
+4. 핵심 장점 또는 짧은 소개
+5. Base system includes
+6. 사양·비교표가 존재할 때만 반영
+7. resources/videos가 존재할 때만 반영
+8. optional add-ons/publications/warranty가 존재할 때만 반영
 
-이 순서로 하면 일부 상품 상세가 빈약하더라도 전체 상품 수와 누락 여부를 먼저 확정할 수 있다.
+#### ABM
+
+1. Summary/Overview
+2. Specifications
+3. Datasheet/Documents
+4. FAQs
+5. References/Reviews
+6. 이미지와 관련 상품
 
 ## 중복 방지 규칙
 
@@ -131,36 +154,30 @@ Variant 고유 기준:
 
 ## Upsert 원칙
 
-무작위 새 문서를 계속 생성하지 않는다.
-
 - 기존 sourceUrl 문서가 있으면 patch
 - sourceUrl이 없지만 같은 brand+slug가 있으면 검토 후 patch
 - 완전히 새 상품만 create
 - 가능한 경우 sourceKey 기반 deterministic `_id` 사용
-- 수집 결과가 빈 값이면 기존 값을 덮어쓰지 않는다
-- 수동으로 수정한 값은 별도 필드 또는 보호 목록으로 유지한다
+- 수집 결과가 빈 값이면 기존 값을 덮어쓰지 않음
+- 수동 수정한 값은 보호
 
-## 빈약한 상품 처리
-
-상품을 삭제하거나 업로드에서 제외하지 않고 상태로 나눈다.
+## Kent 상품 상태
 
 ### Ready
 
 - 기본 식별값 정상
 - 카테고리 연결
-- SKU/variant/model table 중 하나 존재
+- Item # 또는 variant 식별 가능
 - 대표 이미지
-- 설명 또는 overview
+- Kent 표시 유형 결정
+- 해당 유형의 최소 원본 콘텐츠 존재
 - 치명적 중복 없음
 
 ### Thin
 
-상품은 표시 가능하지만 다음 일부가 부족하다.
+상품은 표시 가능하지만 이미지, Item #, 옵션, 짧은 설명 중 일부가 부족하다.
 
-- summary
-- image
-- specs
-- documents
+Kent에 ABM의 Specifications·Documents·FAQ가 없다는 이유로 Thin 처리하지 않는다.
 
 ### Needs fix
 
@@ -169,65 +186,70 @@ Variant 고유 기준:
 - options는 있는데 variants 없음
 - default variant가 존재하지 않음
 - listingPaths 중복
+- 옵션별 SKU를 여러 product 문서로 분리
+- 표시 유형 오판정
 
 ### Skeleton
 
 최소 상품 문서만 있고 상세 정보가 거의 없다.
 
-Skeleton도 전체 제품 확보 단계에서는 유지한다. 상세 페이지에는 다음만 안전하게 표시한다.
+Skeleton 상세 페이지에는 존재하는 정보만 보여준다.
 
 - 제품명
 - 브랜드
-- SKU가 있으면 SKU
+- Item #가 있으면 Item #
 - 이미지가 있으면 이미지
 - 카테고리
 - 문의 CTA
 
-빈 Overview, Specs, Documents 탭은 숨긴다.
+ABM식 빈 탭을 만들지 않는다.
 
-## 추천 표시 구조
+## Kent 표시 구조
 
-### Simple
+### Equipment Longform
 
-- Gallery
-- Title
-- SKU
-- Summary
-- Quote CTA
-- Optional tabs
+SomnoFlo·CODA·PhysioSuite 같은 장비형 제품.
 
-### Variant selector
+- 제품 hero
+- 핵심 장점
+- 원본 순서의 세로형 섹션
+- 구성품
+- 사양/영상/리소스/논문/보증은 존재할 때만 표시
 
-- Gallery
-- Option buttons/select
-- 선택된 SKU와 variant image
-- Summary
-- Quote CTA
-- Optional tabs
+### Variant Product
 
-### Model table
+커프·니들·패드·마스크 등 옵션 선택형 제품.
 
-- 대표 이미지와 공통 설명
-- 모델/SKU 비교 표
-- 모델별 주요 규격
-- 모델 선택 후 문의
+- gallery
+- 옵션 선택
+- 선택된 Item #
+- 짧은 설명
+- 존재하는 추가 정보
+- 문의 CTA
 
-모델 한 줄마다 별도 product 문서를 만들지 않는다.
+### Simple Accessory
 
-### System/configuration
+수술 도구·프로브·케이블 등 짧은 단일 상품.
 
-- 시스템 개요
-- 기본 구성품
-- 선택 액세서리
-- 호환 장비
-- 구성별 문의 CTA
+- 이미지
+- 제품명
+- Item #
+- 짧은 설명/규격
+- 문의 CTA
 
-### Document/info
+본문이 짧다고 비정상으로 보지 않는다.
 
-- 핵심 설명
-- 호환성/사용 목적
-- Documents 중심
-- SKU가 없으면 억지 placeholder를 만들지 않는다
+### Configurable System
+
+본체, 기본 구성, optional add-ons가 나뉘는 시스템.
+
+- 기본 시스템
+- 포함 구성품
+- 선택 구성품
+- 호환 제품
+- 문의 CTA
+
+Compatibility/Accessories라는 고정 ABM 탭을 만들지 않는다.
 
 ## 제품 이관 작업 순서
 
@@ -235,13 +257,12 @@ Skeleton도 전체 제품 확보 단계에서는 유지한다. 상세 페이지�
 2. 기존 Sanity 상품과 sourceUrl 기준 대조
 3. 누락 상품 skeleton upsert
 4. sourceUrl·slug 실제 중복 정리
-5. 상품 표시 구조 자동 추천 보고서 확인
-6. variant-selector 제품부터 옵션 정리
-7. model-table 제품의 SKU 행을 product 문서 하나로 병합
-8. simple 제품 대량 보강
-9. system/document 제품 수동 검수
-10. census 완료 후 listing의 legacy 임시 카드 fallback 제거
-11. Kent 완료 후 같은 방식으로 ABM 정리
+5. Kent 표시 유형 자동 추천 보고서 확인
+6. variant 제품 옵션 정리
+7. equipment longform 제품 섹션 수집
+8. simple accessory 대량 보강
+9. census 완료 후 listing의 legacy 임시 카드 fallback 제거
+10. Kent 완료 후 ABM 탭 데이터 정리
 
 ## 자동 감사와 census
 
@@ -257,22 +278,16 @@ npm run kent:product:census
 npm run kent:product:census:write
 ```
 
-상품 품질:
-
-```bash
-npm run product:audit
-```
-
-Kent만:
+Kent 품질:
 
 ```bash
 npm run kent:product:audit
 ```
 
-ABM만:
+전체:
 
 ```bash
-npm run abm:product:audit
+npm run product:audit
 ```
 
 보고서:
@@ -284,15 +299,7 @@ npm run abm:product:audit
 .cache/product-quality/latest.json
 ```
 
-보고서는 다음을 보여준다.
-
-- 새 skeleton 생성 대상과 기존 문서 patch 대상
-- Ready/Thin/Needs fix/Skeleton 개수
-- 표시 구조 추천
-- 빈약한 필드 빈도
-- sourceUrl/slug/SKU/제목 중복 후보
-- variant ID/SKU/옵션 조합 중복
-- 우선 보강해야 할 상품 목록
+Kent 감사에서는 ABM 탭 필드의 부재를 오류로 판정하지 않는다.
 
 ## 당장 하지 않을 것
 
@@ -302,6 +309,5 @@ npm run abm:product:audit
 - SEO 전면 작업
 - 모든 HTML 구조 재작성
 - 페이지별 미세한 색상·간격 조정
-- 상품마다 완전히 다른 전용 컴포넌트 생성
 
-단, 제품 이관 자체를 막거나 중복을 증가시키는 문제는 제품 작업과 함께 바로 수정한다.
+단, 제품 이관 자체를 막거나 중복을 증가시키는 문제와 Kent/ABM 구조 혼용은 바로 수정한다.
