@@ -82,8 +82,8 @@ function removeTextPriceNode(node: Element) {
   removeNode(node);
 }
 
-function removeEmptyWrappers(root: ParentNode) {
-  root.querySelectorAll("p,li,span,small,strong,div,section").forEach((node) => {
+function removeEmptyPriceFragments(root: ParentNode) {
+  root.querySelectorAll("p,li,span,small,strong,td,th").forEach((node) => {
     if (node.querySelector("img,video,iframe,table,a[href],button,input,select")) return;
     if (!normalizedText(node as Element)) removeNode(node as Element);
   });
@@ -98,7 +98,7 @@ function removePriceNodes(root: ParentNode) {
     removeTextPriceNode(node as Element);
   });
 
-  removeEmptyWrappers(root);
+  removeEmptyPriceFragments(root);
 }
 
 export default function HidePricesClient() {
