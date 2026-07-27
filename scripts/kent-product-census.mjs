@@ -13,6 +13,7 @@ dotenv.config({ path: path.join(root, ".env.local") });
 const args = new Set(process.argv.slice(2));
 const write = args.has("--write");
 const skipSitemap = args.has("--skip-sitemap");
+const KENT_BASE = "https://www.kentscientific.com";
 
 const projectId =
   process.env.NEXT_PUBLIC_SANITY_PROJECT_ID ||
@@ -32,7 +33,7 @@ if (!projectId || !dataset) {
   process.exit(1);
 }
 if (write && !token) {
-  console.error("Write mode requires SANITY_API_TOKEN, SANITY_WRITE_TOKEN, or SANITY_TOKEN.");
+  console.error("Write mode requires a Sanity write token.");
   process.exit(1);
 }
 
@@ -44,12 +45,8 @@ const sanity = createClient({
   useCdn: false,
 });
 
-const KENT_BASE = "https://www.kentscientific.com";
-
 const QUERY = `{
-  "brand": *[
-    _type == "brand" && (slug.current == "kent" || themeKey == "kent")
-  ][0]{ _id, title, "slug": slug.current, themeKey },
+  "brand": *[_type == "brand" && (slug.current == "kent" || themeKey == "kent")][0]{ _id },
   "categories": *[
     _type == "category"
     && (!defined(isActive) || isActive == true)
@@ -61,17 +58,10 @@ const QUERY = `{
     )
   ]{
     _id,
-    title,
     path,
-    sourceUrl,
     legacyHtml,
     contentBlocks[]{
-      _key,
-      _type,
-      title,
-      kind,
       items[]{
-        _key,
         title,
         subtitle,
         description,
@@ -115,31 +105,6 @@ function clean(value) {
   return String(value ?? "").trim();
 }
 
-function toAbs(value) {
-  const raw = clean(value);
-  if (!raw) return "";
-  if (/^https?:\/\//i.test(raw)) return raw;
-  if (raw.startsWith("//")) return `https:${raw}`;
-  if (raw.startsWith("/")) return `${KENT_BASE}${raw}`;
-  return raw;
-}
-
-function normalizeUrl(value) {
-  const raw = toAbs(value);
-  if (!raw) return "";
-  try {
-    const url = new URL(raw);
-    url.hash = "";
-    url.search = "";
-    url.protocol = "https:";
-    url.hostname = url.hostname.toLowerCase().replace(/^www\./, "www.");
-    url.pathname = decodeURIComponent(url.pathname).replace(/\/{2,}/g, "/").replace(/\/$/, "");
-    return url.toString();
-  } catch {
-    return raw.replace(/[?#].*$/, "").replace(/\/$/, "");
-  }
-}
-
 function normalizePath(value) {
   if (Array.isArray(value)) return value.map(clean).filter(Boolean).join("/").toLowerCase();
   return clean(value).replace(/^\/+|\/+$/g, "").replace(/\/{2,}/g, "/").toLowerCase();
@@ -165,60 +130,61 @@ function stripTags(value) {
 function humanizeSlug(slug) {
   return clean(slug)
     .replace(/[-_]+/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase())
-    .trim();
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function cleanTitle(value, slug = "") {
-  const title = stripTags(value)
-    .replace(/\s*[|–—-]\s*Kent Scientific(?: Corporation)?\s*$/i, "")
-    .replace(/\s+/g, " ")
-    .trim();
-  return title || humanizeSlug(slug);
+function cleanTitle(value, slug) {
+  return (
+    stripTags(value)
+      .replace(/\s*[|–—]\s*Kent Scientific(?: Corporation)?\s*$/i, "")
+      .trim() || humanizeSlug(slug)
+  );
 }
 
-function isWeakTitle(value, slug) {
-  const title = clean(value).toLowerCase();
-  if (!title) return true;
-  return title === clean(slug).toLowerCase() || title === humanizeSlug(slug).toLowerCase();
+function normalizeAbsoluteUrl(value) {
+  const raw = clean(value);
+  if (!raw) return "";
+  try {
+    const url = new URL(raw.startsWith("//") ? `https:${raw}` : raw, KENT_BASE);
+    url.hash = "";
+    url.search = "";
+    url.protocol = "https:";
+    url.hostname = url.hostname.toLowerCase();
+    url.pathname = decodeURIComponent(url.pathname).replace(/\/{2,}/g, "/");
+    return url.toString();
+  } catch {
+    return "";
+  }
 }
 
 function kentSlugFromHref(value) {
   const raw = clean(value);
   if (!raw) return "";
 
-  const internal = raw
-    .replace(/^https?:\/\/[^/]+/i, "")
-    .replace(/^\/+/, "")
-    .replace(/^products\/kent\/item\//i, "")
-    .replace(/^kent\/item\//i, "")
-    .replace(/^item\//i, "");
-  if (internal !== raw.replace(/^\/+/, "") && internal) {
-    return internal.replace(/^\/+|\/+$/g, "");
+  const internalPatterns = [
+    /^\/?products\/kent\/item\/(.+)$/i,
+    /^\/?kent\/item\/(.+)$/i,
+    /^\/?item\/(.+)$/i,
+  ];
+  for (const pattern of internalPatterns) {
+    const match = raw.match(pattern);
+    if (match?.[1]) return match[1].replace(/^\/+|\/+$/g, "");
   }
 
-  const abs = normalizeUrl(raw);
+  const abs = normalizeAbsoluteUrl(raw);
   if (!abs) return "";
   try {
     const url = new URL(abs);
-    const match = url.pathname.match(/^\/products\/(.+)$/i);
-    if (!match?.[1]) return "";
-    return match[1].replace(/^\/+|\/+$/g, "");
+    if (!/(^|\.)kentscientific\.com$/i.test(url.hostname)) return "";
+    const match = url.pathname.match(/^\/products\/(.+?)\/?$/i);
+    return match?.[1] ? match[1].replace(/^\/+|\/+$/g, "") : "";
   } catch {
     return "";
   }
 }
 
-function sourceUrlFromHref(value) {
-  const slug = kentSlugFromHref(value);
-  return slug ? `${KENT_BASE}/products/${slug}/` : "";
-}
-
-function getImageUrl(item) {
-  if (!item || typeof item !== "object") return "";
-  const direct = [item.imageUrl, item.image, item.src, item.thumbnail, item.thumb]
-    .find((value) => typeof value === "string" && clean(value));
-  return direct ? toAbs(direct) : "";
+function canonicalSourceUrl(slug) {
+  return `${KENT_BASE}/products/${slug.replace(/^\/+|\/+$/g, "")}/`;
 }
 
 function stableProductId(slug) {
@@ -238,16 +204,20 @@ function unique(values, normalizer = (value) => clean(value).toLowerCase()) {
   return out;
 }
 
-function addCandidate(map, input) {
-  const slug = kentSlugFromHref(input?.sourceUrl || input?.href || "");
-  if (!slug) return;
-  const sourceUrl = sourceUrlFromHref(input?.sourceUrl || input?.href || "") || `${KENT_BASE}/products/${slug}/`;
-  const key = normalizeUrl(sourceUrl).toLowerCase();
-  if (!key) return;
+function best(values, fallback = "") {
+  return [...(values || [])]
+    .map(clean)
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length)[0] || fallback;
+}
 
-  const current = map.get(key) || {
+function addCandidate(candidates, input) {
+  const slug = kentSlugFromHref(input.href || input.sourceUrl);
+  if (!slug) return;
+  const key = slug.toLowerCase();
+  const current = candidates.get(key) || {
     slug,
-    sourceUrl,
+    sourceUrl: canonicalSourceUrl(slug),
     titles: [],
     summaries: [],
     skus: [],
@@ -256,74 +226,66 @@ function addCandidate(map, input) {
     discoveredFrom: [],
   };
 
-  if (clean(input?.title)) current.titles.push(cleanTitle(input.title, slug));
-  if (clean(input?.summary)) current.summaries.push(stripTags(input.summary));
-  if (clean(input?.sku)) current.skus.push(clean(input.sku));
-  if (clean(input?.imageUrl)) current.images.push(toAbs(input.imageUrl));
-  if (clean(input?.listingPath)) current.listingPaths.push(normalizePath(input.listingPath));
-  if (clean(input?.discoveredFrom)) current.discoveredFrom.push(clean(input.discoveredFrom));
+  if (clean(input.title)) current.titles.push(cleanTitle(input.title, slug));
+  if (clean(input.summary)) current.summaries.push(stripTags(input.summary));
+  if (clean(input.sku)) current.skus.push(clean(input.sku));
+  if (clean(input.imageUrl)) current.images.push(normalizeAbsoluteUrl(input.imageUrl));
+  if (clean(input.listingPath)) current.listingPaths.push(normalizePath(input.listingPath));
+  if (clean(input.discoveredFrom)) current.discoveredFrom.push(clean(input.discoveredFrom));
 
-  current.titles = unique(current.titles, (value) => clean(value).toLowerCase());
-  current.summaries = unique(current.summaries, (value) => clean(value).toLowerCase());
+  current.titles = unique(current.titles);
+  current.summaries = unique(current.summaries);
   current.skus = unique(current.skus, normalizeSku);
-  current.images = unique(current.images, (value) => normalizeUrl(value).toLowerCase());
+  current.images = unique(current.images, normalizeAbsoluteUrl);
   current.listingPaths = unique(current.listingPaths, normalizePath);
   current.discoveredFrom = unique(current.discoveredFrom);
-  map.set(key, current);
+  candidates.set(key, current);
 }
 
-function collectFromContentBlocks(categories, map) {
+function itemImage(item) {
+  const value = [item?.imageUrl, item?.image, item?.src, item?.thumbnail, item?.thumb]
+    .find((candidate) => typeof candidate === "string" && clean(candidate));
+  return value ? normalizeAbsoluteUrl(value) : "";
+}
+
+function collectFromCategories(categories, candidates) {
   for (const category of categories || []) {
     const listingPath = normalizePath(category.path || []);
+
     for (const block of category.contentBlocks || []) {
       for (const item of block?.items || []) {
         const href = item?.href || item?.url || item?.link || "";
-        if (!kentSlugFromHref(href)) continue;
-        addCandidate(map, {
+        addCandidate(candidates, {
           href,
           title: item?.title,
           summary: item?.subtitle || item?.description,
           sku: item?.sku || item?.catNo,
-          imageUrl: getImageUrl(item),
+          imageUrl: itemImage(item),
           listingPath,
           discoveredFrom: `contentBlock:${category._id}`,
         });
       }
     }
-  }
-}
 
-function collectFromLegacyHtml(categories, map) {
-  for (const category of categories || []) {
     const html = clean(category.legacyHtml);
     if (!html) continue;
-    const listingPath = normalizePath(category.path || []);
     const $ = cheerio.load(html);
-
     $("a[href]").each((_, anchor) => {
       const href = clean($(anchor).attr("href"));
       if (!kentSlugFromHref(href)) return;
-
       const card = $(anchor).closest("li.product, .product, .product-card, article, .card");
       const scope = card.length ? card : $(anchor);
-      const title = clean(
-        scope.find(".woocommerce-loop-product__title, h1, h2, h3, h4, .product-title").first().text() ||
+      const image = scope.find("img").first();
+      addCandidate(candidates, {
+        href,
+        title:
+          scope.find(".woocommerce-loop-product__title, h1, h2, h3, h4, .product-title").first().text() ||
           $(anchor).attr("title") ||
           $(anchor).text(),
-      );
-      const summary = clean(scope.find(".excerpt, .description, .summary, p").first().text());
-      const sku = clean(scope.find(".sku, .product-sku, [class*='sku'], [class*='item-number']").first().text());
-      const image = scope.find("img").first();
-      const imageUrl = clean(
-        image.attr("data-lazy-src") || image.attr("data-src") || image.attr("src") || "",
-      );
-
-      addCandidate(map, {
-        href,
-        title,
-        summary,
-        sku,
-        imageUrl,
+        summary: scope.find(".excerpt, .description, .summary, p").first().text(),
+        sku: scope.find(".sku, .product-sku, [class*='sku'], [class*='item-number']").first().text(),
+        imageUrl:
+          image.attr("data-lazy-src") || image.attr("data-src") || image.attr("src") || "",
         listingPath,
         discoveredFrom: `legacyHtml:${category._id}`,
       });
@@ -332,9 +294,8 @@ function collectFromLegacyHtml(categories, map) {
 }
 
 function parseLocs(xml) {
-  return [...String(xml || "").matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/gi)].map((match) =>
-    match[1].replace(/&amp;/g, "&").trim(),
-  );
+  return [...String(xml || "").matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/gi)]
+    .map((match) => match[1].replace(/&amp;/g, "&").trim());
 }
 
 async function fetchText(url) {
@@ -342,13 +303,12 @@ async function fetchText(url) {
   const timeout = setTimeout(() => controller.abort(), 20000);
   try {
     const response = await fetch(url, {
-      headers: {
-        "user-agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/150 Safari/537.36",
-        accept: "application/xml,text/xml,text/html;q=0.9,*/*;q=0.8",
-      },
       redirect: "follow",
       signal: controller.signal,
+      headers: {
+        "user-agent": "Mozilla/5.0 Chrome/150 Safari/537.36",
+        accept: "application/xml,text/xml,text/html;q=0.9,*/*;q=0.8",
+      },
     });
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
     return response.text();
@@ -357,13 +317,12 @@ async function fetchText(url) {
   }
 }
 
-async function collectFromSitemaps(map) {
-  const seeds = [
+async function collectFromSitemap(candidates) {
+  const queue = [
     `${KENT_BASE}/wp-sitemap.xml`,
     `${KENT_BASE}/product-sitemap.xml`,
     `${KENT_BASE}/wp-sitemap-posts-product-1.xml`,
   ];
-  const queue = [...seeds];
   const visited = new Set();
   const errors = [];
 
@@ -376,10 +335,9 @@ async function collectFromSitemaps(map) {
       for (const loc of parseLocs(xml)) {
         if (/\.xml(?:\?|$)/i.test(loc)) {
           if (/product|wp-sitemap/i.test(loc) && !visited.has(loc) && !queue.includes(loc)) queue.push(loc);
-          continue;
+        } else {
+          addCandidate(candidates, { href: loc, discoveredFrom: `sitemap:${current}` });
         }
-        if (!kentSlugFromHref(loc)) continue;
-        addCandidate(map, { href: loc, discoveredFrom: `sitemap:${current}` });
       }
     } catch (error) {
       errors.push({ url: current, error: error instanceof Error ? error.message : String(error) });
@@ -389,18 +347,11 @@ async function collectFromSitemaps(map) {
   return { visited: [...visited], errors };
 }
 
-function chooseBest(values, fallback = "") {
-  return [...(values || [])]
-    .map(clean)
-    .filter(Boolean)
-    .sort((a, b) => b.length - a.length)[0] || fallback;
-}
-
 function buildExistingMaps(products) {
   const bySource = new Map();
   const bySlug = new Map();
   for (const product of products || []) {
-    const source = normalizeUrl(product.sourceUrl).toLowerCase();
+    const source = normalizeAbsoluteUrl(product.sourceUrl).toLowerCase();
     const slug = normalizePath(product.slug);
     if (source) {
       const rows = bySource.get(source) || [];
@@ -417,48 +368,49 @@ function buildExistingMaps(products) {
 }
 
 function makePlan(candidates, products) {
-  const maps = buildExistingMaps(products);
-  const rows = [];
+  const existingMaps = buildExistingMaps(products);
+  const plan = [];
 
   for (const candidate of candidates.values()) {
-    const sourceKey = normalizeUrl(candidate.sourceUrl).toLowerCase();
+    const sourceKey = normalizeAbsoluteUrl(candidate.sourceUrl).toLowerCase();
     const slugKey = normalizePath(candidate.slug);
-    const sourceMatches = maps.bySource.get(sourceKey) || [];
-    const slugMatches = maps.bySlug.get(slugKey) || [];
-    const matches = unique([...sourceMatches, ...slugMatches], (row) => row._id);
+    const matches = unique(
+      [...(existingMaps.bySource.get(sourceKey) || []), ...(existingMaps.bySlug.get(slugKey) || [])],
+      (row) => row._id,
+    );
     const existing = matches[0] || null;
-    const duplicateIds = matches.slice(1).map((row) => row._id);
-
-    const title = chooseBest(candidate.titles, humanizeSlug(candidate.slug));
-    const summary = chooseBest(candidate.summaries, "");
-    const sku = chooseBest(candidate.skus, "");
-    const images = unique(candidate.images, (value) => normalizeUrl(value).toLowerCase());
+    const title = best(candidate.titles, humanizeSlug(candidate.slug));
+    const summary = best(candidate.summaries);
+    const sku = best(candidate.skus);
+    const images = unique(candidate.images, normalizeAbsoluteUrl);
     const listingPaths = unique(candidate.listingPaths, normalizePath);
-
     const patch = {};
+
     if (existing) {
-      const existingListing = unique(existing.listingPaths || [], normalizePath);
-      const mergedListing = unique([...existingListing, ...listingPaths], normalizePath);
-      const existingImages = unique(existing.imageUrls || [], (value) => normalizeUrl(value).toLowerCase());
-      const mergedImages = unique([...existingImages, ...images], (value) => normalizeUrl(value).toLowerCase());
+      const existingListings = unique(existing.listingPaths || [], normalizePath);
+      const existingImages = unique(existing.imageUrls || [], normalizeAbsoluteUrl);
+      const mergedListings = unique([...existingListings, ...listingPaths], normalizePath);
+      const mergedImages = unique([...existingImages, ...images], normalizeAbsoluteUrl);
+      const existingTitle = clean(existing.title);
+      const weakExistingTitle = !existingTitle || existingTitle.toLowerCase() === humanizeSlug(candidate.slug).toLowerCase();
 
       if (!clean(existing.sourceUrl)) patch.sourceUrl = candidate.sourceUrl;
-      if (isWeakTitle(existing.title, candidate.slug) && title) patch.title = title;
+      if (weakExistingTitle && title) patch.title = title;
       if (!clean(existing.summary) && summary) patch.summary = summary;
       if (!clean(existing.sku) && sku) patch.sku = sku;
-      if (mergedListing.length !== existingListing.length) patch.listingPaths = mergedListing;
-      if ((!Array.isArray(existing.categoryPath) || !existing.categoryPath.length) && mergedListing[0]) {
-        patch.categoryPath = mergedListing[0].split("/").filter(Boolean);
+      if (mergedListings.length !== existingListings.length) patch.listingPaths = mergedListings;
+      if ((!Array.isArray(existing.categoryPath) || !existing.categoryPath.length) && mergedListings[0]) {
+        patch.categoryPath = mergedListings[0].split("/").filter(Boolean);
       }
       if (mergedImages.length !== existingImages.length) patch.imageUrls = mergedImages;
       if (existing.isActive === false) patch.isActive = true;
     }
 
-    rows.push({
+    plan.push({
       action: !existing ? "create" : Object.keys(patch).length ? "patch" : "unchanged",
       id: existing?._id || stableProductId(candidate.slug),
       existingId: existing?._id || null,
-      duplicateIds,
+      duplicateIds: matches.slice(1).map((row) => row._id),
       slug: candidate.slug,
       sourceUrl: candidate.sourceUrl,
       title,
@@ -471,11 +423,8 @@ function makePlan(candidates, products) {
     });
   }
 
-  return rows.sort((a, b) => {
-    const rank = { create: 0, patch: 1, unchanged: 2 };
-    if (rank[a.action] !== rank[b.action]) return rank[a.action] - rank[b.action];
-    return a.slug.localeCompare(b.slug);
-  });
+  const rank = { create: 0, patch: 1, unchanged: 2 };
+  return plan.sort((a, b) => rank[a.action] - rank[b.action] || a.slug.localeCompare(b.slug));
 }
 
 async function applyPlan(plan, brandId) {
@@ -492,6 +441,7 @@ async function applyPlan(plan, brandId) {
         title: row.title,
         slug: { _type: "slug", current: row.slug },
         sourceUrl: row.sourceUrl,
+        productType: "simple",
         ...(row.summary ? { summary: row.summary } : {}),
         ...(row.sku ? { sku: row.sku } : {}),
         ...(row.images.length ? { imageUrls: row.images } : {}),
@@ -501,13 +451,9 @@ async function applyPlan(plan, brandId) {
               categoryPath: row.listingPaths[0].split("/").filter(Boolean),
             }
           : {}),
-        productType: "simple",
       });
       created += 1;
-      continue;
-    }
-
-    if (row.action === "patch" && row.existingId) {
+    } else if (row.action === "patch" && row.existingId) {
       await sanity.patch(row.existingId).set(row.patch).commit();
       patched += 1;
     }
@@ -525,29 +471,23 @@ function renderMarkdown(report) {
     `- 새 skeleton 생성 대상: ${report.counts.create}`,
     `- 기존 문서 보강 대상: ${report.counts.patch}`,
     `- 변경 불필요: ${report.counts.unchanged}`,
-    `- 중복 기존 문서가 연결된 후보: ${report.counts.duplicateCandidates}`,
+    `- 중복 기존 문서 후보: ${report.counts.duplicateCandidates}`,
     `- 실행 모드: ${report.write ? "WRITE" : "DRY RUN"}`,
     "",
   ];
 
-  if (report.sitemap?.errors?.length) {
-    out.push("## Sitemap errors", "");
-    for (const row of report.sitemap.errors) out.push(`- ${row.url}: ${row.error}`);
-    out.push("");
-  }
-
   for (const action of ["create", "patch", "unchanged"]) {
     const rows = report.plan.filter((row) => row.action === action);
     out.push(`## ${action.toUpperCase()} (${rows.length})`, "");
-    if (!rows.length) out.push("- 없음", "");
+    if (!rows.length) out.push("- 없음");
     for (const row of rows) {
-      const meta = [
-        row.sku ? `SKU ${row.sku}` : "",
-        row.listingPaths.length ? `${row.listingPaths.length} listing` : "no listing",
-        row.images.length ? `${row.images.length} image` : "no image",
-        row.duplicateIds.length ? `duplicate IDs: ${row.duplicateIds.join(", ")}` : "",
+      const details = [
+        row.sku ? `SKU ${row.sku}` : "no SKU",
+        `${row.listingPaths.length} listing`,
+        `${row.images.length} image`,
+        row.duplicateIds.length ? `duplicates: ${row.duplicateIds.join(", ")}` : "",
       ].filter(Boolean).join(" · ");
-      out.push(`- **${row.title}** — \`${row.slug}\` · ${meta}`);
+      out.push(`- **${row.title}** — \`${row.slug}\` · ${details}`);
     }
     out.push("");
   }
@@ -555,11 +495,11 @@ function renderMarkdown(report) {
   out.push(
     "## 규칙",
     "",
-    "- source URL과 slug를 기준으로 기존 문서를 먼저 찾는다.",
-    "- 새 상품은 slug 기반 deterministic ID로 createIfNotExists한다.",
-    "- 빈 수집값으로 기존 값을 덮어쓰지 않는다.",
-    "- category/listing에서 여러 번 발견된 상품은 product 하나에 listingPaths만 합친다.",
-    "- 이 스크립트는 옵션/variant 상세를 생성하지 않는다. 전체 상품 skeleton 확보가 목적이다.",
+    "- source URL과 slug를 기준으로 기존 상품을 먼저 찾는다.",
+    "- category와 sitemap에서 여러 번 발견된 상품은 하나로 합치고 listingPaths만 병합한다.",
+    "- 새 상품은 deterministic ID와 createIfNotExists를 사용한다.",
+    "- 빈 수집값은 기존 값을 덮어쓰지 않는다.",
+    "- 옵션과 상세 정보는 전체 skeleton 확보 후 별도 보강한다.",
     "",
   );
   return out.join("\n");
@@ -571,15 +511,8 @@ async function main() {
   if (!data?.brand?._id) throw new Error("Kent brand document not found.");
 
   const candidates = new Map();
-  collectFromContentBlocks(data.categories || [], candidates);
-  collectFromLegacyHtml(data.categories || [], candidates);
-
-  let sitemap = { visited: [], errors: [] };
-  if (!skipSitemap) {
-    console.log("Fetching Kent product sitemaps...");
-    sitemap = await collectFromSitemaps(candidates);
-  }
-
+  collectFromCategories(data.categories || [], candidates);
+  const sitemap = skipSitemap ? { visited: [], errors: [] } : await collectFromSitemap(candidates);
   const plan = makePlan(candidates, data.products || []);
   const counts = {
     discovered: plan.length,
@@ -589,12 +522,7 @@ async function main() {
     duplicateCandidates: plan.filter((row) => row.duplicateIds.length).length,
   };
 
-  let applied = null;
-  if (write) {
-    console.log(`Applying ${counts.create} creates and ${counts.patch} patches...`);
-    applied = await applyPlan(plan, data.brand._id);
-  }
-
+  const applied = write ? await applyPlan(plan, data.brand._id) : null;
   const report = {
     generatedAt: new Date().toISOString(),
     write,
