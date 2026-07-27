@@ -77,7 +77,8 @@ const QUERY = `*[_type == "product"]{
   documentsHtml,
   faqsHtml,
   referencesHtml,
-  reviewsHtml
+  reviewsHtml,
+  kentSections
 }`;
 
 function clean(value) {
@@ -170,37 +171,79 @@ function groupDuplicates(rows, keyFn, detailFn) {
 }
 
 function variantOptionKey(variant) {
-  const rows = [...(variant?.optionValues || []), ...(variant?.attributes || [])]
+  return [...(variant?.optionValues || []), ...(variant?.attributes || [])]
     .map((row) => `${clean(row?.key || row?.label).toLowerCase()}=${clean(row?.value).toLowerCase()}`)
     .filter((row) => row !== "=")
-    .sort();
-  return rows.join("|");
+    .sort()
+    .join("|");
 }
 
-function detectModelTable(product) {
-  const html = [product.specsHtml, product.extraHtml, product.legacyHtml].filter(Boolean).join("\n");
-  if (!/<table|<tr|<td|<th/i.test(html)) return false;
+function combinedLegacyHtml(product) {
+  return [
+    product.extraHtml,
+    product.legacyHtml,
+    product.specsHtml,
+    product.datasheetHtml,
+    product.documentsHtml,
+    product.faqsHtml,
+    product.referencesHtml,
+    product.reviewsHtml,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function detectKentSignals(product) {
+  const html = combinedLegacyHtml(product);
   const text = textOnly(html);
-  const hasIdentifierHeading = /cat(?:alog)?\.?\s*(?:no|number)|item\s*#|model|sku/i.test(text);
-  if (!hasIdentifierHeading) return false;
-  const codes = text.match(/\b[A-Z]{1,6}[-_/]?[A-Z0-9]{2,}(?:[-_/][A-Z0-9]{1,})*\b/g) || [];
-  return new Set(codes.map(normalizeSku).filter(Boolean)).size >= 2;
+  const sectionTypes = Array.isArray(product.kentSections)
+    ? product.kentSections.map((section) => clean(section?.type).toLowerCase()).filter(Boolean)
+    : [];
+
+  const signals = {
+    features: /what you get|key features|features and benefits/i.test(text) || sectionTypes.includes("features"),
+    included: /base system includes|system includes|what(?:'s| is) included/i.test(text) || sectionTypes.includes("included"),
+    optional: /optional add-ons|optional accessories|add-ons/i.test(text) || sectionTypes.includes("optional-addons"),
+    specifications: /product specifications|specifications/i.test(text) || /<table|<tr|<td|<th/i.test(html) || sectionTypes.includes("spec-table"),
+    resources: /resources|download file|see video|user(?:'s)? guide|manual/i.test(text) || sectionTypes.includes("resources"),
+    videos: /product videos|playlist|watch video/i.test(text) || sectionTypes.includes("videos"),
+    publications: /scientific publications|scientific articles|publications/i.test(text) || sectionTypes.includes("publications"),
+    warranty: /warranty information|coverage period|premium warranty/i.test(text) || sectionTypes.includes("warranty"),
+    regulated: /license on file|prescription|rx product|restricted/i.test(text) || sectionTypes.includes("notice"),
+  };
+
+  return {
+    textLength: text.length,
+    sectionCount: sectionTypes.length,
+    signals,
+    signalCount: Object.values(signals).filter(Boolean).length,
+  };
 }
 
-function classifyDisplayMode(product) {
-  const variants = Array.isArray(product.variants) ? product.variants.filter(Boolean) : [];
-  const groups = Array.isArray(product.optionGroups)
-    ? product.optionGroups.filter((group) => Array.isArray(group?.options) && group.options.length)
-    : [];
-  const hasDocs = (product.docs || []).some((doc) => clean(doc?.url));
-  const hasBody = [product.extraHtml, product.legacyHtml, product.specsHtml, product.documentsHtml]
-    .some((value) => textOnly(value).length >= 80);
+function classifyKentDisplay(product, variants, groups) {
+  const profile = detectKentSignals(product);
+  if (profile.signals.regulated) return { mode: "kent-regulated", profile };
+  if (variants.length > 1 || groups.length > 0) return { mode: "kent-variant-product", profile };
+  if (profile.signals.included || profile.signals.optional) return { mode: "kent-configurable-system", profile };
+  if (profile.signalCount >= 2 || profile.textLength >= 900) return { mode: "kent-equipment-longform", profile };
+  if (normalizeSku(product.sku) || variants.length === 1) return { mode: "kent-simple-accessory", profile };
+  if (profile.textLength >= 80 || profile.sectionCount > 0) return { mode: "kent-simple-product", profile };
+  return { mode: "kent-unresolved", profile };
+}
 
-  if (variants.length > 1 || groups.length > 0) return "variant-selector";
-  if (detectModelTable(product)) return "model-table";
-  if (clean(product.sku) || variants.length === 1) return "simple";
-  if (hasDocs || hasBody) return "document-info";
-  return "unresolved";
+function classifyAbmDisplay(product, variants, groups) {
+  if (variants.length > 1 || groups.length > 0) return "abm-variant";
+  const hasTabs = [
+    product.specsHtml,
+    product.datasheetHtml,
+    product.documentsHtml,
+    product.faqsHtml,
+    product.referencesHtml,
+    product.reviewsHtml,
+  ].some((value) => textOnly(value).length > 0);
+  if (hasTabs) return "abm-tabs";
+  if (normalizeSku(product.sku) || variants.length === 1) return "abm-simple";
+  return "abm-unresolved";
 }
 
 function auditProduct(product) {
@@ -227,21 +270,35 @@ function auditProduct(product) {
     normalizeSku,
   );
   const variantOptions = uniqueNormalized(variants.map(variantOptionKey), (value) => clean(value).toLowerCase());
-  const displayMode = classifyDisplayMode(product);
+
+  const kentClassification = brand === "kent" ? classifyKentDisplay(product, variants, groups) : null;
+  const displayMode = kentClassification?.mode || classifyAbmDisplay(product, variants, groups);
 
   if (!clean(product.title)) hardFlags.push("missing_title");
   if (!brand) hardFlags.push("missing_brand");
   if (!clean(product.slug)) hardFlags.push("missing_slug");
   if (!normalizeUrl(product.sourceUrl)) hardFlags.push("missing_source_url");
   if (!normalizePath(product.categoryPath) && !listing.unique.length) hardFlags.push("missing_category");
-  if (!normalizeSku(product.sku) && !variantSkus.unique.length && displayMode !== "model-table") {
-    flags.push("missing_identifier");
-  }
-  if (!clean(product.summary) && textOnly(product.extraHtml || product.legacyHtml).length < 40) flags.push("thin_description");
+  if (!normalizeSku(product.sku) && !variantSkus.unique.length) flags.push("missing_identifier");
   if (!images.unique.length) flags.push("missing_image");
-  if (!textOnly(product.specsHtml).length) flags.push("missing_specs");
-  if (!docs.length && !textOnly(product.documentsHtml || product.datasheetHtml).length) flags.push("missing_documents");
-  if (!textOnly(product.extraHtml || product.legacyHtml).length && !textOnly(product.specsHtml).length) flags.push("empty_detail_content");
+
+  if (brand === "abm") {
+    if (!clean(product.summary) && textOnly(product.extraHtml || product.legacyHtml).length < 40) flags.push("thin_description");
+    if (!textOnly(product.specsHtml).length) flags.push("missing_specs");
+    if (!docs.length && !textOnly(product.documentsHtml || product.datasheetHtml).length) flags.push("missing_documents");
+    if (!textOnly(product.extraHtml || product.legacyHtml).length && !textOnly(product.specsHtml).length) {
+      flags.push("empty_detail_content");
+    }
+    if (displayMode === "abm-unresolved") hardFlags.push("unresolved_abm_display");
+  }
+
+  if (brand === "kent") {
+    const profile = kentClassification.profile;
+    if (profile.textLength < 80 && !variants.length && !groups.length) flags.push("thin_kent_source_content");
+    if (displayMode === "kent-unresolved") hardFlags.push("unresolved_kent_display");
+    // Kent는 ABM 탭 필드가 없어도 정상이다. Specs/Documents/FAQ 부재는 오류로 보지 않는다.
+  }
+
   if (listing.duplicates.length) hardFlags.push("duplicate_listing_paths");
   if (images.duplicates.length) flags.push("duplicate_images");
   if (documents.duplicates.length) flags.push("duplicate_documents");
@@ -254,7 +311,6 @@ function auditProduct(product) {
   if (product.defaultVariantId && !variants.some((variant) => clean(variant?.variantId) === clean(product.defaultVariantId))) {
     flags.push("invalid_default_variant");
   }
-  if (displayMode === "unresolved") hardFlags.push("unresolved_display_mode");
 
   let score = 0;
   if (clean(product.title)) score += 10;
@@ -262,13 +318,28 @@ function auditProduct(product) {
   if (clean(product.slug)) score += 10;
   if (normalizeUrl(product.sourceUrl)) score += 10;
   if (normalizePath(product.categoryPath) || listing.unique.length) score += 15;
-  if (normalizeSku(product.sku) || variantSkus.unique.length || displayMode === "model-table") score += 15;
+  if (normalizeSku(product.sku) || variantSkus.unique.length) score += 15;
   if (images.unique.length) score += 10;
-  if (clean(product.summary) || textOnly(product.extraHtml || product.legacyHtml).length >= 40) score += 10;
-  if (textOnly(product.specsHtml).length) score += 5;
-  if (docs.length || textOnly(product.documentsHtml || product.datasheetHtml).length) score += 5;
 
-  const status = hardFlags.length ? (score >= 60 ? "needs-fix" : "skeleton") : score >= 80 ? "ready" : score >= 55 ? "thin" : "skeleton";
+  if (brand === "kent") {
+    const profile = kentClassification.profile;
+    if (profile.textLength >= 80 || variants.length || groups.length) score += 10;
+    if (displayMode !== "kent-unresolved") score += 10;
+  } else {
+    if (clean(product.summary) || textOnly(product.extraHtml || product.legacyHtml).length >= 40) score += 8;
+    if (textOnly(product.specsHtml).length) score += 6;
+    if (docs.length || textOnly(product.documentsHtml || product.datasheetHtml).length) score += 6;
+  }
+
+  const status = hardFlags.length
+    ? score >= 60
+      ? "needs-fix"
+      : "skeleton"
+    : score >= 80
+      ? "ready"
+      : score >= 55
+        ? "thin"
+        : "skeleton";
 
   return {
     id: product._id,
@@ -285,6 +356,7 @@ function auditProduct(product) {
     status,
     hardFlags,
     flags,
+    kentProfile: kentClassification?.profile || undefined,
     counts: {
       images: images.unique.length,
       documents: documents.unique.length,
@@ -317,6 +389,8 @@ function renderMarkdown(report) {
     `- 실행 시각: ${report.generatedAt}`,
     `- 검사 브랜드: ${report.brands.join(", ")}`,
     "",
+    "> Kent는 ABM 탭 구조로 평가하지 않는다. Kent의 Specs/Documents/FAQ 부재는 품질 오류가 아니다.",
+    "",
     "## 전체 요약",
     "",
     `- 전체 상품: ${report.products.length}`,
@@ -325,7 +399,7 @@ function renderMarkdown(report) {
     `- Needs fix: ${report.summary.byStatus["needs-fix"] || 0}`,
     `- Skeleton: ${report.summary.byStatus.skeleton || 0}`,
     "",
-    "### 추천 표시 방식",
+    "### 표시 방식",
     "",
     ...Object.entries(report.summary.byDisplayMode)
       .sort((a, b) => b[1] - a[1])
@@ -381,10 +455,11 @@ function renderMarkdown(report) {
   out.push(
     "## 해석 기준",
     "",
+    "- Kent는 장비형 긴 세로 페이지, 옵션형 제품, 단순 액세서리를 각각 다르게 평가한다.",
+    "- Kent에 ABM의 Specifications/Datasheet/Documents/FAQ/References 탭이 없다는 이유로 감점하지 않는다.",
     "- 상품명만 같은 경우는 자동 삭제하지 않는다.",
     "- 같은 brand + source URL 또는 같은 brand + slug는 실제 중복으로 우선 처리한다.",
     "- 옵션 SKU는 별도 상품 문서가 아니라 한 상품의 variant로 보관한다.",
-    "- Skeleton도 전체 상품 목록 확보 단계에서는 올릴 수 있지만, 상세 화면에서는 빈 탭을 숨기고 문의 CTA를 제공한다.",
     "- 보고서는 읽기 전용이며 Sanity 데이터를 수정하지 않는다.",
     "",
   );
@@ -416,7 +491,7 @@ async function main() {
       },
       (row) => ({ id: row._id, title: row.title, sourceUrl: row.sourceUrl, sku: row.sku }),
     ),
-    "brand + SKU": groupDuplicates(
+    "brand + SKU candidates": groupDuplicates(
       selected,
       (row) => {
         const brand = normalizeBrand(row.brandKey);
