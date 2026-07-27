@@ -82,7 +82,7 @@ function removeCommerceNoise($: cheerio.CheerioAPI, root: any) {
 
   removePriceColumns($, root);
 
-  root.find("p,li,td,th,span,strong,small,div").each((_index: number, node: any) => {
+  root.find("p,li,td,th,span,strong,small").each((_index: number, node: any) => {
     const element = $(node);
     const text = cleanText(element.text());
     if (!text) return;
