@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "production:audit": "node scripts/production-audit.mjs",
+    "production:audit:strict": "node scripts/production-audit.mjs --strict",
     "catalog:audit": "node scripts/catalog-audit.mjs --brand=all",
     "catalog:audit:strict": "node scripts/catalog-audit.mjs --brand=all --strict",
     "kent:audit": "node scripts/catalog-audit.mjs --brand=kent",
