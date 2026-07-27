@@ -7,6 +7,7 @@ import { getKentOfficialProductOverride } from "@/lib/kent/official-product-over
 import {
   deriveKentSourceContent,
   pickKentSubtitle,
+  sanitizeKentSections,
   sanitizeKentSourceHtml,
 } from "@/lib/kent/source-content";
 import { sanityClient } from "@/lib/sanity/sanity.client";
@@ -130,21 +131,6 @@ function humanizeSegment(segment: string) {
   return cleanText(segment).replaceAll("-", " ").replaceAll("_", " ");
 }
 
-function sanitizeKentSectionValue(value: unknown, key = ""): unknown {
-  if (Array.isArray(value)) return value.map((item) => sanitizeKentSectionValue(item, key));
-  if (!value || typeof value !== "object") {
-    if (typeof value === "string" && /html$/i.test(key)) return sanitizeKentSourceHtml(value);
-    return value;
-  }
-
-  return Object.fromEntries(
-    Object.entries(value as Record<string, unknown>).map(([childKey, childValue]) => [
-      childKey,
-      sanitizeKentSectionValue(childValue, childKey),
-    ]),
-  );
-}
-
 function isContaminatedSpecsHtml(html: string) {
   const text = stripHtmlTags(html).toLowerCase();
   const raw = String(html || "").toLowerCase();
@@ -154,30 +140,32 @@ function isContaminatedSpecsHtml(html: string) {
   if (raw.includes("display:none") || raw.includes("!important")) return true;
   if (/\bvariant\b[\s\S]{0,150}\bsku\b[\s\S]{0,150}\boption\b[\s\S]{0,150}\bprice\b/i.test(text)) return true;
   if ((text.match(/vetflo|somnoflo|somnosuite/g) || []).length >= 5 && text.includes("sku")) return true;
-
   return false;
+}
+
+function isWarrantyLikeTable(html: string) {
+  const text = stripHtmlTags(html).toLowerCase();
+  const planColumns = /\bstandard\b[\s\S]{0,200}\bextended\b[\s\S]{0,200}\bpremium\b/.test(text);
+  const warrantyTerms = /(coverage period|loaner equipment|expedited repairs|warranty repairs|onsite installation)/.test(text);
+  return planColumns && warrantyTerms;
 }
 
 function extractSpecsTableFromHtml(html: string) {
   if (!html) return "";
 
-  const nearSpecs = html.match(/Specifications[\s\S]{0,7000}?(<table[\s\S]*?<\/table>)/i);
-  if (nearSpecs?.[1] && !isContaminatedSpecsHtml(nearSpecs[1])) return nearSpecs[1];
-
-  const tables = html.match(/<table[\s\S]*?<\/table>/gi) || [];
-  for (const table of tables) {
-    if (isContaminatedSpecsHtml(table)) continue;
-    const lower = table.toLowerCase();
-    if (
-      lower.includes("spec") ||
-      lower.includes("specification") ||
-      lower.includes("parameter") ||
-      lower.includes("catalog")
-    ) {
-      return table;
-    }
+  const nearSpecs = html.match(/<h[2-4][^>]*>\s*Specifications?\s*<\/h[2-4]>[\s\S]{0,7000}?(<table[\s\S]*?<\/table>)/i);
+  if (
+    nearSpecs?.[1] &&
+    !isContaminatedSpecsHtml(nearSpecs[1]) &&
+    !isWarrantyLikeTable(nearSpecs[1])
+  ) {
+    return nearSpecs[1];
   }
-  return tables.find((table) => !isContaminatedSpecsHtml(table)) || "";
+
+  // Never use an arbitrary table as Specifications. On several Kent pages the
+  // nearest remaining table is the warranty matrix, which caused duplicated and
+  // mislabeled content.
+  return "";
 }
 
 function isGalleryNoiseUrl(url: string) {
@@ -250,6 +238,13 @@ function richestSourceHtml(product: any) {
   return candidates.sort((a, b) => stripHtmlTags(b).length - stripHtmlTags(a).length)[0] || "";
 }
 
+function pickBestLeadHtml(...values: unknown[]) {
+  const candidates = values
+    .map((value) => sanitizeKentSourceHtml(value))
+    .filter((value) => stripHtmlTags(value).length >= 40);
+  return candidates.sort((a, b) => stripHtmlTags(b).length - stripHtmlTags(a).length)[0] || "";
+}
+
 export default async function KentProductDetailPage({
   params,
 }: {
@@ -260,7 +255,7 @@ export default async function KentProductDetailPage({
   const slug = slugParts.join("/");
   if (!slug) notFound();
 
-  const client = (sanityClient as any).withConfig?.({ useCdn: false }) ?? sanityClient;
+  const client = (sanityClient as any).withConfig?.({ useCdn: true }) ?? sanityClient;
   const bundle = await client.fetch(ITEM_PAGE_QUERY, { brandKey: BRAND_KEY, slug });
   const brand = bundle?.brand;
   const product = bundle?.product;
@@ -296,17 +291,20 @@ export default async function KentProductDetailPage({
   const introDerived = deriveKentSourceContent(introSource);
   const bodyDerived = bodySource === introSource ? introDerived : deriveKentSourceContent(bodySource);
 
-  const explicitSections = Array.isArray(product?.kentSections)
-    ? (sanitizeKentSectionValue(product.kentSections) as any[])
-    : [];
-  const sourceSections = explicitSections.length ? explicitSections : bodyDerived.sections;
+  const explicitSections = sanitizeKentSections(product?.kentSections);
+  const sourceSections = explicitSections.length ? explicitSections : sanitizeKentSections(bodyDerived.sections);
 
   const rawSpecsCandidate = htmlValue(product?.specsHtml);
-  const rawSpecs = isContaminatedSpecsHtml(rawSpecsCandidate) ? "" : rawSpecsCandidate;
+  const rawSpecs = isContaminatedSpecsHtml(rawSpecsCandidate) || isWarrantyLikeTable(rawSpecsCandidate)
+    ? ""
+    : rawSpecsCandidate;
   const fallbackSpecs = rawSpecs ? "" : extractSpecsTableFromHtml(bodySource);
 
-  const sourceLeadHtml =
-    sanitizeKentSourceHtml(product?.sourceIntroHtml) || introDerived.leadHtml || bodyDerived.leadHtml;
+  const sourceLeadHtml = pickBestLeadHtml(
+    product?.sourceIntroHtml,
+    introDerived.leadHtml,
+    bodyDerived.leadHtml,
+  );
   const sourceRemainderHtml =
     bodyDerived.remainderHtml || (!sourceLeadHtml && !sourceSections.length ? sanitizeKentSourceHtml(bodySource) : "");
 
@@ -314,7 +312,7 @@ export default async function KentProductDetailPage({
   const images = productImages.length ? productImages : (official?.fallbackImages || []);
   const useOfficial = Boolean(official);
   const leadHtml = official?.leadHtml || sourceLeadHtml;
-  const kentSections = official?.sections || sourceSections;
+  const kentSections = sanitizeKentSections(official?.sections || sourceSections);
   const descriptionHtml = useOfficial ? "" : sourceRemainderHtml;
   const specsHtml = useOfficial ? "" : sanitizeKentSourceHtml(rawSpecs || fallbackSpecs);
   const datasheetHtml = useOfficial ? "" : sanitizeKentSourceHtml(product?.datasheetHtml || "");
