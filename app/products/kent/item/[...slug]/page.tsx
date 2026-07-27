@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import KentProductDetailClient from "@/components/products/KentProductDetailClient";
 import Breadcrumb from "@/components/site/Breadcrumb";
+import { getKentOfficialProductOverride } from "@/lib/kent/official-product-overrides";
 import { sanityClient } from "@/lib/sanity/sanity.client";
 
 export const revalidate = 300;
@@ -72,6 +73,7 @@ const ITEM_PAGE_QUERY = `
     },
 
     docs[]{ title, label, url },
+    galleryImageUrls,
     imageUrls,
     imageFiles,
     images[]{ _key, asset->{ url } }
@@ -187,14 +189,28 @@ function sanitizeKentSectionValue(value: unknown, key = ""): unknown {
   );
 }
 
+function isContaminatedSpecsHtml(html: string) {
+  const text = stripHtmlTags(html).toLowerCase();
+  const raw = String(html || "").toLowerCase();
+
+  if (!text && !raw) return true;
+  if (raw.includes("single_variation_wrap")) return true;
+  if (raw.includes("display:none") || raw.includes("!important")) return true;
+  if (/\bvariant\b[\s\S]{0,150}\bsku\b[\s\S]{0,150}\boption\b[\s\S]{0,150}\bprice\b/i.test(text)) return true;
+  if ((text.match(/vetflo|somnoflo|somnosuite/g) || []).length >= 5 && text.includes("sku")) return true;
+
+  return false;
+}
+
 function extractSpecsTableFromHtml(html: string) {
   if (!html) return "";
 
   const nearSpecs = html.match(/Specifications[\s\S]{0,7000}?(<table[\s\S]*?<\/table>)/i);
-  if (nearSpecs?.[1]) return nearSpecs[1];
+  if (nearSpecs?.[1] && !isContaminatedSpecsHtml(nearSpecs[1])) return nearSpecs[1];
 
   const tables = html.match(/<table[\s\S]*?<\/table>/gi) || [];
   for (const table of tables) {
+    if (isContaminatedSpecsHtml(table)) continue;
     const lower = table.toLowerCase();
     if (
       lower.includes("spec") ||
@@ -205,7 +221,7 @@ function extractSpecsTableFromHtml(html: string) {
       return table;
     }
   }
-  return tables[0] || "";
+  return tables.find((table) => !isContaminatedSpecsHtml(table)) || "";
 }
 
 function isGalleryNoiseUrl(url: string) {
@@ -218,6 +234,12 @@ function isGalleryNoiseUrl(url: string) {
   if (value.includes("icon")) return true;
   if (value.includes("logo")) return true;
   if (value.includes("banner")) return true;
+  if (value.includes("testimonial")) return true;
+  if (value.includes("avatar")) return true;
+  if (value.includes("profile")) return true;
+  if (value.includes("publication")) return true;
+  if (value.includes("book")) return true;
+  if (value.includes("faq")) return true;
   if (value.endsWith("/kr.png")) return true;
   return false;
 }
@@ -230,15 +252,23 @@ function imageMasterKey(url: string) {
 }
 
 function normalizeImages(product: any, title: string) {
-  const rawUrls: string[] = Array.isArray(product?.imageUrls)
-    ? product.imageUrls.filter((url: any) => typeof url === "string" && url.trim())
+  const verifiedUrls: string[] = Array.isArray(product?.galleryImageUrls)
+    ? product.galleryImageUrls.filter((url: any) => typeof url === "string" && url.trim())
     : [];
   const assetUrls: string[] = Array.isArray(product?.images)
     ? product.images
         .map((image: any) => image?.asset?.url)
         .filter((url: any) => typeof url === "string" && url.trim())
     : [];
-  const source = rawUrls.length ? rawUrls : assetUrls;
+  const rawUrls: string[] = Array.isArray(product?.imageUrls)
+    ? product.imageUrls.filter((url: any) => typeof url === "string" && url.trim())
+    : [];
+
+  const source = verifiedUrls.length
+    ? verifiedUrls
+    : assetUrls.length
+      ? assetUrls.slice(0, 1)
+      : rawUrls.slice(0, 1);
   const seen = new Set<string>();
 
   return source
@@ -269,7 +299,8 @@ export default async function KentProductDetailPage({
   const product = bundle?.product;
   if (!brand?._id || !product?._id) notFound();
 
-  const title = stripBrandSuffix(product?.title || "");
+  const official = getKentOfficialProductOverride(slug);
+  const title = official?.title || stripBrandSuffix(product?.title || "");
   const categoryPath: string[] = Array.isArray(product?.categoryPath) ? product.categoryPath : [];
   const categoryPathTitles: string[] = Array.isArray(product?.categoryPathTitles)
     ? product.categoryPathTitles
@@ -286,7 +317,6 @@ export default async function KentProductDetailPage({
     { label: title, href: `/products/${BRAND_KEY}/item/${product.slug}` },
   ];
 
-  const images = normalizeImages(product, title);
   const rawDescription =
     (typeof product?.overviewHtml === "string" && product.overviewHtml.trim()
       ? product.overviewHtml
@@ -295,21 +325,28 @@ export default async function KentProductDetailPage({
         : typeof product?.legacyHtml === "string"
           ? product.legacyHtml
           : "") || "";
-  const rawSpecs = typeof product?.specsHtml === "string" && product.specsHtml.trim() ? product.specsHtml : "";
+  const rawSpecsCandidate =
+    typeof product?.specsHtml === "string" && product.specsHtml.trim() ? product.specsHtml : "";
+  const rawSpecs = isContaminatedSpecsHtml(rawSpecsCandidate) ? "" : rawSpecsCandidate;
   const fallbackSpecs = rawSpecs ? "" : extractSpecsTableFromHtml(rawDescription);
   const descriptionWithoutFallbackSpecs = fallbackSpecs ? rawDescription.replace(fallbackSpecs, "") : rawDescription;
 
-  const descriptionHtml = sanitizeKentHtml(descriptionWithoutFallbackSpecs);
-  const specsHtml = sanitizeKentHtml(rawSpecs || fallbackSpecs);
-  const datasheetHtml = sanitizeKentHtml(product?.datasheetHtml || "");
-  const documentsHtml = sanitizeKentHtml(product?.documentsHtml || "");
-  const faqsHtml = sanitizeKentHtml(product?.faqsHtml || "");
-  const referencesHtml = sanitizeKentHtml(product?.referencesHtml || "");
-  const reviewsHtml = sanitizeKentHtml(product?.reviewsHtml || "");
-  const documents = Array.isArray(product?.docs) ? product.docs : [];
-  const kentSections = Array.isArray(product?.kentSections)
+  const legacyDescriptionHtml = sanitizeKentHtml(descriptionWithoutFallbackSpecs);
+  const legacySpecsHtml = sanitizeKentHtml(rawSpecs || fallbackSpecs);
+  const images = official?.images || normalizeImages(product, title);
+  const kentSections = official?.sections || (Array.isArray(product?.kentSections)
     ? (sanitizeKentSectionValue(product.kentSections) as any[])
-    : [];
+    : []);
+
+  const useOfficial = Boolean(official);
+  const descriptionHtml = useOfficial ? "" : legacyDescriptionHtml;
+  const specsHtml = useOfficial ? "" : legacySpecsHtml;
+  const datasheetHtml = useOfficial ? "" : sanitizeKentHtml(product?.datasheetHtml || "");
+  const documentsHtml = useOfficial ? "" : sanitizeKentHtml(product?.documentsHtml || "");
+  const faqsHtml = useOfficial ? "" : sanitizeKentHtml(product?.faqsHtml || "");
+  const referencesHtml = useOfficial ? "" : sanitizeKentHtml(product?.referencesHtml || "");
+  const reviewsHtml = useOfficial ? "" : sanitizeKentHtml(product?.reviewsHtml || "");
+  const documents = useOfficial ? [] : (Array.isArray(product?.docs) ? product.docs : []);
 
   return (
     <main className="pb-16">
@@ -320,10 +357,10 @@ export default async function KentProductDetailPage({
 
         <KentProductDetailClient
           title={title}
-          summary={product?.summary || stripHtmlTags(descriptionHtml).slice(0, 220)}
-          sku={product?.sku || ""}
+          summary={official?.summary || product?.summary || stripHtmlTags(descriptionHtml).slice(0, 220)}
+          sku={official?.sku || product?.sku || ""}
           images={images}
-          kentSections={kentSections}
+          kentSections={kentSections as any[]}
           descriptionHtml={descriptionHtml}
           specsHtml={specsHtml}
           datasheetHtml={datasheetHtml}
@@ -332,10 +369,10 @@ export default async function KentProductDetailPage({
           referencesHtml={referencesHtml}
           reviewsHtml={reviewsHtml}
           documents={documents}
-          productType={product?.productType}
-          defaultVariantId={product?.defaultVariantId}
-          optionGroups={product?.optionGroups || []}
-          variants={product?.variants || []}
+          productType={useOfficial ? "simple" : product?.productType}
+          defaultVariantId={useOfficial ? undefined : product?.defaultVariantId}
+          optionGroups={useOfficial ? [] : (product?.optionGroups || [])}
+          variants={useOfficial ? [] : (product?.variants || [])}
         />
       </div>
     </main>
