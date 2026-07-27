@@ -8,10 +8,12 @@ import { createClient } from "@sanity/client";
 import { createFetchPage } from "./lib/kent-census-utils.mjs";
 import {
   collectFromCategories,
-  collectFromShop,
   collectFromSitemap,
-  enrichAndValidateCandidates,
 } from "./lib/kent-census-sources.mjs";
+import {
+  collectFromShop,
+  enrichAndValidateCandidates,
+} from "./lib/kent-census-live-source-fix.mjs";
 import { applyPlan, makePlan, renderMarkdown } from "./lib/kent-census-plan.mjs";
 
 const root = process.cwd();
@@ -103,6 +105,7 @@ async function main() {
     checkedProductPages: validation.checked,
     validatedProductPages: validation.validated,
     rejected: validation.rejected.length,
+    fetchErrors: validation.errors.length,
     create: plan.filter((row) => row.action === "create").length,
     patch: plan.filter((row) => row.action === "patch").length,
     unchanged: plan.filter((row) => row.action === "unchanged").length,
@@ -133,12 +136,22 @@ async function main() {
   console.log(`Discovered: ${counts.discovered}`);
   console.log(`Shop pages: ${counts.shopPages}, product cards: ${counts.shopCardOccurrences}`);
   console.log(`Validated product pages: ${counts.validatedProductPages}/${counts.checkedProductPages}`);
+  console.log(`Rejected candidates: ${counts.rejected}`);
+  console.log(`Fetch errors: ${counts.fetchErrors}`);
   console.log(`Create: ${counts.create}`);
   console.log(`Patch: ${counts.patch}`);
   console.log(`Unchanged: ${counts.unchanged}`);
   console.log(`Duplicate candidates: ${counts.duplicateCandidates}`);
   console.log(`Sanity only: ${counts.sanityOnly}`);
   if (applied) console.log(`Applied: created=${applied.created}, patched=${applied.patched}`);
+  if (validation.rejected[0]?.diagnostic) {
+    console.log("First rejection diagnostic:");
+    console.log(JSON.stringify(validation.rejected[0], null, 2));
+  }
+  if (validation.errors[0]) {
+    console.log("First fetch error:");
+    console.log(JSON.stringify(validation.errors[0], null, 2));
+  }
   console.log("Report: .cache/kent-product-census/latest.md");
   console.log("Data:   .cache/kent-product-census/latest.json\n");
 }
