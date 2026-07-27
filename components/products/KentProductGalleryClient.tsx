@@ -91,9 +91,11 @@ function normalizeGalleryImages(images: Img[]) {
   return gallery.length ? gallery : deduped.slice(0, 1);
 }
 
-function resolveKentImageUrl(input?: string) {
+function imageCandidates(input?: string) {
   const raw = String(input || "").trim();
-  if (!raw) return PLACEHOLDER;
+  if (!raw) return [PLACEHOLDER];
+
+  const candidates = [raw];
 
   try {
     const parsed = new URL(raw);
@@ -101,13 +103,16 @@ function resolveKentImageUrl(input?: string) {
       (parsed.hostname === "www.kentscientific.com" || parsed.hostname === "kentscientific.com") &&
       parsed.pathname.startsWith("/wp-content/uploads/")
     ) {
-      return `/api/kent/asset?src=${encodeURIComponent(parsed.toString())}`;
+      // Direct Kent image URLs worked in the existing site. Keep them first and
+      // use our proxy only as a fallback for environments that block hotlinks.
+      candidates.push(`/api/kent/asset?src=${encodeURIComponent(parsed.toString())}`);
     }
   } catch {
-    // Local paths and Sanity URLs are used as-is.
+    // Local paths and Sanity CDN URLs are already valid candidates.
   }
 
-  return raw;
+  candidates.push(PLACEHOLDER);
+  return [...new Set(candidates)];
 }
 
 function SafeGalleryImage({
@@ -121,12 +126,14 @@ function SafeGalleryImage({
   className: string;
   loading?: "eager" | "lazy";
 }) {
-  const original = React.useMemo(() => resolveKentImageUrl(src), [src]);
-  const [resolved, setResolved] = React.useState(original);
+  const candidates = React.useMemo(() => imageCandidates(src), [src]);
+  const [candidateIndex, setCandidateIndex] = React.useState(0);
 
   React.useEffect(() => {
-    setResolved(original);
-  }, [original]);
+    setCandidateIndex(0);
+  }, [candidates]);
+
+  const resolved = candidates[Math.min(candidateIndex, candidates.length - 1)] || PLACEHOLDER;
 
   return (
     <img
@@ -134,8 +141,9 @@ function SafeGalleryImage({
       alt={alt}
       className={className}
       loading={loading}
+      referrerPolicy="no-referrer"
       onError={() => {
-        if (resolved !== PLACEHOLDER) setResolved(PLACEHOLDER);
+        setCandidateIndex((current) => Math.min(current + 1, candidates.length - 1));
       }}
     />
   );
@@ -187,13 +195,13 @@ export default function KentProductGalleryClient({
         </div>
       ) : null}
 
-      <div className={`${hasThumbnails ? "order-1 md:order-2" : ""} relative overflow-hidden rounded-[12px] border border-slate-200 bg-[#f7f7f7]`}>
+      <div className={`${hasThumbnails ? "order-1 md:order-2" : ""} relative overflow-hidden rounded-[12px] border border-slate-200 bg-white`}>
         <div className="relative aspect-square min-h-[360px] lg:min-h-[520px]">
           {active?.url ? (
             <SafeGalleryImage
               src={active.url}
               alt={active.alt || title}
-              className="absolute inset-0 h-full w-full object-contain p-8 lg:p-10"
+              className="absolute inset-0 h-full w-full object-contain p-7 lg:p-9"
               loading="eager"
             />
           ) : (
