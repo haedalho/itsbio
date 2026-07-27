@@ -44,36 +44,39 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
   sections: [
     {
       _key: "somnoflo-o2care-related-products",
-      type: "rich-text",
+      type: "related-products",
       title: "Customers who viewed this item also viewed",
-      html:
-        "<ul><li><a href=\"/products/kent/item/far-infrared-warming-pads-with-controller\">Far Infrared Warming Pads with Controller for Small Animal Recovery</a></li><li><a href=\"/products/kent/item/righttemp-jr\">RightTemp® Jr.</a></li><li><a href=\"/products/kent/item/physiosuite\">PhysioSuite®</a></li></ul>",
+      items: [
+        {
+          _key: "related-warming-pad",
+          title: "Far Infrared Warming Pads with Controller for Small Animal Recovery",
+          description: "Warming",
+          href: "/products/kent/item/far-infrared-warming-pads-with-controller",
+        },
+        {
+          _key: "related-righttemp-jr",
+          title: "RightTemp® Jr.",
+          description: "Warming",
+          href: "/products/kent/item/righttemp-jr",
+        },
+        {
+          _key: "related-physiosuite",
+          title: "PhysioSuite®",
+          description: "Physiological Monitoring",
+          href: "/products/kent/item/physiosuite",
+        },
+      ],
     },
     {
       _key: "somnoflo-o2care-features",
       type: "features",
       title: "What you get from SomnoFlo O2Care",
       items: [
-        {
-          _key: "oxygen-control",
-          title: "Precise oxygen control (21%–100%)",
-        },
-        {
-          _key: "low-flow",
-          title: "Ultra-low flow rates (as low as 100 mL/min)",
-        },
-        {
-          _key: "maintenance",
-          title: "No annual calibration or certification needed",
-        },
-        {
-          _key: "wag",
-          title: "Minimal waste anesthetic gas exposure",
-        },
-        {
-          _key: "touchscreen",
-          title: "Compact, easy-to-use touchscreen interface",
-        },
+        { _key: "oxygen-control", title: "Precise oxygen control (21%–100%)" },
+        { _key: "low-flow", title: "Ultra-low flow rates (as low as 100 mL/min)" },
+        { _key: "maintenance", title: "No annual calibration or certification needed" },
+        { _key: "wag", title: "Minimal waste anesthetic gas exposure" },
+        { _key: "touchscreen", title: "Compact, easy-to-use touchscreen interface" },
       ],
     },
     {
@@ -81,66 +84,18 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
       type: "reviews",
       title: "What your peers say about SomnoFlo",
       items: [
-        {
-          _key: "review-vermont",
-          title: "Dr. David Coggin-Carr — University of Vermont",
-          description: "Reported extensive recent surgical use, very low isoflurane consumption and no obvious staff-exposure concerns.",
-        },
-        {
-          _key: "review-missouri",
-          title: "Sarah Schlink, DVM, DACLAM — University of Missouri",
-          description: "Reported a positive experience using both SomnoSuite and SomnoFlo systems.",
-        },
-        {
-          _key: "review-colorado",
-          title: "Jason Cummings — Colorado State University",
-          description: "Reported reliable operation after prompt technical support and recommended the system as an alternative to older vaporizers requiring annual calibration.",
-        },
-        {
-          _key: "review-vanderbilt",
-          title: "Carlo M. Malabanan, Lab Manager — Vanderbilt University",
-          description: "Reported heavy use across four units, low anesthetic consumption and minimal charcoal-filter loading over many procedures.",
-        },
-        {
-          _key: "review-artizan",
-          title: "Keely Walsh, BS, LATG — Artizan Biosciences",
-          description: "Reported a positive experience with the first unit and subsequently ordered another.",
-        },
-        {
-          _key: "review-mgh",
-          title: "Kiera Ottino, Research Technician — Massachusetts General Hospital",
-          description: "Reported strong performance together with responsive product support.",
-        },
-        {
-          _key: "review-sigilon",
-          title: "Lauren Sohn, Scientist — Sigilon Therapeutics",
-          description: "Highlighted the smaller footprint and the convenience of using room air without continuously managing oxygen cylinders.",
-        },
-        {
-          _key: "review-northwestern",
-          title: "Michael Sande — Northwestern University",
-          description: "Reported efficient operation, fast recovery and strong acceptance among laboratory users.",
-        },
-        {
-          _key: "review-arkansas",
-          title: "Jarrett Sweeley, Research Compliance — University of Arkansas",
-          description: "Reported reliable use during rodent procedures and positive feedback from the laboratory team.",
-        },
-        {
-          _key: "review-st-josephs",
-          title: "Pamela Bortz, Sr. Vet Technologist — St. Joseph’s Hospital",
-          description: "Reported that the laboratory team was pleased with the system after purchase.",
-        },
-        {
-          _key: "review-fred-hutch",
-          title: "Jonathan Linton — Fred Hutchinson Cancer Research Center",
-          description: "Reported that the compact system fits small work areas, is simple to set up and has been recommended to other laboratories.",
-        },
-        {
-          _key: "review-british-columbia",
-          title: "Dr. Shelly McErlane, DVM — The University of British Columbia",
-          description: "Highlighted the upright footprint, automatic priming and draining, and direct bottle filling.",
-        },
+        { _key: "review-vermont", title: "Dr. David Coggin-Carr — University of Vermont", description: "Reported extensive recent surgical use, very low isoflurane consumption and no obvious staff-exposure concerns." },
+        { _key: "review-missouri", title: "Sarah Schlink, DVM, DACLAM — University of Missouri", description: "Reported a positive experience using both SomnoSuite and SomnoFlo systems." },
+        { _key: "review-colorado", title: "Jason Cummings — Colorado State University", description: "Reported reliable operation after prompt technical support and recommended the system as an alternative to older vaporizers requiring annual calibration." },
+        { _key: "review-vanderbilt", title: "Carlo M. Malabanan, Lab Manager — Vanderbilt University", description: "Reported heavy use across four units, low anesthetic consumption and minimal charcoal-filter loading over many procedures." },
+        { _key: "review-artizan", title: "Keely Walsh, BS, LATG — Artizan Biosciences", description: "Reported a positive experience with the first unit and subsequently ordered another." },
+        { _key: "review-mgh", title: "Kiera Ottino, Research Technician — Massachusetts General Hospital", description: "Reported strong performance together with responsive product support." },
+        { _key: "review-sigilon", title: "Lauren Sohn, Scientist — Sigilon Therapeutics", description: "Highlighted the smaller footprint and the convenience of using room air without continuously managing oxygen cylinders." },
+        { _key: "review-northwestern", title: "Michael Sande — Northwestern University", description: "Reported efficient operation, fast recovery and strong acceptance among laboratory users." },
+        { _key: "review-arkansas", title: "Jarrett Sweeley, Research Compliance — University of Arkansas", description: "Reported reliable use during rodent procedures and positive feedback from the laboratory team." },
+        { _key: "review-st-josephs", title: "Pamela Bortz, Sr. Vet Technologist — St. Joseph’s Hospital", description: "Reported that the laboratory team was pleased with the system after purchase." },
+        { _key: "review-fred-hutch", title: "Jonathan Linton — Fred Hutchinson Cancer Research Center", description: "Reported that the compact system fits small work areas, is simple to set up and has been recommended to other laboratories." },
+        { _key: "review-british-columbia", title: "Dr. Shelly McErlane, DVM — The University of British Columbia", description: "Highlighted the upright footprint, automatic priming and draining, and direct bottle filling." },
       ],
     },
     {
@@ -148,31 +103,11 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
       type: "documents",
       title: "SomnoFlo resources",
       items: [
-        {
-          _key: "resource-blended-anesthesia",
-          label: "Webinar: A Blended Approach to Preclinical Research Anesthesia — Rethinking Room Air vs Pure O₂",
-          url: "https://youtu.be/uUt2E1YBGYQ",
-        },
-        {
-          _key: "resource-warming",
-          label: "Warming Up for Success: Comparative Efficacy of Thermoregulatory Devices in Rodent Anesthesia",
-          url: "https://youtu.be/UeAj7W-dDRg",
-        },
-        {
-          _key: "resource-tail-curl",
-          label: "Tail Curl Reaction in an Anesthetized Mouse",
-          url: "https://youtu.be/2Fb2W-hVTrI",
-        },
-        {
-          _key: "resource-setup",
-          label: "SomnoFlo® Setup and Mouse Anesthesia Protocol",
-          url: "https://youtu.be/Jz73f5eQgxM",
-        },
-        {
-          _key: "resource-low-flow",
-          label: "Somno® Low-Flow Electronic Vaporizers: Extremely Precise Anesthesia Delivery",
-          url: "https://youtu.be/iUlXT-ELog4",
-        },
+        { _key: "resource-blended-anesthesia", label: "Webinar: A Blended Approach to Preclinical Research Anesthesia — Rethinking Room Air vs Pure O₂", url: "https://youtu.be/uUt2E1YBGYQ" },
+        { _key: "resource-warming", label: "Warming Up for Success: Comparative Efficacy of Thermoregulatory Devices in Rodent Anesthesia", url: "https://youtu.be/UeAj7W-dDRg" },
+        { _key: "resource-tail-curl", label: "Tail Curl Reaction in an Anesthetized Mouse", url: "https://youtu.be/2Fb2W-hVTrI" },
+        { _key: "resource-setup", label: "SomnoFlo® Setup and Mouse Anesthesia Protocol", url: "https://youtu.be/Jz73f5eQgxM" },
+        { _key: "resource-low-flow", label: "Somno® Low-Flow Electronic Vaporizers: Extremely Precise Anesthesia Delivery", url: "https://youtu.be/iUlXT-ELog4" },
       ],
     },
     {
@@ -180,18 +115,8 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
       type: "videos",
       title: "Product videos",
       items: [
-        {
-          _key: "video-setup",
-          label: "Setup and Mouse Anesthesia Protocol",
-          description: "Kent Scientific product video",
-          url: "https://youtu.be/Jz73f5eQgxM",
-        },
-        {
-          _key: "video-tail-curl",
-          label: "Tail Curl Reaction in an Anesthetized Mouse",
-          description: "Kent Scientific product video",
-          url: "https://youtu.be/2Fb2W-hVTrI",
-        },
+        { _key: "video-setup", label: "Setup and Mouse Anesthesia Protocol", description: "Kent Scientific product video", url: "https://youtu.be/Jz73f5eQgxM" },
+        { _key: "video-tail-curl", label: "Tail Curl Reaction in an Anesthetized Mouse", description: "Kent Scientific product video", url: "https://youtu.be/2Fb2W-hVTrI" },
       ],
     },
     {
@@ -200,8 +125,7 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
       title: "About SomnoFlo O2Care",
       imageUrl: "https://www.kentscientific.com/wp-content/uploads/2025/08/oxygen.jpg",
       imageAlt: "SomnoFlo O2Care oxygen control",
-      html:
-        "<h3>Overview</h3><p>SomnoFlo O2Care is designed for laboratories that need adjustable oxygen delivery without a custom gas blend or a separate mixer. Its compact low-flow platform lets the user match oxygen delivery to the animal and procedure while maintaining a straightforward setup.</p><ul><li>Connect the system to an approved oxygen source.</li><li>Set the required O₂ level.</li><li>Start precise vaporization.</li><li>Use a repeatable carrier-gas setting for the procedure.</li></ul><h3>Smart oxygen control, simplified</h3><p>The internal air pump and compressed-oxygen connection provide flexible carrier-gas control for routine anesthesia, long procedures, recovery and emergency support.</p>",
+      html: "<h3>Overview</h3><p>SomnoFlo O2Care is designed for laboratories that need adjustable oxygen delivery without a custom gas blend or a separate mixer. Its compact low-flow platform lets the user match oxygen delivery to the animal and procedure while maintaining a straightforward setup.</p><ul><li>Connect the system to an approved oxygen source.</li><li>Set the required O₂ level.</li><li>Start precise vaporization.</li><li>Use a repeatable carrier-gas setting for the procedure.</li></ul><h3>Smart oxygen control, simplified</h3><p>The internal air pump and compressed-oxygen connection provide flexible carrier-gas control for routine anesthesia, long procedures, recovery and emergency support.</p>",
     },
     {
       _key: "somnoflo-o2care-efficiency",
@@ -209,8 +133,7 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
       title: "Lower anesthetic use, bigger cost savings",
       imageUrl: "https://www.kentscientific.com/wp-content/uploads/2025/08/Operational.png",
       imageAlt: "SomnoFlo O2Care operational efficiency",
-      html:
-        "<h3>Estimated yearly operational savings</h3><p>Kent compares SomnoFlo O2Care operating at 0.2 L/min with a traditional vaporizer operating at 2 L/min. At the same 2% anesthetic concentration, the lower flow can reduce anesthetic consumption, charcoal-filter loading, waste anesthetic gas and compressed-gas use.</p><h3>Calculation basis</h3><ul><li>SomnoFlo O2Care flow rate: 0.2 L/min.</li><li>Traditional vaporizer comparison flow rate: 2 L/min.</li><li>Comparison anesthetic concentration: 2%.</li><li>Actual results depend on annual use, local protocols and carrier-gas configuration.</li></ul>",
+      html: "<h3>Estimated yearly operational savings</h3><p>Kent compares SomnoFlo O2Care operating at 0.2 L/min with a traditional vaporizer operating at 2 L/min. At the same 2% anesthetic concentration, the lower flow can reduce anesthetic consumption, charcoal-filter loading, waste anesthetic gas and compressed-gas use.</p><h3>Calculation basis</h3><ul><li>SomnoFlo O2Care flow rate: 0.2 L/min.</li><li>Traditional vaporizer comparison flow rate: 2 L/min.</li><li>Comparison anesthetic concentration: 2%.</li><li>Actual results depend on annual use, local protocols and carrier-gas configuration.</li></ul>",
     },
     {
       _key: "somnoflo-o2care-specifications",
@@ -250,8 +173,7 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
       _key: "somnoflo-o2care-warranty-notes",
       type: "notice",
       title: "Warranty notes",
-      description:
-        "Damage resulting from abuse, negligence or misuse is not covered. Expedited repair timing begins after the product is received. Customers must identify the warranty claim, and an extension purchased after the original sale may require controller inspection and approval.",
+      description: "Damage resulting from abuse, negligence or misuse is not covered. Expedited repair timing begins after the product is received. Customers must identify the warranty claim, and an extension purchased after the original sale may require controller inspection and approval.",
     },
   ],
 };
