@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import * as React from "react";
 
 type Img = { url?: string; alt?: string };
@@ -88,133 +89,80 @@ function normalizeGalleryImages(images: Img[]) {
     if (gallery.length >= MAX_GALLERY_IMAGES) break;
   }
 
-  return gallery.length ? gallery : deduped.slice(0, 1);
+  return gallery;
 }
 
-function initialImageCandidates(input?: string) {
-  const raw = String(input || "").trim();
-  if (!raw) return [];
-
-  const candidates = [raw];
+async function recoverProductImages(productSlug: string) {
+  if (!productSlug) return [] as Img[];
 
   try {
-    const parsed = new URL(raw);
-    if (
-      (parsed.hostname === "www.kentscientific.com" || parsed.hostname === "kentscientific.com") &&
-      parsed.pathname.startsWith("/wp-content/uploads/")
-    ) {
-      // Preserve the previously working direct image first. The proxy is only
-      // a secondary fallback for environments that reject the hotlink.
-      candidates.push(`/api/kent/asset?src=${encodeURIComponent(parsed.toString())}`);
-    }
-  } catch {
-    // Local paths and Sanity CDN URLs are already valid candidates.
-  }
-
-  return [...new Set(candidates)];
-}
-
-function currentKentProductSlug() {
-  if (typeof window === "undefined") return "";
-  const prefix = "/products/kent/item/";
-  const pathname = window.location.pathname;
-  if (!pathname.startsWith(prefix)) return "";
-  return decodeURIComponent(pathname.slice(prefix.length)).replace(/^\/+|\/+$/g, "");
-}
-
-async function fetchSanityImageCandidates() {
-  const slug = currentKentProductSlug();
-  if (!slug) return [] as string[];
-
-  try {
-    const key = `product:${slug.toLowerCase()}`;
+    const key = `product:${productSlug.toLowerCase()}`;
     const response = await fetch("/api/kent/product-images", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ targets: [{ key, type: "product", value: slug }] }),
+      body: JSON.stringify({ targets: [{ key, type: "product", value: productSlug }] }),
     });
     if (!response.ok) return [];
 
     const payload = (await response.json()) as { images?: Record<string, string[]> };
-    return Array.isArray(payload?.images?.[key]) ? payload.images![key].filter(Boolean) : [];
+    const urls = Array.isArray(payload?.images?.[key]) ? payload.images![key] : [];
+    return urls.filter(Boolean).map((url) => ({ url, alt: "" }));
   } catch {
     return [];
   }
 }
 
-function SafeGalleryImage({
-  src,
-  alt,
-  className,
-  loading,
-}: {
-  src?: string;
-  alt: string;
-  className: string;
-  loading?: "eager" | "lazy";
-}) {
-  const baseCandidates = React.useMemo(() => initialImageCandidates(src), [src]);
-  const [candidates, setCandidates] = React.useState<string[]>(baseCandidates);
-  const [candidateIndex, setCandidateIndex] = React.useState(0);
-  const recoveryAttempted = React.useRef(false);
-
-  React.useEffect(() => {
-    setCandidates(baseCandidates);
-    setCandidateIndex(0);
-    recoveryAttempted.current = false;
-  }, [baseCandidates]);
-
-  const resolved = candidates[candidateIndex] || PLACEHOLDER;
-
-  const handleError = React.useCallback(async () => {
-    if (candidateIndex + 1 < candidates.length) {
-      setCandidateIndex((current) => current + 1);
-      return;
-    }
-
-    if (!recoveryAttempted.current) {
-      recoveryAttempted.current = true;
-      const recovered = await fetchSanityImageCandidates();
-      const next = [...new Set([...candidates, ...recovered])].filter((url) => url && url !== PLACEHOLDER);
-      if (next.length > candidates.length) {
-        setCandidates(next);
-        setCandidateIndex(candidates.length);
-        return;
-      }
-    }
-
-    setCandidates([PLACEHOLDER]);
-    setCandidateIndex(0);
-  }, [candidateIndex, candidates]);
-
-  return (
-    <img
-      src={resolved}
-      alt={alt}
-      className={className}
-      loading={loading}
-      referrerPolicy="no-referrer"
-      onError={handleError}
-    />
-  );
-}
-
 export default function KentProductGalleryClient({
+  productSlug,
   images,
   title,
 }: {
+  productSlug: string;
   images: Img[];
   title: string;
 }) {
-  const safeImages = React.useMemo(() => normalizeGalleryImages(images), [images]);
+  const initialImages = React.useMemo(() => normalizeGalleryImages(images), [images]);
+  const [recoveredImages, setRecoveredImages] = React.useState<Img[]>([]);
+  const [failedUrls, setFailedUrls] = React.useState<Set<string>>(() => new Set());
   const [activeIndex, setActiveIndex] = React.useState(0);
 
   React.useEffect(() => {
+    let cancelled = false;
+    setRecoveredImages([]);
+    setFailedUrls(new Set());
     setActiveIndex(0);
-  }, [safeImages.length, safeImages[0]?.url]);
+
+    recoverProductImages(productSlug).then((rows) => {
+      if (!cancelled) setRecoveredImages(rows.map((row) => ({ ...row, alt: row.alt || title })));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [productSlug, title]);
+
+  const safeImages = React.useMemo(
+    () => normalizeGalleryImages([...initialImages, ...recoveredImages]).filter((image) => !failedUrls.has(String(image.url || ""))),
+    [failedUrls, initialImages, recoveredImages],
+  );
+
+  React.useEffect(() => {
+    if (activeIndex >= safeImages.length) setActiveIndex(0);
+  }, [activeIndex, safeImages.length]);
 
   const active = safeImages[activeIndex] || safeImages[0] || null;
   const hasThumbnails = safeImages.length > 1;
+
+  const markFailed = React.useCallback((url?: string) => {
+    const value = String(url || "").trim();
+    if (!value) return;
+    setFailedUrls((current) => {
+      if (current.has(value)) return current;
+      const next = new Set(current);
+      next.add(value);
+      return next;
+    });
+  }, []);
 
   return (
     <div className={hasThumbnails ? "grid gap-4 md:grid-cols-[72px_minmax(0,1fr)]" : "grid"}>
@@ -233,11 +181,14 @@ export default function KentProductGalleryClient({
                   isActive ? "border-[#0b4fb3] ring-2 ring-blue-100" : "border-slate-200 hover:border-slate-400",
                 ].join(" ")}
               >
-                <SafeGalleryImage
-                  src={img.url}
+                <Image
+                  src={String(img.url)}
                   alt={img.alt || `${title} thumbnail ${idx + 1}`}
-                  className="absolute inset-0 h-full w-full object-contain p-2"
-                  loading="lazy"
+                  fill
+                  sizes="70px"
+                  className="object-contain p-2"
+                  unoptimized
+                  onError={() => markFailed(img.url)}
                 />
               </button>
             );
@@ -248,14 +199,24 @@ export default function KentProductGalleryClient({
       <div className={`${hasThumbnails ? "order-1 md:order-2" : ""} relative overflow-hidden rounded-[12px] border border-slate-200 bg-white`}>
         <div className="relative aspect-square min-h-[360px] lg:min-h-[520px]">
           {active?.url ? (
-            <SafeGalleryImage
-              src={active.url}
+            <Image
+              src={String(active.url)}
               alt={active.alt || title}
-              className="absolute inset-0 h-full w-full object-contain p-7 lg:p-9"
-              loading="eager"
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 620px"
+              className="object-contain p-7 lg:p-9"
+              unoptimized
+              onError={() => markFailed(active.url)}
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-sm text-slate-400">No image</div>
+            <Image
+              src={PLACEHOLDER}
+              alt={`${title} image unavailable`}
+              fill
+              sizes="(max-width: 1024px) 100vw, 620px"
+              className="object-contain p-10"
+            />
           )}
         </div>
       </div>
