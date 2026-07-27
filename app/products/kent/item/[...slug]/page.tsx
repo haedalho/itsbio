@@ -4,6 +4,11 @@ import { notFound } from "next/navigation";
 import KentProductDetailClient from "@/components/products/KentProductDetailClient";
 import Breadcrumb from "@/components/site/Breadcrumb";
 import { getKentOfficialProductOverride } from "@/lib/kent/official-product-overrides";
+import {
+  deriveKentSourceContent,
+  pickKentSubtitle,
+  sanitizeKentSourceHtml,
+} from "@/lib/kent/source-content";
 import { sanityClient } from "@/lib/sanity/sanity.client";
 
 export const revalidate = 300;
@@ -40,6 +45,7 @@ const ITEM_PAGE_QUERY = `
     categoryPath,
     categoryPathTitles,
 
+    sourceIntroHtml,
     overviewHtml,
     specsHtml,
     extraHtml,
@@ -124,60 +130,10 @@ function humanizeSegment(segment: string) {
   return cleanText(segment).replaceAll("-", " ").replaceAll("_", " ");
 }
 
-function stripPrintFromHtml(html: unknown) {
-  let out = typeof html === "string" ? html : "";
-  if (!out) return out;
-
-  out = out.replace(
-    /<a[^>]*(?:onclick=["'][^"']*print[^"']*["']|href=["'][^"']*print[^"']*["'])[^>]*>[\s\S]*?<\/a>/gi,
-    "",
-  );
-  out = out.replace(
-    /<button[^>]*(?:onclick=["'][^"']*print[^"']*["']|class=["'][^"']*print[^"']*["'])[^>]*>[\s\S]*?<\/button>/gi,
-    "",
-  );
-  out = out.replace(/<i[^>]*class=["'][^"']*fa-print[^"']*["'][^>]*>[\s\S]*?<\/i>/gi, "");
-  return out.replace(/\bPrint\b/gi, "");
-}
-
-function decorateKentLinks(html: string) {
-  if (!html) return html;
-  return html.replace(/<a\s+([^>]*href=["'][^"']+["'][^>]*)>/gi, (_match, attrs) => {
-    let nextAttrs = String(attrs || "");
-    if (!/\btarget=/i.test(nextAttrs)) nextAttrs += ` target="_blank"`;
-    if (!/\brel=/i.test(nextAttrs)) nextAttrs += ` rel="noreferrer"`;
-    return `<a ${nextAttrs}>`;
-  });
-}
-
-function sanitizeKentHtml(html: unknown) {
-  let out = typeof html === "string" ? html : "";
-  if (!out) return out;
-
-  out = stripPrintFromHtml(out);
-  out = out.replace(/<script[\s\S]*?<\/script>/gi, "");
-  out = out.replace(/<style[\s\S]*?<\/style>/gi, "");
-  out = out.replace(/<iframe[\s\S]*?<\/iframe>/gi, "");
-  out = out.replace(/<noscript[\s\S]*?<\/noscript>/gi, "");
-  out = out.replace(/<form[\s\S]*?<\/form>/gi, "");
-  out = out.replace(/<input[^>]*>/gi, "");
-  out = out.replace(/<button[\s\S]*?<\/button>/gi, "");
-  out = out.replace(/\son[a-z]+\s*=\s*(["']).*?\1/gi, "");
-  out = out.replace(/\shref\s*=\s*(["'])\s*javascript:[\s\S]*?\1/gi, "");
-
-  out = out.replace(/Login to see prices/gi, "");
-  out = out.replace(/Get early access to info, updates, and discounts/gi, "");
-  out = out.replace(/Need Help With Your Order\?/gi, "");
-  out = out.replace(/Choose an option/gi, "");
-  out = out.replace(/\bClear\b/gi, "");
-
-  return decorateKentLinks(out).trim();
-}
-
 function sanitizeKentSectionValue(value: unknown, key = ""): unknown {
   if (Array.isArray(value)) return value.map((item) => sanitizeKentSectionValue(item, key));
   if (!value || typeof value !== "object") {
-    if (typeof value === "string" && /html$/i.test(key)) return sanitizeKentHtml(value);
+    if (typeof value === "string" && /html$/i.test(key)) return sanitizeKentSourceHtml(value);
     return value;
   }
 
@@ -264,8 +220,6 @@ function normalizeImages(product: any, title: string) {
     ? product.imageUrls.filter((url: any) => typeof url === "string" && url.trim())
     : [];
 
-  // Sanity-hosted assets are the most stable source. Curated gallery URLs are
-  // second, and legacy page-wide image arrays are used only as a last resort.
   const source = assetUrls.length
     ? assetUrls.slice(0, 1)
     : verifiedUrls.length
@@ -283,6 +237,17 @@ function normalizeImages(product: any, title: string) {
       return true;
     })
     .map((url) => ({ url, alt: title }));
+}
+
+function htmlValue(value: unknown) {
+  return typeof value === "string" && value.trim() ? value : "";
+}
+
+function richestSourceHtml(product: any) {
+  const candidates = [product?.legacyHtml, product?.extraHtml, product?.overviewHtml]
+    .map(htmlValue)
+    .filter(Boolean);
+  return candidates.sort((a, b) => stripHtmlTags(b).length - stripHtmlTags(a).length)[0] || "";
 }
 
 export default async function KentProductDetailPage({
@@ -322,36 +287,41 @@ export default async function KentProductDetailPage({
     { label: title, href: `/products/${BRAND_KEY}/item/${product.slug}` },
   ];
 
-  const rawDescription =
-    (typeof product?.overviewHtml === "string" && product.overviewHtml.trim()
-      ? product.overviewHtml
-      : typeof product?.extraHtml === "string" && product.extraHtml.trim()
-        ? product.extraHtml
-        : typeof product?.legacyHtml === "string"
-          ? product.legacyHtml
-          : "") || "";
-  const rawSpecsCandidate =
-    typeof product?.specsHtml === "string" && product.specsHtml.trim() ? product.specsHtml : "";
-  const rawSpecs = isContaminatedSpecsHtml(rawSpecsCandidate) ? "" : rawSpecsCandidate;
-  const fallbackSpecs = rawSpecs ? "" : extractSpecsTableFromHtml(rawDescription);
-  const descriptionWithoutFallbackSpecs = fallbackSpecs ? rawDescription.replace(fallbackSpecs, "") : rawDescription;
+  const introSource =
+    htmlValue(product?.sourceIntroHtml) ||
+    htmlValue(product?.overviewHtml) ||
+    htmlValue(product?.extraHtml) ||
+    htmlValue(product?.legacyHtml);
+  const bodySource = richestSourceHtml(product) || introSource;
+  const introDerived = deriveKentSourceContent(introSource);
+  const bodyDerived = bodySource === introSource ? introDerived : deriveKentSourceContent(bodySource);
 
-  const legacyDescriptionHtml = sanitizeKentHtml(descriptionWithoutFallbackSpecs);
-  const legacySpecsHtml = sanitizeKentHtml(rawSpecs || fallbackSpecs);
+  const explicitSections = Array.isArray(product?.kentSections)
+    ? (sanitizeKentSectionValue(product.kentSections) as any[])
+    : [];
+  const sourceSections = explicitSections.length ? explicitSections : bodyDerived.sections;
+
+  const rawSpecsCandidate = htmlValue(product?.specsHtml);
+  const rawSpecs = isContaminatedSpecsHtml(rawSpecsCandidate) ? "" : rawSpecsCandidate;
+  const fallbackSpecs = rawSpecs ? "" : extractSpecsTableFromHtml(bodySource);
+
+  const sourceLeadHtml =
+    sanitizeKentSourceHtml(product?.sourceIntroHtml) || introDerived.leadHtml || bodyDerived.leadHtml;
+  const sourceRemainderHtml =
+    bodyDerived.remainderHtml || (!sourceLeadHtml && !sourceSections.length ? sanitizeKentSourceHtml(bodySource) : "");
+
   const productImages = normalizeImages(product, title);
   const images = productImages.length ? productImages : (official?.fallbackImages || []);
-  const kentSections = official?.sections || (Array.isArray(product?.kentSections)
-    ? (sanitizeKentSectionValue(product.kentSections) as any[])
-    : []);
-
   const useOfficial = Boolean(official);
-  const descriptionHtml = useOfficial ? "" : legacyDescriptionHtml;
-  const specsHtml = useOfficial ? "" : legacySpecsHtml;
-  const datasheetHtml = useOfficial ? "" : sanitizeKentHtml(product?.datasheetHtml || "");
-  const documentsHtml = useOfficial ? "" : sanitizeKentHtml(product?.documentsHtml || "");
-  const faqsHtml = useOfficial ? "" : sanitizeKentHtml(product?.faqsHtml || "");
-  const referencesHtml = useOfficial ? "" : sanitizeKentHtml(product?.referencesHtml || "");
-  const reviewsHtml = useOfficial ? "" : sanitizeKentHtml(product?.reviewsHtml || "");
+  const leadHtml = official?.leadHtml || sourceLeadHtml;
+  const kentSections = official?.sections || sourceSections;
+  const descriptionHtml = useOfficial ? "" : sourceRemainderHtml;
+  const specsHtml = useOfficial ? "" : sanitizeKentSourceHtml(rawSpecs || fallbackSpecs);
+  const datasheetHtml = useOfficial ? "" : sanitizeKentSourceHtml(product?.datasheetHtml || "");
+  const documentsHtml = useOfficial ? "" : sanitizeKentSourceHtml(product?.documentsHtml || "");
+  const faqsHtml = useOfficial ? "" : sanitizeKentSourceHtml(product?.faqsHtml || "");
+  const referencesHtml = useOfficial ? "" : sanitizeKentSourceHtml(product?.referencesHtml || "");
+  const reviewsHtml = useOfficial ? "" : sanitizeKentSourceHtml(product?.reviewsHtml || "");
   const documents = useOfficial ? [] : (Array.isArray(product?.docs) ? product.docs : []);
 
   return (
@@ -364,10 +334,10 @@ export default async function KentProductDetailPage({
         <KentProductDetailClient
           slug={product.slug}
           title={title}
-          summary={official?.summary || product?.summary || stripHtmlTags(descriptionHtml).slice(0, 220)}
+          summary={official?.summary || pickKentSubtitle(product?.summary, leadHtml)}
           sku={official?.sku || product?.sku || ""}
           badge={official?.badge}
-          leadHtml={official?.leadHtml}
+          leadHtml={leadHtml}
           categoryLabel={categoryLabel}
           images={images}
           kentSections={kentSections as any[]}
