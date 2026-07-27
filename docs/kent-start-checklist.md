@@ -1,147 +1,160 @@
 # Kent 작업 시작 체크리스트
 
+## 현재 우선순위
+
+정식 출시 준비보다 먼저 **Kent 전체 상품을 빠짐없이 Sanity에 올리고, 중복과 빈약한 상품을 정리한다.**
+
+작업 순서:
+
+1. Kent 원본 상품 전체 목록 확보
+2. 기존 Sanity 상품과 대조
+3. 누락 상품 skeleton upsert
+4. 실제 중복 정리
+5. 상품 구조 분류
+6. 옵션·모델표·상세 정보 보강
+7. 전체 상품이 올라간 뒤 디자인·보안·SEO 개선
+
 ## 작업 원칙
 
-1. 공통 Header와 Hero는 삭제하거나 Kent 전용 페이지에서 누락시키지 않는다.
-2. 작업 순서는 `landing → listing → product`로 고정한다.
-3. category 작업 중에는 기존 product 문서를 재이관하거나 덮어쓰지 않는다.
-4. 이미 정상인 `/products/kent/anesthesia`는 회귀 확인만 하고 불필요하게 수정하지 않는다.
-5. 원본 Kent 링크는 가능한 경우 ITS BIO 내부 category 또는 item route로 바꾼다.
-6. resource/publication처럼 category 또는 product로 판정할 수 없는 링크만 legacy fallback으로 보낸다.
-7. 실제 Sanity 쓰기 전에 반드시 dry-run 결과를 검토한다.
-8. Kent와 ABM 모두 category path, product slug, source URL, 카드 링크가 중복되면 안 된다.
-9. 보안·개인정보·라우트 관련 P0 항목이 남은 상태에서는 정식 배포하지 않는다.
+1. 공통 Header와 Hero는 유지한다.
+2. 같은 원본 상품은 항상 product 문서 하나만 사용한다.
+3. 옵션 SKU를 별도 product 문서로 생성하지 않고 variants에 넣는다.
+4. 상품명만 같다는 이유로 자동 삭제하지 않는다.
+5. `brand + sourceUrl`과 `brand + slug`가 같으면 실제 중복으로 우선 검토한다.
+6. 수집 결과가 빈 값이면 기존 값을 덮어쓰지 않는다.
+7. 실제 Sanity 쓰기 전에는 dry-run 또는 감사 보고서를 확인한다.
+8. 상세 정보가 부족해도 최소 상품 문서는 먼저 확보한다.
+9. 빈 Overview·Specs·Documents 탭은 렌더하지 않는다.
 
 ## 첫 실행
-
-세팅은 완료되어 있으므로 개발 서버부터 시작한다.
 
 ```bash
 npm run dev
 ```
 
-다른 터미널에서 현재 데이터와 출시 차단 항목을 점검한다.
+다른 터미널에서:
 
 ```bash
-npm run production:audit
-npm run catalog:audit
+npm run kent:audit
+npm run kent:product:audit
 ```
 
-결과 파일:
+보고서:
 
 ```text
 .cache/content-audit/latest.md
 .cache/content-audit/latest.json
+.cache/product-quality/latest.md
+.cache/product-quality/latest.json
 ```
 
-Kent 원본과 Sanity만 비교하려면:
+전체 Kent·ABM 상품 품질을 함께 확인하려면:
 
 ```bash
-npm run kent:audit
+npm run product:audit
 ```
 
-ABM 내부 중복만 확인하려면:
+## 상품 상태 분류
 
-```bash
-npm run abm:audit
-```
+### Ready
 
-실제 배포 전 차단 검사:
+- title, brand, slug, sourceUrl 정상
+- category 또는 listing 연결
+- SKU, variant 또는 모델표 중 하나 존재
+- 대표 이미지
+- 설명 또는 overview
+- 치명적 중복 없음
 
-```bash
-npm run production:audit:strict
-npm run catalog:audit:strict
-npm run lint
-npm run build
-```
+### Thin
 
-원본 Kent 페이지가 최근 변경됐다고 의심될 때만 캐시를 새로 받는다.
+상품은 표시 가능하지만 summary, image, specs, documents 중 일부가 부족하다.
 
-```bash
-npm run kent:category:refresh:dry
-```
+### Needs fix
 
-## Sanity 환경 변수
+- 중복 listingPaths
+- 중복 variant ID 또는 옵션 조합
+- options는 있는데 variants 없음
+- productType 불일치
+- 잘못된 default variant
 
-읽기 및 앱 실행:
+### Skeleton
 
-- `NEXT_PUBLIC_SANITY_PROJECT_ID` 또는 대응하는 project ID 변수
-- `NEXT_PUBLIC_SANITY_DATASET` 또는 대응하는 dataset 변수
+최소 식별값만 있는 상태다. 전체 상품 확보 단계에서는 유지하고, 상세 화면에서는 존재하는 정보만 보여준다.
 
-migration 쓰기:
+## 표시 구조 분류
 
-- `SANITY_API_TOKEN`, `SANITY_WRITE_TOKEN`, `SANITY_TOKEN` 중 하나
+브랜드 디자인과 상품 구조를 분리한다.
 
-환경 변수와 토큰은 저장소에 커밋하지 않는다. 운영 웹 요청에서는 write token을 사용하지 않고 migration/admin 작업에만 사용한다.
+- `simple`: 단일 SKU/모델
+- `variant-selector`: 옵션 선택형
+- `model-table`: 여러 Cat.No/SKU가 표로 존재
+- `system-config`: 본체·구성품·액세서리·호환성 중심
+- `document-info`: 문서와 설명 중심
+- `unresolved`: 수동 확인 필요
 
-## Category 검수 순서
-
-각 경로에서 아래 항목을 확인한다.
-
-- Hero 존재
-- Breadcrumb 정상
-- Sidebar 계층 및 중복 여부
-- `pageType`이 landing/listing 중 올바른 값인지
-- landing의 category/product/text block 순서
-- listing 상품 수가 0건이 아닌지
-- 카드 이미지가 로고·배너·프로모션 이미지가 아닌지
-- 카드 링크가 `/products/kent/...` 내부 경로인지
-- 모바일에서 sidebar와 카드가 깨지지 않는지
-
-우선 검수 경로:
-
-- `/products/kent/anesthesia`
-- `/products/kent/laboratory-animal-handling`
-- `/products/kent/noninvasive-blood-pressure`
-- `/products/kent/physiological-monitoring`
-- `/products/kent/surgery`
-- `/products/kent/warming`
+ABM/Kent라는 이유만으로 상세 컴포넌트를 완전히 나누지 않는다. 브랜드 테마 위에 상품 구조별 모듈을 조합한다.
 
 ## 중복 판정 기준
 
 ### 즉시 정리 대상
 
-- 동일 브랜드의 category `path` 중복
-- 동일 브랜드의 product `slug` 중복
-- 동일 원본 `sourceUrl`을 공유하는 여러 문서
-- 한 category의 content block에서 같은 카드 링크 반복
-- 한 product의 `listingPaths` 내부 동일 경로 반복
+- 동일 브랜드 + 동일 normalized sourceUrl
+- 동일 브랜드 + 동일 slug
+- 동일 product 내부 listingPaths 반복
+- 동일 variant ID 반복
+- 동일 옵션 조합 반복
+- 동일 category block에서 같은 상품 링크 반복
 
-### 자동 삭제 금지·검토 대상
+### 자동 삭제 금지
 
-- 동일 상품명
-- 동일 SKU
-- Kent sitemap에는 없지만 Sanity에는 존재하는 legacy 문서
-- 옵션형 상품이 variant별로 동일한 기본 상품명을 사용하는 경우
+- 제목만 동일
+- 대표 SKU만 동일
+- 옵션형 상품의 variant SKU
+- sitemap에는 없지만 legacy일 수 있는 문서
 
-제목 또는 SKU가 같다는 이유만으로 자동 삭제하지 않는다. 옵션 구조와 source URL을 먼저 확인한다.
+## Upsert 기준
 
-## Kent 원본 비교
+우선순위:
 
-`npm run kent:audit`는 Kent WordPress의 product/category sitemap과 Sanity를 비교해 다음을 보고한다.
+1. brand + sourceUrl
+2. brand + source product ID
+3. brand + slug
+4. simple 상품일 때 brand + SKU
 
-- 원본에는 있지만 Sanity에 없는 category
-- 원본에는 있지만 Sanity에 없는 product
-- Sanity에만 존재하는 category/product
-- 저장된 path 또는 slug와 source URL의 경로 불일치
+기존 문서가 있으면 patch하고, 완전히 새로운 상품만 create한다. 가능하면 sourceKey 기반 deterministic `_id`를 사용한다.
 
-`Sanity only` 항목은 sitemap 제외나 legacy 페이지일 수 있으므로 바로 삭제하지 않는다.
+## 1차 이관 필수값
 
-## Product 착수 전 조건
+- brand
+- sourceUrl
+- title
+- slug
+- categoryPath 또는 listingPaths
+- isActive
 
-다음 조건이 충족되기 전에는 전체 product migration을 시작하지 않는다.
+가능하면 함께 저장:
 
-- category tree와 sidebar 경로가 확정됨
-- listing별 상품 링크가 안정적으로 수집됨
-- 중복 및 0건 listing 목록이 정리됨
-- Sanity product 스키마의 `simple`/`variant` 구조가 실제 데이터와 맞음
-- 대표 이미지, gallery, docs, specifications의 저장 위치가 확정됨
-- `/products/{brand}/item/{slug}` canonical route가 확정됨
+- SKU
+- 대표 이미지
+- 짧은 summary
+
+Specs·FAQ·Documents가 비어 있어도 1차 상품 문서는 생성한다.
+
+## 2차 보강 순서
+
+1. 옵션형 상품의 optionGroups/variants
+2. 모델표 상품의 여러 SKU를 product 하나로 병합
+3. 대표 이미지와 gallery
+4. summary/overview
+5. specifications
+6. datasheet/documents
+7. compatibility/related products
+8. FAQs/references/reviews
 
 ## 현재 확인된 주의사항
 
-- `components/products/KentProductDetailClient.tsx`에 원본 쇼핑몰 문구인 `Login to see prices`가 직접 출력되고 있다. Product 본작업 전에 ITS BIO 문의 UI만 남도록 제거해야 한다.
-- category migration은 `.cache/kent-category-v22`를 사용한다. `--refresh`는 모든 페이지와 이미지 요청을 다시 수행할 수 있으므로 기본 명령으로 사용하지 않는다.
-- 최근 원본 Kent HTML 변경이 커밋에 포함된 적이 있으므로 selector가 깨졌는지 dry-run 결과로 먼저 확인한다.
-- 공개 검색·상품 페이지가 Sanity write token을 사용하는 현재 구조는 정식 배포 전에 관리자 작업으로 분리해야 한다.
-- 전체 출시 기준은 `docs/production-readiness.md`를 따른다.
+- 현재 product schema의 `productType`은 simple/variant만 구분한다. 실제 화면 구조는 model-table, system-config, document-info까지 별도로 판단해야 한다.
+- `Login to see prices` 등 원본 쇼핑몰 문구는 제품 이관 중 보이면 제거하되, 전체 디자인 전면 수정은 상품 업로드 후 진행한다.
+- category migration 캐시는 `.cache/kent-category-v22`를 사용한다. 원본 변경이 확실할 때만 refresh한다.
+- 전체 제품 우선 전략은 `docs/product-import-first-plan.md`를 따른다.
+- 정식 출시 전 최종 기준은 `docs/production-readiness.md`를 따른다.
