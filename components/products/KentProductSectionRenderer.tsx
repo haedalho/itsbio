@@ -34,7 +34,22 @@ export type KentSection = {
   [key: string]: unknown;
 };
 
-type SectionWithKey = KentSection & { fallbackKey?: string };
+type SectionBucket =
+  | "features"
+  | "included"
+  | "addons"
+  | "specs"
+  | "documents"
+  | "datasheet"
+  | "videos"
+  | "references"
+  | "faqs"
+  | "reviews"
+  | "warranty"
+  | "notice"
+  | "overview";
+
+type SectionWithKey = KentSection & { fallbackKey?: SectionBucket };
 
 function cleanText(input?: unknown) {
   return String(input || "")
@@ -54,7 +69,7 @@ function normalizeType(section: KentSection) {
     .replaceAll("_", "-");
 }
 
-function typeBucket(section: KentSection) {
+function typeBucket(section: KentSection): SectionBucket {
   const type = normalizeType(section);
   if (/feature|benefit|what-you-get/.test(type)) return "features";
   if (/included|base-system|in-the-box|components/.test(type)) return "included";
@@ -300,7 +315,7 @@ export default function KentProductSectionRenderer({
   documents?: Doc[];
 }) {
   const explicit = (Array.isArray(sections) ? sections : []).filter(isRenderable) as SectionWithKey[];
-  const represented = new Set(explicit.map(typeBucket));
+  const represented = new Set<SectionBucket>(explicit.map(typeBucket));
   const legacy = fallbackSections({ title, descriptionHtml, specsHtml, datasheetHtml, documentsHtml, faqsHtml, referencesHtml, reviewsHtml, documents });
   const merged = [
     ...explicit,
