@@ -185,11 +185,11 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
         "<h3>Overview</h3><p>SomnoFlo O2Care removes the need to choose between pure oxygen and ambient air. The system lets users fine-tune oxygen delivery without custom gas blends or a separate mixer, supporting repeatable anesthesia protocols with a compact low-flow platform.</p><ol><li>Connect the system to an approved oxygen source when supplementation is needed.</li><li>Select the required oxygen level.</li><li>Set anesthetic concentration and flow.</li><li>Begin precise vaporization and monitor alarms from the touchscreen.</li></ol><h3>Smart oxygen control, simplified</h3><p>The internal air pump and compressed-gas mode provide flexible carrier-gas control for routine anesthesia, long procedures, recovery and emergency support.</p>",
     },
     {
-      _key: "somnoflo-o2care-savings",
+      _key: "somnoflo-o2care-efficiency",
       type: "rich-text",
-      title: "Lower anesthetic use and operating costs",
+      title: "Lower anesthetic and compressed-gas use",
       html:
-        "<p>Kent compares SomnoFlo O2Care operating at 0.2 L/min with a traditional vaporizer operating at 2 L/min. Lower flow can reduce anesthetic use, charcoal-filter loading and compressed-gas demand.</p><h3>Calculation assumptions used by Kent</h3><ul><li>SomnoFlo flow rate: 0.2 L/min; traditional vaporizer: 2 L/min.</li><li>Isoflurane concentration: 2%.</li><li>Traditional annual calibration cost: approximately $200–$300.</li><li>Example 250 mL isoflurane bottle cost: $35.</li><li>Compressed-gas costs vary; Kent uses an example average near $1,000 per year.</li></ul><p>Actual savings depend on local pricing, annual use and the laboratory protocol.</p>",
+        "<p>Kent compares SomnoFlo O2Care operating at 0.2 L/min with a traditional vaporizer operating at 2 L/min. Lower flow can reduce anesthetic consumption, charcoal-filter loading, waste anesthetic gas and reliance on compressed-gas cylinders.</p><p>Actual reductions depend on annual use, local protocols and the carrier-gas configuration used by the laboratory.</p>",
     },
     {
       _key: "somnoflo-o2care-specifications",
@@ -218,9 +218,9 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
       type: "warranty",
       title: "Warranty information",
       rows: [
-        { Plan: "Standard", Price: "Included", Coverage: "1 year", Benefits: "Standard controller warranty" },
-        { Plan: "Extended", Price: "$850", Coverage: "Additional 2 years", Benefits: "Extended controller coverage; purchase after the original sale may require inspection" },
-        { Plan: "Premium", Price: "$1,850", Coverage: "Additional 2 years", Benefits: "Enhanced loaner, shipping, training and 48–72 hour expedited-repair benefits" },
+        { Plan: "Standard", Coverage: "1 year", Benefits: "Standard controller warranty" },
+        { Plan: "Extended", Coverage: "Additional 2 years", Benefits: "Extended controller coverage; purchase after the original sale may require inspection" },
+        { Plan: "Premium", Coverage: "Additional 2 years", Benefits: "Enhanced loaner, shipping, training and expedited-repair benefits" },
       ],
     },
     {
