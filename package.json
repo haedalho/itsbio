@@ -13,6 +13,7 @@
     "catalog:audit:strict": "node scripts/catalog-audit.mjs --brand=all --strict",
     "product:audit": "node scripts/product-quality-audit.mjs --brand=all",
     "product:audit:strict": "node scripts/product-quality-audit.mjs --brand=all --strict",
+    "product:content:audit": "node scripts/product-content-policy-audit.mjs",
     "kent:product:audit": "node scripts/product-quality-audit.mjs --brand=kent",
     "kent:content:audit": "node scripts/kent-content-fidelity-audit.mjs",
     "abm:product:audit": "node scripts/product-quality-audit.mjs --brand=abm",
