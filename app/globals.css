@@ -31,7 +31,7 @@ body {
   line-height: 1.6;
 }
 
-/* ITS BIO is quote-based. Supplier prices are never shown on public pages. */
+/* ITS BIO is quote-based. Hide only dedicated supplier-price elements. */
 .price,
 .product-price,
 .price-box,
@@ -41,7 +41,6 @@ body {
 .woocommerce-variation-price,
 .single_variation_wrap .price,
 [itemprop="price"],
-[data-price],
 [class~="amount"],
 [class*="productPrice"],
 [class*="product-price"],
