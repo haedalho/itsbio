@@ -132,7 +132,7 @@ function HtmlBlock({ html }: { html?: string }) {
   if (!cleanText(html)) return null;
   return (
     <div
-      className="prose prose-slate max-w-none prose-a:font-semibold prose-a:text-[#0755a6] prose-a:no-underline hover:prose-a:underline prose-headings:text-[#0a4d96] prose-h2:text-[30px] prose-h3:text-[23px] prose-p:text-[16px] prose-p:leading-8 prose-li:text-[16px] prose-li:leading-7 prose-img:h-auto prose-img:max-w-full prose-table:w-full prose-table:border-collapse prose-th:border-b prose-th:border-slate-300 prose-th:bg-white prose-th:px-4 prose-th:py-3 prose-th:text-[#0a4d96] prose-td:border-b prose-td:border-slate-200 prose-td:px-4 prose-td:py-3"
+      className="prose prose-slate max-w-none prose-a:font-semibold prose-a:text-[#0755a6] prose-a:no-underline hover:prose-a:underline prose-headings:text-[#0a4d96] prose-h2:text-[29px] prose-h3:text-[22px] prose-p:text-[16px] prose-p:leading-8 prose-li:text-[16px] prose-li:leading-7 prose-img:h-auto prose-img:max-w-full prose-table:w-full prose-table:border-collapse prose-th:border-b prose-th:border-slate-300 prose-th:bg-white prose-th:px-4 prose-th:py-3 prose-th:text-[#0a4d96] prose-td:border-b prose-td:border-slate-200 prose-td:px-4 prose-td:py-3"
       dangerouslySetInnerHTML={{ __html: String(html || "") }}
     />
   );
@@ -156,18 +156,16 @@ function MediaImage({ src, alt, className = "" }: { src?: string; alt: string; c
 
 function FeatureGrid({ items }: { items: KentSectionItem[] }) {
   return (
-    <div className="grid border-y border-slate-200 md:grid-cols-2 xl:grid-cols-5">
+    <div className="grid border-y border-slate-200 sm:grid-cols-2 lg:grid-cols-5">
       {items.map((item, index) => {
         const title = String(item.title || item.label || item.text || `Feature ${index + 1}`);
         const description = String(item.description || item.value || "");
         return (
           <article
             key={item._key || `${title}-${index}`}
-            className="relative px-5 py-8 text-center xl:border-l xl:border-slate-200 xl:first:border-l-0"
+            className="px-5 py-7 text-center sm:border-l sm:border-slate-200 sm:first:border-l-0 lg:min-h-[150px]"
           >
-            <span className="mx-auto mb-5 flex h-11 w-11 items-center justify-center rounded-full border-2 border-[#0b5baa] text-lg font-bold text-[#0b5baa]">
-              {index + 1}
-            </span>
+            <span className="mx-auto mb-5 block h-[3px] w-11 bg-[#0b5baa]" aria-hidden />
             <h3 className="text-[16px] font-semibold leading-6 text-[#0a4d96]">{title}</h3>
             {description ? <p className="mt-3 text-sm leading-6 text-slate-600">{description}</p> : null}
           </article>
@@ -177,22 +175,31 @@ function FeatureGrid({ items }: { items: KentSectionItem[] }) {
   );
 }
 
+function splitReviewTitle(input: string) {
+  const [person, ...rest] = input.split(/\s+[—–-]\s+/);
+  return {
+    person: person?.trim() || input,
+    organization: rest.join(" — ").trim(),
+  };
+}
+
 function ReviewRail({ items }: { items: KentSectionItem[] }) {
   return (
-    <div className="scrollbar-hidden flex snap-x gap-6 overflow-x-auto pb-4">
+    <div className="scrollbar-hidden flex snap-x gap-10 overflow-x-auto pb-4">
       {items.map((item, index) => {
-        const title = String(item.title || item.label || item.text || `Review ${index + 1}`);
+        const rawTitle = String(item.title || item.label || item.text || `Review ${index + 1}`);
+        const { person, organization } = splitReviewTitle(rawTitle);
         const description = String(item.description || item.value || "");
         return (
           <article
-            key={item._key || `${title}-${index}`}
-            className="min-w-[320px] max-w-[430px] snap-start border-l-4 border-[#0b5baa] bg-[#f7fafd] px-6 py-6 md:min-w-[390px]"
+            key={item._key || `${rawTitle}-${index}`}
+            className="min-w-[86%] snap-start border-t-4 border-[#0b5baa] pt-6 sm:min-w-[70%] lg:min-w-[47%]"
           >
-            <div className="mb-4 text-4xl leading-none text-[#0b5baa]">“</div>
-            {description ? <p className="text-[15px] leading-7 text-slate-700">{description}</p> : null}
-            <div className="mt-6 border-t border-slate-200 pt-4 text-[15px] font-semibold leading-6 text-[#0a4d96]">
-              {title}
-            </div>
+            {description ? (
+              <blockquote className="text-[16px] leading-8 text-slate-700">“{description}”</blockquote>
+            ) : null}
+            <div className="mt-6 text-[16px] font-semibold text-[#0a4d96]">{person}</div>
+            {organization ? <div className="mt-1 text-sm leading-6 text-slate-500">{organization}</div> : null}
           </article>
         );
       })}
@@ -244,7 +251,7 @@ function RelatedProducts({ items }: { items: KentSectionItem[] }) {
   }, [items]);
 
   return (
-    <div className="grid gap-7 md:grid-cols-3">
+    <div className="grid gap-8 md:grid-cols-3">
       {items.map((item, index) => {
         const href = String(item.href || item.url || "").trim();
         const title = String(item.title || item.label || item.text || `Related product ${index + 1}`);
@@ -253,7 +260,7 @@ function RelatedProducts({ items }: { items: KentSectionItem[] }) {
         const imageUrl = String(item.imageUrl || resolvedImages[slug] || "");
         const content = (
           <>
-            <div className="flex aspect-[4/3] items-center justify-center border border-slate-200 bg-white p-6">
+            <div className="flex aspect-[4/3] items-center justify-center border border-slate-200 bg-white p-5">
               {imageUrl ? (
                 <MediaImage src={imageUrl} alt={title} className="max-h-52" />
               ) : (
@@ -261,14 +268,14 @@ function RelatedProducts({ items }: { items: KentSectionItem[] }) {
               )}
             </div>
             <div className="pt-4">
-              {description ? <div className="mb-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{description}</div> : null}
+              {description ? <div className="mb-1 text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">{description}</div> : null}
               <h3 className="text-[17px] font-semibold leading-6 text-[#0a4d96]">{title}</h3>
             </div>
           </>
         );
 
         return href ? (
-          <a key={item._key || `${title}-${index}`} href={href} className="group block transition hover:-translate-y-0.5">
+          <a key={item._key || `${title}-${index}`} href={href} className="group block">
             {content}
           </a>
         ) : (
@@ -309,11 +316,11 @@ function ResourceList({ items }: { items: KentSectionItem[] }) {
         const row = (
           <>
             <div className="flex min-w-0 items-start gap-4">
-              <span className="mt-0.5 text-sm font-bold text-[#0b5baa]">{String(index + 1).padStart(2, "0")}</span>
+              <span className="mt-0.5 text-sm font-bold text-[#0b5baa]">{index + 1}.)</span>
               <span className="leading-6 text-slate-700">{label}</span>
             </div>
-            <span className="shrink-0 border border-[#0b5baa] px-4 py-2 text-xs font-semibold uppercase tracking-wide text-[#0b5baa]">
-              {isVideo ? "See video" : "Open"}
+            <span className="shrink-0 border border-[#0b5baa] px-4 py-2 text-xs font-semibold text-[#0b5baa]">
+              {isVideo ? "See Video" : "Open"}
             </span>
           </>
         );
@@ -356,15 +363,28 @@ function youtubeId(url?: string) {
 
 function VideoCards({ items }: { items: KentSectionItem[] }) {
   return (
-    <div className="grid gap-7 md:grid-cols-2">
+    <div className="grid gap-8 md:grid-cols-2">
       {items.map((item, index) => {
         const href = String(item.url || item.href || "").trim();
         const label = String(item.label || item.title || `Video ${index + 1}`);
         const id = youtubeId(href);
         return (
-          <a key={item._key || `${href}-${index}`} href={href || undefined} target={href ? "_blank" : undefined} rel={href ? "noreferrer" : undefined} className="group block">
+          <a
+            key={item._key || `${href}-${index}`}
+            href={href || undefined}
+            target={href ? "_blank" : undefined}
+            rel={href ? "noreferrer" : undefined}
+            className="group block"
+          >
             <div className="relative aspect-video overflow-hidden bg-slate-100">
-              {id ? <img src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`} alt={label} loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]" /> : null}
+              {id ? (
+                <img
+                  src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`}
+                  alt={label}
+                  loading="lazy"
+                  className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                />
+              ) : null}
               <span className="absolute inset-0 flex items-center justify-center">
                 <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/95 text-xl text-[#0b5baa] shadow">▶</span>
               </span>
@@ -378,20 +398,34 @@ function VideoCards({ items }: { items: KentSectionItem[] }) {
 }
 
 function DataTable({ rows }: { rows: Array<Record<string, unknown>> }) {
-  const columns = Array.from(new Set(rows.flatMap((row) => Object.keys(row || {})).filter((key) => !key.startsWith("_") && !PRICE_COLUMN_RE.test(key.trim()))));
+  const columns = Array.from(
+    new Set(
+      rows
+        .flatMap((row) => Object.keys(row || {}))
+        .filter((key) => !key.startsWith("_") && !PRICE_COLUMN_RE.test(key.trim())),
+    ),
+  );
   if (!columns.length) return null;
   return (
     <div className="overflow-x-auto border-t-2 border-[#0b5baa]">
       <table className="w-full border-collapse text-left text-sm">
         <thead>
           <tr>
-            {columns.map((column) => <th key={column} className="border-b border-slate-300 px-4 py-4 font-semibold text-[#0a4d96]">{column}</th>)}
+            {columns.map((column) => (
+              <th key={column} className="border-b border-slate-300 px-4 py-4 font-semibold text-[#0a4d96]">
+                {column}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
           {rows.map((row, index) => (
             <tr key={String(row._key || index)} className="border-b border-slate-200 even:bg-slate-50/70">
-              {columns.map((column) => <td key={column} className="px-4 py-4 align-top leading-6 text-slate-700">{String(row[column] ?? "")}</td>)}
+              {columns.map((column) => (
+                <td key={column} className="px-4 py-4 align-top leading-6 text-slate-700">
+                  {String(row[column] ?? "")}
+                </td>
+              ))}
             </tr>
           ))}
         </tbody>
@@ -406,32 +440,96 @@ function ProductSection({ section, index }: { section: SectionWithKey; index: nu
   const html = sectionHtml(section);
   const items = sectionItems(section);
   const rows = Array.isArray(section.rows) ? section.rows : [];
-  const media = section.imageUrl ? <MediaImage src={String(section.imageUrl)} alt={String(section.imageAlt || title)} className="max-h-[500px]" /> : null;
+  const media = section.imageUrl ? (
+    <MediaImage src={String(section.imageUrl)} alt={String(section.imageAlt || title)} className="max-h-[500px]" />
+  ) : null;
 
   const body = (() => {
     if (bucket === "related-products") return items.length ? <RelatedProducts items={items} /> : <HtmlBlock html={html} />;
     if (bucket === "features") return items.length ? <FeatureGrid items={items} /> : <HtmlBlock html={html} />;
     if (bucket === "reviews") return items.length ? <ReviewRail items={items} /> : <HtmlBlock html={html} />;
     if (bucket === "included" || bucket === "addons") return items.length ? <ItemList items={items} /> : <HtmlBlock html={html} />;
-    if (bucket === "videos") return <>{items.length ? <VideoCards items={items} /> : null}{html ? <div className={items.length ? "mt-8" : ""}><HtmlBlock html={html} /></div> : null}</>;
-    if (["documents", "datasheet", "references"].includes(bucket)) return <>{items.length ? <ResourceList items={items} /> : null}{html ? <div className={items.length ? "mt-8" : ""}><HtmlBlock html={html} /></div> : null}</>;
-    if (rows.length) return <><DataTable rows={rows} />{html ? <div className="mt-8"><HtmlBlock html={html} /></div> : null}</>;
+    if (bucket === "videos") {
+      return (
+        <>
+          {items.length ? <VideoCards items={items} /> : null}
+          {html ? <div className={items.length ? "mt-8" : ""}><HtmlBlock html={html} /></div> : null}
+        </>
+      );
+    }
+    if (["documents", "datasheet", "references"].includes(bucket)) {
+      return (
+        <>
+          {items.length ? <ResourceList items={items} /> : null}
+          {html ? <div className={items.length ? "mt-8" : ""}><HtmlBlock html={html} /></div> : null}
+        </>
+      );
+    }
+    if (rows.length) {
+      return (
+        <>
+          <DataTable rows={rows} />
+          {html ? <div className="mt-8"><HtmlBlock html={html} /></div> : null}
+        </>
+      );
+    }
 
-    const content = <><HtmlBlock html={html} />{!html && section.description ? <p className="text-[16px] leading-8 text-slate-700">{String(section.description)}</p> : null}{items.length ? <div className={html ? "mt-8" : ""}><ItemList items={items} /></div> : null}</>;
+    const content = (
+      <>
+        <HtmlBlock html={html} />
+        {!html && section.description ? <p className="text-[16px] leading-8 text-slate-700">{String(section.description)}</p> : null}
+        {items.length ? <div className={html ? "mt-8" : ""}><ItemList items={items} /></div> : null}
+      </>
+    );
     if (!media) return content;
-    return <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.85fr)]"><div>{content}</div><div>{media}</div></div>;
+    return (
+      <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.85fr)]">
+        <div>{content}</div>
+        <div>{media}</div>
+      </div>
+    );
   })();
 
   const notice = bucket === "notice";
+  const hasTopBorder = index > 0;
   return (
-    <section id={`kent-section-${index}`} className={`scroll-mt-24 border-t border-slate-200 py-14 md:py-20 ${notice ? "bg-amber-50 px-6 md:px-8" : ""}`}>
-      <h2 className={`mb-8 text-[29px] font-semibold tracking-[-0.025em] md:text-[36px] ${notice ? "text-amber-900" : "text-[#0a4d96]"}`}>{title}</h2>
+    <section
+      id={`kent-section-${index}`}
+      className={[
+        "scroll-mt-24 py-12 md:py-16",
+        hasTopBorder ? "border-t border-slate-200" : "",
+        notice ? "bg-amber-50 px-6 md:px-8" : "",
+      ].join(" ")}
+    >
+      <h2 className={`mb-7 text-[28px] font-semibold tracking-[-0.02em] md:text-[33px] ${notice ? "text-amber-900" : "text-[#0a4d96]"}`}>
+        {title}
+      </h2>
       {body}
     </section>
   );
 }
 
-function fallbackSections({ title, descriptionHtml, specsHtml, datasheetHtml, documentsHtml, faqsHtml, referencesHtml, reviewsHtml, documents }: { title: string; descriptionHtml?: string; specsHtml?: string; datasheetHtml?: string; documentsHtml?: string; faqsHtml?: string; referencesHtml?: string; reviewsHtml?: string; documents?: Doc[] }): SectionWithKey[] {
+function fallbackSections({
+  title,
+  descriptionHtml,
+  specsHtml,
+  datasheetHtml,
+  documentsHtml,
+  faqsHtml,
+  referencesHtml,
+  reviewsHtml,
+  documents,
+}: {
+  title: string;
+  descriptionHtml?: string;
+  specsHtml?: string;
+  datasheetHtml?: string;
+  documentsHtml?: string;
+  faqsHtml?: string;
+  referencesHtml?: string;
+  reviewsHtml?: string;
+  documents?: Doc[];
+}): SectionWithKey[] {
   const docs: KentSectionItem[] = (documents || []).flatMap((doc) => {
     const url = String(doc?.url || "").trim();
     return url ? [{ url, label: String(doc?.label || doc?.title || url) }] : [];
@@ -447,11 +545,49 @@ function fallbackSections({ title, descriptionHtml, specsHtml, datasheetHtml, do
   ].filter(isRenderable) as SectionWithKey[];
 }
 
-export default function KentProductSectionRendererV2({ title, sections, descriptionHtml, specsHtml, datasheetHtml, documentsHtml, faqsHtml, referencesHtml, reviewsHtml, documents }: { title: string; sections?: KentSection[]; descriptionHtml?: string; specsHtml?: string; datasheetHtml?: string; documentsHtml?: string; faqsHtml?: string; referencesHtml?: string; reviewsHtml?: string; documents?: Doc[] }) {
+export default function KentProductSectionRendererV2({
+  title,
+  sections,
+  descriptionHtml,
+  specsHtml,
+  datasheetHtml,
+  documentsHtml,
+  faqsHtml,
+  referencesHtml,
+  reviewsHtml,
+  documents,
+}: {
+  title: string;
+  sections?: KentSection[];
+  descriptionHtml?: string;
+  specsHtml?: string;
+  datasheetHtml?: string;
+  documentsHtml?: string;
+  faqsHtml?: string;
+  referencesHtml?: string;
+  reviewsHtml?: string;
+  documents?: Doc[];
+}) {
   const explicit = (Array.isArray(sections) ? sections : []).filter(isRenderable) as SectionWithKey[];
   const represented = new Set<SectionBucket>(explicit.map(typeBucket));
-  const legacy = fallbackSections({ title, descriptionHtml, specsHtml, datasheetHtml, documentsHtml, faqsHtml, referencesHtml, reviewsHtml, documents });
+  const legacy = fallbackSections({
+    title,
+    descriptionHtml,
+    specsHtml,
+    datasheetHtml,
+    documentsHtml,
+    faqsHtml,
+    referencesHtml,
+    reviewsHtml,
+    documents,
+  });
   const merged = [...explicit, ...legacy.filter((section) => !represented.has(section.fallbackKey || typeBucket(section)))];
   if (!merged.length) return null;
-  return <div className="mt-8">{merged.map((section, index) => <ProductSection key={section._key || `${normalizeType(section)}-${index}`} section={section} index={index} />)}</div>;
+  return (
+    <div className="mt-6">
+      {merged.map((section, index) => (
+        <ProductSection key={section._key || `${normalizeType(section)}-${index}`} section={section} index={index} />
+      ))}
+    </div>
+  );
 }
