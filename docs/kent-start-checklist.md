@@ -32,14 +32,33 @@
 npm run dev
 ```
 
-다른 터미널에서:
+다른 터미널에서 먼저 상품 전체 목록을 대조한다.
+
+```bash
+npm run kent:product:census
+```
+
+보고서:
+
+```text
+.cache/kent-product-census/latest.md
+.cache/kent-product-census/latest.json
+```
+
+보고서에서 create/patch/duplicate 후보를 검토한 뒤에만 실제 skeleton 상품을 반영한다.
+
+```bash
+npm run kent:product:census:write
+```
+
+반영 후 품질과 중복을 다시 확인한다.
 
 ```bash
 npm run kent:audit
 npm run kent:product:audit
 ```
 
-보고서:
+추가 보고서:
 
 ```text
 .cache/content-audit/latest.md
@@ -121,7 +140,7 @@ ABM/Kent라는 이유만으로 상세 컴포넌트를 완전히 나누지 않는
 3. brand + slug
 4. simple 상품일 때 brand + SKU
 
-기존 문서가 있으면 patch하고, 완전히 새로운 상품만 create한다. 가능하면 sourceKey 기반 deterministic `_id`를 사용한다.
+기존 문서가 있으면 patch하고, 완전히 새로운 상품만 create한다. 새 Kent 상품은 slug 기반 deterministic `_id`와 `createIfNotExists`를 사용한다.
 
 ## 1차 이관 필수값
 
@@ -153,6 +172,7 @@ Specs·FAQ·Documents가 비어 있어도 1차 상품 문서는 생성한다.
 
 ## 현재 확인된 주의사항
 
+- Kent listing은 현재 Sanity 상품이 없을 때 `legacy-*` 임시 카드를 렌더한다. census로 실제 skeleton product를 만든 뒤 이 fallback을 제거해야 중복을 근본적으로 막을 수 있다.
 - 현재 product schema의 `productType`은 simple/variant만 구분한다. 실제 화면 구조는 model-table, system-config, document-info까지 별도로 판단해야 한다.
 - `Login to see prices` 등 원본 쇼핑몰 문구는 제품 이관 중 보이면 제거하되, 전체 디자인 전면 수정은 상품 업로드 후 진행한다.
 - category migration 캐시는 `.cache/kent-category-v22`를 사용한다. 원본 변경이 확실할 때만 refresh한다.
