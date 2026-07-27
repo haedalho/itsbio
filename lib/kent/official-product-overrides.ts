@@ -4,12 +4,16 @@ export type KentOfficialSection = {
   title: string;
   html?: string;
   description?: string;
+  imageUrl?: string;
+  imageAlt?: string;
   items?: Array<{
     _key: string;
     title?: string;
     label?: string;
     description?: string;
     url?: string;
+    href?: string;
+    imageUrl?: string;
   }>;
   rows?: Array<Record<string, string>>;
 };
@@ -18,7 +22,9 @@ export type KentOfficialProductOverride = {
   title: string;
   summary: string;
   sku: string;
-  images: Array<{ url: string; alt: string }>;
+  badge?: string;
+  leadHtml?: string;
+  fallbackImages?: Array<{ url: string; alt: string }>;
   sections: KentOfficialSection[];
 };
 
@@ -26,7 +32,10 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
   title: "SomnoFlo® O2Care",
   summary: "Blend air and O₂",
   sku: "SF-06",
-  images: [
+  badge: "NEW",
+  leadHtml:
+    "<p>Research protocols may require more oxygen than ambient air provides, while continuous pure oxygen can introduce unwanted experimental effects. SomnoFlo O2Care combines an internal ambient-air pump with a compressed-oxygen connection so the carrier gas can be adjusted without an external mixer or a custom gas blend.</p><p>Use ambient air at 21% oxygen or select 35%, 50%, 70% or 100% oxygen for long procedures, recovery, emergency support and refined anesthesia protocols.</p>",
+  fallbackImages: [
     {
       url: "https://www.kentscientific.com/wp-content/uploads/2025/09/SF_01_CONTROLLER_3QTRR_Silo_copy-1.png",
       alt: "SomnoFlo O2Care digital anesthesia system",
@@ -34,18 +43,11 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
   ],
   sections: [
     {
-      _key: "somnoflo-o2care-introduction",
-      type: "rich-text",
-      title: "SomnoFlo O2Care",
-      html:
-        "<p>Pure oxygen can create unintended experimental effects, while ambient air alone may not provide enough oxygen for every protocol. SomnoFlo O2Care combines an internal ambient-air pump with a compressed-oxygen connection so researchers can select the carrier-gas composition without a separate external mixer.</p><p>The system provides 21%, 35%, 50%, 70% and 100% oxygen settings for long procedures, recovery, emergency support and refined anesthesia protocols. Low-flow digital delivery reduces anesthetic use and waste-gas output while preserving precise vaporization.</p>",
-    },
-    {
       _key: "somnoflo-o2care-pressure-note",
       type: "notice",
       title: "Oxygen-source requirement",
       description:
-        "SomnoFlo O2Care can operate from its internal ambient-air pump or from compressed gas. When the connected regulator supplies more than 15 psi, use the compatible SOMNO-7305 preset pressure reducer.",
+        "SomnoFlo O2Care operates with its internal ambient-air pump or an approved compressed-oxygen source. When the connected regulator supplies more than 15 psi, use the compatible SOMNO-7305 preset pressure reducer.",
     },
     {
       _key: "somnoflo-o2care-features",
@@ -54,8 +56,8 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
       items: [
         {
           _key: "oxygen-control",
-          title: "Precise oxygen control (21%–100%)",
-          description: "Select ambient air or 35%, 50%, 70% and 100% oxygen presets to match the animal and procedure.",
+          title: "Precise oxygen control",
+          description: "Operate with 21% ambient air or select 35%, 50%, 70% and 100% oxygen presets.",
         },
         {
           _key: "low-flow",
@@ -65,12 +67,12 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
         {
           _key: "maintenance",
           title: "No annual calibration required",
-          description: "The electronic vaporizer does not require the annual calibration and certification cycle of many traditional vaporizers.",
+          description: "The electronic vaporizer does not require the annual calibration and certification cycle used by many traditional vaporizers.",
         },
         {
           _key: "wag",
-          title: "Minimal waste-gas exposure",
-          description: "Low-flow operation reduces anesthetic consumption and the volume of waste anesthetic gas produced.",
+          title: "Minimal waste anesthetic gas exposure",
+          description: "Low-flow delivery reduces anesthetic consumption and the volume of waste anesthetic gas produced.",
         },
         {
           _key: "touchscreen",
@@ -97,27 +99,47 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
         {
           _key: "review-colorado",
           title: "Colorado State University",
-          description: "Reported strong reliability after initial support and recommended the system as an alternative to older vaporizers requiring annual calibration.",
+          description: "Reported reliable operation after prompt technical support and recommended replacing older vaporizers that require annual calibration.",
+        },
+        {
+          _key: "review-british-columbia",
+          title: "The University of British Columbia",
+          description: "Highlighted the small upright footprint, automatic priming and draining, and direct bottle filling.",
         },
         {
           _key: "review-vanderbilt",
           title: "Vanderbilt University",
-          description: "Reported four heavily used units, low anesthetic consumption across 166 surgeries and minimal charcoal-filter weight gain.",
+          description: "Reported heavy use across four units with low anesthetic consumption and minimal charcoal-filter loading over many procedures.",
+        },
+        {
+          _key: "review-artizan",
+          title: "Artizan Biosciences",
+          description: "Reported a positive experience with the first unit and subsequently ordered another.",
         },
         {
           _key: "review-mgh",
           title: "Massachusetts General Hospital",
-          description: "Reported strong performance and responsive customer service, followed by continued use of the system.",
+          description: "Reported strong performance together with responsive product support.",
         },
         {
           _key: "review-sigilon",
           title: "Sigilon Therapeutics",
-          description: "Reported a much smaller footprint than a traditional cart and appreciated operation with room air instead of relying on oxygen cylinders.",
+          description: "Highlighted the smaller footprint and the convenience of operating with room air instead of continuously managing oxygen cylinders.",
         },
         {
           _key: "review-northwestern",
           title: "Northwestern University",
           description: "Reported efficient operation, fast recovery and positive acceptance among laboratory users.",
+        },
+        {
+          _key: "review-arkansas",
+          title: "University of Arkansas",
+          description: "Reported reliable use during rodent procedures and positive feedback from the laboratory team.",
+        },
+        {
+          _key: "review-st-josephs",
+          title: "St. Joseph’s Hospital",
+          description: "Reported that the laboratory team was pleased with the system after purchase.",
         },
         {
           _key: "review-fred-hutch",
@@ -133,7 +155,7 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
       items: [
         {
           _key: "resource-blended-anesthesia",
-          label: "Webinar: room air versus pure oxygen in preclinical anesthesia",
+          label: "A blended approach to preclinical research anesthesia",
           url: "https://youtu.be/uUt2E1YBGYQ",
         },
         {
@@ -181,15 +203,19 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
       _key: "somnoflo-o2care-overview",
       type: "rich-text",
       title: "About SomnoFlo O2Care",
+      imageUrl: "https://www.kentscientific.com/wp-content/uploads/2025/08/oxygen.jpg",
+      imageAlt: "SomnoFlo O2Care oxygen control",
       html:
-        "<h3>Overview</h3><p>SomnoFlo O2Care removes the need to choose between pure oxygen and ambient air. The system lets users fine-tune oxygen delivery without custom gas blends or a separate mixer, supporting repeatable anesthesia protocols with a compact low-flow platform.</p><ol><li>Connect the system to an approved oxygen source when supplementation is needed.</li><li>Select the required oxygen level.</li><li>Set anesthetic concentration and flow.</li><li>Begin precise vaporization and monitor alarms from the touchscreen.</li></ol><h3>Smart oxygen control, simplified</h3><p>The internal air pump and compressed-gas mode provide flexible carrier-gas control for routine anesthesia, long procedures, recovery and emergency support.</p>",
+        "<h3>Overview</h3><p>SomnoFlo O2Care removes the need to choose between pure oxygen and ambient air. Researchers can adjust oxygen delivery without custom gas blends or a separate mixer, supporting repeatable protocols with a compact low-flow platform.</p><ol><li>Connect an approved oxygen source when supplementation is needed.</li><li>Select the required oxygen level.</li><li>Set anesthetic concentration and flow.</li><li>Begin vaporization and monitor the system from the touchscreen.</li></ol><h3>Smart oxygen control, simplified</h3><p>The internal air pump and compressed-oxygen connection provide flexible carrier-gas control for routine anesthesia, long procedures, recovery and emergency support.</p>",
     },
     {
       _key: "somnoflo-o2care-efficiency",
       type: "rich-text",
       title: "Lower anesthetic and compressed-gas use",
+      imageUrl: "https://www.kentscientific.com/wp-content/uploads/2025/08/Operational.png",
+      imageAlt: "SomnoFlo O2Care operational efficiency",
       html:
-        "<p>Kent compares SomnoFlo O2Care operating at 0.2 L/min with a traditional vaporizer operating at 2 L/min. Lower flow can reduce anesthetic consumption, charcoal-filter loading, waste anesthetic gas and reliance on compressed-gas cylinders.</p><p>Actual reductions depend on annual use, local protocols and the carrier-gas configuration used by the laboratory.</p>",
+        "<p>Kent compares SomnoFlo O2Care operating at 0.2 L/min with a traditional vaporizer operating at 2 L/min. Lower flow can reduce anesthetic consumption, charcoal-filter loading, waste anesthetic gas and reliance on compressed-gas cylinders.</p><p>The actual reduction depends on annual use, the laboratory protocol and the selected carrier-gas configuration. Supplier pricing and the interactive savings calculator are intentionally not displayed on the ITS BIO catalog.</p>",
     },
     {
       _key: "somnoflo-o2care-specifications",
@@ -199,10 +225,11 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
         { Group: "Flow rate", Specification: "Range", Value: "100–1,000 mL/min" },
         { Group: "Flow rate", Specification: "Manual override", Value: "Yes" },
         { Group: "Flow rate", Specification: "Sensor", Value: "Electronic flow sensor" },
-        { Group: "Oxygen", Specification: "Selectable levels", Value: "21%, 35%, 50%, 70%, 100%" },
+        { Group: "Oxygen", Specification: "Ambient-air mode", Value: "21% oxygen" },
+        { Group: "Oxygen", Specification: "Compressed-oxygen presets", Value: "35%, 50%, 70%, 100%" },
         { Group: "Application", Specification: "Multi-animal use", Value: "Yes" },
         { Group: "Application", Specification: "Stereotaxic use", Value: "Yes" },
-        { Group: "Operation", Specification: "Modes", Value: "Ambient air and compressed gas" },
+        { Group: "Operation", Specification: "Carrier-gas sources", Value: "Internal ambient-air pump or approved compressed oxygen" },
         { Group: "Operation", Specification: "Anesthetics", Value: "Isoflurane and sevoflurane" },
         { Group: "Operation", Specification: "Presets", Value: "User-selectable" },
         { Group: "Operation", Specification: "Alarms", Value: "Yes" },
@@ -211,6 +238,8 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
         { Group: "Filling and delivery", Specification: "Method", Value: "Direct from bottle" },
         { Group: "Filling and delivery", Specification: "Capacity", Value: "100 mL and 250 mL" },
         { Group: "Filling and delivery", Specification: "Accuracy", Value: "0.1%" },
+        { Group: "Warranty", Specification: "Standard", Value: "1 year included" },
+        { Group: "Warranty", Specification: "Premium", Value: "3 years total" },
       ],
     },
     {
@@ -219,8 +248,8 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
       title: "Warranty information",
       rows: [
         { Plan: "Standard", Coverage: "1 year", Benefits: "Standard controller warranty" },
-        { Plan: "Extended", Coverage: "Additional 2 years", Benefits: "Extended controller coverage; purchase after the original sale may require inspection" },
-        { Plan: "Premium", Coverage: "Additional 2 years", Benefits: "Enhanced loaner, shipping, training and expedited-repair benefits" },
+        { Plan: "Extended", Coverage: "Additional 2 years", Benefits: "Extended controller coverage; approval or inspection may be required when purchased later" },
+        { Plan: "Premium", Coverage: "Additional 2 years", Benefits: "Enhanced loaner, shipping, training and expedited-repair support" },
       ],
     },
     {
