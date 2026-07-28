@@ -18,24 +18,20 @@ jobs:
       - name: Checkout pull request branch
         uses: actions/checkout@v4
 
-      - name: Wait for preview and download baseline
+      - name: Download baseline with diagnostics
         shell: bash
         run: |
           set -euo pipefail
           URL="https://itsbio-git-agent-kent-preflight-hadel-hos-projects.vercel.app/api/kent/baseline-export"
           mkdir -p data
-          success=0
-          for attempt in $(seq 1 40); do
-            echo "Attempt ${attempt}: ${URL}"
-            if curl --fail --silent --show-error --location "$URL" -o /tmp/kent-baseline.json; then
-              if node -e 'const fs=require("fs"); const x=JSON.parse(fs.readFileSync("/tmp/kent-baseline.json","utf8")); if(!Array.isArray(x.products)||x.products.length<1) process.exit(2); console.log(`Fetched ${x.products.length} Kent rows`);'; then
-                success=1
-                break
-              fi
-            fi
-            sleep 15
-          done
-          test "$success" = "1"
+          echo "Requesting ${URL}"
+          curl --silent --show-error --location --dump-header /tmp/kent-headers.txt "$URL" -o /tmp/kent-baseline.json || true
+          echo "=== response headers ==="
+          cat /tmp/kent-headers.txt || true
+          echo "=== response preview ==="
+          head -c 1000 /tmp/kent-baseline.json || true
+          echo
+          node -e 'const fs=require("fs"); const x=JSON.parse(fs.readFileSync("/tmp/kent-baseline.json","utf8")); if(!Array.isArray(x.products)||x.products.length<1) process.exit(2); console.log(`Fetched ${x.products.length} Kent rows`);'
 
       - name: Generate JSON CSV and Markdown
         shell: bash
@@ -89,20 +85,15 @@ jobs:
           };
           fs.mkdirSync('data', { recursive: true });
           fs.writeFileSync('data/kent-product-baseline.json', JSON.stringify(output, null, 2) + '\n');
-
           const columns = ['index','sanityId','title','slug','sku','sourceUrl','categoryPath','productType','isActive','recordType','verificationStatus','galleryAssetCount','galleryImageUrlCount','rawImageUrlCount','sectionCount','variantCount','optionGroupCount','officialTitle','officialSubtitle','officialSku','officialSourceUrl','officialGalleryCount','officialSectionCount','verifiedAt','notes'];
           const csvCell = (value) => {
             const text = Array.isArray(value) ? value.join(' > ') : value == null ? '' : String(value);
             return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
           };
           fs.writeFileSync('data/kent-product-baseline.csv', [columns.join(','), ...clean.map((row) => columns.map((key) => csvCell(row[key])).join(','))].join('\n') + '\n');
-
           const counts = output.statusCounts;
           fs.writeFileSync('data/kent-product-baseline.md', [
-            '# Kent product baseline',
-            '',
-            `Generated: ${output.generatedAt}`,
-            '',
+            '# Kent product baseline','',`Generated: ${output.generatedAt}`,'',
             `- Total Sanity rows: ${output.total}`,
             `- Product candidates: ${clean.filter((row) => row.recordType === 'PRODUCT').length}`,
             `- Warranty exclusions: ${clean.filter((row) => row.recordType === 'EXCLUDE_WARRANTY').length}`,
@@ -110,12 +101,10 @@ jobs:
             `- Verified: ${counts.VERIFIED}`,
             `- Needs fix: ${counts.NEEDS_FIX}`,
             `- Unresolved: ${counts.UNRESOLVED}`,
-            `- Unverified: ${counts.UNVERIFIED}`,
-            '',
+            `- Unverified: ${counts.UNVERIFIED}`,'',
             '| # | Product | Slug | Item # | Record type | Status | Source URL |',
             '|---:|---|---|---|---|---|---|',
-            ...clean.map((row) => `| ${row.index} | ${String(row.title).replace(/\|/g,'\\|')} | ${row.slug} | ${row.sku} | ${row.recordType} | ${row.verificationStatus} | ${row.sourceUrl || ''} |`),
-            '',
+            ...clean.map((row) => `| ${row.index} | ${String(row.title).replace(/\|/g,'\\|')} | ${row.slug} | ${row.sku} | ${row.recordType} | ${row.verificationStatus} | ${row.sourceUrl || ''} |`),'',
           ].join('\n'));
           NODE
 
