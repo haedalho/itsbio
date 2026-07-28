@@ -348,7 +348,8 @@ export default async function KentProductDetailPage({
   const universal = universalProductContent(product, title);
   const leadHtml = official?.leadHtml || universal.leadHtml;
   const kentSections = sanitizeKentSections(official?.sections || universal.sections);
-  const stagedOfficialImages = ["STAGING", "APPROVED"].includes(String(product?.kentOfficialGalleryStatus || ""))
+  const galleryStatus = String(product?.kentOfficialGalleryStatus || "");
+  const stagedOfficialImages = ["STAGING", "APPROVED"].includes(galleryStatus)
     ? (Array.isArray(product?.kentOfficialGallery) ? product.kentOfficialGallery : [])
         .filter((image: any) => typeof image?.sourceUrl === "string" && image.sourceUrl.trim())
         .sort((a: any, b: any) => Number(a?.order || 0) - Number(b?.order || 0))
@@ -357,9 +358,16 @@ export default async function KentProductDetailPage({
   const overrideOfficialImages = Array.isArray(official?.fallbackImages)
     ? official.fallbackImages.filter((image) => image?.url)
     : [];
-  const officialImages = stagedOfficialImages.length ? stagedOfficialImages : overrideOfficialImages;
-  const productImages = normalizeImages(product, title).slice(0, 1);
-  const images = officialImages.length ? officialImages : productImages;
+  const activeProductImages = normalizeImages(product, title);
+  const approvedActiveImages = galleryStatus === "APPROVED" && !stagedOfficialImages.length
+    ? activeProductImages
+    : [];
+  const officialImages = stagedOfficialImages.length
+    ? stagedOfficialImages
+    : overrideOfficialImages.length
+      ? overrideOfficialImages
+      : approvedActiveImages;
+  const images = officialImages.length ? officialImages : activeProductImages.slice(0, 1);
   const verifiedGallery = officialImages.length > 0;
 
   return (
