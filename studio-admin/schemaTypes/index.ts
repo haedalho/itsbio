@@ -2,6 +2,7 @@
 import brand from "./brand";
 import category from "./category";
 import product from "./product";
+import kentOfficialGalleryFields from "./kentOfficialGalleryFields";
 import notice from "./notice";
 import promotion from "./promotion";
 
@@ -13,14 +14,17 @@ import contentBlockBullets from "./contentBlocks/contentBlockBullets";
 import contentBlockResources from "./contentBlocks/contentBlockResources";
 import contentBlockPublications from "./contentBlocks/contentBlockPublications";
 import contentBlockCta from "./contentBlocks/contentBlockCta";
-
-// ✅ 추가
 import contentBlockCards from "./contentBlocks/contentBlockCards";
+
+const productWithKentOfficialGallery = {
+  ...(product as any),
+  fields: [...(((product as any).fields || []) as any[]), ...kentOfficialGalleryFields],
+};
 
 export const schemaTypes = [
   brand,
   category,
-  product,
+  productWithKentOfficialGallery,
   notice,
   promotion,
 
@@ -31,7 +35,5 @@ export const schemaTypes = [
   contentBlockResources,
   contentBlockPublications,
   contentBlockCta,
-
-  // ✅ 추가
   contentBlockCards,
 ];
