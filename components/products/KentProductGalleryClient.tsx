@@ -5,10 +5,10 @@ import * as React from "react";
 
 type Img = { url?: string; alt?: string };
 
-const MAX_GALLERY_IMAGES = 12;
+const MAX_GALLERY_IMAGES = 8;
 const PLACEHOLDER = "/kent-product-placeholder.svg";
 
-const DOWNSTREAM_IMAGE_PATTERNS = [
+const NON_GALLERY_PATTERNS = [
   /(?:^|[\/_\-.])faq(?:[\/_\-.]|$)/i,
   /frequently[-_ ]asked/i,
   /(?:^|[\/_\-.])support(?:[\/_\-.]|$)/i,
@@ -21,9 +21,6 @@ const DOWNSTREAM_IMAGE_PATTERNS = [
   /(?:^|[\/_\-.])team(?:[\/_\-.]|$)/i,
   /(?:^|[\/_\-.])staff(?:[\/_\-.]|$)/i,
   /(?:^|[\/_\-.])expert(?:[\/_\-.]|$)/i,
-  /reply[-_ ]fast/i,
-  /we[-_ ]?re[-_ ]here/i,
-  /ask[-_ ]for[-_ ]support/i,
   /(?:^|[\/_\-.])chat(?:[\/_\-.]|$)/i,
   /(?:^|[\/_\-.])newsletter(?:[\/_\-.]|$)/i,
   /(?:^|[\/_\-.])subscribe(?:[\/_\-.]|$)/i,
@@ -32,8 +29,6 @@ const DOWNSTREAM_IMAGE_PATTERNS = [
   /(?:^|[\/_\-.])resource(?:s)?(?:[\/_\-.]|$)/i,
   /white[-_ ]?paper/i,
   /book[-_ ]?cover/i,
-  /laboratory[-_ ]animal[-_ ]anesthesia/i,
-  /(?:^|[\/_\-.])amazon(?:[\/_\-.]|$)/i,
   /request[-_ ]?(?:a[-_ ]?)?(?:quote|sample)/i,
   /(?:^|[\/_\-.])intertek(?:[\/_\-.]|$)/i,
   /(?:^|[\/_\-.])badge(?:[\/_\-.]|$)/i,
@@ -41,6 +36,7 @@ const DOWNSTREAM_IMAGE_PATTERNS = [
   /(?:^|[\/_\-.])logo(?:[\/_\-.]|$)/i,
   /(?:^|[\/_\-.])icon(?:[\/_\-.]|$)/i,
   /(?:^|[\/_\-.])banner(?:[\/_\-.]|$)/i,
+  /(?:^|\/)thumb(?:s|nail)?(?:\/|[-_.])/i,
 ];
 
 function normalizedImagePath(url?: string) {
@@ -60,53 +56,56 @@ function imageMasterKey(url?: string) {
     .replace(/-(?:scaled|optimized)(?=\.[a-z0-9]+$)/i, "");
 }
 
-function isDownstreamPageImage(url?: string) {
+function isSmallResizedImage(url?: string) {
   const path = normalizedImagePath(url);
-  return Boolean(path && DOWNSTREAM_IMAGE_PATTERNS.some((pattern) => pattern.test(path)));
+  const match = path.match(/-(\d{2,5})x(\d{2,5})(?=\.[a-z0-9]+$)/i);
+  if (!match) return false;
+  const width = Number(match[1]);
+  const height = Number(match[2]);
+  return Math.max(width, height) < 600;
+}
+
+function isNonGalleryImage(url?: string) {
+  const path = normalizedImagePath(url);
+  if (!path) return true;
+  if (NON_GALLERY_PATTERNS.some((pattern) => pattern.test(path))) return true;
+  return isSmallResizedImage(url);
+}
+
+function isDirectKentImage(url?: string) {
+  const raw = String(url || "").trim();
+  if (!raw) return false;
+  try {
+    const host = new URL(raw, "https://www.kentscientific.com").hostname.toLowerCase();
+    return host === "kentscientific.com" || host === "www.kentscientific.com";
+  } catch {
+    return false;
+  }
 }
 
 function normalizeGalleryImages(images: Img[]) {
-  const gallery: Img[] = [];
+  const normalized: Img[] = [];
   const seen = new Set<string>();
 
   for (const image of Array.isArray(images) ? images : []) {
     const url = String(image?.url || "").trim();
-    if (!url || isDownstreamPageImage(url)) continue;
+    if (!url || isNonGalleryImage(url)) continue;
 
     const key = imageMasterKey(url) || url;
     if (seen.has(key)) continue;
     seen.add(key);
-    gallery.push({ ...image, url });
-
-    if (gallery.length >= MAX_GALLERY_IMAGES) break;
+    normalized.push({ ...image, url });
   }
 
-  return gallery;
-}
-
-async function recoverOneProductImage(productSlug: string, title: string) {
-  if (!productSlug) return null as Img | null;
-
-  try {
-    const key = `product:${productSlug.toLowerCase()}`;
-    const response = await fetch("/api/kent/product-images", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ targets: [{ key, type: "product", value: productSlug }] }),
-    });
-    if (!response.ok) return null;
-
-    const payload = (await response.json()) as { images?: Record<string, string[]> };
-    const urls = Array.isArray(payload?.images?.[key]) ? payload.images![key] : [];
-    const first = normalizeGalleryImages(urls.map((url) => ({ url, alt: title })))[0];
-    return first || null;
-  } catch {
-    return null;
-  }
+  // Multiple thumbnails are shown only when every supplied image is a direct,
+  // full-size Kent source image. Legacy Sanity/page-wide arrays are reduced to
+  // a single representative image until the product receives a verified
+  // official gallery snapshot.
+  const trustedOfficialSet = normalized.length > 0 && normalized.every((image) => isDirectKentImage(image.url));
+  return (trustedOfficialSet ? normalized.slice(0, MAX_GALLERY_IMAGES) : normalized.slice(0, 1));
 }
 
 export default function KentProductGalleryClient({
-  productSlug,
   images,
   title,
 }: {
@@ -115,34 +114,18 @@ export default function KentProductGalleryClient({
   title: string;
 }) {
   const initialImages = React.useMemo(() => normalizeGalleryImages(images), [images]);
-  const [recoveredImage, setRecoveredImage] = React.useState<Img | null>(null);
   const [failedUrls, setFailedUrls] = React.useState<Set<string>>(() => new Set());
   const [activeIndex, setActiveIndex] = React.useState(0);
 
   React.useEffect(() => {
-    let cancelled = false;
-    setRecoveredImage(null);
     setFailedUrls(new Set());
     setActiveIndex(0);
+  }, [initialImages]);
 
-    // Never append page-wide Sanity image arrays to a valid gallery. They may
-    // contain related products, article graphics, resources or support images.
-    // Recovery is only allowed when the server supplied no product image at all.
-    if (!initialImages.length) {
-      recoverOneProductImage(productSlug, title).then((row) => {
-        if (!cancelled) setRecoveredImage(row);
-      });
-    }
-
-    return () => {
-      cancelled = true;
-    };
-  }, [initialImages.length, productSlug, title]);
-
-  const safeImages = React.useMemo(() => {
-    const source = initialImages.length ? initialImages : recoveredImage ? [recoveredImage] : [];
-    return source.filter((image) => !failedUrls.has(String(image.url || "")));
-  }, [failedUrls, initialImages, recoveredImage]);
+  const safeImages = React.useMemo(
+    () => initialImages.filter((image) => !failedUrls.has(String(image.url || ""))),
+    [failedUrls, initialImages],
+  );
 
   React.useEffect(() => {
     if (activeIndex >= safeImages.length) setActiveIndex(0);
