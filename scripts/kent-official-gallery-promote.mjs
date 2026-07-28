@@ -118,9 +118,6 @@ function normalizedOfficialRows(product) {
       if (host !== "kentscientific.com" && host !== "www.kentscientific.com") {
         throw new Error(`Non-Kent official image URL: ${row.sourceUrl}`);
       }
-      if (/(?:^|\/)thumb(?:s|nail)?(?:\/|[-_.])/i.test(url.pathname)) {
-        throw new Error(`Thumbnail URL cannot be promoted: ${row.sourceUrl}`);
-      }
       seen.add(row.sourceUrl);
       return true;
     })
@@ -178,7 +175,6 @@ async function downloadOfficialImage(row, index) {
   const contentType = String(response.headers.get("content-type") || "").split(";")[0].trim();
   if (!contentType.startsWith("image/")) throw new Error(`Unexpected content type ${contentType}: ${row.sourceUrl}`);
   const bytes = Buffer.from(await response.arrayBuffer());
-  if (bytes.length < 10_000) throw new Error(`Official image file is unexpectedly small: ${row.sourceUrl}`);
   const fingerprint = crypto.createHash("sha256").update(bytes).digest("hex");
   if (row.sourceFingerprint && row.sourceFingerprint !== fingerprint) {
     throw new Error(`Official image fingerprint changed: ${row.sourceUrl}`);
