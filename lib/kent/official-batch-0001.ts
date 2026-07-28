@@ -91,6 +91,6 @@ const OFFICIAL_BATCH_0001 = {
       notes: "Official title, description, two gallery subjects, three configurations and related products captured. Price, quantity, cart, supplier support and empty review form excluded.",
     },
   },
-} as const;
+};
 
 export default OFFICIAL_BATCH_0001;
