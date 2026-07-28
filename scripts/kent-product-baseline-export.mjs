@@ -6,6 +6,8 @@ const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || process.env.SANIT
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || process.env.SANITY_DATASET || "production";
 const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || "2025-02-19";
 const root = process.cwd();
+const outputDir = path.join(root, "data");
+const baselinePath = path.join(outputDir, "kent-product-baseline.json");
 
 const query = `
 *[
@@ -50,6 +52,19 @@ function csvCell(value) {
   return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
+function readPrevious() {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(baselinePath, "utf8"));
+    const products = Array.isArray(parsed?.products) ? parsed.products : [];
+    return {
+      byId: new Map(products.filter((row) => row?.sanityId).map((row) => [row.sanityId, row])),
+      bySlug: new Map(products.filter((row) => row?.slug).map((row) => [row.slug, row])),
+    };
+  } catch {
+    return { byId: new Map(), bySlug: new Map() };
+  }
+}
+
 async function fetchProducts() {
   const url = new URL(`https://${projectId}.api.sanity.io/v${apiVersion}/data/query/${dataset}`);
   url.searchParams.set("query", query);
@@ -60,61 +75,65 @@ async function fetchProducts() {
   return payload.result;
 }
 
-function normalize(rows) {
-  return rows.map((row, index) => ({
-    index: index + 1,
-    sanityId: row._id || "",
-    title: row.title || "",
-    slug: row.slug || "",
-    sku: row.sku || "",
-    sourceUrl: row.sourceUrl || "",
-    categoryPath: Array.isArray(row.categoryPath) ? row.categoryPath : [],
-    categoryPathTitles: Array.isArray(row.categoryPathTitles) ? row.categoryPathTitles : [],
-    listingPaths: Array.isArray(row.listingPaths) ? row.listingPaths : [],
-    productType: row.productType || "",
-    isActive: row.isActive !== false,
-    recordType: classify(row),
-    verificationStatus: "UNVERIFIED",
-    galleryAssetCount: Number(row.galleryAssetCount || 0),
-    galleryImageUrlCount: Number(row.galleryImageUrlCount || 0),
-    rawImageUrlCount: Number(row.rawImageUrlCount || 0),
-    sectionCount: Number(row.sectionCount || 0),
-    variantCount: Number(row.variantCount || 0),
-    optionGroupCount: Number(row.optionGroupCount || 0),
-    officialTitle: "",
-    officialSubtitle: "",
-    officialSku: "",
-    officialSourceUrl: "",
-    officialGalleryCount: null,
-    officialSectionCount: null,
-    verifiedAt: "",
-    notes: "",
-  }));
+function normalize(rows, previous) {
+  return rows.map((row, index) => {
+    const prior = previous.byId.get(row._id) || previous.bySlug.get(row.slug) || {};
+    const recordType = classify(row);
+    return {
+      index: index + 1,
+      sanityId: row._id || "",
+      title: row.title || "",
+      slug: row.slug || "",
+      sku: row.sku || "",
+      sourceUrl: row.sourceUrl || "",
+      categoryPath: Array.isArray(row.categoryPath) ? row.categoryPath : [],
+      categoryPathTitles: Array.isArray(row.categoryPathTitles) ? row.categoryPathTitles : [],
+      listingPaths: Array.isArray(row.listingPaths) ? row.listingPaths : [],
+      productType: row.productType || "",
+      isActive: row.isActive !== false,
+      recordType,
+      verificationStatus: recordType === "EXCLUDE_WARRANTY" ? "EXCLUDE" : prior.verificationStatus || "UNVERIFIED",
+      galleryAssetCount: Number(row.galleryAssetCount || 0),
+      galleryImageUrlCount: Number(row.galleryImageUrlCount || 0),
+      rawImageUrlCount: Number(row.rawImageUrlCount || 0),
+      sectionCount: Number(row.sectionCount || 0),
+      variantCount: Number(row.variantCount || 0),
+      optionGroupCount: Number(row.optionGroupCount || 0),
+      officialTitle: prior.officialTitle || "",
+      officialSubtitle: prior.officialSubtitle || "",
+      officialSku: prior.officialSku || "",
+      officialSourceUrl: prior.officialSourceUrl || "",
+      officialGalleryCount: prior.officialGalleryCount ?? null,
+      officialSectionCount: prior.officialSectionCount ?? null,
+      verifiedAt: prior.verifiedAt || "",
+      notes: prior.notes || "",
+    };
+  });
 }
 
 function writeOutputs(products) {
-  const outputDir = path.join(root, "data");
   fs.mkdirSync(outputDir, { recursive: true });
   const generatedAt = new Date().toISOString();
   const productCount = products.filter((row) => row.recordType === "PRODUCT").length;
   const warrantyCount = products.filter((row) => row.recordType === "EXCLUDE_WARRANTY").length;
   const serviceReviewCount = products.filter((row) => row.recordType === "REVIEW_SERVICE").length;
+  const countStatus = (status) => products.filter((row) => row.verificationStatus === status).length;
   const report = {
     generatedAt,
     source: `sanity://${projectId}/${dataset}`,
     total: products.length,
     counts: { product: productCount, warranty: warrantyCount, serviceReview: serviceReviewCount },
     statusCounts: {
-      VERIFIED: 0,
-      NEEDS_FIX: 0,
-      UNRESOLVED: 0,
-      EXCLUDE: warrantyCount,
-      UNVERIFIED: products.length - warrantyCount,
+      VERIFIED: countStatus("VERIFIED"),
+      NEEDS_FIX: countStatus("NEEDS_FIX"),
+      UNRESOLVED: countStatus("UNRESOLVED"),
+      EXCLUDE: countStatus("EXCLUDE"),
+      UNVERIFIED: countStatus("UNVERIFIED"),
     },
     products,
   };
 
-  fs.writeFileSync(path.join(outputDir, "kent-product-baseline.json"), `${JSON.stringify(report, null, 2)}\n`, "utf8");
+  fs.writeFileSync(baselinePath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
 
   const columns = [
     "index", "sanityId", "title", "slug", "sku", "sourceUrl", "categoryPath", "productType", "isActive",
@@ -125,6 +144,7 @@ function writeOutputs(products) {
   const csv = [columns.join(","), ...products.map((row) => columns.map((key) => csvCell(row[key])).join(","))].join("\n") + "\n";
   fs.writeFileSync(path.join(outputDir, "kent-product-baseline.csv"), csv, "utf8");
 
+  const status = report.statusCounts;
   const markdown = [
     "# Kent product baseline",
     "",
@@ -135,10 +155,10 @@ function writeOutputs(products) {
     `- Product candidates: ${productCount}`,
     `- Warranty exclusions: ${warrantyCount}`,
     `- Service review: ${serviceReviewCount}`,
-    "- Verified: 0",
-    "- Needs fix: 0",
-    "- Unresolved: 0",
-    `- Unverified: ${products.length - warrantyCount}`,
+    `- Verified: ${status.VERIFIED}`,
+    `- Needs fix: ${status.NEEDS_FIX}`,
+    `- Unresolved: ${status.UNRESOLVED}`,
+    `- Unverified: ${status.UNVERIFIED}`,
     "",
     "| # | Product | Slug | Item # | Record type | Status | Source URL |",
     "|---:|---|---|---|---|---|---|",
@@ -149,5 +169,6 @@ function writeOutputs(products) {
   console.log(`Kent baseline written: total=${products.length}, products=${productCount}, warranties=${warrantyCount}, serviceReview=${serviceReviewCount}`);
 }
 
+const previous = readPrevious();
 const rows = await fetchProducts();
-writeOutputs(normalize(rows));
+writeOutputs(normalize(rows, previous));
