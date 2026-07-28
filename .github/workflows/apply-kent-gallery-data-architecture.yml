@@ -1,0 +1,52 @@
+name: Apply Kent gallery data architecture
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - scripts/apply-kent-gallery-data-architecture.mjs
+      - .github/workflows/apply-kent-gallery-data-architecture.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout working branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/kent-preflight
+          fetch-depth: 0
+
+      - name: Apply one-time source patch
+        run: node scripts/apply-kent-gallery-data-architecture.mjs
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate build
+        run: npm run build
+
+      - name: Commit generated source changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            app/products/kent/item/'[...slug]'/page.tsx \
+            components/products/KentProductDetailClientV2.tsx \
+            components/products/KentProductGalleryClient.tsx
+          if [ -f scripts/patch-kent-gallery-verification.mjs ]; then
+            git rm scripts/patch-kent-gallery-verification.mjs
+          fi
+          if git diff --cached --quiet; then
+            echo "No generated changes"
+            exit 0
+          fi
+          git commit -m "Use explicit official Kent gallery data"
+          git push origin HEAD:agent/kent-preflight
