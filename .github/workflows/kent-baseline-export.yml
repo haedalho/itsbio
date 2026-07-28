@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - app/api/kent/baseline-export/route.ts
+      - scripts/kent-product-baseline-export.mjs
       - .github/workflows/kent-baseline-export.yml
 
 permissions:
@@ -18,103 +18,8 @@ jobs:
       - name: Checkout pull request branch
         uses: actions/checkout@v4
 
-      - name: Download baseline response
-        shell: bash
-        run: |
-          set -u
-          URL="https://itsbio-git-agent-kent-preflight-hadel-hos-projects.vercel.app/api/kent/baseline-export"
-          mkdir -p data diagnostics
-          curl --silent --show-error --location --dump-header diagnostics/headers.txt "$URL" -o diagnostics/body.txt
-          cp diagnostics/body.txt /tmp/kent-baseline.json
-          echo "Downloaded $(wc -c < diagnostics/body.txt) bytes"
-
-      - name: Upload response diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: kent-baseline-diagnostics
-          path: diagnostics
-          if-no-files-found: warn
-
-      - name: Validate baseline JSON
-        shell: bash
-        run: |
-          node -e 'const fs=require("fs"); const x=JSON.parse(fs.readFileSync("/tmp/kent-baseline.json","utf8")); if(!Array.isArray(x.products)||x.products.length<1) process.exit(2); console.log(`Fetched ${x.products.length} Kent rows`);'
-
-      - name: Generate JSON CSV and Markdown
-        shell: bash
-        run: |
-          node <<'NODE'
-          const fs = require('fs');
-          const report = JSON.parse(fs.readFileSync('/tmp/kent-baseline.json', 'utf8'));
-          const rows = Array.isArray(report.products) ? report.products : [];
-          const clean = rows.map((row, index) => ({
-            index: index + 1,
-            sanityId: row._id || '',
-            title: row.title || '',
-            slug: row.slug || '',
-            sku: row.sku || '',
-            sourceUrl: row.sourceUrl || '',
-            categoryPath: Array.isArray(row.categoryPath) ? row.categoryPath : [],
-            categoryPathTitles: Array.isArray(row.categoryPathTitles) ? row.categoryPathTitles : [],
-            listingPaths: Array.isArray(row.listingPaths) ? row.listingPaths : [],
-            productType: row.productType || '',
-            isActive: row.isActive !== false,
-            recordType: row.recordType || 'PRODUCT',
-            verificationStatus: row.verificationStatus || 'UNVERIFIED',
-            galleryAssetCount: Number(row.galleryAssetCount || 0),
-            galleryImageUrlCount: Number(row.galleryImageUrlCount || 0),
-            rawImageUrlCount: Number(row.rawImageUrlCount || 0),
-            sectionCount: Number(row.sectionCount || 0),
-            variantCount: Number(row.variantCount || 0),
-            optionGroupCount: Number(row.optionGroupCount || 0),
-            officialTitle: '',
-            officialSubtitle: '',
-            officialSku: '',
-            officialSourceUrl: '',
-            officialGalleryCount: null,
-            officialSectionCount: null,
-            verifiedAt: '',
-            notes: '',
-          }));
-          const output = {
-            generatedAt: report.generatedAt,
-            source: report.source,
-            total: clean.length,
-            counts: report.counts || {},
-            statusCounts: {
-              VERIFIED: 0,
-              NEEDS_FIX: 0,
-              UNRESOLVED: 0,
-              EXCLUDE: clean.filter((row) => row.recordType === 'EXCLUDE_WARRANTY').length,
-              UNVERIFIED: clean.filter((row) => row.recordType !== 'EXCLUDE_WARRANTY').length,
-            },
-            products: clean,
-          };
-          fs.mkdirSync('data', { recursive: true });
-          fs.writeFileSync('data/kent-product-baseline.json', JSON.stringify(output, null, 2) + '\n');
-          const columns = ['index','sanityId','title','slug','sku','sourceUrl','categoryPath','productType','isActive','recordType','verificationStatus','galleryAssetCount','galleryImageUrlCount','rawImageUrlCount','sectionCount','variantCount','optionGroupCount','officialTitle','officialSubtitle','officialSku','officialSourceUrl','officialGalleryCount','officialSectionCount','verifiedAt','notes'];
-          const csvCell = (value) => {
-            const text = Array.isArray(value) ? value.join(' > ') : value == null ? '' : String(value);
-            return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
-          };
-          fs.writeFileSync('data/kent-product-baseline.csv', [columns.join(','), ...clean.map((row) => columns.map((key) => csvCell(row[key])).join(','))].join('\n') + '\n');
-          const counts = output.statusCounts;
-          fs.writeFileSync('data/kent-product-baseline.md', [
-            '# Kent product baseline','',`Generated: ${output.generatedAt}`,'',
-            `- Total Sanity rows: ${output.total}`,
-            `- Product candidates: ${clean.filter((row) => row.recordType === 'PRODUCT').length}`,
-            `- Warranty exclusions: ${clean.filter((row) => row.recordType === 'EXCLUDE_WARRANTY').length}`,
-            `- Service review: ${clean.filter((row) => row.recordType === 'REVIEW_SERVICE').length}`,
-            `- Verified: ${counts.VERIFIED}`,
-            `- Needs fix: ${counts.NEEDS_FIX}`,
-            `- Unresolved: ${counts.UNRESOLVED}`,
-            `- Unverified: ${counts.UNVERIFIED}`,'',
-            '| # | Product | Slug | Item # | Record type | Status | Source URL |',
-            '|---:|---|---|---|---|---|---|',
-            ...clean.map((row) => `| ${row.index} | ${String(row.title).replace(/\|/g,'\\|')} | ${row.slug} | ${row.sku} | ${row.recordType} | ${row.verificationStatus} | ${row.sourceUrl || ''} |`),'',
-          ].join('\n'));
-          NODE
+      - name: Generate Kent baseline
+        run: node scripts/kent-product-baseline-export.mjs
 
       - name: Upload baseline artifact
         uses: actions/upload-artifact@v4
