@@ -230,11 +230,9 @@ export default function KentProductDetailClientV2({
           <div className="min-w-0 lg:pt-1">
             {badge ? (
               <div className="inline-flex bg-[#f5a400] px-3 py-1 text-[12px] font-bold uppercase tracking-[0.12em] text-white">{badge}</div>
-            ) : (
-              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#0b5baa]">Kent Scientific</div>
-            )}
+            ) : null}
 
-            <h1 className="mt-4 text-[35px] font-semibold tracking-[-0.035em] text-[#0a4d96] lg:text-[45px]">{title}</h1>
+            <h1 className={`${badge ? "mt-4" : "mt-0"} text-[35px] font-semibold tracking-[-0.035em] text-[#0a4d96] lg:text-[45px]`}>{title}</h1>
             {summary ? <p className="mt-2 text-[20px] font-semibold leading-8 text-slate-600">{summary}</p> : null}
 
             <a href={quoteHref} className="mt-7 inline-flex min-h-[48px] min-w-[210px] items-center justify-center bg-[#0b5baa] px-7 py-3 text-[16px] font-semibold text-white transition hover:bg-[#08467f]">
@@ -300,11 +298,6 @@ export default function KentProductDetailClientV2({
                 })}
               </div>
             ) : null}
-
-            <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 border-t border-slate-200 pt-5 text-sm text-slate-600">
-              <a href={quoteHref} className="font-semibold text-[#0b5baa] hover:underline">Email ITS BIO</a>
-              <a href="tel:02-3462-8658" className="font-semibold text-[#0b5baa] hover:underline">02-3462-8658</a>
-            </div>
           </div>
         </div>
       </section>
