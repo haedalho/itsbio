@@ -82,7 +82,20 @@ const ITEM_PAGE_QUERY = `
     galleryImageUrls,
     imageUrls,
     imageFiles,
-    images[]{ _key, asset->{ url } }
+    images[]{ _key, asset->{ url } },
+    kentOfficialGalleryStatus,
+    kentOfficialGallery[]{
+      _key,
+      sourceUrl,
+      alt,
+      order,
+      sourceWidth,
+      sourceHeight,
+      sourceFingerprint
+    },
+    kentOfficialSourceUrl,
+    kentOfficialGalleryVerifiedAt,
+    kentOfficialGalleryFingerprint
   }
 }
 `;
@@ -335,13 +348,19 @@ export default async function KentProductDetailPage({
   const universal = universalProductContent(product, title);
   const leadHtml = official?.leadHtml || universal.leadHtml;
   const kentSections = sanitizeKentSections(official?.sections || universal.sections);
-  const productImages = normalizeImages(product, title);
-  const officialImages = Array.isArray(official?.fallbackImages)
+  const stagedOfficialImages = ["STAGING", "APPROVED"].includes(String(product?.kentOfficialGalleryStatus || ""))
+    ? (Array.isArray(product?.kentOfficialGallery) ? product.kentOfficialGallery : [])
+        .filter((image: any) => typeof image?.sourceUrl === "string" && image.sourceUrl.trim())
+        .sort((a: any, b: any) => Number(a?.order || 0) - Number(b?.order || 0))
+        .map((image: any) => ({ url: String(image.sourceUrl).trim(), alt: cleanText(image.alt) || title }))
+    : [];
+  const overrideOfficialImages = Array.isArray(official?.fallbackImages)
     ? official.fallbackImages.filter((image) => image?.url)
     : [];
-  // Only an explicitly verified official snapshot may render as a multi-image
-  // gallery. Unverified legacy arrays are reduced to one representative image.
-  const images = officialImages.length ? officialImages : productImages.slice(0, 1);
+  const officialImages = stagedOfficialImages.length ? stagedOfficialImages : overrideOfficialImages;
+  const productImages = normalizeImages(product, title).slice(0, 1);
+  const images = officialImages.length ? officialImages : productImages;
+  const verifiedGallery = officialImages.length > 0;
 
   return (
     <main className="pb-16">
@@ -359,7 +378,7 @@ export default async function KentProductDetailPage({
           leadHtml={leadHtml}
           categoryLabel={categoryLabel}
           images={images}
-          verifiedGallery={officialImages.length > 0}
+          verifiedGallery={verifiedGallery}
           kentSections={kentSections as any[]}
           descriptionHtml=""
           specsHtml=""
