@@ -1,3 +1,5 @@
+import SOMNOSUITE from "./official-somnosuite";
+
 export type KentOfficialSection = {
   _key: string;
   type: string;
@@ -180,6 +182,7 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
 
 const OFFICIAL_OVERRIDES: Record<string, KentOfficialProductOverride> = {
   "somnoflo-o2care": SOMNOFLO_O2CARE,
+  somnosuite: SOMNOSUITE,
 };
 
 export function getKentOfficialProductOverride(slug: string) {
