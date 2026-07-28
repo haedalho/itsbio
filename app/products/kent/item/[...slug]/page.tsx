@@ -333,11 +333,13 @@ export default async function KentProductDetailPage({
   ];
 
   const universal = universalProductContent(product, title);
-  const useOfficial = Boolean(official);
   const leadHtml = official?.leadHtml || universal.leadHtml;
   const kentSections = sanitizeKentSections(official?.sections || universal.sections);
   const productImages = normalizeImages(product, title);
-  const images = productImages.length ? productImages : official?.fallbackImages || [];
+  const officialImages = Array.isArray(official?.fallbackImages)
+    ? official.fallbackImages.filter((image) => image?.url)
+    : [];
+  const images = officialImages.length ? officialImages : productImages;
 
   return (
     <main className="pb-16">
@@ -349,8 +351,8 @@ export default async function KentProductDetailPage({
         <KentProductDetailClient
           slug={product.slug}
           title={title}
-          summary={official?.summary || pickKentSubtitle(product?.summary, leadHtml)}
-          sku={official?.sku || product?.sku || ""}
+          summary={official ? official.summary : pickKentSubtitle(product?.summary, leadHtml)}
+          sku={official ? official.sku : product?.sku || ""}
           badge={official?.badge}
           leadHtml={leadHtml}
           categoryLabel={categoryLabel}
@@ -364,10 +366,10 @@ export default async function KentProductDetailPage({
           referencesHtml=""
           reviewsHtml=""
           documents={[]}
-          productType={useOfficial ? "simple" : product?.productType}
-          defaultVariantId={useOfficial ? undefined : product?.defaultVariantId}
-          optionGroups={useOfficial ? [] : product?.optionGroups || []}
-          variants={useOfficial ? [] : product?.variants || []}
+          productType={official ? official.productType || "simple" : product?.productType}
+          defaultVariantId={official ? official.defaultVariantId : product?.defaultVariantId}
+          optionGroups={official ? official.optionGroups || [] : product?.optionGroups || []}
+          variants={official ? official.variants || [] : product?.variants || []}
         />
       </div>
     </main>
