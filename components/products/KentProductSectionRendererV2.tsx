@@ -56,6 +56,13 @@ type SectionBucket =
 
 type SectionWithKey = KentSection & { fallbackKey?: SectionBucket };
 
+type FaqEntry = {
+  key: string;
+  question: string;
+  answerHtml?: string;
+  answerText?: string;
+};
+
 const PRICE_COLUMN_RE = /^(?:price|pricing|unit price|list price|retail price|sale price|dealer price|your price|online price|web price|net price|msrp|cost|amount)$/i;
 
 function cleanText(input?: unknown) {
@@ -65,6 +72,8 @@ function cleanText(input?: unknown) {
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;|&#160;/gi, " ")
     .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#(?:39|x27);/gi, "'")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -177,10 +186,7 @@ function FeatureGrid({ items }: { items: KentSectionItem[] }) {
 
 function splitReviewTitle(input: string) {
   const [person, ...rest] = input.split(/\s+[—–-]\s+/);
-  return {
-    person: person?.trim() || input,
-    organization: rest.join(" — ").trim(),
-  };
+  return { person: person?.trim() || input, organization: rest.join(" — ").trim() };
 }
 
 function ReviewRail({ items }: { items: KentSectionItem[] }) {
@@ -195,9 +201,7 @@ function ReviewRail({ items }: { items: KentSectionItem[] }) {
             key={item._key || `${rawTitle}-${index}`}
             className="min-w-[86%] snap-start border-t-4 border-[#0b5baa] pt-6 sm:min-w-[70%] lg:min-w-[47%]"
           >
-            {description ? (
-              <blockquote className="text-[16px] leading-8 text-slate-700">“{description}”</blockquote>
-            ) : null}
+            {description ? <blockquote className="text-[16px] leading-8 text-slate-700">“{description}”</blockquote> : null}
             <div className="mt-6 text-[16px] font-semibold text-[#0a4d96]">{person}</div>
             {organization ? <div className="mt-1 text-sm leading-6 text-slate-500">{organization}</div> : null}
           </article>
@@ -219,6 +223,7 @@ function RelatedProducts({ items }: { items: KentSectionItem[] }) {
   React.useEffect(() => {
     const targets = items
       .map((item, index) => {
+        if (item.imageUrl) return null;
         const href = String(item.href || item.url || "");
         const slug = productSlugFromHref(href);
         return slug ? { key: `related:${slug}:${index}`, type: "product", value: slug, slug } : null;
@@ -227,7 +232,6 @@ function RelatedProducts({ items }: { items: KentSectionItem[] }) {
 
     if (!targets.length) return;
     let cancelled = false;
-
     fetch("/api/kent/product-images", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -261,11 +265,7 @@ function RelatedProducts({ items }: { items: KentSectionItem[] }) {
         const content = (
           <>
             <div className="flex aspect-[4/3] items-center justify-center border border-slate-200 bg-white p-5">
-              {imageUrl ? (
-                <MediaImage src={imageUrl} alt={title} className="max-h-52" />
-              ) : (
-                <div className="text-sm text-slate-400">Product image</div>
-              )}
+              {imageUrl ? <MediaImage src={imageUrl} alt={title} className="max-h-52" /> : <div className="text-sm text-slate-400">Product image</div>}
             </div>
             <div className="pt-4">
               {description ? <div className="mb-1 text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">{description}</div> : null}
@@ -273,11 +273,8 @@ function RelatedProducts({ items }: { items: KentSectionItem[] }) {
             </div>
           </>
         );
-
         return href ? (
-          <a key={item._key || `${title}-${index}`} href={href} className="group block">
-            {content}
-          </a>
+          <a key={item._key || `${title}-${index}`} href={href} className="group block">{content}</a>
         ) : (
           <article key={item._key || `${title}-${index}`}>{content}</article>
         );
@@ -319,26 +316,13 @@ function ResourceList({ items }: { items: KentSectionItem[] }) {
               <span className="mt-0.5 text-sm font-bold text-[#0b5baa]">{index + 1}.)</span>
               <span className="leading-6 text-slate-700">{label}</span>
             </div>
-            <span className="shrink-0 border border-[#0b5baa] px-4 py-2 text-xs font-semibold text-[#0b5baa]">
-              {isVideo ? "See Video" : "Open"}
-            </span>
+            <span className="shrink-0 border border-[#0b5baa] px-4 py-2 text-xs font-semibold text-[#0b5baa]">{isVideo ? "See Video" : "Open"}</span>
           </>
         );
-
         return href ? (
-          <a
-            key={item._key || `${href}-${index}`}
-            href={href}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center justify-between gap-5 border-b border-slate-200 py-5 transition hover:bg-slate-50"
-          >
-            {row}
-          </a>
+          <a key={item._key || `${href}-${index}`} href={href} target="_blank" rel="noreferrer" className="flex items-center justify-between gap-5 border-b border-slate-200 py-5 transition hover:bg-slate-50">{row}</a>
         ) : (
-          <div key={item._key || `${label}-${index}`} className="flex items-center justify-between gap-5 border-b border-slate-200 py-5">
-            {row}
-          </div>
+          <div key={item._key || `${label}-${index}`} className="flex items-center justify-between gap-5 border-b border-slate-200 py-5">{row}</div>
         );
       })}
     </div>
@@ -369,25 +353,10 @@ function VideoCards({ items }: { items: KentSectionItem[] }) {
         const label = String(item.label || item.title || `Video ${index + 1}`);
         const id = youtubeId(href);
         return (
-          <a
-            key={item._key || `${href}-${index}`}
-            href={href || undefined}
-            target={href ? "_blank" : undefined}
-            rel={href ? "noreferrer" : undefined}
-            className="group block"
-          >
+          <a key={item._key || `${href}-${index}`} href={href || undefined} target={href ? "_blank" : undefined} rel={href ? "noreferrer" : undefined} className="group block">
             <div className="relative aspect-video overflow-hidden bg-slate-100">
-              {id ? (
-                <img
-                  src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`}
-                  alt={label}
-                  loading="lazy"
-                  className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
-                />
-              ) : null}
-              <span className="absolute inset-0 flex items-center justify-center">
-                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/95 text-xl text-[#0b5baa] shadow">▶</span>
-              </span>
+              {id ? <img src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`} alt={label} loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]" /> : null}
+              <span className="absolute inset-0 flex items-center justify-center"><span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/95 text-xl text-[#0b5baa] shadow">▶</span></span>
             </div>
             <h3 className="mt-4 text-[18px] font-semibold leading-6 text-[#0a4d96]">{label}</h3>
           </a>
@@ -397,35 +366,99 @@ function VideoCards({ items }: { items: KentSectionItem[] }) {
   );
 }
 
-function DataTable({ rows }: { rows: Array<Record<string, unknown>> }) {
-  const columns = Array.from(
-    new Set(
-      rows
-        .flatMap((row) => Object.keys(row || {}))
-        .filter((key) => !key.startsWith("_") && !PRICE_COLUMN_RE.test(key.trim())),
-    ),
+function faqEntriesFromHtml(html: string): FaqEntry[] {
+  if (!cleanText(html)) return [];
+  const pattern = /<h[2-4]\b[^>]*>([\s\S]*?)<\/h[2-4]>/gi;
+  const matches = Array.from(html.matchAll(pattern));
+  return matches.flatMap((match, index) => {
+    const question = cleanText(match[1]);
+    const start = (match.index || 0) + match[0].length;
+    const end = index + 1 < matches.length ? matches[index + 1].index || html.length : html.length;
+    const answerHtml = html.slice(start, end).trim();
+    if (!question || !cleanText(answerHtml)) return [];
+    return [{ key: `faq-html-${index}`, question, answerHtml }];
+  });
+}
+
+function faqEntries(items: KentSectionItem[], html: string): FaqEntry[] {
+  const fromItems = items.flatMap((item, index) => {
+    const question = cleanText(item.title || item.label || item.text);
+    const rawHtml = typeof item.html === "string" ? item.html.trim() : "";
+    const answerText = cleanText(item.description || item.value);
+    if (!question || (!rawHtml && !answerText)) return [];
+    return [{ key: String(item._key || `faq-item-${index}`), question, answerHtml: rawHtml || undefined, answerText: rawHtml ? undefined : answerText }];
+  });
+  return fromItems.length ? fromItems : faqEntriesFromHtml(html);
+}
+
+function FaqAccordion({ title, items, html }: { title: string; items: KentSectionItem[]; html: string }) {
+  const entries = React.useMemo(() => faqEntries(items, html), [items, html]);
+  const [open, setOpen] = React.useState<Set<string>>(() => new Set());
+
+  if (!entries.length) return <HtmlBlock html={html} />;
+
+  const toggle = (key: string) => {
+    setOpen((current) => {
+      const next = new Set(current);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  return (
+    <div className="grid gap-10 lg:grid-cols-[minmax(220px,0.72fr)_minmax(0,1.28fr)] lg:gap-16">
+      <div className="lg:pt-1">
+        <h2 className="text-[34px] font-normal tracking-[-0.025em] text-[#0b49a4] md:text-[40px]">{title}</h2>
+      </div>
+      <div className="border-t border-[#d7d7d3]">
+        {entries.map((entry) => {
+          const expanded = open.has(entry.key);
+          const panelId = `${entry.key}-panel`;
+          return (
+            <div key={entry.key} className="border-b border-[#d7d7d3]">
+              <button
+                type="button"
+                aria-expanded={expanded}
+                aria-controls={panelId}
+                onClick={() => toggle(entry.key)}
+                className="flex w-full items-start justify-between gap-6 py-5 text-left text-[15px] font-semibold leading-6 text-[#262626] transition hover:text-[#0b49a4] md:text-[16px]"
+              >
+                <span>{entry.question}</span>
+                <svg
+                  viewBox="0 0 16 16"
+                  aria-hidden="true"
+                  className={`mt-1 h-4 w-4 shrink-0 text-[#6f7478] transition-transform duration-300 ${expanded ? "rotate-180" : ""}`}
+                >
+                  <path d="m3.5 6 4.5 4 4.5-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.25" />
+                </svg>
+              </button>
+              <div id={panelId} className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
+                <div className="overflow-hidden">
+                  <div className="max-w-[760px] pb-6 pr-8 text-[15px] leading-7 text-[#62676b] [&_a]:font-semibold [&_a]:text-[#0b49a4] [&_li]:mb-1 [&_p]:mb-3 [&_p:last-child]:mb-0">
+                    {entry.answerHtml ? <div dangerouslySetInnerHTML={{ __html: entry.answerHtml }} /> : <p>{entry.answerText}</p>}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
+}
+
+function DataTable({ rows }: { rows: Array<Record<string, unknown>> }) {
+  const columns = Array.from(new Set(rows.flatMap((row) => Object.keys(row || {})).filter((key) => !key.startsWith("_") && !PRICE_COLUMN_RE.test(key.trim()))));
   if (!columns.length) return null;
   return (
     <div className="overflow-x-auto border-t-2 border-[#0b5baa]">
       <table className="w-full border-collapse text-left text-sm">
-        <thead>
-          <tr>
-            {columns.map((column) => (
-              <th key={column} className="border-b border-slate-300 px-4 py-4 font-semibold text-[#0a4d96]">
-                {column}
-              </th>
-            ))}
-          </tr>
-        </thead>
+        <thead><tr>{columns.map((column) => <th key={column} className="border-b border-slate-300 px-4 py-4 font-semibold text-[#0a4d96]">{column}</th>)}</tr></thead>
         <tbody>
           {rows.map((row, index) => (
             <tr key={String(row._key || index)} className="border-b border-slate-200 even:bg-slate-50/70">
-              {columns.map((column) => (
-                <td key={column} className="px-4 py-4 align-top leading-6 text-slate-700">
-                  {String(row[column] ?? "")}
-                </td>
-              ))}
+              {columns.map((column) => <td key={column} className="px-4 py-4 align-top leading-6 text-slate-700">{String(row[column] ?? "")}</td>)}
             </tr>
           ))}
         </tbody>
@@ -440,9 +473,18 @@ function ProductSection({ section, index }: { section: SectionWithKey; index: nu
   const html = sectionHtml(section);
   const items = sectionItems(section);
   const rows = Array.isArray(section.rows) ? section.rows : [];
-  const media = section.imageUrl ? (
-    <MediaImage src={String(section.imageUrl)} alt={String(section.imageAlt || title)} className="max-h-[500px]" />
-  ) : null;
+  const media = section.imageUrl ? <MediaImage src={String(section.imageUrl)} alt={String(section.imageAlt || title)} className="max-h-[500px]" /> : null;
+
+  if (bucket === "faqs") {
+    return (
+      <section id={`kent-section-${index}`} className={`${index > 0 ? "mt-2" : ""} -mx-6 scroll-mt-24 bg-[#f5f5f3]`}>
+        <div className="h-[14px] bg-[#0b49a4]" aria-hidden />
+        <div className="px-6 py-12 md:px-10 md:py-16 lg:px-12">
+          <FaqAccordion title={title} items={items} html={html} />
+        </div>
+      </section>
+    );
+  }
 
   const body = (() => {
     if (bucket === "related-products") return items.length ? <RelatedProducts items={items} /> : <HtmlBlock html={html} />;
@@ -450,28 +492,13 @@ function ProductSection({ section, index }: { section: SectionWithKey; index: nu
     if (bucket === "reviews") return items.length ? <ReviewRail items={items} /> : <HtmlBlock html={html} />;
     if (bucket === "included" || bucket === "addons") return items.length ? <ItemList items={items} /> : <HtmlBlock html={html} />;
     if (bucket === "videos") {
-      return (
-        <>
-          {items.length ? <VideoCards items={items} /> : null}
-          {html ? <div className={items.length ? "mt-8" : ""}><HtmlBlock html={html} /></div> : null}
-        </>
-      );
+      return <>{items.length ? <VideoCards items={items} /> : null}{html ? <div className={items.length ? "mt-8" : ""}><HtmlBlock html={html} /></div> : null}</>;
     }
     if (["documents", "datasheet", "references"].includes(bucket)) {
-      return (
-        <>
-          {items.length ? <ResourceList items={items} /> : null}
-          {html ? <div className={items.length ? "mt-8" : ""}><HtmlBlock html={html} /></div> : null}
-        </>
-      );
+      return <>{items.length ? <ResourceList items={items} /> : null}{html ? <div className={items.length ? "mt-8" : ""}><HtmlBlock html={html} /></div> : null}</>;
     }
     if (rows.length) {
-      return (
-        <>
-          <DataTable rows={rows} />
-          {html ? <div className="mt-8"><HtmlBlock html={html} /></div> : null}
-        </>
-      );
+      return <><DataTable rows={rows} />{html ? <div className="mt-8"><HtmlBlock html={html} /></div> : null}</>;
     }
 
     const content = (
@@ -482,28 +509,16 @@ function ProductSection({ section, index }: { section: SectionWithKey; index: nu
       </>
     );
     if (!media) return content;
-    return (
-      <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.85fr)]">
-        <div>{content}</div>
-        <div>{media}</div>
-      </div>
-    );
+    return <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.85fr)]"><div>{content}</div><div>{media}</div></div>;
   })();
 
   const notice = bucket === "notice";
-  const hasTopBorder = index > 0;
   return (
     <section
       id={`kent-section-${index}`}
-      className={[
-        "scroll-mt-24 py-12 md:py-16",
-        hasTopBorder ? "border-t border-slate-200" : "",
-        notice ? "bg-amber-50 px-6 md:px-8" : "",
-      ].join(" ")}
+      className={["scroll-mt-24 py-12 md:py-16", index > 0 ? "border-t border-slate-200" : "", notice ? "bg-amber-50 px-6 md:px-8" : ""].join(" ")}
     >
-      <h2 className={`mb-7 text-[28px] font-semibold tracking-[-0.02em] md:text-[33px] ${notice ? "text-amber-900" : "text-[#0a4d96]"}`}>
-        {title}
-      </h2>
+      <h2 className={`mb-7 text-[28px] font-semibold tracking-[-0.02em] md:text-[33px] ${notice ? "text-amber-900" : "text-[#0a4d96]"}`}>{title}</h2>
       {body}
     </section>
   );
@@ -570,24 +585,8 @@ export default function KentProductSectionRendererV2({
 }) {
   const explicit = (Array.isArray(sections) ? sections : []).filter(isRenderable) as SectionWithKey[];
   const represented = new Set<SectionBucket>(explicit.map(typeBucket));
-  const legacy = fallbackSections({
-    title,
-    descriptionHtml,
-    specsHtml,
-    datasheetHtml,
-    documentsHtml,
-    faqsHtml,
-    referencesHtml,
-    reviewsHtml,
-    documents,
-  });
+  const legacy = fallbackSections({ title, descriptionHtml, specsHtml, datasheetHtml, documentsHtml, faqsHtml, referencesHtml, reviewsHtml, documents });
   const merged = [...explicit, ...legacy.filter((section) => !represented.has(section.fallbackKey || typeBucket(section)))];
   if (!merged.length) return null;
-  return (
-    <div className="mt-6">
-      {merged.map((section, index) => (
-        <ProductSection key={section._key || `${normalizeType(section)}-${index}`} section={section} index={index} />
-      ))}
-    </div>
-  );
+  return <div className="mt-6">{merged.map((section, index) => <ProductSection key={section._key || `${normalizeType(section)}-${index}`} section={section} index={index} />)}</div>;
 }
