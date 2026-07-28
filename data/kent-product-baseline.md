@@ -1,6 +1,6 @@
 # Kent product baseline
 
-Generated: 2026-07-28T09:19:09.533Z
+Generated: 2026-07-28T09:20:17.206Z
 Source: Sanity project 9b5twpc8, dataset production
 
 - Total Sanity rows: 194
@@ -189,22 +189,22 @@ Source: Sanity project 9b5twpc8, dataset production
 | 173 | VetFlo™ Two Channel Anesthesia Stand | vetflo-two-channel-anesthesia-stand | VETFLO-1215 | PRODUCT | UNVERIFIED | https://www.kentscientific.com/products/vetflo-two-channel-anesthesia-stand/ |
 | 174 | VetFlo™ Vaporizer | vaporizer-with-vetflo-single-channel-anesthesia-stand | N/A | PRODUCT | UNVERIFIED | https://www.kentscientific.com/products/vaporizer-with-vetflo-single-channel-anesthesia-stand/ |
 | 175 | Wahl® BravMini+ Professional Cordless Clipper Kit | bravmini-professional-cordless-trimmer-kit | CL7300-KIT | PRODUCT | UNVERIFIED | https://www.kentscientific.com/products/bravmini-professional-cordless-trimmer-kit/ |
-| 176 | Warranty – CODA® High Throughput System – Extended | warranty-coda-high-throughput-system-extended | CODA-HT-XWTY | EXCLUDE_WARRANTY | UNVERIFIED | https://www.kentscientific.com/products/warranty-coda-high-throughput-system-extended/ |
-| 177 | Warranty – CODA® High Throughput System – Premium | warranty-coda-high-throughput-system-premium | CODA-HT-PWTY | EXCLUDE_WARRANTY | UNVERIFIED | https://www.kentscientific.com/products/warranty-coda-high-throughput-system-premium/ |
-| 178 | Warranty – CODA® Monitor – Extended | warranty-coda-monitor-extended | CODA-MNTR-XWTY | EXCLUDE_WARRANTY | UNVERIFIED | https://www.kentscientific.com/products/warranty-coda-monitor-extended/ |
-| 179 | Warranty – CODA® Monitor – Premium | warranty-coda-monitor-premium | CODA-MNTR-PWTY | EXCLUDE_WARRANTY | UNVERIFIED | https://www.kentscientific.com/products/warranty-coda-monitor-premium/ |
-| 180 | Warranty – PhysioSuite® with 1 module – Extended | warranty-physiosuite-with-1-module-extended | PS-XWTY-1 | EXCLUDE_WARRANTY | UNVERIFIED | https://www.kentscientific.com/products/warranty-physiosuite-with-1-module-extended/ |
-| 181 | Warranty – PhysioSuite® with 1 module – Premium | warranty-physiosuite-with-1-module-premium | PS-PWTY-1 | EXCLUDE_WARRANTY | UNVERIFIED | https://www.kentscientific.com/products/warranty-physiosuite-with-1-module-premium/ |
-| 182 | Warranty – PhysioSuite® – Extended | warranty-physiosuite-extended | PS-XWTY | EXCLUDE_WARRANTY | UNVERIFIED | https://www.kentscientific.com/products/warranty-physiosuite-extended/ |
-| 183 | Warranty – RoVent® – Extended | warranty-rovent-extended | RV-XWTY | EXCLUDE_WARRANTY | UNVERIFIED | https://www.kentscientific.com/products/warranty-rovent-extended/ |
-| 184 | Warranty – RoVent® – Premium | warranty-rovent-premium | RV-PWTY | EXCLUDE_WARRANTY | UNVERIFIED | https://www.kentscientific.com/products/warranty-rovent-premium/ |
-| 185 | Warranty – SkinScanner – Extended | warranty-skinscanner-extended | SKINSCANNER-XWTY | EXCLUDE_WARRANTY | UNVERIFIED | https://www.kentscientific.com/products/warranty-skinscanner-extended/ |
-| 186 | Warranty – SomnoFlo® – Extended | warranty-somnoflo-extended | SF-XWTY | EXCLUDE_WARRANTY | UNVERIFIED | https://www.kentscientific.com/products/warranty-somnoflo-extended/ |
-| 187 | Warranty – SomnoFlo® – Premium | warranty-somnoflo-premium | SF-PWTY | EXCLUDE_WARRANTY | UNVERIFIED | https://www.kentscientific.com/products/warranty-somnoflo-premium/ |
-| 188 | Warranty – SomnoSuite® with 1 module – Extended | warranty-somnosuite-with-1-module-extended | SS-XWTY-1 | EXCLUDE_WARRANTY | UNVERIFIED | https://www.kentscientific.com/products/warranty-somnosuite-with-1-module-extended/ |
-| 189 | Warranty – SomnoSuite® with 1 module – Premium | warranty-somnosuite-with-1-module-premium | SS-PWTY-1 | EXCLUDE_WARRANTY | UNVERIFIED | https://www.kentscientific.com/products/warranty-somnosuite-with-1-module-premium/ |
-| 190 | Warranty – SomnoSuite® with 2 modules – Extended | warranty-somnosuite-with-2-modules-extended | SS-XWTY-2 | EXCLUDE_WARRANTY | UNVERIFIED | https://www.kentscientific.com/products/warranty-somnosuite-with-2-modules-extended/ |
-| 191 | Warranty – SomnoSuite® with 2 modules – Premium | warranty-somnosuite-with-2-modules-premium | SS-PWTY-2 | EXCLUDE_WARRANTY | UNVERIFIED | https://www.kentscientific.com/products/warranty-somnosuite-with-2-modules-premium/ |
-| 192 | Warranty – SomnoSuite® – Extended | warranty-somnosuite-extended | SS-XWTY | EXCLUDE_WARRANTY | UNVERIFIED | https://www.kentscientific.com/products/warranty-somnosuite-extended/ |
-| 193 | Warranty – SomnoSuite® – Premium | warranty-somnosuite-premium | SS-PWTY | EXCLUDE_WARRANTY | UNVERIFIED | https://www.kentscientific.com/products/warranty-somnosuite-premium/ |
+| 176 | Warranty – CODA® High Throughput System – Extended | warranty-coda-high-throughput-system-extended | CODA-HT-XWTY | EXCLUDE_WARRANTY | EXCLUDE | https://www.kentscientific.com/products/warranty-coda-high-throughput-system-extended/ |
+| 177 | Warranty – CODA® High Throughput System – Premium | warranty-coda-high-throughput-system-premium | CODA-HT-PWTY | EXCLUDE_WARRANTY | EXCLUDE | https://www.kentscientific.com/products/warranty-coda-high-throughput-system-premium/ |
+| 178 | Warranty – CODA® Monitor – Extended | warranty-coda-monitor-extended | CODA-MNTR-XWTY | EXCLUDE_WARRANTY | EXCLUDE | https://www.kentscientific.com/products/warranty-coda-monitor-extended/ |
+| 179 | Warranty – CODA® Monitor – Premium | warranty-coda-monitor-premium | CODA-MNTR-PWTY | EXCLUDE_WARRANTY | EXCLUDE | https://www.kentscientific.com/products/warranty-coda-monitor-premium/ |
+| 180 | Warranty – PhysioSuite® with 1 module – Extended | warranty-physiosuite-with-1-module-extended | PS-XWTY-1 | EXCLUDE_WARRANTY | EXCLUDE | https://www.kentscientific.com/products/warranty-physiosuite-with-1-module-extended/ |
+| 181 | Warranty – PhysioSuite® with 1 module – Premium | warranty-physiosuite-with-1-module-premium | PS-PWTY-1 | EXCLUDE_WARRANTY | EXCLUDE | https://www.kentscientific.com/products/warranty-physiosuite-with-1-module-premium/ |
+| 182 | Warranty – PhysioSuite® – Extended | warranty-physiosuite-extended | PS-XWTY | EXCLUDE_WARRANTY | EXCLUDE | https://www.kentscientific.com/products/warranty-physiosuite-extended/ |
+| 183 | Warranty – RoVent® – Extended | warranty-rovent-extended | RV-XWTY | EXCLUDE_WARRANTY | EXCLUDE | https://www.kentscientific.com/products/warranty-rovent-extended/ |
+| 184 | Warranty – RoVent® – Premium | warranty-rovent-premium | RV-PWTY | EXCLUDE_WARRANTY | EXCLUDE | https://www.kentscientific.com/products/warranty-rovent-premium/ |
+| 185 | Warranty – SkinScanner – Extended | warranty-skinscanner-extended | SKINSCANNER-XWTY | EXCLUDE_WARRANTY | EXCLUDE | https://www.kentscientific.com/products/warranty-skinscanner-extended/ |
+| 186 | Warranty – SomnoFlo® – Extended | warranty-somnoflo-extended | SF-XWTY | EXCLUDE_WARRANTY | EXCLUDE | https://www.kentscientific.com/products/warranty-somnoflo-extended/ |
+| 187 | Warranty – SomnoFlo® – Premium | warranty-somnoflo-premium | SF-PWTY | EXCLUDE_WARRANTY | EXCLUDE | https://www.kentscientific.com/products/warranty-somnoflo-premium/ |
+| 188 | Warranty – SomnoSuite® with 1 module – Extended | warranty-somnosuite-with-1-module-extended | SS-XWTY-1 | EXCLUDE_WARRANTY | EXCLUDE | https://www.kentscientific.com/products/warranty-somnosuite-with-1-module-extended/ |
+| 189 | Warranty – SomnoSuite® with 1 module – Premium | warranty-somnosuite-with-1-module-premium | SS-PWTY-1 | EXCLUDE_WARRANTY | EXCLUDE | https://www.kentscientific.com/products/warranty-somnosuite-with-1-module-premium/ |
+| 190 | Warranty – SomnoSuite® with 2 modules – Extended | warranty-somnosuite-with-2-modules-extended | SS-XWTY-2 | EXCLUDE_WARRANTY | EXCLUDE | https://www.kentscientific.com/products/warranty-somnosuite-with-2-modules-extended/ |
+| 191 | Warranty – SomnoSuite® with 2 modules – Premium | warranty-somnosuite-with-2-modules-premium | SS-PWTY-2 | EXCLUDE_WARRANTY | EXCLUDE | https://www.kentscientific.com/products/warranty-somnosuite-with-2-modules-premium/ |
+| 192 | Warranty – SomnoSuite® – Extended | warranty-somnosuite-extended | SS-XWTY | EXCLUDE_WARRANTY | EXCLUDE | https://www.kentscientific.com/products/warranty-somnosuite-extended/ |
+| 193 | Warranty – SomnoSuite® – Premium | warranty-somnosuite-premium | SS-PWTY | EXCLUDE_WARRANTY | EXCLUDE | https://www.kentscientific.com/products/warranty-somnosuite-premium/ |
 | 194 | Water Recirculating Warming Pads | disposable-warming-pads | TPZ-814EA | PRODUCT | UNVERIFIED | https://www.kentscientific.com/products/disposable-warming-pads/ |
