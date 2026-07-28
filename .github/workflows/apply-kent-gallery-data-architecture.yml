@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - scripts/patch-kent-approved-active-gallery.mjs
+      - scripts/patch-kent-gallery-no-heuristics.mjs
       - .github/workflows/apply-kent-gallery-data-architecture.yml
 
 permissions:
@@ -22,8 +22,8 @@ jobs:
           ref: agent/kent-preflight
           fetch-depth: 0
 
-      - name: Apply approved-gallery source patch
-        run: node scripts/patch-kent-approved-active-gallery.mjs
+      - name: Remove gallery heuristics
+        run: node scripts/patch-kent-gallery-no-heuristics.mjs
 
       - name: Commit generated source changes
         shell: bash
@@ -31,10 +31,10 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app/products/kent/item/'[...slug]'/page.tsx
+          git add scripts/kent-official-gallery-promote.mjs
           if git diff --cached --quiet; then
             echo "No generated changes"
             exit 0
           fi
-          git commit -m "Render approved Kent galleries from active assets"
+          git commit -m "Promote exact approved Kent gallery images"
           git push origin HEAD:agent/kent-preflight
