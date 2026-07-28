@@ -18,19 +18,27 @@ jobs:
       - name: Checkout pull request branch
         uses: actions/checkout@v4
 
-      - name: Download baseline with diagnostics
+      - name: Download baseline response
         shell: bash
         run: |
-          set -euo pipefail
+          set -u
           URL="https://itsbio-git-agent-kent-preflight-hadel-hos-projects.vercel.app/api/kent/baseline-export"
-          mkdir -p data
-          echo "Requesting ${URL}"
-          curl --silent --show-error --location --dump-header /tmp/kent-headers.txt "$URL" -o /tmp/kent-baseline.json || true
-          echo "=== response headers ==="
-          cat /tmp/kent-headers.txt || true
-          echo "=== response preview ==="
-          head -c 1000 /tmp/kent-baseline.json || true
-          echo
+          mkdir -p data diagnostics
+          curl --silent --show-error --location --dump-header diagnostics/headers.txt "$URL" -o diagnostics/body.txt
+          cp diagnostics/body.txt /tmp/kent-baseline.json
+          echo "Downloaded $(wc -c < diagnostics/body.txt) bytes"
+
+      - name: Upload response diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kent-baseline-diagnostics
+          path: diagnostics
+          if-no-files-found: warn
+
+      - name: Validate baseline JSON
+        shell: bash
+        run: |
           node -e 'const fs=require("fs"); const x=JSON.parse(fs.readFileSync("/tmp/kent-baseline.json","utf8")); if(!Array.isArray(x.products)||x.products.length<1) process.exit(2); console.log(`Fetched ${x.products.length} Kent rows`);'
 
       - name: Generate JSON CSV and Markdown
