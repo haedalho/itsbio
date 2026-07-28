@@ -1,6 +1,6 @@
 # Kent product baseline
 
-Generated: 2026-07-28T09:26:04.076Z
+Generated: 2026-07-28T09:28:07.750Z
 Source: Sanity project 9b5twpc8, dataset production
 
 - Total Sanity rows: 194
@@ -9,12 +9,12 @@ Source: Sanity project 9b5twpc8, dataset production
 - Service review: 0
 - Verified: 0
 - Needs fix: 0
-- Unresolved: 0
-- Unverified: 176
+- Unresolved: 1
+- Unverified: 175
 
 | # | Product | Slug | Item # | Record type | Status | Source URL |
 |---:|---|---|---|---|---|---|
-| 1 | 2-Accessory Connector | somnosuite-y-adapter | 10-4500-09 | PRODUCT | UNVERIFIED | https://www.kentscientific.com/products/somnosuite-y-adapter/ |
+| 1 | 2-Accessory Connector | somnosuite-y-adapter | 10-4500-09 | PRODUCT | UNRESOLVED | https://www.kentscientific.com/products/somnosuite-y-adapter/ |
 | 2 | 3 Accessory Connector | 3-accessory-connector | 10-1000-185 | PRODUCT | UNVERIFIED | https://www.kentscientific.com/products/3-accessory-connector/ |
 | 3 | AC Adapters and Power Cords | ac-adapters-and-power-cords | 10-1000-32 | PRODUCT | UNVERIFIED | https://www.kentscientific.com/products/ac-adapters-and-power-cords/ |
 | 4 | Accuris™ Mini Balances | accuris-mini-balances | SCL-W1005-100 | PRODUCT | UNVERIFIED | https://www.kentscientific.com/products/accuris-mini-balances/ |

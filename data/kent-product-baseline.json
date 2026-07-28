@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-28T09:26:04.076Z",
+  "generatedAt": "2026-07-28T09:28:07.750Z",
   "source": "sanity://9b5twpc8/production",
   "total": 194,
   "counts": {
@@ -10,9 +10,9 @@
   "statusCounts": {
     "VERIFIED": 0,
     "NEEDS_FIX": 0,
-    "UNRESOLVED": 0,
+    "UNRESOLVED": 1,
     "EXCLUDE": 18,
-    "UNVERIFIED": 176
+    "UNVERIFIED": 175
   },
   "products": [
     {
@@ -38,7 +38,7 @@
       "productType": "variant",
       "isActive": true,
       "recordType": "PRODUCT",
-      "verificationStatus": "UNVERIFIED",
+      "verificationStatus": "UNRESOLVED",
       "galleryAssetCount": 6,
       "galleryImageUrlCount": 0,
       "rawImageUrlCount": 6,
@@ -48,11 +48,11 @@
       "officialTitle": "",
       "officialSubtitle": "",
       "officialSku": "",
-      "officialSourceUrl": "",
-      "officialGalleryCount": null,
-      "officialSectionCount": null,
-      "verifiedAt": "",
-      "notes": ""
+      "officialSourceUrl": "https://www.kentscientific.com/products/somnosuite-y-adapter/",
+      "officialGalleryCount": 0,
+      "officialSectionCount": 0,
+      "verifiedAt": "2026-07-28T09:28:05.228Z",
+      "notes": "preflight=UNRESOLVED; official_fetch_failed:403 Forbidden"
     },
     {
       "index": 2,

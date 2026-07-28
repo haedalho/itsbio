@@ -1,0 +1,42 @@
+{
+  "summary": {
+    "generatedAt": "2026-07-28T09:28:05.131Z",
+    "mode": "live-refresh",
+    "delayMs": 4000,
+    "checked": 1,
+    "VERIFIED": 0,
+    "NEEDS_FIX": 0,
+    "UNRESOLVED": 1,
+    "EXCLUDE": 0,
+    "flagCounts": {
+      "official_fetch_failed:403 Forbidden": 1
+    }
+  },
+  "products": [
+    {
+      "id": "prod_kent__somnosuite-y-adapter",
+      "title": "2-Accessory Connector",
+      "slug": "somnosuite-y-adapter",
+      "sourceUrl": "https://www.kentscientific.com/products/somnosuite-y-adapter/",
+      "finalUrl": "https://www.kentscientific.com/products/somnosuite-y-adapter/",
+      "fetchStatus": 403,
+      "localSku": "10-4500-09",
+      "officialSku": "",
+      "officialTitle": "",
+      "officialSubtitle": "",
+      "officialCategory": "",
+      "officialIntroParagraphs": 0,
+      "officialImageCount": 0,
+      "localImageCount": 12,
+      "officialHeadingCount": 0,
+      "localSectionCount": 0,
+      "officialOptionCount": 0,
+      "localVariantCount": 3,
+      "localOptionGroupCount": 1,
+      "status": "UNRESOLVED",
+      "flags": [
+        "official_fetch_failed:403 Forbidden"
+      ]
+    }
+  ]
+}
