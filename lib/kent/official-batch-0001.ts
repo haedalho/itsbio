@@ -1,7 +1,7 @@
 const OFFICIAL_BATCH_0001 = {
   "somnosuite-y-adapter": {
-    title: "2-Accessory Connector For the SomnoFlo® and SomnoSuite® Anesthesia Systems",
-    summary: "",
+    title: "2-Accessory Connector",
+    summary: "For the SomnoFlo® and SomnoSuite® anesthesia systems",
     sku: "10-4500-09",
     leadHtml:
       '<p>The 2-Accessory Connector allows you to direct anesthetic output to 2 animals or two devices (e.g., nose cone and induction chamber). Total tubing length for SomnoSuite is 18&quot;. Total tubing length for SomnoFlo is 26&quot;.</p>',
@@ -21,7 +21,7 @@ const OFFICIAL_BATCH_0001 = {
       {
         key: "configuration",
         name: "Configuration",
-        label: "Select system compatibility",
+        label: "Choose your option",
         displayType: "select",
         options: [
           {
@@ -88,7 +88,7 @@ const OFFICIAL_BATCH_0001 = {
       status: "STAGING",
       sourceUrl: "https://www.kentscientific.com/products/somnosuite-y-adapter/",
       checkedAt: "2026-07-28",
-      notes: "Official title, description, two gallery subjects, three configurations and related products captured. Price, quantity, cart, supplier support and empty review form excluded.",
+      notes: "Official H1 title and subtitle are stored separately. Official description, two gallery subjects, three configurations and related products captured. Price, quantity, cart, supplier support and empty review form excluded.",
     },
   },
 };
