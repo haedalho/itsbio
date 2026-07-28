@@ -1,25 +1,22 @@
 name: Export Kent baseline
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/kent-preflight
+      - main
     paths:
       - app/api/kent/baseline-export/route.ts
       - .github/workflows/kent-baseline-export.yml
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   export:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout branch
+      - name: Checkout pull request branch
         uses: actions/checkout@v4
-        with:
-          ref: agent/kent-preflight
-          fetch-depth: 0
 
       - name: Wait for preview and download baseline
         shell: bash
@@ -27,22 +24,24 @@ jobs:
           set -euo pipefail
           URL="https://itsbio-git-agent-kent-preflight-hadel-hos-projects.vercel.app/api/kent/baseline-export"
           mkdir -p data
+          success=0
           for attempt in $(seq 1 40); do
             echo "Attempt ${attempt}: ${URL}"
             if curl --fail --silent --show-error --location "$URL" -o /tmp/kent-baseline.json; then
-              node -e 'const fs=require("fs"); const x=JSON.parse(fs.readFileSync("/tmp/kent-baseline.json","utf8")); if(!Array.isArray(x.products)||x.products.length<1) process.exit(2); console.log(`Fetched ${x.products.length} Kent rows`);'
-              break
+              if node -e 'const fs=require("fs"); const x=JSON.parse(fs.readFileSync("/tmp/kent-baseline.json","utf8")); if(!Array.isArray(x.products)||x.products.length<1) process.exit(2); console.log(`Fetched ${x.products.length} Kent rows`);'; then
+                success=1
+                break
+              fi
             fi
             sleep 15
           done
-          test -s /tmp/kent-baseline.json
+          test "$success" = "1"
 
       - name: Generate JSON CSV and Markdown
         shell: bash
         run: |
           node <<'NODE'
           const fs = require('fs');
-          const path = require('path');
           const report = JSON.parse(fs.readFileSync('/tmp/kent-baseline.json', 'utf8'));
           const rows = Array.isArray(report.products) ? report.products : [];
           const clean = rows.map((row, index) => ({
@@ -96,11 +95,10 @@ jobs:
             const text = Array.isArray(value) ? value.join(' > ') : value == null ? '' : String(value);
             return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
           };
-          const csv = [columns.join(','), ...clean.map((row) => columns.map((key) => csvCell(row[key])).join(','))].join('\n') + '\n';
-          fs.writeFileSync('data/kent-product-baseline.csv', csv);
+          fs.writeFileSync('data/kent-product-baseline.csv', [columns.join(','), ...clean.map((row) => columns.map((key) => csvCell(row[key])).join(','))].join('\n') + '\n');
 
           const counts = output.statusCounts;
-          const md = [
+          fs.writeFileSync('data/kent-product-baseline.md', [
             '# Kent product baseline',
             '',
             `Generated: ${output.generatedAt}`,
@@ -118,20 +116,15 @@ jobs:
             '|---:|---|---|---|---|---|---|',
             ...clean.map((row) => `| ${row.index} | ${String(row.title).replace(/\|/g,'\\|')} | ${row.slug} | ${row.sku} | ${row.recordType} | ${row.verificationStatus} | ${row.sourceUrl || ''} |`),
             '',
-          ].join('\n');
-          fs.writeFileSync('data/kent-product-baseline.md', md);
+          ].join('\n'));
           NODE
 
-      - name: Commit baseline files
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/kent-product-baseline.json data/kent-product-baseline.csv data/kent-product-baseline.md
-          if git diff --cached --quiet; then
-            echo "No baseline changes"
-            exit 0
-          fi
-          git commit -m "Add Kent full product baseline"
-          git push origin HEAD:agent/kent-preflight
+      - name: Upload baseline artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kent-product-baseline
+          path: |
+            data/kent-product-baseline.json
+            data/kent-product-baseline.csv
+            data/kent-product-baseline.md
+          if-no-files-found: error
