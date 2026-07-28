@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - scripts/apply-kent-gallery-data-architecture.mjs
+      - scripts/apply-kent-gallery-data-architecture-v2.mjs
       - .github/workflows/apply-kent-gallery-data-architecture.yml
 
 permissions:
@@ -22,8 +22,8 @@ jobs:
           ref: agent/kent-preflight
           fetch-depth: 0
 
-      - name: Apply one-time source patch
-        run: node scripts/apply-kent-gallery-data-architecture.mjs
+      - name: Apply idempotent source patch
+        run: node scripts/apply-kent-gallery-data-architecture-v2.mjs
 
       - name: Install dependencies
         run: npm ci
