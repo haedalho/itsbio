@@ -1,4 +1,3 @@
-// app/products/kent/item/[...slug]/page.tsx
 import { notFound } from "next/navigation";
 
 import KentProductDetailClient from "@/components/products/KentProductDetailClient";
@@ -88,26 +87,40 @@ const ITEM_PAGE_QUERY = `
 }
 `;
 
+type Section = Record<string, any>;
+
+type DerivedCandidate = {
+  sourceIndex: number;
+  raw: string;
+  leadHtml: string;
+  remainderHtml: string;
+  sections: Section[];
+  score: number;
+};
+
 function buildHref(path: string[]) {
   return path.length ? `/products/${BRAND_KEY}/${path.join("/")}` : `/products/${BRAND_KEY}`;
 }
 
-function cleanText(input?: string | null) {
+function cleanText(input?: unknown) {
   return String(input || "")
-    .replace(/\u00a0/g, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;|&#160;/gi, " ")
+    .replace(/&amp;/gi, "&")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-function stripHtmlTags(input?: string | null) {
-  return cleanText(
-    String(input || "")
-      .replace(/<script[\s\S]*?<\/script>/gi, " ")
-      .replace(/<style[\s\S]*?<\/style>/gi, " ")
-      .replace(/<[^>]+>/g, " ")
-      .replace(/&nbsp;|&#160;/gi, " ")
-      .replace(/&amp;/gi, "&"),
-  );
+function signature(input?: unknown) {
+  return cleanText(input)
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[®™©]/g, "")
+    .replace(/[^a-z0-9가-힣]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function decodeHtmlEntities(input?: string | null) {
@@ -131,61 +144,30 @@ function humanizeSegment(segment: string) {
   return cleanText(segment).replaceAll("-", " ").replaceAll("_", " ");
 }
 
-function isContaminatedSpecsHtml(html: string) {
-  const text = stripHtmlTags(html).toLowerCase();
-  const raw = String(html || "").toLowerCase();
+function htmlValue(value: unknown) {
+  return typeof value === "string" && value.trim() ? value : "";
+}
 
+function isWarrantyLikeTable(html: string) {
+  const text = cleanText(html).toLowerCase();
+  const planColumns = /\bstandard\b[\s\S]{0,220}\bextended\b[\s\S]{0,220}\bpremium\b/.test(text);
+  const warrantyTerms = /(coverage period|loaner equipment|expedited repairs|warranty repairs|onsite installation|parts\s*&\s*labor)/.test(text);
+  return planColumns && warrantyTerms;
+}
+
+function isContaminatedSpecsHtml(html: string) {
+  const text = cleanText(html).toLowerCase();
+  const raw = String(html || "").toLowerCase();
   if (!text && !raw) return true;
   if (raw.includes("single_variation_wrap")) return true;
   if (raw.includes("display:none") || raw.includes("!important")) return true;
   if (/\bvariant\b[\s\S]{0,150}\bsku\b[\s\S]{0,150}\boption\b[\s\S]{0,150}\bprice\b/i.test(text)) return true;
-  if ((text.match(/vetflo|somnoflo|somnosuite/g) || []).length >= 5 && text.includes("sku")) return true;
-  return false;
-}
-
-function isWarrantyLikeTable(html: string) {
-  const text = stripHtmlTags(html).toLowerCase();
-  const planColumns = /\bstandard\b[\s\S]{0,200}\bextended\b[\s\S]{0,200}\bpremium\b/.test(text);
-  const warrantyTerms = /(coverage period|loaner equipment|expedited repairs|warranty repairs|onsite installation)/.test(text);
-  return planColumns && warrantyTerms;
-}
-
-function extractSpecsTableFromHtml(html: string) {
-  if (!html) return "";
-
-  const nearSpecs = html.match(/<h[2-4][^>]*>\s*Specifications?\s*<\/h[2-4]>[\s\S]{0,7000}?(<table[\s\S]*?<\/table>)/i);
-  if (
-    nearSpecs?.[1] &&
-    !isContaminatedSpecsHtml(nearSpecs[1]) &&
-    !isWarrantyLikeTable(nearSpecs[1])
-  ) {
-    return nearSpecs[1];
-  }
-
-  // Never use an arbitrary table as Specifications. On several Kent pages the
-  // nearest remaining table is the warranty matrix, which caused duplicated and
-  // mislabeled content.
-  return "";
+  return isWarrantyLikeTable(html);
 }
 
 function isGalleryNoiseUrl(url: string) {
   const value = String(url || "").toLowerCase();
-  if (!value) return true;
-  if (value.includes("request") && value.includes("sample")) return true;
-  if (value.includes("request") && value.includes("quote")) return true;
-  if (value.includes("intertek")) return true;
-  if (value.includes("badge")) return true;
-  if (value.includes("icon")) return true;
-  if (value.includes("logo")) return true;
-  if (value.includes("banner")) return true;
-  if (value.includes("testimonial")) return true;
-  if (value.includes("avatar")) return true;
-  if (value.includes("profile")) return true;
-  if (value.includes("publication")) return true;
-  if (value.includes("book")) return true;
-  if (value.includes("faq")) return true;
-  if (value.endsWith("/kr.png")) return true;
-  return false;
+  return !value || /(request.*(?:sample|quote)|intertek|badge|icon|logo|banner|testimonial|avatar|profile|publication|book|faq)/i.test(value) || value.endsWith("/kr.png");
 }
 
 function imageMasterKey(url: string) {
@@ -196,53 +178,125 @@ function imageMasterKey(url: string) {
 }
 
 function normalizeImages(product: any, title: string) {
-  const assetUrls: string[] = Array.isArray(product?.images)
-    ? product.images
-        .map((image: any) => image?.asset?.url)
-        .filter((url: any) => typeof url === "string" && url.trim())
+  const assetUrls = Array.isArray(product?.images)
+    ? product.images.map((image: any) => image?.asset?.url).filter((url: any) => typeof url === "string" && url.trim())
     : [];
-  const verifiedUrls: string[] = Array.isArray(product?.galleryImageUrls)
+  const verifiedUrls = Array.isArray(product?.galleryImageUrls)
     ? product.galleryImageUrls.filter((url: any) => typeof url === "string" && url.trim())
     : [];
-  const rawUrls: string[] = Array.isArray(product?.imageUrls)
+  const rawUrls = Array.isArray(product?.imageUrls)
     ? product.imageUrls.filter((url: any) => typeof url === "string" && url.trim())
     : [];
 
-  const source = assetUrls.length
-    ? assetUrls.slice(0, 1)
-    : verifiedUrls.length
-      ? verifiedUrls
-      : rawUrls.slice(0, 1);
+  const source = assetUrls.length ? assetUrls : verifiedUrls.length ? verifiedUrls : rawUrls;
   const seen = new Set<string>();
-
   return source
-    .map((url) => String(url).trim())
-    .filter((url) => url && !isGalleryNoiseUrl(url))
-    .filter((url) => {
+    .map((url: unknown) => String(url).trim())
+    .filter((url: string) => url && !isGalleryNoiseUrl(url))
+    .filter((url: string) => {
       const key = imageMasterKey(url);
-      if (seen.has(key)) return false;
+      if (!key || seen.has(key)) return false;
       seen.add(key);
       return true;
     })
-    .map((url) => ({ url, alt: title }));
+    .slice(0, 8)
+    .map((url: string) => ({ url, alt: title }));
 }
 
-function htmlValue(value: unknown) {
-  return typeof value === "string" && value.trim() ? value : "";
+function sectionBody(section: Section) {
+  return [
+    section.html,
+    section.contentHtml,
+    section.bodyHtml,
+    section.description,
+    JSON.stringify(section.items || []),
+    JSON.stringify(section.rows || []),
+  ].join(" ");
 }
 
-function richestSourceHtml(product: any) {
-  const candidates = [product?.legacyHtml, product?.extraHtml, product?.overviewHtml]
-    .map(htmlValue)
-    .filter(Boolean);
-  return candidates.sort((a, b) => stripHtmlTags(b).length - stripHtmlTags(a).length)[0] || "";
+function mergeSections(groups: Section[][]) {
+  const output: Section[] = [];
+  const seenBodies = new Set<string>();
+  const seenTitleBodies = new Set<string>();
+
+  for (const group of groups) {
+    for (const raw of sanitizeKentSections(group) as Section[]) {
+      const titleKey = signature(raw.title || raw.type || raw.kind || raw._type);
+      const bodyKey = signature(sectionBody(raw));
+      if (!titleKey && !bodyKey) continue;
+      const titleBodyKey = `${titleKey}|${bodyKey.slice(0, 600)}`;
+      if ((bodyKey && seenBodies.has(bodyKey)) || seenTitleBodies.has(titleBodyKey)) continue;
+      if (bodyKey) seenBodies.add(bodyKey);
+      seenTitleBodies.add(titleBodyKey);
+      output.push(raw);
+    }
+  }
+
+  return output;
 }
 
-function pickBestLeadHtml(...values: unknown[]) {
-  const candidates = values
-    .map((value) => sanitizeKentSourceHtml(value))
-    .filter((value) => stripHtmlTags(value).length >= 40);
-  return candidates.sort((a, b) => stripHtmlTags(b).length - stripHtmlTags(a).length)[0] || "";
+function deriveCandidates(product: any): DerivedCandidate[] {
+  const sources = [
+    htmlValue(product?.sourceIntroHtml),
+    htmlValue(product?.overviewHtml),
+    htmlValue(product?.extraHtml),
+    htmlValue(product?.legacyHtml),
+  ];
+
+  return sources.flatMap((raw, sourceIndex) => {
+    if (!raw) return [];
+    const derived = deriveKentSourceContent(raw);
+    const textLength = cleanText(raw).length;
+    const score = derived.sections.length * 1200 + cleanText(derived.remainderHtml).length * 0.4 + Math.min(textLength, 5000) + (sourceIndex === 0 ? 700 : 0);
+    return [{ sourceIndex, raw, ...derived, sections: derived.sections as Section[], score }];
+  });
+}
+
+function bestLead(candidates: DerivedCandidate[]) {
+  const preferred = candidates.find((candidate) => candidate.sourceIndex === 0 && cleanText(candidate.leadHtml).length >= 40);
+  if (preferred) return sanitizeKentSourceHtml(preferred.leadHtml);
+  return candidates
+    .map((candidate) => sanitizeKentSourceHtml(candidate.leadHtml))
+    .filter((html) => cleanText(html).length >= 40)
+    .sort((a, b) => cleanText(b).length - cleanText(a).length)[0] || "";
+}
+
+function supplementalSections(product: any, title: string) {
+  const sections: Section[] = [];
+  const add = (type: string, sectionTitle: string, html: unknown, items?: any[]) => {
+    const cleaned = sanitizeKentSourceHtml(html);
+    if (!cleanText(cleaned) && !(items || []).length) return;
+    sections.push({ _key: `kent-${type}-${signature(sectionTitle).replace(/\s+/g, "-")}`, type, title: sectionTitle, html: cleaned, items });
+  };
+
+  const specs = htmlValue(product?.specsHtml);
+  if (specs && !isContaminatedSpecsHtml(specs)) add("spec-table", "Specifications", specs);
+  add("datasheet", "Datasheet", product?.datasheetHtml);
+  add("documents", "Documents & Resources", product?.documentsHtml, Array.isArray(product?.docs) ? product.docs : []);
+  add("faqs", "FAQs", product?.faqsHtml);
+  add("publications", "Scientific publications", product?.referencesHtml);
+  add("reviews", "Reviews", product?.reviewsHtml);
+
+  return sections;
+}
+
+function universalProductContent(product: any, title: string) {
+  const candidates = deriveCandidates(product).sort((a, b) => b.score - a.score);
+  const primary = candidates[0];
+  const explicit = sanitizeKentSections(product?.kentSections) as Section[];
+  const primarySections = primary?.sections || [];
+  const secondarySections = candidates.slice(1).flatMap((candidate) => candidate.sections);
+  const supplementals = supplementalSections(product, title);
+
+  const aboutHtml = sanitizeKentSourceHtml(primary?.remainderHtml || "");
+  const aboutSection = cleanText(aboutHtml).length >= 40
+    ? [{ _key: "kent-derived-overview", type: "rich-text", title: `About ${title}`, html: aboutHtml }]
+    : [];
+
+  return {
+    leadHtml: bestLead(candidates),
+    sections: mergeSections([primarySections, explicit, secondarySections, aboutSection, supplementals]),
+  };
 }
 
 export default async function KentProductDetailPage({
@@ -264,12 +318,8 @@ export default async function KentProductDetailPage({
   const official = getKentOfficialProductOverride(slug);
   const title = official?.title || stripBrandSuffix(product?.title || "");
   const categoryPath: string[] = Array.isArray(product?.categoryPath) ? product.categoryPath : [];
-  const categoryPathTitles: string[] = Array.isArray(product?.categoryPathTitles)
-    ? product.categoryPathTitles
-    : [];
-  const categoryLabel = stripBrandSuffix(
-    categoryPathTitles[categoryPathTitles.length - 1] || humanizeSegment(categoryPath[categoryPath.length - 1] || ""),
-  );
+  const categoryPathTitles: string[] = Array.isArray(product?.categoryPathTitles) ? product.categoryPathTitles : [];
+  const categoryLabel = stripBrandSuffix(categoryPathTitles.at(-1) || humanizeSegment(categoryPath.at(-1) || ""));
 
   const breadcrumbItems = [
     { label: "Home", href: "/" },
@@ -282,45 +332,12 @@ export default async function KentProductDetailPage({
     { label: title, href: `/products/${BRAND_KEY}/item/${product.slug}` },
   ];
 
-  const introSource =
-    htmlValue(product?.sourceIntroHtml) ||
-    htmlValue(product?.overviewHtml) ||
-    htmlValue(product?.extraHtml) ||
-    htmlValue(product?.legacyHtml);
-  const bodySource = richestSourceHtml(product) || introSource;
-  const introDerived = deriveKentSourceContent(introSource);
-  const bodyDerived = bodySource === introSource ? introDerived : deriveKentSourceContent(bodySource);
-
-  const explicitSections = sanitizeKentSections(product?.kentSections);
-  const sourceSections = explicitSections.length ? explicitSections : sanitizeKentSections(bodyDerived.sections);
-
-  const rawSpecsCandidate = htmlValue(product?.specsHtml);
-  const rawSpecs = isContaminatedSpecsHtml(rawSpecsCandidate) || isWarrantyLikeTable(rawSpecsCandidate)
-    ? ""
-    : rawSpecsCandidate;
-  const fallbackSpecs = rawSpecs ? "" : extractSpecsTableFromHtml(bodySource);
-
-  const sourceLeadHtml = pickBestLeadHtml(
-    product?.sourceIntroHtml,
-    introDerived.leadHtml,
-    bodyDerived.leadHtml,
-  );
-  const sourceRemainderHtml =
-    bodyDerived.remainderHtml || (!sourceLeadHtml && !sourceSections.length ? sanitizeKentSourceHtml(bodySource) : "");
-
-  const productImages = normalizeImages(product, title);
-  const images = productImages.length ? productImages : (official?.fallbackImages || []);
+  const universal = universalProductContent(product, title);
   const useOfficial = Boolean(official);
-  const leadHtml = official?.leadHtml || sourceLeadHtml;
-  const kentSections = sanitizeKentSections(official?.sections || sourceSections);
-  const descriptionHtml = useOfficial ? "" : sourceRemainderHtml;
-  const specsHtml = useOfficial ? "" : sanitizeKentSourceHtml(rawSpecs || fallbackSpecs);
-  const datasheetHtml = useOfficial ? "" : sanitizeKentSourceHtml(product?.datasheetHtml || "");
-  const documentsHtml = useOfficial ? "" : sanitizeKentSourceHtml(product?.documentsHtml || "");
-  const faqsHtml = useOfficial ? "" : sanitizeKentSourceHtml(product?.faqsHtml || "");
-  const referencesHtml = useOfficial ? "" : sanitizeKentSourceHtml(product?.referencesHtml || "");
-  const reviewsHtml = useOfficial ? "" : sanitizeKentSourceHtml(product?.reviewsHtml || "");
-  const documents = useOfficial ? [] : (Array.isArray(product?.docs) ? product.docs : []);
+  const leadHtml = official?.leadHtml || universal.leadHtml;
+  const kentSections = sanitizeKentSections(official?.sections || universal.sections);
+  const productImages = normalizeImages(product, title);
+  const images = productImages.length ? productImages : official?.fallbackImages || [];
 
   return (
     <main className="pb-16">
@@ -339,18 +356,18 @@ export default async function KentProductDetailPage({
           categoryLabel={categoryLabel}
           images={images}
           kentSections={kentSections as any[]}
-          descriptionHtml={descriptionHtml}
-          specsHtml={specsHtml}
-          datasheetHtml={datasheetHtml}
-          documentsHtml={documentsHtml}
-          faqsHtml={faqsHtml}
-          referencesHtml={referencesHtml}
-          reviewsHtml={reviewsHtml}
-          documents={documents}
+          descriptionHtml=""
+          specsHtml=""
+          datasheetHtml=""
+          documentsHtml=""
+          faqsHtml=""
+          referencesHtml=""
+          reviewsHtml=""
+          documents={[]}
           productType={useOfficial ? "simple" : product?.productType}
           defaultVariantId={useOfficial ? undefined : product?.defaultVariantId}
-          optionGroups={useOfficial ? [] : (product?.optionGroups || [])}
-          variants={useOfficial ? [] : (product?.variants || [])}
+          optionGroups={useOfficial ? [] : product?.optionGroups || []}
+          variants={useOfficial ? [] : product?.variants || []}
         />
       </div>
     </main>
