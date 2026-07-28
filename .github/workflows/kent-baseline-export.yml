@@ -1,12 +1,7 @@
 name: Export Kent baseline
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - scripts/kent-product-baseline-export.mjs
-      - .github/workflows/kent-baseline-export.yml
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -36,6 +31,8 @@ jobs:
             exit 0
           fi
           git commit -m "Add Kent full product baseline"
+          git fetch origin agent/kent-preflight
+          git rebase origin/agent/kent-preflight
           git push origin HEAD:agent/kent-preflight
 
       - name: Upload baseline artifact
