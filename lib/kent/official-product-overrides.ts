@@ -1,3 +1,4 @@
+import OFFICIAL_BATCH_0001 from "./official-batch-0001";
 import SOMNOSUITE from "./official-somnosuite";
 
 export type KentOfficialSection = {
@@ -20,6 +21,26 @@ export type KentOfficialSection = {
   rows?: Array<Record<string, string>>;
 };
 
+export type KentOfficialOptionGroup = {
+  key?: string;
+  name?: string;
+  label?: string;
+  displayType?: string;
+  options?: Array<{ value?: string; label?: string }>;
+};
+
+export type KentOfficialVariant = {
+  variantId?: string;
+  title?: string;
+  sku?: string;
+  catNo?: string;
+  optionSummary?: string;
+  optionValues?: Record<string, string> | Array<{ key?: string; label?: string; value?: string }>;
+  attributes?: Record<string, string> | Array<{ key?: string; label?: string; value?: string }>;
+  imageUrl?: string;
+  sourceVariationId?: string;
+};
+
 export type KentOfficialProductOverride = {
   title: string;
   summary: string;
@@ -27,7 +48,17 @@ export type KentOfficialProductOverride = {
   badge?: string;
   leadHtml?: string;
   fallbackImages?: Array<{ url: string; alt: string }>;
+  productType?: string;
+  defaultVariantId?: string;
+  optionGroups?: KentOfficialOptionGroup[];
+  variants?: KentOfficialVariant[];
   sections: KentOfficialSection[];
+  verification?: {
+    status?: string;
+    sourceUrl?: string;
+    checkedAt?: string;
+    notes?: string;
+  };
 };
 
 const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
@@ -181,6 +212,7 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
 };
 
 const OFFICIAL_OVERRIDES: Record<string, KentOfficialProductOverride> = {
+  ...OFFICIAL_BATCH_0001,
   "somnoflo-o2care": SOMNOFLO_O2CARE,
   somnosuite: SOMNOSUITE,
 };
