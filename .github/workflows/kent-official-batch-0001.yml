@@ -1,13 +1,7 @@
 name: Verify Kent official batch 0001
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - scripts/kent-official-single-run.mjs
-      - scripts/kent-product-baseline-export.mjs
-      - .github/workflows/kent-official-batch-0001.yml
+  workflow_dispatch:
 
 permissions:
   contents: write
