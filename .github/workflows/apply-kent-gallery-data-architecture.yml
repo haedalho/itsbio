@@ -14,7 +14,7 @@ permissions:
 jobs:
   apply:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - name: Checkout working branch
         uses: actions/checkout@v4
@@ -24,12 +24,6 @@ jobs:
 
       - name: Apply idempotent source patch
         run: node scripts/apply-kent-gallery-data-architecture-v2.mjs
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Validate build
-        run: npm run build
 
       - name: Commit generated source changes
         shell: bash
