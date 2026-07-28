@@ -142,6 +142,7 @@ export default function KentProductDetailClientV2({
   leadHtml,
   categoryLabel,
   images,
+  verifiedGallery,
   kentSections,
   descriptionHtml,
   specsHtml,
@@ -164,6 +165,7 @@ export default function KentProductDetailClientV2({
   leadHtml?: string;
   categoryLabel?: string;
   images: Img[];
+  verifiedGallery?: boolean;
   kentSections?: KentSection[];
   descriptionHtml?: string;
   specsHtml?: string;
@@ -225,6 +227,7 @@ export default function KentProductDetailClientV2({
             productSlug={slug}
             images={galleryImages}
             title={title}
+            verifiedGallery={verifiedGallery}
           />
 
           <div className="min-w-0 lg:pt-1">

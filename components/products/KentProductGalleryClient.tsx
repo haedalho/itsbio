@@ -72,18 +72,7 @@ function isNonGalleryImage(url?: string) {
   return isSmallResizedImage(url);
 }
 
-function isDirectKentImage(url?: string) {
-  const raw = String(url || "").trim();
-  if (!raw) return false;
-  try {
-    const host = new URL(raw, "https://www.kentscientific.com").hostname.toLowerCase();
-    return host === "kentscientific.com" || host === "www.kentscientific.com";
-  } catch {
-    return false;
-  }
-}
-
-function normalizeGalleryImages(images: Img[]) {
+function normalizeGalleryImages(images: Img[], verifiedGallery: boolean) {
   const normalized: Img[] = [];
   const seen = new Set<string>();
 
@@ -97,23 +86,27 @@ function normalizeGalleryImages(images: Img[]) {
     normalized.push({ ...image, url });
   }
 
-  // Multiple thumbnails are shown only when every supplied image is a direct,
-  // full-size Kent source image. Legacy Sanity/page-wide arrays are reduced to
-  // a single representative image until the product receives a verified
-  // official gallery snapshot.
-  const trustedOfficialSet = normalized.length > 0 && normalized.every((image) => isDirectKentImage(image.url));
-  return (trustedOfficialSet ? normalized.slice(0, MAX_GALLERY_IMAGES) : normalized.slice(0, 1));
+  // A Kent-domain URL alone is not proof that an image belongs to the product
+  // gallery. Page-body graphics and legacy thumbnails are hosted on the same
+  // domain. Multiple thumbnails are allowed only when the server explicitly
+  // marks the supplied list as a verified official gallery snapshot.
+  return verifiedGallery ? normalized.slice(0, MAX_GALLERY_IMAGES) : normalized.slice(0, 1);
 }
 
 export default function KentProductGalleryClient({
   images,
   title,
+  verifiedGallery = false,
 }: {
   productSlug: string;
   images: Img[];
   title: string;
+  verifiedGallery?: boolean;
 }) {
-  const initialImages = React.useMemo(() => normalizeGalleryImages(images), [images]);
+  const initialImages = React.useMemo(
+    () => normalizeGalleryImages(images, verifiedGallery),
+    [images, verifiedGallery],
+  );
   const [failedUrls, setFailedUrls] = React.useState<Set<string>>(() => new Set());
   const [activeIndex, setActiveIndex] = React.useState(0);
 

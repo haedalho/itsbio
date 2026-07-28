@@ -339,7 +339,9 @@ export default async function KentProductDetailPage({
   const officialImages = Array.isArray(official?.fallbackImages)
     ? official.fallbackImages.filter((image) => image?.url)
     : [];
-  const images = officialImages.length ? officialImages : productImages;
+  // Only an explicitly verified official snapshot may render as a multi-image
+  // gallery. Unverified legacy arrays are reduced to one representative image.
+  const images = officialImages.length ? officialImages : productImages.slice(0, 1);
 
   return (
     <main className="pb-16">
@@ -357,6 +359,7 @@ export default async function KentProductDetailPage({
           leadHtml={leadHtml}
           categoryLabel={categoryLabel}
           images={images}
+          verifiedGallery={officialImages.length > 0}
           kentSections={kentSections as any[]}
           descriptionHtml=""
           specsHtml=""
