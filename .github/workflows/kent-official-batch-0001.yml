@@ -140,6 +140,13 @@ jobs:
           NODE
           node scripts/kent-product-baseline-export.mjs
 
+      - name: Upload batch artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kent-official-batch-0001
+          path: data/kent-official-batches/batch-0001
+          if-no-files-found: error
+
       - name: Commit batch report and updated baseline
         shell: bash
         run: |
@@ -152,11 +159,6 @@ jobs:
             exit 0
           fi
           git commit -m "Add Kent official preflight batch 0001"
+          git fetch origin agent/kent-preflight
+          git rebase origin/agent/kent-preflight
           git push origin HEAD:agent/kent-preflight
-
-      - name: Upload batch artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: kent-official-batch-0001
-          path: data/kent-official-batches/batch-0001
-          if-no-files-found: error
