@@ -20,6 +20,8 @@
     "kent:official:verify:refresh": "node scripts/kent-official-fidelity-verify.mjs --refresh",
     "kent:official:verify:offline": "node scripts/kent-official-fidelity-verify.mjs --offline",
     "kent:baseline:export": "node scripts/kent-product-baseline-export.mjs",
+    "kent:gallery:stage": "node scripts/kent-official-gallery-stage.mjs",
+    "kent:gallery:promote": "node scripts/kent-official-gallery-promote.mjs",
     "abm:product:audit": "node scripts/product-quality-audit.mjs --brand=abm",
     "kent:product:census": "node scripts/kent-product-census-v2.mjs",
     "kent:product:census:refresh": "node scripts/kent-product-census-v2.mjs --refresh",
