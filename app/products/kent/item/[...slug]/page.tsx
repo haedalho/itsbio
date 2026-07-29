@@ -190,18 +190,26 @@ function imageMasterKey(url: string) {
     .toLowerCase();
 }
 
-function normalizeImages(product: any, title: string) {
-  const assetUrls = Array.isArray(product?.images)
-    ? product.images.map((image: any) => image?.asset?.url).filter((url: any) => typeof url === "string" && url.trim())
-    : [];
-  const verifiedUrls = Array.isArray(product?.galleryImageUrls)
-    ? product.galleryImageUrls.filter((url: any) => typeof url === "string" && url.trim())
-    : [];
-  const rawUrls = Array.isArray(product?.imageUrls)
-    ? product.imageUrls.filter((url: any) => typeof url === "string" && url.trim())
-    : [];
+function isManagedKentImageUrl(input?: unknown) {
+  const value = String(input || "").trim();
+  if (!value) return false;
+  if (value.startsWith("/")) return !value.startsWith("//");
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "https:" && parsed.hostname.toLowerCase() === "cdn.sanity.io";
+  } catch {
+    return false;
+  }
+}
 
-  const source = assetUrls.length ? assetUrls : verifiedUrls.length ? verifiedUrls : rawUrls;
+function normalizeImages(product: any, title: string) {
+  // Active product galleries may only use files uploaded to Sanity. Legacy
+  // imageUrls/galleryImageUrls remain source metadata and never render.
+  const source = Array.isArray(product?.images)
+    ? product.images
+        .map((image: any) => image?.asset?.url)
+        .filter((url: any) => isManagedKentImageUrl(url))
+    : [];
   const seen = new Set<string>();
   return source
     .map((url: unknown) => String(url).trim())
@@ -351,12 +359,12 @@ export default async function KentProductDetailPage({
   const galleryStatus = String(product?.kentOfficialGalleryStatus || "");
   const stagedOfficialImages = ["STAGING", "APPROVED"].includes(galleryStatus)
     ? (Array.isArray(product?.kentOfficialGallery) ? product.kentOfficialGallery : [])
-        .filter((image: any) => typeof image?.sourceUrl === "string" && image.sourceUrl.trim())
+        .filter((image: any) => isManagedKentImageUrl(image?.sourceUrl))
         .sort((a: any, b: any) => Number(a?.order || 0) - Number(b?.order || 0))
         .map((image: any) => ({ url: String(image.sourceUrl).trim(), alt: cleanText(image.alt) || title }))
     : [];
   const overrideOfficialImages = Array.isArray(official?.fallbackImages)
-    ? official.fallbackImages.filter((image) => image?.url)
+    ? official.fallbackImages.filter((image) => isManagedKentImageUrl(image?.url))
     : [];
   const activeProductImages = normalizeImages(product, title);
   const approvedActiveImages = galleryStatus === "APPROVED" && !stagedOfficialImages.length

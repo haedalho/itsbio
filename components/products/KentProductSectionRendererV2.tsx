@@ -65,6 +65,25 @@ type FaqEntry = {
 
 const PRICE_COLUMN_RE = /^(?:price|pricing|unit price|list price|retail price|sale price|dealer price|your price|online price|web price|net price|msrp|cost|amount)$/i;
 
+function isManagedKentImageUrl(input?: unknown) {
+  const value = String(input || "").trim();
+  if (!value) return false;
+  if (value.startsWith("/")) return !value.startsWith("//");
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "https:" && parsed.hostname.toLowerCase() === "cdn.sanity.io";
+  } catch {
+    return false;
+  }
+}
+
+function stripUnmanagedImages(html?: string) {
+  return String(html || "").replace(
+    /<img\b[^>]*\bsrc\s*=\s*(["'])(.*?)\1[^>]*>/gi,
+    (tag, _quote, src) => (isManagedKentImageUrl(src) ? tag : ""),
+  );
+}
+
 function cleanText(input?: unknown) {
   return String(input || "")
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
@@ -131,26 +150,28 @@ function isRenderable(section: KentSection) {
   return Boolean(
     cleanText(sectionHtml(section)) ||
       cleanText(section.description) ||
-      cleanText(section.imageUrl) ||
+      isManagedKentImageUrl(section.imageUrl) ||
       sectionItems(section).length ||
       (Array.isArray(section.rows) && section.rows.length),
   );
 }
 
 function HtmlBlock({ html }: { html?: string }) {
-  if (!cleanText(html)) return null;
+  const managedHtml = stripUnmanagedImages(html);
+  if (!cleanText(managedHtml)) return null;
   return (
     <div
       className="prose prose-slate max-w-none prose-a:font-semibold prose-a:text-[#0755a6] prose-a:no-underline hover:prose-a:underline prose-headings:text-[#0a4d96] prose-h2:text-[29px] prose-h3:text-[22px] prose-p:text-[16px] prose-p:leading-8 prose-li:text-[16px] prose-li:leading-7 prose-img:h-auto prose-img:max-w-full prose-table:w-full prose-table:border-collapse prose-th:border-b prose-th:border-slate-300 prose-th:bg-white prose-th:px-4 prose-th:py-3 prose-th:text-[#0a4d96] prose-td:border-b prose-td:border-slate-200 prose-td:px-4 prose-td:py-3"
-      dangerouslySetInnerHTML={{ __html: String(html || "") }}
+      dangerouslySetInnerHTML={{ __html: managedHtml }}
     />
   );
 }
 
 function MediaImage({ src, alt, className = "" }: { src?: string; alt: string; className?: string }) {
-  const [visible, setVisible] = React.useState(Boolean(src));
-  React.useEffect(() => setVisible(Boolean(src)), [src]);
-  if (!visible || !src) return null;
+  const managed = isManagedKentImageUrl(src);
+  const [visible, setVisible] = React.useState(managed);
+  React.useEffect(() => setVisible(isManagedKentImageUrl(src)), [src]);
+  if (!visible || !src || !managed) return null;
   return (
     <img
       src={src}
@@ -223,7 +244,7 @@ function RelatedProducts({ items }: { items: KentSectionItem[] }) {
   React.useEffect(() => {
     const targets = items
       .map((item, index) => {
-        if (item.imageUrl) return null;
+        if (isManagedKentImageUrl(item.imageUrl)) return null;
         const href = String(item.href || item.url || "");
         const slug = productSlugFromHref(href);
         return slug ? { key: `related:${slug}:${index}`, type: "product", value: slug, slug } : null;
@@ -261,7 +282,9 @@ function RelatedProducts({ items }: { items: KentSectionItem[] }) {
         const title = String(item.title || item.label || item.text || `Related product ${index + 1}`);
         const description = String(item.description || item.value || "");
         const slug = productSlugFromHref(href);
-        const imageUrl = String(item.imageUrl || resolvedImages[slug] || "");
+        const explicitImage = isManagedKentImageUrl(item.imageUrl) ? String(item.imageUrl) : "";
+        const resolvedImage = isManagedKentImageUrl(resolvedImages[slug]) ? String(resolvedImages[slug]) : "";
+        const imageUrl = explicitImage || resolvedImage;
         const content = (
           <>
             <div className="flex aspect-[4/3] items-center justify-center border border-slate-200 bg-white p-5">
@@ -436,7 +459,7 @@ function FaqAccordion({ title, items, html }: { title: string; items: KentSectio
               <div id={panelId} className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
                 <div className="overflow-hidden">
                   <div className="max-w-[760px] pb-6 pr-8 text-[15px] leading-7 text-[#62676b] [&_a]:font-semibold [&_a]:text-[#0b49a4] [&_li]:mb-1 [&_p]:mb-3 [&_p:last-child]:mb-0">
-                    {entry.answerHtml ? <div dangerouslySetInnerHTML={{ __html: entry.answerHtml }} /> : <p>{entry.answerText}</p>}
+                    {entry.answerHtml ? <div dangerouslySetInnerHTML={{ __html: stripUnmanagedImages(entry.answerHtml) }} /> : <p>{entry.answerText}</p>}
                   </div>
                 </div>
               </div>
