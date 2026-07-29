@@ -1,0 +1,39 @@
+name: Kent catalog verdict export
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - scripts/kent-catalog-verdict-export.mjs
+      - .github/workflows/kent-catalog-verdict-export.yml
+
+permissions:
+  contents: write
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout working branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/kent-preflight
+          fetch-depth: 0
+
+      - name: Export consolidated verdict
+        run: node scripts/kent-catalog-verdict-export.mjs
+
+      - name: Commit verdict
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/kent-catalog-verdict.json data/kent-catalog-verdict.csv data/kent-catalog-verdict.md
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Add consolidated Kent catalog verdict"
+          git fetch origin agent/kent-preflight
+          git rebase origin/agent/kent-preflight
+          git push origin HEAD:agent/kent-preflight
