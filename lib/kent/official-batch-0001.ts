@@ -8,11 +8,7 @@ const OFFICIAL_BATCH_0001 = {
     fallbackImages: [
       {
         url: "https://www.kentscientific.com/Customer-Content/www/products/Photos/Full/SOMNO-0602_10-4500_4_5.jpg",
-        alt: "Y Adapter",
-      },
-      {
-        url: "https://www.kentscientific.com/Customer-Content/www/products/Photos/Thumb/SomnoSuiteTypSetup.jpg",
-        alt: "SomnoSuite Setup with Y Adapter",
+        alt: "2-Accessory Connector",
       },
     ],
     productType: "variant",
@@ -87,8 +83,8 @@ const OFFICIAL_BATCH_0001 = {
     verification: {
       status: "STAGING",
       sourceUrl: "https://www.kentscientific.com/products/somnosuite-y-adapter/",
-      checkedAt: "2026-07-28",
-      notes: "Official H1 title and subtitle are stored separately. Official description, two gallery subjects, three configurations and related products captured. Price, quantity, cart, supplier support and empty review form excluded.",
+      checkedAt: "2026-07-29",
+      notes: "Official title, subtitle, description and three configurations captured. Gallery contains only the full-size product image; the setup thumbnail was removed because it is not an acceptable product gallery asset. Price, quantity, cart, supplier support and empty review form excluded.",
     },
   },
 };
