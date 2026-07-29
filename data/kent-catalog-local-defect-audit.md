@@ -1,6 +1,6 @@
 # Kent catalog local defect audit
 
-Generated: 2026-07-29T06:29:02.477Z
+Generated: 2026-07-29T06:30:29.733Z
 Products: 176
 Confirmed NEEDS_FIX before official comparison: 176
 No confirmed local defect yet; official review still required: 0
