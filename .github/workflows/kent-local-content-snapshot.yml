@@ -1,0 +1,43 @@
+name: Kent local content snapshot
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - scripts/kent-local-content-snapshot.mjs
+      - .github/workflows/kent-local-content-snapshot.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout working branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/kent-preflight
+          fetch-depth: 0
+
+      - name: Export local Kent content
+        run: node scripts/kent-local-content-snapshot.mjs
+
+      - name: Commit snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            data/kent-local-content-snapshot.ndjson \
+            data/kent-local-content-snapshot-meta.json
+          if git diff --cached --quiet; then
+            echo "No snapshot changes"
+            exit 0
+          fi
+          git commit -m "Add Kent local content snapshot"
+          git push origin HEAD:agent/kent-preflight
