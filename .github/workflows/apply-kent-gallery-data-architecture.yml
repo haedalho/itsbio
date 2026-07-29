@@ -1,12 +1,7 @@
 name: Apply Kent managed media policy
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - scripts/patch-kent-managed-media-only.mjs
-      - .github/workflows/apply-kent-gallery-data-architecture.yml
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -31,12 +26,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            app/products/kent/item/'[...slug]'/page.tsx \
-            components/products/KentProductSectionRendererV2.tsx
-          if git diff --cached --quiet; then
-            echo "No generated changes"
-            exit 0
-          fi
+          git add app/products/kent/item/'[...slug]'/page.tsx components/products/KentProductSectionRendererV2.tsx
+          if git diff --cached --quiet; then exit 0; fi
           git commit -m "Render Kent images only from managed assets"
           git push origin HEAD:agent/kent-preflight
