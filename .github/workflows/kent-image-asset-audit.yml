@@ -1,0 +1,44 @@
+name: Kent image asset audit
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - scripts/kent-image-asset-audit.mjs
+      - .github/workflows/kent-image-asset-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout working branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/kent-preflight
+          fetch-depth: 0
+
+      - name: Audit Sanity image assets
+        run: node scripts/kent-image-asset-audit.mjs
+
+      - name: Commit audit report
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            data/kent-image-asset-audit.json \
+            data/kent-image-asset-audit.csv \
+            data/kent-image-asset-audit.md
+          if git diff --cached --quiet; then
+            echo "No audit changes"
+            exit 0
+          fi
+          git commit -m "Add Kent image asset audit report"
+          git push origin HEAD:agent/kent-preflight
