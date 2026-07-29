@@ -1,0 +1,43 @@
+name: Kent local review summary
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - scripts/kent-local-review-summary.mjs
+      - .github/workflows/kent-local-review-summary.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  summary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout working branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/kent-preflight
+          fetch-depth: 0
+
+      - name: Export readable review summary
+        run: node scripts/kent-local-review-summary.mjs
+
+      - name: Commit summary safely
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/kent-local-review-summary.md
+          if git diff --cached --quiet; then
+            echo "No review summary changes"
+            exit 0
+          fi
+          git commit -m "Add Kent local review summary"
+          git fetch origin agent/kent-preflight
+          git rebase origin/agent/kent-preflight
+          git push origin HEAD:agent/kent-preflight
