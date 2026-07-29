@@ -1,82 +1,13 @@
 name: Import Kent 2-Accessory Connector image
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - .github/workflows/import-kent-somnosuite-y-adapter-image.yml
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  import-image:
+  retired:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     steps:
-      - name: Checkout working branch
-        uses: actions/checkout@v4
-        with:
-          ref: agent/kent-preflight
-          fetch-depth: 0
-
-      - name: Download official image once
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p public/kent-official/somnosuite-y-adapter
-          curl \
-            --fail \
-            --location \
-            --silent \
-            --show-error \
-            --compressed \
-            --retry 0 \
-            --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/150 Safari/537.36" \
-            --referer "https://www.kentscientific.com/products/somnosuite-y-adapter/" \
-            --header "Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8" \
-            "https://www.kentscientific.com/Customer-Content/www/products/Photos/Full/SOMNO-0602_10-4500_4_5.jpg" \
-            --output public/kent-official/somnosuite-y-adapter/2-accessory-connector.jpg
-
-          python - <<'PY'
-          from pathlib import Path
-          p = Path('public/kent-official/somnosuite-y-adapter/2-accessory-connector.jpg')
-          data = p.read_bytes()
-          if len(data) < 10000:
-              raise SystemExit(f'image too small: {len(data)} bytes')
-          if data[:3] != b'\xff\xd8\xff':
-              raise SystemExit(f'not a JPEG: {data[:16]!r}')
-          print(f'validated JPEG: {len(data)} bytes')
-          PY
-
-      - name: Use local official asset
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p = Path('lib/kent/official-batch-0001.ts')
-          text = p.read_text(encoding='utf-8')
-          remote = 'https://www.kentscientific.com/Customer-Content/www/products/Photos/Full/SOMNO-0602_10-4500_4_5.jpg'
-          local = '/kent-official/somnosuite-y-adapter/2-accessory-connector.jpg'
-          if remote not in text and local not in text:
-              raise SystemExit('expected image URL not found')
-          text = text.replace(remote, local)
-          p.write_text(text, encoding='utf-8')
-          PY
-
-      - name: Commit imported asset
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            public/kent-official/somnosuite-y-adapter/2-accessory-connector.jpg \
-            lib/kent/official-batch-0001.ts
-          if git diff --cached --quiet; then
-            echo "No changes"
-            exit 0
-          fi
-          git commit -m "Store official Kent connector image locally"
-          git push origin HEAD:agent/kent-preflight
+      - run: echo "Retired. Kent media must be reviewed and uploaded to Sanity; supplier hotlink/download automation is disabled."
