@@ -1,0 +1,45 @@
+name: Kent catalog local defect audit
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - scripts/kent-catalog-local-defect-audit.mjs
+      - .github/workflows/kent-catalog-local-defect-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout working branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/kent-preflight
+          fetch-depth: 0
+
+      - name: Run full local defect audit
+        run: node scripts/kent-catalog-local-defect-audit.mjs
+
+      - name: Commit audit safely
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            data/kent-catalog-local-defect-audit.json \
+            data/kent-catalog-local-defect-audit.md
+          if git diff --cached --quiet; then
+            echo "No audit changes"
+            exit 0
+          fi
+          git commit -m "Add Kent catalog local defect audit"
+          git fetch origin agent/kent-preflight
+          git rebase origin/agent/kent-preflight
+          git push origin HEAD:agent/kent-preflight
