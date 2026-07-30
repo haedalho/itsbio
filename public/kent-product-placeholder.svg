@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-labelledby="title desc">
+  <title id="title">Kent product image unavailable</title>
+  <desc id="desc">A neutral placeholder used when a product image cannot be loaded.</desc>
+  <rect width="640" height="480" fill="#f8fafc"/>
+  <rect x="1" y="1" width="638" height="478" rx="20" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+  <g fill="none" stroke="#94a3b8" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="218" y="124" width="204" height="174" rx="18"/>
+    <circle cx="278" cy="184" r="22"/>
+    <path d="M238 270l58-58 42 42 30-30 34 46"/>
+  </g>
+  <text x="320" y="362" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#475569">Kent Scientific</text>
+  <text x="320" y="397" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#64748b">Product image unavailable</text>
+</svg>

@@ -1,0 +1,32 @@
+name: Apply Kent managed media policy
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout working branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/kent-preflight
+          fetch-depth: 0
+
+      - name: Apply managed-only media policy
+        run: node scripts/patch-kent-managed-media-only.mjs
+
+      - name: Commit generated source changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/products/kent/item/'[...slug]'/page.tsx components/products/KentProductSectionRendererV2.tsx
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Render Kent images only from managed assets"
+          git push origin HEAD:agent/kent-preflight

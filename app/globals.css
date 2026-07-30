@@ -31,11 +31,36 @@ body {
   line-height: 1.6;
 }
 
+/* ITS BIO is quote-based. Supplier prices never appear on public product pages. */
+.price,
+.pricing,
+.product-price,
+.product_price,
+.price-box,
+.price-wrapper,
+.regular-price,
+.sale-price,
+.list-price,
+.retail-price,
+.unit-price,
+.msrp,
+.woocommerce-Price-amount,
+.woocommerce-price-suffix,
+.woocommerce-variation-price,
+.single_variation_wrap .price,
+[itemprop="price"],
+[class~="amount"],
+[class*="productPrice"],
+[class*="product-price"],
+[class*="price__"],
+[class*="__price"] {
+  display: none !important;
+}
+
 @keyframes partners-marquee {
 0% { transform: translateX(0); }
 100% { transform: translateX(-50%); }
 }
-
 
 .partners-marquee {
 animation: partners-marquee 22s linear infinite;

@@ -1,4 +1,16 @@
-"use client";
+#!/usr/bin/env node
+import fs from "node:fs";
+
+function replaceExact(file, before, after) {
+  const source = fs.readFileSync(file, "utf8");
+  if (!source.includes(before)) throw new Error(`Expected block not found in ${file}`);
+  fs.writeFileSync(file, source.replace(before, after), "utf8");
+}
+
+const galleryFile = "components/products/KentProductGalleryClient.tsx";
+fs.writeFileSync(
+  galleryFile,
+  `"use client";
 
 import Image from "next/image";
 import * as React from "react";
@@ -13,7 +25,7 @@ function imageKey(url?: string) {
   if (!raw) return "";
   try {
     const parsed = new URL(raw, "https://www.kentscientific.com");
-    return `${parsed.origin}${decodeURIComponent(parsed.pathname)}`.toLowerCase();
+    return \`\${parsed.origin}\${decodeURIComponent(parsed.pathname)}\`.toLowerCase();
   } catch {
     return raw.split("?")[0].toLowerCase();
   }
@@ -31,8 +43,10 @@ function normalizeGalleryImages(images: Img[], verifiedGallery: boolean) {
     rows.push({ url, alt: image?.alt });
   }
 
-  // Gallery membership is data, not a filename/domain guess. A verified list is
-  // rendered in its stored order. Legacy arrays can never form a gallery.
+  // No filename, domain, thumbnail or visual heuristic decides gallery membership.
+  // The server-provided verifiedGallery flag means that this exact ordered list
+  // was captured from the official product gallery. Legacy data is never allowed
+  // to create a multi-image gallery.
   return verifiedGallery
     ? rows.slice(0, MAX_VERIFIED_GALLERY_IMAGES)
     : rows.slice(0, 1);
@@ -91,10 +105,10 @@ export default function KentProductGalleryClient({
             const isActive = idx === activeIndex;
             return (
               <button
-                key={`${img.url}-${idx}`}
+                key={\`\${img.url}-\${idx}\`}
                 type="button"
                 onClick={() => setActiveIndex(idx)}
-                aria-label={`View ${title} image ${idx + 1}`}
+                aria-label={\`View \${title} image \${idx + 1}\`}
                 className={[
                   "relative h-[70px] w-[70px] shrink-0 overflow-hidden rounded-md border bg-white transition",
                   isActive ? "border-[#0b4fb3] ring-2 ring-blue-100" : "border-slate-200 hover:border-slate-400",
@@ -102,7 +116,7 @@ export default function KentProductGalleryClient({
               >
                 <Image
                   src={img.url}
-                  alt={img.alt || `${title} thumbnail ${idx + 1}`}
+                  alt={img.alt || \`\${title} thumbnail \${idx + 1}\`}
                   fill
                   sizes="70px"
                   className="object-contain p-2"
@@ -115,7 +129,7 @@ export default function KentProductGalleryClient({
         </div>
       ) : null}
 
-      <div className={`${hasThumbnails ? "order-1 md:order-2" : ""} relative overflow-hidden rounded-[12px] border border-slate-200 bg-white`}>
+      <div className={\`\${hasThumbnails ? "order-1 md:order-2" : ""} relative overflow-hidden rounded-[12px] border border-slate-200 bg-white\`}>
         <div className="relative aspect-square min-h-[360px] lg:min-h-[520px]">
           {active?.url ? (
             <Image
@@ -131,7 +145,7 @@ export default function KentProductGalleryClient({
           ) : (
             <Image
               src={PLACEHOLDER}
-              alt={`${title} image unavailable`}
+              alt={\`\${title} image unavailable\`}
               fill
               sizes="(max-width: 1024px) 100vw, 620px"
               className="object-contain p-10"
@@ -142,3 +156,56 @@ export default function KentProductGalleryClient({
     </div>
   );
 }
+`,
+  "utf8",
+);
+
+const detailFile = "components/products/KentProductDetailClientV2.tsx";
+replaceExact(detailFile, "  images,\n  kentSections,", "  images,\n  verifiedGallery,\n  kentSections,");
+replaceExact(detailFile, "  images: Img[];\n  kentSections?: KentSection[];", "  images: Img[];\n  verifiedGallery?: boolean;\n  kentSections?: KentSection[];");
+replaceExact(detailFile, "            images={galleryImages}\n            title={title}", "            images={galleryImages}\n            title={title}\n            verifiedGallery={verifiedGallery}");
+
+const routeFile = "app/products/kent/item/[...slug]/page.tsx";
+replaceExact(
+  routeFile,
+  "    imageFiles,\n    images[]{ _key, asset->{ url } }",
+  `    imageFiles,
+    images[]{ _key, asset->{ url } },
+    kentOfficialGalleryStatus,
+    kentOfficialGallery[]{
+      _key,
+      sourceUrl,
+      alt,
+      order,
+      sourceWidth,
+      sourceHeight,
+      sourceFingerprint
+    },
+    kentOfficialSourceUrl,
+    kentOfficialGalleryVerifiedAt,
+    kentOfficialGalleryFingerprint`,
+);
+replaceExact(
+  routeFile,
+  "  const productImages = normalizeImages(product, title);\n  const officialImages = Array.isArray(official?.fallbackImages)\n    ? official.fallbackImages.filter((image) => image?.url)\n    : [];\n  const images = officialImages.length ? officialImages : productImages;",
+  `  const stagedOfficialImages = ["STAGING", "APPROVED"].includes(String(product?.kentOfficialGalleryStatus || ""))
+    ? (Array.isArray(product?.kentOfficialGallery) ? product.kentOfficialGallery : [])
+        .filter((image: any) => typeof image?.sourceUrl === "string" && image.sourceUrl.trim())
+        .sort((a: any, b: any) => Number(a?.order || 0) - Number(b?.order || 0))
+        .map((image: any) => ({ url: String(image.sourceUrl).trim(), alt: cleanText(image.alt) || title }))
+    : [];
+  const overrideOfficialImages = Array.isArray(official?.fallbackImages)
+    ? official.fallbackImages.filter((image) => image?.url)
+    : [];
+  const officialImages = stagedOfficialImages.length ? stagedOfficialImages : overrideOfficialImages;
+  const productImages = normalizeImages(product, title).slice(0, 1);
+  const images = officialImages.length ? officialImages : productImages;
+  const verifiedGallery = officialImages.length > 0;`,
+);
+replaceExact(
+  routeFile,
+  "          images={images}\n          kentSections={kentSections as any[]}",
+  "          images={images}\n          verifiedGallery={verifiedGallery}\n          kentSections={kentSections as any[]}",
+);
+
+console.log("Applied Kent official gallery data architecture.");
