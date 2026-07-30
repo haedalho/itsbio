@@ -5,7 +5,7 @@ import path from "node:path";
 const root = process.cwd();
 const dataDir = path.join(root, "data");
 const auditPath = path.join(dataDir, "kent-catalog-local-defect-audit.json");
-const directReviewedThrough = 80;
+const directReviewedThrough = 90;
 
 if (!fs.existsSync(auditPath)) {
   throw new Error(`Missing audit file: ${auditPath}`);
@@ -46,7 +46,7 @@ const report = {
   evidence: {
     localAuditGeneratedAt: audit?.summary?.generatedAt || null,
     localFlagCounts: audit?.summary?.flagCounts || {},
-    directReviewBatchFiles: Array.from({ length: 8 }, (_, index) => `data/kent-official-review-batch-${String(index + 1).padStart(3, "0")}.md`),
+    directReviewBatchFiles: Array.from({ length: 9 }, (_, index) => `data/kent-official-review-batch-${String(index + 1).padStart(3, "0")}.md`),
   },
   products,
 };
