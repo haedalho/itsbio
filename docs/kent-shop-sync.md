@@ -28,10 +28,14 @@ Review these fields before any write:
 - `notInShopCount`
 - `badShopCards`
 - `duplicateSanitySlugs`
+- `duplicateSanitySourceUrls`
+- `slugMismatches`
 - `missing`
 - `notInShop`
 
-Audit mode never changes Sanity documents.
+Audit mode always compares the complete live Shop and never changes Sanity documents.
+
+The crawler stops instead of writing if it discovers fewer than 100 unique Shop products or if pagination exceeds 100 pages. These thresholds can be raised explicitly with `--minShopProducts` and `--maxPages`.
 
 ## 2. Test a small import
 
@@ -39,7 +43,7 @@ Audit mode never changes Sanity documents.
 npm run kent:shop:sync -- --limit 3 --refreshCache
 ```
 
-Without `--refreshExisting`, write mode creates only Shop products whose slug is missing from the Kent brand in Sanity.
+`--limit` applies only to the write targets after the complete Shop audit. Without `--refreshExisting`, write mode creates only Shop products that are missing from the Kent brand in Sanity.
 
 ## 3. Import all missing Shop products
 
@@ -55,7 +59,18 @@ Use this only after reviewing the audit and a limited test:
 npm run kent:shop:sync -- --refreshExisting --refreshCache
 ```
 
-This refreshes products currently visible in the Shop. It still does not delete or deactivate Sanity-only products.
+This refreshes products currently visible in the Shop. It still does not delete or deactivate Sanity-only products and does not automatically reactivate existing inactive documents.
+
+## Product matching
+
+Products are matched in this order:
+
+1. exact Shop slug
+2. normalized Kent source URL
+
+A source-URL match with a different slug is reported in `slugMismatches` rather than being created as a duplicate. It is only updated when `--refreshExisting` is explicitly used.
+
+Both current Kent brand references and older `brandSlug` values are included in the comparison.
 
 ## Product mapping
 
@@ -63,10 +78,12 @@ The synchronizer reads the product detail page and maps:
 
 - title, slug, SKU, summary
 - Kent category path and listing paths
-- product images and PDF resources
 - description, specifications, resources, publications, and reviews HTML
 - WooCommerce option groups and embedded variation data
-- variant SKU, attributes, option summary, image URL, and source variation ID
+- variant SKU, attributes, option summary, image, and source variation ID
+- PDF resources
+
+Product-gallery and variation images are uploaded to Sanity and stored with Sanity CDN URLs. The upload cache reuses the existing Kent image cache when available.
 
 New product IDs are deterministic: `prod_kent__{shop-slug}`.
 
