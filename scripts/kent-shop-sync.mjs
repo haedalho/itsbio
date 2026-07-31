@@ -49,7 +49,7 @@ const key=(p,v)=>`${p}_${hash(v)}`;
 const abs=(v,b=SHOP)=>{const s=String(v||"").trim();if(!s)return "";try{return new URL(s,b).toString()}catch{return s}};
 function norm(v){
   try{
-    const u=new URL(abs(v));u.hash="";u.search="";u.hostname="www.kentscientific.com";
+    const u=new URL(abs(v));u.hash="";u.search="";if(["kentscientific.com","www.kentscientific.com"].includes(u.hostname.toLowerCase()))u.hostname="www.kentscientific.com";
     u.pathname=u.pathname.replace(/\/{2,}/g,"/");
     const file=/\/[^/]+\.[a-z0-9]{2,8}$/i.test(u.pathname);
     if(!file&&!u.pathname.endsWith("/"))u.pathname+="/";
