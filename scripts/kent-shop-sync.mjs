@@ -33,6 +33,7 @@ const CACHE=path.join(root,".cache","kent-shop");
 const SHOP_CACHE=path.join(CACHE,"shop-pages");
 const PRODUCT_CACHE=path.join(CACHE,"product-pages");
 const REPORT=path.join(CACHE,"audit-report.json");
+const IMG_CACHE_PATH=path.join(root,".cache","kent","kent-image-upload-cache.json");
 fs.mkdirSync(SHOP_CACHE,{recursive:true});
 fs.mkdirSync(PRODUCT_CACHE,{recursive:true});
 
@@ -66,6 +67,24 @@ function safeHtml(html){
   if(!html)return "";
   return sanitizeHtml(html,{allowedTags:sanitizeHtml.defaults.allowedTags.concat(["img","table","thead","tbody","tr","th","td","figure","figcaption","iframe","hr","sup","sub"]),allowedAttributes:{a:["href","target","rel"],img:["src","alt","title","loading","width","height"],iframe:["src","title","allow","allowfullscreen","frameborder"],"*":["class","id","style"]},transformTags:{a:sanitizeHtml.simpleTransform("a",{target:"_blank",rel:"noopener noreferrer"})}}).trim();
 }
+
+function readImageCache(){try{const x=JSON.parse(fs.readFileSync(IMG_CACHE_PATH,"utf8"));return x?.byUrl?x:{byUrl:x||{}}}catch{return {byUrl:{}}}}
+function writeImageCache(cache){fs.mkdirSync(path.dirname(IMG_CACHE_PATH),{recursive:true});fs.writeFileSync(IMG_CACHE_PATH,JSON.stringify(cache,null,2)+"\n","utf8")}
+const imageCache=readImageCache();
+const isSanityImage=(v)=>String(v||"").includes("cdn.sanity.io/images/");
+const isJunkImage=(v)=>/(?:logo|favicon|sprite|icon|header|footer|banner|badge|seal|trust|doubleclick)/i.test(String(v||""));
+function imageCacheHit(url){const u=norm(url);return imageCache.byUrl[u]||imageCache.byUrl[u.replace("https://www.kentscientific.com/","https://kentscientific.com/")]||null}
+function imageExt(contentType,url){const ct=String(contentType||"").toLowerCase();if(ct.includes("png"))return "png";if(ct.includes("jpeg")||ct.includes("jpg"))return "jpg";if(ct.includes("webp"))return "webp";if(ct.includes("gif"))return "gif";return String(url).toLowerCase().match(/\.(png|jpe?g|webp|gif)(?:$|[?#])/)?.[1]?.replace("jpeg","jpg")||"png"}
+async function fetchBinary(url){const c=new AbortController();const t=setTimeout(()=>c.abort(),40000);try{const r=await fetch(url,{redirect:"follow",cache:"no-store",signal:c.signal,headers:{"user-agent":"itsbio-kent-shop-sync/1.0",accept:"image/*,*/*;q=0.8",referer:SHOP}});if(!r.ok)throw new Error(`Image HTTP ${r.status} :: ${url}`);return {buf:Buffer.from(await r.arrayBuffer()),contentType:r.headers.get("content-type")||""}}finally{clearTimeout(t)}}
+async function uploadImage(url){const sourceUrl=norm(url);if(!sourceUrl||isJunkImage(sourceUrl))return null;if(isSanityImage(sourceUrl))return {assetId:"",assetUrl:sourceUrl,sourceUrl};const hit=imageCacheHit(sourceUrl);if(hit?.assetUrl||hit?.url)return {assetId:hit.assetId||"",assetUrl:hit.assetUrl||hit.url,sourceUrl};const {buf,contentType}=await fetchBinary(sourceUrl);if(!buf.length)throw new Error(`Empty image: ${sourceUrl}`);const asset=await sanity.assets.upload("image",buf,{filename:`kent-shop-${hash(sourceUrl)}.${imageExt(contentType,sourceUrl)}`,contentType:contentType||undefined});const saved={assetId:asset._id,assetUrl:asset.url};imageCache.byUrl[sourceUrl]=saved;writeImageCache(imageCache);return {...saved,sourceUrl}}
+async function rehostImages(parsed){
+  const imageUrls=[];const images=[];
+  for(const src of parsed.imageUrls||[]){const up=await uploadImage(src);if(!up?.assetUrl||imageUrls.includes(up.assetUrl))continue;imageUrls.push(up.assetUrl);if(up.assetId)images.push({_key:key("img",up.sourceUrl),_type:"image",asset:{_type:"reference",_ref:up.assetId},caption:"",sourceUrl:up.sourceUrl})}
+  const variants=[];
+  for(const variant of parsed.variants||[]){if(!variant.imageUrl){variants.push(variant);continue}const up=await uploadImage(variant.imageUrl);variants.push({...variant,...(up?.assetUrl?{imageUrl:up.assetUrl}:{})})}
+  return {...parsed,imageUrls,images,variants};
+}
+
 async function fetchText(url){
   const c=new AbortController();const t=setTimeout(()=>c.abort(),40000);
   try{const r=await fetch(url,{redirect:"follow",cache:"no-store",signal:c.signal,headers:{"user-agent":"Mozilla/5.0 Chrome/124 Safari/537.36",accept:"text/html,application/xhtml+xml","accept-language":"en-US,en;q=0.9",referer:SHOP}});if(!r.ok)throw new Error(`HTTP ${r.status} :: ${url}`);return await r.text()}finally{clearTimeout(t)}
@@ -164,7 +183,7 @@ async function categoryRef(pathArr){if(!pathArr.length)return "";return await sa
 function payload(values){return Object.fromEntries(Object.entries(values).filter(([,v])=>v!==undefined&&v!==null&&v!==""&&(!Array.isArray(v)||v.length)))}
 async function upsert(brandId,existing,parsed){
   const cat=await categoryRef(parsed.categoryPath);const id=existing?._id||`prod_kent__${parsed.slug}`;
-  const data=payload({...(!existing?{isActive:true}:{}),title:parsed.title,brand:{_type:"reference",_ref:brandId},summary:parsed.summary,sku:parsed.sku,slug:{_type:"slug",current:parsed.slug},...(cat?{categoryRef:{_type:"reference",_ref:cat}}:{}),categoryPath:parsed.categoryPath,listingPaths:parsed.listingPaths,categoryPathTitles:parsed.categoryPathTitles,sourceUrl:parsed.sourceUrl,extraHtml:parsed.extraHtml,specsHtml:parsed.specsHtml,datasheetHtml:parsed.datasheetHtml,documentsHtml:parsed.documentsHtml,referencesHtml:parsed.referencesHtml,reviewsHtml:parsed.reviewsHtml,imageUrls:parsed.imageUrls,docs:parsed.docs,productType:parsed.productType,defaultVariantId:parsed.defaultVariantId,optionGroups:parsed.optionGroups,variants:parsed.variants,enrichedAt:new Date().toISOString()});
+  const data=payload({...(!existing?{isActive:true}:{}),title:parsed.title,brand:{_type:"reference",_ref:brandId},summary:parsed.summary,sku:parsed.sku,slug:{_type:"slug",current:parsed.slug},...(cat?{categoryRef:{_type:"reference",_ref:cat}}:{}),categoryPath:parsed.categoryPath,listingPaths:parsed.listingPaths,categoryPathTitles:parsed.categoryPathTitles,sourceUrl:parsed.sourceUrl,extraHtml:parsed.extraHtml,specsHtml:parsed.specsHtml,datasheetHtml:parsed.datasheetHtml,documentsHtml:parsed.documentsHtml,referencesHtml:parsed.referencesHtml,reviewsHtml:parsed.reviewsHtml,imageUrls:parsed.imageUrls,images:parsed.images,docs:parsed.docs,productType:parsed.productType,defaultVariantId:parsed.defaultVariantId,optionGroups:parsed.optionGroups,variants:parsed.variants,enrichedAt:new Date().toISOString()});
   if(existing)await sanity.patch(id).set(data).commit({autoGenerateArrayKeys:true});
   else await sanity.transaction().createIfNotExists({_id:id,_type:"product"}).patch(id,(p)=>p.set(data)).commit({autoGenerateArrayKeys:true});
   return {id,categoryRef:cat,variantCount:parsed.variants.length};
@@ -181,7 +200,7 @@ async function main(){
   if(!WRITE){console.log("No Sanity documents changed.");return}
   let ok=0,failed=0;const failures=[];
   for(let i=0;i<targets.length;i++){
-    const item=targets[i];try{const html=await cached(item.sourceUrl,path.join(PRODUCT_CACHE,`${item.slug}.html`));const parsed=parseProduct(html,item.sourceUrl);if(parsed.slug!==item.slug)throw new Error(`Canonical slug mismatch: ${parsed.slug}`);await upsert(b._id,audit.matchByShopSlug.get(item.slug)||null,parsed);ok++;process.stdout.write(`\rSynced ${i+1}/${targets.length}, ok ${ok}, failed ${failed}`);await wait(140)}catch(e){failed++;failures.push({slug:item.slug,url:item.sourceUrl,error:e?.message||String(e)});console.log(`\nFAIL ${item.slug}: ${e?.message||e}`)}
+    const item=targets[i];try{const html=await cached(item.sourceUrl,path.join(PRODUCT_CACHE,`${item.slug}.html`));let parsed=parseProduct(html,item.sourceUrl);if(parsed.slug!==item.slug)throw new Error(`Canonical slug mismatch: ${parsed.slug}`);parsed=await rehostImages(parsed);await upsert(b._id,audit.matchByShopSlug.get(item.slug)||null,parsed);ok++;process.stdout.write(`\rSynced ${i+1}/${targets.length}, ok ${ok}, failed ${failed}`);await wait(140)}catch(e){failed++;failures.push({slug:item.slug,url:item.sourceUrl,error:e?.message||String(e)});console.log(`\nFAIL ${item.slug}: ${e?.message||e}`)}
   }
   process.stdout.write("\n");writeJson(REPORT,{...report,sync:{targetCount:targets.length,ok,failed,failures}});console.log(`Done. ok=${ok}, failed=${failed}. Sanity-only products were not changed.`);
 }
