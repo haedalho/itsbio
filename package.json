@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "kent:shop:audit": "node scripts/kent-shop-sync.mjs",
+    "kent:shop:sync": "node scripts/kent-shop-sync.mjs --write"
   },
   "dependencies": {
     "@portabletext/react": "^6.0.2",
@@ -26,7 +28,6 @@
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20.19.31",
     "@types/react": "^19",
-    "@types/react-dom": "^19",
     "@types/sanitize-html": "^2.16.0",
     "autoprefixer": "^10.4.23",
     "eslint": "^9",
