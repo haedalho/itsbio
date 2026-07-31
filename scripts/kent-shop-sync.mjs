@@ -26,6 +26,7 @@ const WRITE=has("--write");
 const REFRESH=has("--refreshExisting");
 const LIMIT=Number(arg("--limit","0"))||0;
 const MAX_PAGES=Number(arg("--maxPages","100"))||100;
+const MIN_PRODUCTS=Number(arg("--minShopProducts","100"))||100;
 const SHOP=String(arg("--shop","https://www.kentscientific.com/shop/")).trim();
 const BRAND_ALIASES=[...new Set([String(arg("--brand","kent")).trim(),"kent","kentscientifics"])];
 const CACHE=path.join(root,".cache","kent-shop");
@@ -101,18 +102,25 @@ async function discover(){
     url=parsed.next;await wait(120);
   }
   process.stdout.write("\n");
-  const all=[...bySlug.values()];return {allCount:all.length,items:LIMIT?all.slice(0,LIMIT):all,pages,bad};
+  if(url)throw new Error(`Shop pagination exceeded --maxPages=${MAX_PAGES}`);
+  const all=[...bySlug.values()];
+  if(all.length<MIN_PRODUCTS)throw new Error(`Safety stop: discovered only ${all.length} Shop products (minimum ${MIN_PRODUCTS})`);
+  return {allCount:all.length,all,pages,bad};
 }
 async function brand(){
   const b=await sanity.fetch(`*[_type=="brand"&&(slug.current in $a||themeKey in $a)][0]{_id,title,themeKey,"slug":slug.current}`,{a:BRAND_ALIASES});
   if(!b?._id)throw new Error(`Kent brand not found: ${BRAND_ALIASES.join(", ")}`);return b;
 }
-const existingProducts=(brandId)=>sanity.fetch(`*[_type=="product"&&brand._ref==$brandId]{_id,title,sku,isActive,sourceUrl,"slug":slug.current,productType,"variantCount":count(variants)}`,{brandId});
+const existingProducts=(brandId)=>sanity.fetch(`*[_type=="product"&&(brand._ref==$brandId||brandSlug in $a||brand->slug.current in $a||brand->themeKey in $a)]{_id,title,sku,isActive,sourceUrl,"slug":slug.current,productType,"variantCount":count(variants)}`,{brandId,a:BRAND_ALIASES});
 function compare(shop,existing){
-  const bySlug=new Map();const duplicates=[];
-  existing.forEach((p)=>{if(!p.slug)return;if(bySlug.has(p.slug))duplicates.push({slug:p.slug,ids:[bySlug.get(p.slug)._id,p._id]});else bySlug.set(p.slug,p)});
-  const shopSlugs=new Set(shop.map((p)=>p.slug));
-  return {bySlug,duplicates,missing:shop.filter((p)=>!bySlug.has(p.slug)),present:shop.filter((p)=>bySlug.has(p.slug)),notInShop:existing.filter((p)=>p.slug&&!shopSlugs.has(p.slug))};
+  const bySlug=new Map();const bySource=new Map();const duplicates=[];const duplicateSources=[];
+  existing.forEach((p)=>{
+    if(p.slug){if(bySlug.has(p.slug))duplicates.push({slug:p.slug,ids:[bySlug.get(p.slug)._id,p._id]});else bySlug.set(p.slug,p)}
+    const source=norm(p.sourceUrl||"");if(source){if(bySource.has(source))duplicateSources.push({sourceUrl:source,ids:[bySource.get(source)._id,p._id]});else bySource.set(source,p)}
+  });
+  const matchByShopSlug=new Map();const present=[];const missing=[];const slugMismatches=[];const matchedIds=new Set();
+  shop.forEach((item)=>{const exact=bySlug.get(item.slug);const source=bySource.get(norm(item.sourceUrl));const match=exact||source;if(!match){missing.push(item);return}present.push(item);matchByShopSlug.set(item.slug,match);matchedIds.add(match._id);if(match.slug!==item.slug)slugMismatches.push({shopSlug:item.slug,sanitySlug:match.slug,sanityId:match._id,sourceUrl:item.sourceUrl})});
+  return {bySlug,matchByShopSlug,duplicates,duplicateSources,slugMismatches,missing,present,notInShop:existing.filter((p)=>!matchedIds.has(p._id))};
 }
 function variationJson(raw){
   for(const text of [raw,raw?.replaceAll("&quot;",'"').replaceAll("&#039;","'").replaceAll("&amp;","&")]){try{const x=JSON.parse(text||"");if(Array.isArray(x))return x}catch{}}
@@ -136,7 +144,7 @@ function optionsAndVariants($){
     const summary=pairs.map((x)=>`${x.label}: ${x.value}`).join(" / ");const sku=clean(v?.sku);const imageUrl=norm(v?.image?.full_src||v?.image?.src||"");
     return [{_key:key("var",id),_type:"variant",variantId:id,title:summary||sku||`Variant ${id}`,sku,catNo:sku,optionSummary:summary,optionValues:pairs,attributes:attrs,...(imageUrl?{imageUrl}:{}),sourceVariationId:id}];
   });
-  return {productType:variants.length?"variant":"simple",defaultVariantId:variants[0]?.variantId||"",optionGroups:[...groups.values()],variants};
+  return {productType:groups.size?"variant":"simple",defaultVariantId:variants[0]?.variantId||"",optionGroups:[...groups.values()],variants};
 }
 function section($,main,re){
   const h=main.find("h1,h2,h3,h4").filter((_,el)=>re.test(clean($(el).text()))).first();if(!h.length)return "";
@@ -156,22 +164,24 @@ async function categoryRef(pathArr){if(!pathArr.length)return "";return await sa
 function payload(values){return Object.fromEntries(Object.entries(values).filter(([,v])=>v!==undefined&&v!==null&&v!==""&&(!Array.isArray(v)||v.length)))}
 async function upsert(brandId,existing,parsed){
   const cat=await categoryRef(parsed.categoryPath);const id=existing?._id||`prod_kent__${parsed.slug}`;
-  const data=payload({isActive:true,title:parsed.title,brand:{_type:"reference",_ref:brandId},summary:parsed.summary,sku:parsed.sku,slug:{_type:"slug",current:parsed.slug},...(cat?{categoryRef:{_type:"reference",_ref:cat}}:{}),categoryPath:parsed.categoryPath,listingPaths:parsed.listingPaths,categoryPathTitles:parsed.categoryPathTitles,sourceUrl:parsed.sourceUrl,extraHtml:parsed.extraHtml,specsHtml:parsed.specsHtml,datasheetHtml:parsed.datasheetHtml,documentsHtml:parsed.documentsHtml,referencesHtml:parsed.referencesHtml,reviewsHtml:parsed.reviewsHtml,imageUrls:parsed.imageUrls,docs:parsed.docs,productType:parsed.productType,defaultVariantId:parsed.defaultVariantId,optionGroups:parsed.optionGroups,variants:parsed.variants,enrichedAt:new Date().toISOString()});
-  if(existing)await sanity.patch(id).set(data).commit({autoGenerateArrayKeys:true});else await sanity.createIfNotExists({_id:id,_type:"product",...data});
+  const data=payload({...(!existing?{isActive:true}:{}),title:parsed.title,brand:{_type:"reference",_ref:brandId},summary:parsed.summary,sku:parsed.sku,slug:{_type:"slug",current:parsed.slug},...(cat?{categoryRef:{_type:"reference",_ref:cat}}:{}),categoryPath:parsed.categoryPath,listingPaths:parsed.listingPaths,categoryPathTitles:parsed.categoryPathTitles,sourceUrl:parsed.sourceUrl,extraHtml:parsed.extraHtml,specsHtml:parsed.specsHtml,datasheetHtml:parsed.datasheetHtml,documentsHtml:parsed.documentsHtml,referencesHtml:parsed.referencesHtml,reviewsHtml:parsed.reviewsHtml,imageUrls:parsed.imageUrls,docs:parsed.docs,productType:parsed.productType,defaultVariantId:parsed.defaultVariantId,optionGroups:parsed.optionGroups,variants:parsed.variants,enrichedAt:new Date().toISOString()});
+  if(existing)await sanity.patch(id).set(data).commit({autoGenerateArrayKeys:true});
+  else await sanity.transaction().createIfNotExists({_id:id,_type:"product"}).patch(id,(p)=>p.set(data)).commit({autoGenerateArrayKeys:true});
   return {id,categoryRef:cat,variantCount:parsed.variants.length};
 }
 
 async function main(){
   console.log(`[kent-shop-sync] ${WRITE?(REFRESH?"write + refresh":"write missing only"):"audit only"}`);
-  const b=await brand();const found=await discover();const existing=await existingProducts(b._id);const audit=compare(found.items,existing);
-  const report={generatedAt:new Date().toISOString(),shopUrl:SHOP,mode:WRITE?"write":"audit",shopProductCount:found.allCount,targetProductCount:found.items.length,sanityProductCount:existing.length,presentCount:audit.present.length,missingCount:audit.missing.length,notInShopCount:audit.notInShop.length,pages:found.pages,badShopCards:found.bad,duplicateSanitySlugs:audit.duplicates,missing:audit.missing,notInShop:audit.notInShop};
+  const b=await brand();const found=await discover();const existing=await existingProducts(b._id);const audit=compare(found.all,existing);
+  const fullTargets=REFRESH?found.all:audit.missing;const targets=LIMIT>0?fullTargets.slice(0,LIMIT):fullTargets;
+  const report={generatedAt:new Date().toISOString(),shopUrl:SHOP,mode:WRITE?"write":"audit",shopProductCount:found.allCount,targetProductCount:WRITE?targets.length:found.allCount,sanityProductCount:existing.length,presentCount:audit.present.length,missingCount:audit.missing.length,notInShopCount:audit.notInShop.length,pages:found.pages,badShopCards:found.bad,duplicateSanitySlugs:audit.duplicates,duplicateSanitySourceUrls:audit.duplicateSources,slugMismatches:audit.slugMismatches,missing:audit.missing,notInShop:audit.notInShop};
   writeJson(REPORT,report);
   console.log(`Shop ${found.allCount} / Sanity ${existing.length} / present ${audit.present.length} / missing ${audit.missing.length} / Sanity-only ${audit.notInShop.length}`);
   console.log(`Report: ${REPORT}`);
   if(!WRITE){console.log("No Sanity documents changed.");return}
-  const targets=REFRESH?found.items:audit.missing;let ok=0,failed=0;const failures=[];
+  let ok=0,failed=0;const failures=[];
   for(let i=0;i<targets.length;i++){
-    const item=targets[i];try{const html=await cached(item.sourceUrl,path.join(PRODUCT_CACHE,`${item.slug}.html`));const parsed=parseProduct(html,item.sourceUrl);if(parsed.slug!==item.slug)throw new Error(`Canonical slug mismatch: ${parsed.slug}`);await upsert(b._id,audit.bySlug.get(item.slug)||null,parsed);ok++;process.stdout.write(`\rSynced ${i+1}/${targets.length}, ok ${ok}, failed ${failed}`);await wait(140)}catch(e){failed++;failures.push({slug:item.slug,url:item.sourceUrl,error:e?.message||String(e)});console.log(`\nFAIL ${item.slug}: ${e?.message||e}`)}
+    const item=targets[i];try{const html=await cached(item.sourceUrl,path.join(PRODUCT_CACHE,`${item.slug}.html`));const parsed=parseProduct(html,item.sourceUrl);if(parsed.slug!==item.slug)throw new Error(`Canonical slug mismatch: ${parsed.slug}`);await upsert(b._id,audit.matchByShopSlug.get(item.slug)||null,parsed);ok++;process.stdout.write(`\rSynced ${i+1}/${targets.length}, ok ${ok}, failed ${failed}`);await wait(140)}catch(e){failed++;failures.push({slug:item.slug,url:item.sourceUrl,error:e?.message||String(e)});console.log(`\nFAIL ${item.slug}: ${e?.message||e}`)}
   }
   process.stdout.write("\n");writeJson(REPORT,{...report,sync:{targetCount:targets.length,ok,failed,failures}});console.log(`Done. ok=${ok}, failed=${failed}. Sanity-only products were not changed.`);
 }
