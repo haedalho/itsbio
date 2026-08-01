@@ -8,14 +8,32 @@ type Img = { url?: string; alt?: string };
 const MAX_VERIFIED_GALLERY_IMAGES = 12;
 const PLACEHOLDER = "/kent-product-placeholder.svg";
 
+function isManagedImageUrl(value?: string) {
+  const raw = String(value || "").trim();
+  if (!raw) return false;
+
+  // Local files are allowed, but protocol-relative external URLs are not.
+  if (raw.startsWith("/")) return !raw.startsWith("//");
+
+  try {
+    const parsed = new URL(raw);
+    return parsed.protocol === "https:" && parsed.hostname.toLowerCase() === "cdn.sanity.io";
+  } catch {
+    return false;
+  }
+}
+
 function imageKey(url?: string) {
   const raw = String(url || "").trim();
-  if (!raw) return "";
+  if (!isManagedImageUrl(raw)) return "";
+
+  if (raw.startsWith("/")) return raw.split("?")[0].toLowerCase();
+
   try {
-    const parsed = new URL(raw, "https://www.kentscientific.com");
+    const parsed = new URL(raw);
     return `${parsed.origin}${decodeURIComponent(parsed.pathname)}`.toLowerCase();
   } catch {
-    return raw.split("?")[0].toLowerCase();
+    return "";
   }
 }
 
@@ -26,13 +44,16 @@ function normalizeGalleryImages(images: Img[], verifiedGallery: boolean) {
   for (const image of Array.isArray(images) ? images : []) {
     const url = String(image?.url || "").trim();
     const key = imageKey(url);
+
+    // Never render supplier-hosted or arbitrary external URLs. Kent source URLs
+    // may remain as provenance metadata, but visible product media must be a
+    // Sanity asset or a local project file.
     if (!url || !key || seen.has(key)) continue;
+
     seen.add(key);
     rows.push({ url, alt: image?.alt });
   }
 
-  // Gallery membership is data, not a filename/domain guess. A verified list is
-  // rendered in its stored order. Legacy arrays can never form a gallery.
   return verifiedGallery
     ? rows.slice(0, MAX_VERIFIED_GALLERY_IMAGES)
     : rows.slice(0, 1);
@@ -75,6 +96,7 @@ export default function KentProductGalleryClient({
   const markFailed = React.useCallback((url?: string) => {
     const value = String(url || "").trim();
     if (!value) return;
+
     setFailedUrls((current) => {
       if (current.has(value)) return current;
       const next = new Set(current);
