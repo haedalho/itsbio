@@ -20,7 +20,7 @@
 # production
 /build
 
-# local crawler/cache output
+# local audit/cache output
 /.cache/
 
 # misc
