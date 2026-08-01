@@ -208,5 +208,6 @@ const OFFICIAL_OVERRIDES: Record<string, KentOfficialProductOverride> = {
 };
 
 export function getKentOfficialProductOverride(slug: string) {
-  return OFFICIAL_OVERRIDES[String(slug || "").trim().toLowerCase()] || null;
+  const override = OFFICIAL_OVERRIDES[String(slug || "").trim().toLowerCase()] || null;
+  return override?.verification?.status === "VERIFIED" ? override : null;
 }
