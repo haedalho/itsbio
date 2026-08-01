@@ -1,95 +1,103 @@
 # Kent Shop-only product sync
 
-This workflow treats the live Kent Scientific Shop as the only product discovery source:
+Kent blocks ordinary scripted Shop requests with HTTP 403. This workflow therefore uses the same browser-backed method used in the earlier Kent preflight work.
 
-- Source: `https://www.kentscientific.com/shop/` and its WooCommerce pagination
-- Included: product cards linked to `/products/{slug}/`
-- Excluded: product URLs that appear only in the site map, menus, articles, category landing pages, or spreadsheets
-- Existing Sanity products not found in the Shop are reported only; they are never deleted or deactivated automatically
+- A visible local Google Chrome session opens the live Kent Shop.
+- If Kent shows a security check, complete it once in the opened browser and return to the terminal.
+- The browser session follows Shop pagination and opens every product detail page.
+- Shop pages and product HTML are saved under `.cache/kent-shop/`.
+- Audit and sync read only those verified browser snapshots; they do not crawl Kent with ordinary Node `fetch`.
+- Sanity-only products are reported but never deleted or deactivated automatically.
 
-## 1. Audit first
+## 1. Install the temporary browser helper
 
 ```bash
-npm run kent:shop:audit -- --refreshCache
+npm run kent:shop:browser:setup
 ```
 
-The command writes:
+This installs `playwright-core` without changing `package-lock.json`.
+
+## 2. Build a fresh verified browser cache
+
+```bash
+npm run kent:shop:browser -- --fresh
+```
+
+Google Chrome opens. If a Kent 403 or security screen appears, make the page display normally in that Chrome window, return to the terminal, and press Enter.
+
+The browser collector writes:
+
+```text
+.cache/kent-shop/browser-inventory.json
+.cache/kent-shop/browser-inventory.md
+.cache/kent-shop/shop-pages/page-*.html
+.cache/kent-shop/product-pages/*.html
+```
+
+The inventory is marked `complete: true` only when all Shop pages were followed and every discovered product page was checked without unresolved errors. Using `--limit` intentionally produces an incomplete inventory and cannot be used for normal audit or import.
+
+## 3. Audit Shop against Sanity
+
+```bash
+npm run kent:shop:audit
+```
+
+The wrapper refuses to continue unless the complete browser inventory and all required HTML snapshots exist. Audit mode does not change Sanity.
+
+Review:
 
 ```text
 .cache/kent-shop/audit-report.json
 ```
 
-Review these fields before any write:
+Important fields:
 
 - `shopProductCount`
 - `sanityProductCount`
 - `presentCount`
 - `missingCount`
 - `notInShopCount`
-- `badShopCards`
 - `duplicateSanitySlugs`
 - `duplicateSanitySourceUrls`
 - `slugMismatches`
 - `missing`
 - `notInShop`
 
-Audit mode always compares the complete live Shop and never changes Sanity documents.
-
-The crawler stops instead of writing if it discovers fewer than 100 unique Shop products or if pagination exceeds 100 pages. These thresholds can be raised explicitly with `--minShopProducts` and `--maxPages`.
-
-## 2. Test a small import
+## 4. Test only three missing products
 
 ```bash
-npm run kent:shop:sync -- --limit 3 --refreshCache
+npm run kent:shop:sync -- --limit 3
 ```
 
-`--limit` applies only to the write targets after the complete Shop audit. Without `--refreshExisting`, write mode creates only Shop products that are missing from the Kent brand in Sanity.
+Without `--refreshExisting`, write mode creates only Shop products missing from Sanity. Existing products are not overwritten.
 
-## 3. Import all missing Shop products
+## 5. Import all missing Shop products
 
 ```bash
-npm run kent:shop:sync -- --refreshCache
+npm run kent:shop:sync
 ```
 
-## 4. Refresh existing Shop products
+## 6. Refresh existing Shop products
 
-Use this only after reviewing the audit and a limited test:
+Run only after the audit and limited test have been reviewed:
 
 ```bash
-npm run kent:shop:sync -- --refreshExisting --refreshCache
+npm run kent:shop:sync -- --refreshExisting
 ```
 
-This refreshes products currently visible in the Shop. It still does not delete or deactivate Sanity-only products and does not automatically reactivate existing inactive documents.
-
-## Product matching
-
-Products are matched in this order:
-
-1. exact Shop slug
-2. normalized Kent source URL
-
-A source-URL match with a different slug is reported in `slugMismatches` rather than being created as a duplicate. It is only updated when `--refreshExisting` is explicitly used.
-
-Both current Kent brand references and older `brandSlug` values are included in the comparison.
+This still does not delete, deactivate, or automatically reactivate products.
 
 ## Product mapping
 
-The synchronizer reads the product detail page and maps:
+The synchronizer reads the browser-saved product HTML and maps title, slug, SKU, summary, category paths, descriptions, specifications, resources, publications, reviews, PDF documents, WooCommerce option groups, variants, variant SKUs, and variant images.
 
-- title, slug, SKU, summary
-- Kent category path and listing paths
-- description, specifications, resources, publications, and reviews HTML
-- WooCommerce option groups and embedded variation data
-- variant SKU, attributes, option summary, image, and source variation ID
-- PDF resources
+Product and variant images are uploaded to Sanity so the existing Kent gallery receives Sanity CDN URLs.
 
-Product-gallery and variation images are uploaded to Sanity and stored with Sanity CDN URLs. The upload cache reuses the existing Kent image cache when available.
-
-New product IDs are deterministic: `prod_kent__{shop-slug}`.
+New document IDs are deterministic: `prod_kent__{shop-slug}`.
 
 ## Required environment
 
-Audit:
+Audit requires:
 
 - `NEXT_PUBLIC_SANITY_PROJECT_ID`
 - `NEXT_PUBLIC_SANITY_DATASET`
