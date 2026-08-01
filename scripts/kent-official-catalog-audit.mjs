@@ -58,14 +58,15 @@ function candidateIds(value, officialSet) {
   if (Array.isArray(value)) {
     return unique(value.flatMap((item) => candidateIds(item, officialSet)));
   }
+
   const raw = clean(value);
   if (!raw) return [];
 
-  const whole = normalizeId(raw);
   const matches = [];
+  const whole = normalizeId(raw);
   if (officialSet.has(whole)) matches.push(whole);
 
-  for (const part of raw.split(/[\n,;|]+/g)) {
+  for (const part of raw.split(/[\n,;|/]+/g)) {
     const normalized = normalizeId(part);
     if (officialSet.has(normalized)) matches.push(normalized);
   }
@@ -99,6 +100,15 @@ function productSummary(product) {
     productType: product.productType || "",
     isActive: product.isActive,
   };
+}
+
+function distinctProducts(matches) {
+  const byId = new Map();
+  for (const match of matches || []) {
+    if (!match?.product?._id) continue;
+    if (!byId.has(match.product._id)) byId.set(match.product._id, match.product);
+  }
+  return [...byId.values()];
 }
 
 function renderMarkdown(report) {
@@ -135,20 +145,32 @@ function renderMarkdown(report) {
   lines.push("", `## Conflicted official IDs (${report.conflictedOfficialIds.length})`, "");
   if (!report.conflictedOfficialIds.length) lines.push("- None");
   for (const row of report.conflictedOfficialIds) {
-    lines.push(`- \`${row.officialId}\` → ${row.products.map((product) => `\`${product.slug || product._id}\``).join(", ")}`);
+    lines.push(
+      `- \`${row.officialId}\` → ${row.products
+        .map((product) => `\`${product.slug || product._id}\``)
+        .join(", ")}`,
+    );
   }
 
   lines.push("", `## Sanity products with no official-ID match (${report.sanityOnlyProducts.length})`, "");
   if (!report.sanityOnlyProducts.length) lines.push("- None");
   for (const product of report.sanityOnlyProducts) {
-    lines.push(`- **${product.title || product._id}** — \`${product.slug || "no-slug"}\`${product.sku ? ` · SKU ${product.sku}` : ""}`);
+    lines.push(
+      `- **${product.title || product._id}** — \`${product.slug || "no-slug"}\`${
+        product.sku ? ` · SKU ${product.sku}` : ""
+      }`,
+    );
   }
 
   lines.push("", `## Variant-only official matches (${report.variantOnlyMatches.length})`, "");
   if (!report.variantOnlyMatches.length) lines.push("- None");
   for (const row of report.variantOnlyMatches) {
     const match = row.matches[0];
-    lines.push(`- \`${row.officialId}\` → **${match.product.title || match.product._id}** · \`${match.product.slug || "no-slug"}\``);
+    lines.push(
+      `- \`${row.officialId}\` → **${match.product.title || match.product._id}** · \`${
+        match.product.slug || "no-slug"
+      }\``,
+    );
   }
 
   lines.push("", "## Rules", "");
@@ -177,9 +199,10 @@ async function main() {
   if (officialIds.length < 500) {
     throw new Error(`Safety stop: expected at least 500 official IDs, found ${officialIds.length}.`);
   }
+
   const officialSet = new Set(officialIds);
-  const duplicateOfficialIds = normalizedOfficial.filter(
-    (id, index) => normalizedOfficial.indexOf(id) !== index,
+  const duplicateOfficialIds = unique(
+    normalizedOfficial.filter((id, index) => normalizedOfficial.indexOf(id) !== index),
   );
 
   const projectId =
@@ -202,33 +225,36 @@ async function main() {
     useCdn: false,
   });
 
-  const products = await sanity.fetch(`*[_type == "product" && (
-    brandSlug in $aliases ||
-    themeKey in $aliases ||
-    brand->slug.current in $aliases ||
-    brand->themeKey in $aliases
-  )]{
-    _id,
-    title,
-    "slug": slug.current,
-    sku,
-    catNo,
-    itemNumber,
-    productCode,
-    sourceUrl,
-    productType,
-    isActive,
-    variants[]{
-      _key,
+  const products = await sanity.fetch(
+    `*[_type == "product" && (
+      brandSlug in $aliases ||
+      themeKey in $aliases ||
+      brand->slug.current in $aliases ||
+      brand->themeKey in $aliases
+    )]{
+      _id,
       title,
+      "slug": slug.current,
       sku,
       catNo,
       itemNumber,
-      variantId,
-      sourceVariationId,
-      optionSummary
-    }
-  }`, { aliases: BRAND_ALIASES });
+      productCode,
+      sourceUrl,
+      productType,
+      isActive,
+      variants[]{
+        _key,
+        title,
+        sku,
+        catNo,
+        itemNumber,
+        variantId,
+        sourceVariationId,
+        optionSummary
+      }
+    }`,
+    { aliases: BRAND_ALIASES },
+  );
 
   const warrantyProducts = products.filter(isWarranty);
   const normalProducts = products.filter((product) => !isWarranty(product));
@@ -292,7 +318,7 @@ async function main() {
 
   for (const officialId of officialIds) {
     const rawMatches = matchesByOfficialId.get(officialId) || [];
-    const distinctProductIds = unique(rawMatches.map((row) => row.product._id));
+    const productsForId = distinctProducts(rawMatches);
     const hasPrimary = rawMatches.some((row) => row.kind === "primary");
     const hasVariant = rawMatches.some((row) => row.kind === "variant");
 
@@ -301,10 +327,10 @@ async function main() {
       continue;
     }
 
-    if (distinctProductIds.length > 1) {
+    if (productsForId.length > 1) {
       conflictedOfficialIds.push({
         officialId,
-        products: unique(rawMatches.map((row) => JSON.stringify(row.product))).map(JSON.parse),
+        products: productsForId,
         matches: rawMatches,
       });
       continue;
@@ -336,7 +362,7 @@ async function main() {
     },
     counts: {
       officialIds: officialIds.length,
-      duplicateOfficialIds: unique(duplicateOfficialIds).length,
+      duplicateOfficialIds: duplicateOfficialIds.length,
       sanityDocuments: products.length,
       sanityProducts: normalProducts.length,
       warrantyDocuments: warrantyProducts.length,
@@ -348,7 +374,7 @@ async function main() {
       unmatchedOfficialIds: unmatchedOfficialIds.length,
       sanityOnlyProducts: sanityOnlyProducts.length,
     },
-    duplicateOfficialIds: unique(duplicateOfficialIds),
+    duplicateOfficialIds,
     matched,
     variantOnlyMatches,
     conflictedOfficialIds,
