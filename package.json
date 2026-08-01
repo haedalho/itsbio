@@ -7,8 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "kent:shop:audit": "node scripts/kent-shop-sync.mjs",
-    "kent:shop:sync": "node scripts/kent-shop-sync.mjs --write"
+    "kent:shop:browser:setup": "npm install --no-save --package-lock=false playwright-core@1.61.1",
+    "kent:shop:browser": "node scripts/kent-shop-browser-cache.mjs",
+    "kent:shop:audit": "node scripts/kent-shop-run.mjs",
+    "kent:shop:sync": "node scripts/kent-shop-run.mjs --write"
   },
   "dependencies": {
     "@portabletext/react": "^6.0.2",
