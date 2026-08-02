@@ -343,6 +343,8 @@ function collectVideos($, canonical) {
 }
 
 function extractPlaylistItems($, scope, canonical) {
+  // Preserve Kent's official playlist title, duration and playable source URL
+  // as structured preview data instead of relying on visual widget markup.
   const items = [];
   const seen = new Set();
 
