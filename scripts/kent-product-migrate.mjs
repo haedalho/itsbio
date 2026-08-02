@@ -19,6 +19,9 @@ const readArg = (flag, fallback = "") => {
 
 const DRY_RUN = !has("--apply");
 const DEACTIVATE_MISSING = has("--deactivate-missing");
+const PREVIEW_MODE = has("--preview");
+const PRODUCT_DOC_TYPE = PREVIEW_MODE ? "kentPreviewProduct" : "product";
+const PRODUCT_ID_PREFIX = PREVIEW_MODE ? "preview_prod" : "prod";
 const LIMIT = Number(readArg("--limit", "0")) || 0;
 const INPUT = path.resolve(
   readArg("--input", path.join(process.cwd(), ".cache", "kent-shop-profiles.json"))
@@ -714,6 +717,11 @@ function loadShopManifest(inputJson) {
 }
 
 async function ensureShopCategories(inputJson, brand) {
+  if (PREVIEW_MODE) {
+    log("preview mode: production category documents are read-only");
+    return;
+  }
+
   const manifest = loadShopManifest(inputJson);
   if (!manifest) {
     warn("Kent Shop manifest not found; existing Sanity categories will be used.");
@@ -768,7 +776,7 @@ async function ensureShopCategories(inputJson, brand) {
 
 async function loadExistingProducts() {
   const rows = await client.fetch(
-    `*[_type=="product" && (
+    `*[_type==$productType && (
       brand->themeKey==$brandKey
       || brand->slug.current==$brandKey
     )]{
@@ -781,7 +789,7 @@ async function loadExistingProducts() {
         asset->{ _id, url }
       }
     }`,
-    { brandKey: BRAND_KEY }
+    { brandKey: BRAND_KEY, productType: PRODUCT_DOC_TYPE }
   );
 
   const bySourceUrl = new Map();
@@ -825,11 +833,11 @@ function buildProductDoc(inputProduct, ctx) {
     firstSummary(inputProduct?.bodyTextPreview || "");
   const sections = officialSections(inputProduct);
 
-  const docId = existing?._id || `prod_${BRAND_KEY}__${slugCurrent.replaceAll("/", "__")}`;
+  const docId = existing?._id || `${PRODUCT_ID_PREFIX}_${BRAND_KEY}__${slugCurrent.replaceAll("/", "__")}`;
 
   const doc = {
     _id: docId,
-    _type: "product",
+    _type: PRODUCT_DOC_TYPE,
     isActive: true,
     brand: { _type: "reference", _ref: ctx.brand._id },
     title,
@@ -964,7 +972,7 @@ async function resolveHeroMedia(built) {
 
 async function upsertProduct(doc) {
   const tx = client.transaction();
-  tx.createIfNotExists({ _id: doc._id, _type: "product" });
+  tx.createIfNotExists({ _id: doc._id, _type: PRODUCT_DOC_TYPE });
   tx.patch(doc._id, {
     set: doc,
     unset: ["imageUrls", "galleryImageUrls", "imageFiles"],
@@ -995,6 +1003,7 @@ async function reconcileInactiveProducts(existing, sourceProducts) {
 async function main() {
   log(`input: ${INPUT}`);
   log(`mode: ${DRY_RUN ? "DRY_RUN" : "APPLY"}`);
+  log(`document type: ${PRODUCT_DOC_TYPE}${PREVIEW_MODE ? " (preview-only)" : ""}`);
 
   const inputJson = JSON.parse(fs.readFileSync(INPUT, "utf8"));
   const allResults = Array.isArray(inputJson?.results) ? inputJson.results : [];
@@ -1072,6 +1081,12 @@ async function main() {
   process.stdout.write("\n");
   await reconcileInactiveProducts(existing, allResults);
   log(`[DONE] ok=${ok} skip=${skip} fail=${fail} mode=${DRY_RUN ? "DRY_RUN" : "APPLY"}`);
+
+  if (fail > 0 || skip > 0 || ok !== products.length) {
+    throw new Error(
+      `Incomplete Kent Shop migration: expected=${products.length} ok=${ok} skip=${skip} fail=${fail}`,
+    );
+  }
 }
 
 main().catch((err) => {

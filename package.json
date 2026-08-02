@@ -32,6 +32,7 @@
     "kent:shop:profiles": "node scripts/kent-product-from-listing.mjs --listing .cache/kent-shop-all.json --out .cache/kent-shop-profiles.json --cacheDir .cache/kent-shop-pages",
     "kent:shop:dry": "node scripts/kent-product-migrate.mjs --input .cache/kent-shop-profiles.json",
     "kent:shop:apply": "node scripts/kent-product-migrate.mjs --input .cache/kent-shop-profiles.json --apply --deactivate-missing",
+    "kent:shop:preview:apply": "node scripts/kent-product-migrate.mjs --input .cache/kent-shop-profiles.json --apply --preview --deactivate-missing",
     "kent:shop:sync:dry": "npm run kent:shop:collect && npm run kent:shop:profiles && npm run kent:shop:dry",
     "kent:shop:sync:apply": "npm run kent:shop:collect && npm run kent:shop:profiles && npm run kent:shop:apply",
     "kent:product:census:write": "node -e \"console.error('Disabled: a reviewed exact-content migration plan is required.'); process.exit(1)\"",

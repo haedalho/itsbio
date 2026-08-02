@@ -13,6 +13,10 @@ import { sanityClient } from "@/lib/sanity/sanity.client";
 export const revalidate = 300;
 
 const BRAND_KEY = "kent";
+const PRODUCT_DOC_TYPE =
+  process.env.VERCEL_ENV === "preview" && String(process.env.VERCEL_GIT_COMMIT_REF || "").startsWith("agent/kent")
+    ? "kentPreviewProduct"
+    : "product";
 
 const ITEM_PAGE_QUERY = `
 {
@@ -27,7 +31,7 @@ const ITEM_PAGE_QUERY = `
   },
 
   "product": *[
-    _type == "product"
+    _type == $productType
     && slug.current == $slug
     && (
       brand->slug.current == $brandKey
@@ -331,7 +335,11 @@ export default async function KentProductDetailPage({
   if (!slug) notFound();
 
   const client = (sanityClient as any).withConfig?.({ useCdn: true }) ?? sanityClient;
-  const bundle = await client.fetch(ITEM_PAGE_QUERY, { brandKey: BRAND_KEY, slug });
+  const bundle = await client.fetch(ITEM_PAGE_QUERY, {
+    brandKey: BRAND_KEY,
+    productType: PRODUCT_DOC_TYPE,
+    slug,
+  });
   const brand = bundle?.brand;
   const product = bundle?.product;
   if (!brand?._id || !product?._id) notFound();

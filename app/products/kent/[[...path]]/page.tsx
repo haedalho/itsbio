@@ -13,6 +13,10 @@ export const revalidate = 300;
 const BRAND_KEY = "kent";
 const BRAND_BASE = "https://www.kentscientific.com";
 const KENT_MENU_TITLE = "General Lab Equipment";
+const PRODUCT_DOC_TYPE =
+  process.env.VERCEL_ENV === "preview" && String(process.env.VERCEL_GIT_COMMIT_REF || "").startsWith("agent/kent")
+    ? "kentPreviewProduct"
+    : "product";
 
 const PAGE_SHELL = "mx-auto max-w-[1320px] px-6";
 const CONTENT_LAYOUT =
@@ -147,7 +151,7 @@ const PAGE_QUERY = `
   ),
 
   "allProducts": *[
-    _type=="product"
+    _type==$productType
     && (!defined(isActive) || isActive==true)
     && (
       brandSlug==$brandKey
@@ -163,7 +167,7 @@ const PAGE_QUERY = `
     listingPaths,
     categoryPathTitles,
     "slug": slug.current,
-    "thumb": coalesce(imageUrls[0], images[0].asset->url, ""),
+    "thumb": coalesce(images[0].asset->url, ""),
     sourceUrl
   },
 
@@ -1906,6 +1910,7 @@ export default async function KentProductsPathPage({
 
   const data = await sanityClient.fetch(PAGE_QUERY, {
     brandKey: BRAND_KEY,
+    productType: PRODUCT_DOC_TYPE,
     hasPath,
     pathStr,
     pathArr,
