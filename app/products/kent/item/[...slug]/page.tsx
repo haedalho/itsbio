@@ -5,7 +5,6 @@ import Breadcrumb from "@/components/site/Breadcrumb";
 import { getKentOfficialProductOverride } from "@/lib/kent/official-product-overrides";
 import {
   deriveKentSourceContent,
-  pickKentSubtitle,
   sanitizeKentSections,
   sanitizeKentSourceHtml,
 } from "@/lib/kent/source-content";
@@ -41,6 +40,7 @@ const ITEM_PAGE_QUERY = `
     summary,
     "slug": slug.current,
     sku,
+    sourceProductId,
     sourceUrl,
     categoryPath,
     categoryPathTitles,
@@ -336,7 +336,7 @@ export default async function KentProductDetailPage({
   const product = bundle?.product;
   if (!brand?._id || !product?._id) notFound();
 
-  const official = getKentOfficialProductOverride(slug);
+  const official = product?.sourceProductId ? null : getKentOfficialProductOverride(slug);
   const title = official?.title || stripBrandSuffix(product?.title || "");
   const categoryPath: string[] = Array.isArray(product?.categoryPath) ? product.categoryPath : [];
   const categoryPathTitles: string[] = Array.isArray(product?.categoryPathTitles) ? product.categoryPathTitles : [];
@@ -388,7 +388,7 @@ export default async function KentProductDetailPage({
         <KentProductDetailClient
           slug={product.slug}
           title={title}
-          summary={official ? official.summary : pickKentSubtitle(product?.summary, leadHtml)}
+          summary={official ? official.summary : cleanText(product?.summary)}
           sku={official ? official.sku : product?.sku || ""}
           badge={official?.badge}
           leadHtml={leadHtml}
