@@ -2,7 +2,7 @@
 
 이 폴더의 JSON은 실제 Kent 상세페이지를 제품별로 직접 검수한 뒤 만드는 **승인 증거 파일**이다.
 
-제품 본문 전체를 Git에 복사하지 않는다. 짧은 식별 필드만 저장하고, 긴 본문과 섹션 데이터는 정규화된 SHA-256 해시로 검증한다.
+제품 본문 전체를 Git에 복사하지 않는다. 짧은 식별 필드는 정확한 문자열로 저장하고, 상단 본문과 각 섹션의 전체 표시 데이터는 SHA-256으로 검증한다.
 
 스냅샷이 없거나 한 필드라도 일치하지 않으면 해당 제품은 `VERIFIED`가 될 수 없다.
 
@@ -12,87 +12,71 @@
 <product-slug>.json
 ```
 
-예:
-
-```text
-somnosuite-y-adapter.json
-```
-
 ## 형식
 
 ```json
 {
-  "schemaVersion": 1,
-  "slug": "somnosuite-y-adapter",
-  "sourceUrl": "https://www.kentscientific.com/products/somnosuite-y-adapter/",
-  "checkedAt": "2026-08-02T00:00:00Z",
+  "schemaVersion": 2,
+  "slug": "somnoflo-o2care",
+  "sourceUrl": "https://www.kentscientific.com/products/somnoflo-o2care/",
+  "checkedAt": "2026-08-03T00:00:00+09:00",
   "sourcePageSha256": "64자리 소문자 SHA-256",
   "content": {
-    "title": "2-Accessory Connector",
-    "subtitle": "For the SomnoFlo® and SomnoSuite® anesthesia systems",
-    "itemNumber": "10-4500-09",
-    "optionGroups": [
-      {
-        "key": "configuration",
-        "label": "Choose your option",
-        "displayType": "select",
-        "options": [
-          {
-            "value": "somnoflo-systems",
-            "label": "공식 페이지의 정확한 옵션 문구"
-          }
-        ]
-      }
-    ],
-    "variants": [
-      {
-        "variantId": "10-8000-23",
-        "title": "공식 페이지의 정확한 Variant 제목",
-        "sku": "10-8000-23",
-        "catNo": "10-8000-23",
-        "optionSummary": "정확한 옵션 요약",
-        "optionValues": {
-          "configuration": "somnoflo-systems"
-        },
-        "attributes": {},
-        "sourceVariationId": "",
-        "imageAssetId": "image-...-1200x1200-png",
-        "imageSha1": "40자리 Sanity asset SHA-1",
-        "legacyImageUrl": ""
-      }
-    ],
+    "title": "SomnoFlo® O2Care",
+    "subtitle": "Blend air and O₂",
+    "itemNumber": "SF-06",
+    "introBodySha256": "상단 제품 본문 전체 정규화 텍스트의 SHA-256",
+    "optionGroups": [],
+    "variants": [],
     "sections": [
       {
         "order": 1,
-        "title": "Related Products",
-        "type": "related-products",
-        "contentSha256": "해당 섹션의 정규화된 전체 표시 데이터 SHA-256"
+        "title": "공식 페이지의 정확한 섹션 제목",
+        "type": "공식 구조에 대응하는 섹션 유형",
+        "contentSha256": "해당 섹션 전체 표시 데이터의 SHA-256"
       }
     ],
-    "gallery": [
-      {
-        "order": 1,
-        "sanityAssetId": "image-...-1200x1200-png",
-        "sha1": "40자리 Sanity asset SHA-1",
-        "alt": "승인된 정확한 대체 텍스트"
-      }
-    ]
+    "heroImage": {
+      "sanityAssetId": "image-...-1200x1200-png",
+      "sha1": "40자리 Sanity Asset SHA-1",
+      "sourceImageSha256": "검수한 공식 대표 이미지 원본 파일의 SHA-256",
+      "alt": "SomnoFlo® O2Care"
+    }
   }
 }
 ```
 
-## 검수 규칙
+## 정확한 콘텐츠 규칙
 
 1. 실제 Kent 상세페이지를 직접 확인한다.
 2. 제목, 부제목, Item #의 철자·대소문자·기호·상표기호를 보존한다.
-3. 옵션과 Variant는 표시 순서까지 기록한다.
-4. 섹션 제목과 순서를 그대로 기록한다.
-5. 긴 본문은 승인된 표시 데이터로 Sanity에 입력한 뒤 동일 정규화 규칙으로 SHA-256을 계산한다.
-6. 이미지 파일은 Kent에서 런타임 호출하지 않는다.
-7. 검수한 이미지 파일을 Sanity에 업로드하고 Asset ID와 SHA-1을 기록한다.
-8. 실제 Sanity Asset 순서가 공식 갤러리 순서와 같아야 한다.
-9. `imageUrls`, `galleryImageUrls`, Kent 도메인의 Variant·섹션 이미지 URL이 남아 있으면 실패한다.
-10. 가격, 로그인, 장바구니, 수량 선택, 뉴스레터, 공급사 고객지원 블록은 제품 콘텐츠에서 제외한다.
+3. 상단 제품 본문은 문장을 요약하거나 재작성하지 않는다.
+4. 문단 순서, 강조 문구, 수치, 제품번호를 원본 그대로 유지한다.
+5. 옵션과 Variant는 표시 순서까지 기록한다.
+6. 제품별 섹션 제목, 순서, 본문, 표, FAQ, 후기, 자료를 원본에 있는 범위에서만 반영한다.
+7. 다른 제품의 문장이나 섹션을 추측해서 보충하지 않는다.
+8. 가격, 로그인, 장바구니, 수량 선택, 뉴스레터, 공급사 고객지원 블록은 제외한다.
+9. `Customers who viewed this item also viewed` 같은 쇼핑 추천 영역도 제품 본문에서 제외한다.
+
+## 이미지 규칙
+
+1. Kent 갤러리와 썸네일 목록은 사용하지 않는다.
+2. 실제 Kent 상세페이지의 공식 대표 이미지 한 장만 사용한다.
+3. 대표 이미지 파일은 검수 후 Sanity Assets에 업로드한다.
+4. ITS BIO 화면에서는 Sanity Asset만 렌더링한다.
+5. 제품 `images` 배열에 두 장 이상 있으면 `gallery_images_present`로 실패한다.
+6. Variant 이미지가 있으면 `variant_images_present`로 실패한다.
+7. Kent 이미지 URL이 활성 필드에 남아 있으면 실패한다.
+8. 이미지 확보 또는 업로드에 실패하면 Kent URL로 대체하지 않고 placeholder를 사용한다.
+
+## SomnoFlo O2Care 상단 기준 예시
+
+- Title: `SomnoFlo® O2Care`
+- Subtitle: `Blend air and O₂`
+- Item #: `SF-06`
+- 상단 본문: 실제 페이지의 네 문단을 순서와 표현 그대로 저장
+- 제외: `Login to see prices`, 관련 상품 추천 영역, 갤러리 썸네일
+- 이미지: 공식 대표 이미지 한 장만 Sanity에 저장
 
 ## 실행
 
