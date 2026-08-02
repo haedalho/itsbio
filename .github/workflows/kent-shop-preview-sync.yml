@@ -51,8 +51,7 @@ jobs:
         run: |
           test -f .cache/kent-shop-all.json
           test -f .cache/kent-shop-profiles.json
-          test "$(node -p \"require('./.cache/kent-shop-all.json').publishedProductCount\")" = "204"
-          test "$(node -p \"require('./.cache/kent-shop-profiles.json').results.length\")" = "204"
+          node -e "const a=require('./.cache/kent-shop-all.json'); const p=require('./.cache/kent-shop-profiles.json'); if(a.publishedProductCount!==204 || p.results.length!==204) process.exit(1)"
 
       - name: Verify all profiles without writes
         run: npm run kent:shop:dry
