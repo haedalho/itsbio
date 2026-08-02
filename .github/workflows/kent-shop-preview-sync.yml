@@ -47,11 +47,12 @@ jobs:
       - name: Require Sanity preview write access
         run: test -n "$SANITY_WRITE_TOKEN"
 
-      - name: Collect all current Kent Shop products
-        run: npm run kent:shop:collect
-
-      - name: Build exact price-free product profiles
-        run: npm run kent:shop:profiles
+      - name: Require reviewed 204-product Kent snapshot
+        run: |
+          test -f .cache/kent-shop-all.json
+          test -f .cache/kent-shop-profiles.json
+          test "$(node -p \"require('./.cache/kent-shop-all.json').publishedProductCount\")" = "204"
+          test "$(node -p \"require('./.cache/kent-shop-profiles.json').results.length\")" = "204"
 
       - name: Verify all profiles without writes
         run: npm run kent:shop:dry
