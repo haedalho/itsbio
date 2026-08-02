@@ -6,9 +6,6 @@ on:
       - agent/kent-sanity-images-only
     paths:
       - .github/workflows/kent-shop-preview-sync.yml
-      - app/products/kent/**
-      - components/products/KentProduct**
-      - lib/kent/**
       - scripts/kent-product-from-listing.mjs
       - scripts/kent-product-migrate.mjs
       - scripts/kent-shop-collect.mjs
@@ -25,6 +22,7 @@ concurrency:
 
 jobs:
   build-preview:
+    if: ${{ !contains(github.event.head_commit.message, '[skip kent data]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:

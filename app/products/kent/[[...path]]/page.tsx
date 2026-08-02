@@ -75,6 +75,7 @@ type ProductLite = {
   sku?: string;
   slug: string;
   thumb?: string;
+  thumbSource?: string;
   sourceUrl?: string;
   summary?: string;
   categoryPath?: string[];
@@ -168,6 +169,7 @@ const PAGE_QUERY = `
     categoryPathTitles,
     "slug": slug.current,
     "thumb": coalesce(images[0].asset->url, ""),
+    "thumbSource": coalesce(images[0].sourceUrl, ""),
     sourceUrl
   },
 
@@ -1011,11 +1013,15 @@ function matchProductsForListing(pathArr: string[], category: CategoryDoc | null
   return dedupeProducts(matched);
 }
 
-function hydrateProductsFromLegacyCards(baseProducts: ProductLite[], legacyCards: ParsedLegacyCard[]) {
+function hydrateProductsFromLegacyCards(
+  baseProducts: ProductLite[],
+  legacyCards: ParsedLegacyCard[],
+  productPool: ProductLite[] = baseProducts,
+) {
   const bySlug = new Map<string, ProductLite>();
   const bySourceUrl = new Map<string, ProductLite>();
 
-  for (const product of baseProducts) {
+  for (const product of productPool) {
     const slug = String(product.slug || "").trim().toLowerCase();
     if (slug) bySlug.set(slug, product);
 
@@ -1036,7 +1042,7 @@ function hydrateProductsFromLegacyCards(baseProducts: ProductLite[], legacyCards
       const idx = out.findIndex((item) => item._id === matched._id);
       const merged: ProductLite = {
         ...matched,
-        thumb: matched.thumb || card.imageUrl || "",
+        thumb: matched.thumb || "",
         sku: matched.sku || card.sku || "",
         summary: matched.summary || card.summary || "",
       };
@@ -1053,7 +1059,7 @@ function hydrateProductsFromLegacyCards(baseProducts: ProductLite[], legacyCards
       _id: `legacy-${key}`,
       title: normalizeTitle(card.title || "", slug),
       slug,
-      thumb: card.imageUrl || "",
+      thumb: "",
       sku: card.sku || "",
       summary: card.summary || "",
       sourceUrl: href,
@@ -1070,10 +1076,68 @@ function resolveListingProducts(pathArr: string[], category: CategoryDoc | null,
   const legacyCards = parseLegacyProductCards(category?.legacyHtml);
 
   if (legacyCards.length) {
-    return hydrateProductsFromLegacyCards(matched, legacyCards);
+    return hydrateProductsFromLegacyCards(matched, legacyCards, allProducts);
   }
 
   return matched;
+}
+
+function hydrateProductCardBlocks(blocks: ContentBlock[], allProducts: ProductLite[]) {
+  const bySlug = new Map<string, ProductLite>();
+  const bySourceUrl = new Map<string, ProductLite>();
+  const byImageSource = new Map<string, ProductLite>();
+
+  const imageIdentity = (value: unknown) => {
+    try {
+      const pathname = decodeURIComponent(new URL(toAbs(String(value || ""))).pathname).toLowerCase();
+      return pathname.replace(/-\d+x\d+(?=\.[a-z0-9]+$)/, "");
+    } catch {
+      return "";
+    }
+  };
+
+  for (const product of allProducts) {
+    const slug = String(product.slug || "").trim().toLowerCase();
+    if (slug) bySlug.set(slug, product);
+
+    const sourceUrl = normalizeUrl(String(product.sourceUrl || "")).toLowerCase();
+    if (sourceUrl) bySourceUrl.set(sourceUrl, product);
+
+    const sourceImage = imageIdentity(product.thumbSource);
+    if (sourceImage) byImageSource.set(sourceImage, product);
+  }
+
+  return blocks.map((block) => {
+    if (block?._type !== "contentBlockCards") return block;
+    const kind = String(block.kind || "");
+    if (kind !== "product" && kind !== "category") return block;
+
+    return {
+      ...block,
+      items: (Array.isArray(block.items) ? block.items : []).map((item) => {
+        const href = toAbs(String(item?.href || ""));
+        const slug = kentProductSlugFromUrl(href).toLowerCase();
+        const sourceUrl = normalizeUrl(href).toLowerCase();
+        const categoryLabel = `${href} ${String(item?.title || "")}`.toLowerCase();
+        const categoryRepresentative = categoryLabel.includes("somnosuite")
+          ? bySlug.get("somnosuite")
+          : categoryLabel.includes("somnoflo")
+            ? bySlug.get("somnoflo")
+            : categoryLabel.includes("vetflo")
+              ? bySlug.get("vaporizer-with-vetflo-single-channel-anesthesia-stand")
+              : undefined;
+        const product =
+          kind === "category"
+            ? byImageSource.get(imageIdentity(item?.imageUrl)) || categoryRepresentative
+            : bySourceUrl.get(sourceUrl) || bySlug.get(slug);
+
+        return {
+          ...item,
+          imageUrl: product?.thumb || "",
+        };
+      }),
+    } as ContentBlock;
+  });
 }
 
 function getFirstHtmlBlock(blocks: ContentBlock[]) {
@@ -1964,7 +2028,10 @@ export default async function KentProductsPathPage({
   const pageTitle =
     STATIC_LABEL_BY_PATH.get(pathStr) || normalizeTitle(category.title || "", pathArr[pathArr.length - 1] || "");
 
-  const blocks = coerceContentBlocks(Array.isArray(category.contentBlocks) ? category.contentBlocks : []);
+  const blocks = hydrateProductCardBlocks(
+    coerceContentBlocks(Array.isArray(category.contentBlocks) ? category.contentBlocks : []),
+    allProducts,
+  );
   const renderedBlocks = renderLandingBlocks(blocks, THEME_KENT);
   const fallbackHtml = typeof category.legacyHtml === "string" ? category.legacyHtml : "";
   const hasFallbackHtml = roughTextLenFromHtml(safeHtmlForRender(fallbackHtml)) >= 20;
