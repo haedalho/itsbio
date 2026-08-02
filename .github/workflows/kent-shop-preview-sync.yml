@@ -12,6 +12,7 @@ on:
       - scripts/kent-product-from-listing.mjs
       - scripts/kent-product-migrate.mjs
       - scripts/kent-shop-collect.mjs
+      - data/kent-shop-preview-snapshot.tgz
       - package.json
       - package-lock.json
 
@@ -49,6 +50,8 @@ jobs:
 
       - name: Require reviewed 204-product Kent snapshot
         run: |
+          echo "7e30913f4eb212f2565fffbce26601445ba2f43f2f8264152484b8a0c72d01f6  data/kent-shop-preview-snapshot.tgz" | sha256sum --check --strict
+          tar -xzf data/kent-shop-preview-snapshot.tgz
           test -f .cache/kent-shop-all.json
           test -f .cache/kent-shop-profiles.json
           node -e "const a=require('./.cache/kent-shop-all.json'); const p=require('./.cache/kent-shop-profiles.json'); if(a.publishedProductCount!==204 || p.results.length!==204) process.exit(1)"
