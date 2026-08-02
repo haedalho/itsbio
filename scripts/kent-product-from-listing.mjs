@@ -97,6 +97,12 @@ function removeResizeSuffix(value) {
 function normalizeImageUrl(value) {
   const normalized = normalizeUrl(value);
   if (!normalized) return "";
+  try {
+    const pathname = new URL(normalized).pathname.toLowerCase();
+    if (!/\.(?:avif|gif|jpe?g|png|svg|webp)$/.test(pathname)) return "";
+  } catch {
+    return "";
+  }
   return removeResizeSuffix(normalized);
 }
 
@@ -839,7 +845,10 @@ function parseProduct(html, url, sourceMeta = null) {
     summaryHtml: String(sourceMeta?.summaryHtml || "").trim(),
     sourceIntroHtml: overviewHtml,
     kentSections: sections,
-    heroImageUrl: normalizeImageUrl(sourceMeta?.heroImageUrl || collectImages($, canonical)[0] || ""),
+    heroImageUrl:
+      normalizeImageUrl(sourceMeta?.heroImageUrl) ||
+      normalizeImageUrl(collectImages($, canonical)[0]) ||
+      normalizeImageUrl(variantImageUrls[0]),
     wpProductId: Number(sourceMeta?.wpProductId || 0) || undefined,
     sourceModifiedAt: sourceMeta?.modifiedAt || undefined,
     metaText,

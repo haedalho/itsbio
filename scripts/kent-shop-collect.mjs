@@ -48,8 +48,11 @@ function cleanText(value) {
 }
 
 function normalizeUrl(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
   try {
-    const url = new URL(String(value || ""), BASE);
+    const url = new URL(raw, BASE);
     url.hash = "";
     url.search = "";
     if (url.hostname === "kentscientific.com") url.hostname = "www.kentscientific.com";
