@@ -48,7 +48,7 @@ jobs:
 
       - name: Require reviewed 204-product Kent snapshot
         run: |
-          echo "6eda757fd4c36fe8c632ddf15f0ba4317822a6570710aff57562dccfd4034969  data/kent-shop-preview-snapshot.tgz" | sha256sum --check --strict
+          echo "98ee27da1c2f287506c07f36a7d5659879475c9b77a5bf3c12378fb969f50782  data/kent-shop-preview-snapshot.tgz" | sha256sum --check --strict
           tar -xzf data/kent-shop-preview-snapshot.tgz
           test -f .cache/kent-shop-all.json
           test -f .cache/kent-shop-profiles.json

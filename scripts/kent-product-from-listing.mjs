@@ -335,7 +335,33 @@ function collectVideos($, canonical) {
     if (/youtube\.com\/user\/kentscientific/i.test(href)) return;
     urls.push(href);
   });
+  $('[data-video-url]').each((_, el) => {
+    const href = normalizeUrl(absUrl(canonical, $(el).attr("data-video-url") || ""));
+    if (href) urls.push(href);
+  });
   return dedupeStrings(urls);
+}
+
+function extractPlaylistItems($, scope, canonical) {
+  const items = [];
+  const seen = new Set();
+
+  scope.find('[data-video-url]').each((index, el) => {
+    const node = $(el);
+    const url = normalizeUrl(absUrl(canonical, node.attr("data-video-url") || ""));
+    const title = textClean(node.attr("data-video-title") || node.find("button,h4").first().text());
+    const duration = textClean(node.attr("data-video-duration") || "");
+    if (!url || !title || seen.has(url)) return;
+    seen.add(url);
+    items.push({
+      _key: `kent-playlist-${index}-${sha1(url).slice(0, 8)}`,
+      title,
+      description: duration,
+      url,
+    });
+  });
+
+  return items;
 }
 
 function collectRelatedProducts($, canonical) {
@@ -680,11 +706,15 @@ function extractElementorSections($, canonical) {
     pendingTitle = "";
     if (!bodyText || EXCLUDED_SECTION_RE.test(title)) return;
 
+    const type = sectionType(title);
+    const items = type === "videos" ? extractPlaylistItems($, $node, canonical) : [];
+
     sections.push({
       _key: stableSectionKey(title, index),
-      type: sectionType(title),
+      type,
       title,
       html,
+      ...(items.length ? { items } : {}),
     });
   });
 

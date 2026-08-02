@@ -230,18 +230,89 @@ function videoItemsFromHtml(html: string): KentSectionItem[] {
 }
 
 function linkedItemsFromHtml(html: string): KentSectionItem[] {
-  const matches = Array.from(html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi));
   const seen = new Set<string>();
-  return matches.flatMap((match, index) => {
+  const output: KentSectionItem[] = [];
+
+  Array.from(html.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)).forEach((match, index) => {
+    const block = match[1] || "";
+    const anchor = block.match(/<a\b([^>]*)>([\s\S]*?)<\/a>/i);
+    if (!anchor) return;
+    const href = anchor[1]?.match(/\bhref=["']([^"']+)["']/i)?.[1] || "";
+    const anchorText = cleanText(anchor[2]);
+    const fullText = cleanText(block);
+    const title = fullText
+      .replace(/^\d+\.\)\s*/, "")
+      .replace(new RegExp(`\\s*:?\\s*${anchorText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`, "i"), "")
+      .trim() || anchorText;
+    const key = `${href}|${title}`;
+    if (!href || !title || seen.has(key)) return;
+    seen.add(key);
+    output.push({ _key: `link-list-html-${index}`, href, title });
+  });
+
+  const matches = Array.from(html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi));
+  matches.forEach((match, index) => {
     const attributes = match[1] || "";
     const href = attributes.match(/\bhref=["']([^"']+)["']/i)?.[1] || "";
     const title = cleanText(match[2]);
-    if (!href || !title || /^continue reading$/i.test(title)) return [];
+    if (!href || !title || /^continue reading$/i.test(title)) return;
     const key = `${href}|${title}`;
-    if (seen.has(key)) return [];
+    if (seen.has(key) || output.some((item) => String(item.href || item.url) === href)) return;
     seen.add(key);
-    return [{ _key: `link-html-${index}`, href, title }];
+    output.push({ _key: `link-html-${index}`, href, title });
   });
+  return output;
+}
+
+function isVideoUrl(value?: unknown) {
+  return /youtu(?:\.be|be\.com)|vimeo\.com/i.test(String(value || ""));
+}
+
+function videoMatchWords(input?: unknown) {
+  return cleanText(input)
+    .toLowerCase()
+    .replace(/[®™©]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .split(/\s+/)
+    .filter((word) => word.length >= 4 && !["video", "with", "from", "this", "that", "mouse", "anesthesia", "protocol"].includes(word))
+    .map((word) => word.slice(0, 5));
+}
+
+function attachVideoUrls(items: KentSectionItem[], candidates: KentSectionItem[]) {
+  const unused = new Set(candidates.map((_, index) => index));
+  return items.map((item) => {
+    if (isVideoUrl(item.url || item.href)) return item;
+    const words = new Set(videoMatchWords(item.title || item.label));
+    let bestIndex = -1;
+    let bestScore = 0;
+    candidates.forEach((candidate, index) => {
+      if (!unused.has(index)) return;
+      const candidateWords = videoMatchWords(candidate.title || candidate.label || candidate.text);
+      const score = candidateWords.reduce((total, word) => total + (words.has(word) ? 1 : 0), 0);
+      if (score > bestScore) {
+        bestScore = score;
+        bestIndex = index;
+      }
+    });
+    if (bestIndex < 0 || bestScore < 1) return item;
+    unused.delete(bestIndex);
+    const match = candidates[bestIndex];
+    return { ...item, url: String(match.url || match.href || "") };
+  });
+}
+
+function listItemsFromHtml(html: string): KentSectionItem[] {
+  const seen = new Set<string>();
+  return Array.from(html.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)).flatMap((match, index) => {
+    const title = cleanText(match[1]);
+    if (!title || seen.has(title)) return [];
+    seen.add(title);
+    return [{ _key: `list-html-${index}`, title }];
+  });
+}
+
+function tablesFromHtml(html: string) {
+  return Array.from(html.matchAll(/<table\b[^>]*>[\s\S]*?<\/table>/gi)).map((match) => match[0]);
 }
 
 function MediaImage({ src, alt, className = "" }: { src?: string; alt: string; className?: string }) {
@@ -355,23 +426,107 @@ function ResourceList({ items }: { items: KentSectionItem[] }) {
   );
 }
 
-function VideoCards({ items }: { items: KentSectionItem[] }) {
+function videoEmbedUrl(url?: string) {
+  const raw = String(url || "").trim();
+  if (!raw) return "";
+  try {
+    const parsed = new URL(raw);
+    if (parsed.hostname === "youtu.be") {
+      const id = parsed.pathname.replace(/^\//, "").split("/")[0];
+      return id ? `https://www.youtube-nocookie.com/embed/${id}?rel=0` : "";
+    }
+    if (parsed.hostname.includes("youtube.com")) {
+      const id = parsed.pathname.startsWith("/embed/")
+        ? parsed.pathname.split("/")[2]
+        : parsed.pathname.startsWith("/shorts/")
+          ? parsed.pathname.split("/")[2]
+          : parsed.searchParams.get("v");
+      return id ? `https://www.youtube-nocookie.com/embed/${id}?rel=0` : "";
+    }
+    if (parsed.hostname.includes("vimeo.com")) {
+      const id = parsed.pathname.split("/").filter(Boolean).find((part) => /^\d+$/.test(part));
+      return id ? `https://player.vimeo.com/video/${id}` : "";
+    }
+  } catch {
+    return "";
+  }
+  return "";
+}
+
+function VideoPlaylist({ items }: { items: KentSectionItem[] }) {
+  const [activeIndex, setActiveIndex] = React.useState(0);
+  React.useEffect(() => setActiveIndex(0), [items]);
+  const active = items[activeIndex] || items[0];
+  const activeUrl = String(active?.url || active?.href || "").trim();
+  const embedUrl = videoEmbedUrl(activeUrl);
+  const activeTitle = String(active?.title || active?.label || `Video ${activeIndex + 1}`);
+
   return (
-    <div className="grid gap-8 md:grid-cols-2">
-      {items.map((item, index) => {
-        const href = String(item.url || item.href || "").trim();
-        const label = String(item.label || item.title || `Video ${index + 1}`);
-        const duration = String(item.value || "").trim();
-        return (
-          <a key={item._key || `${href}-${index}`} href={href || undefined} target={href ? "_blank" : undefined} rel={href ? "noreferrer" : undefined} className="group block">
-            <div className="relative flex aspect-video items-center justify-center overflow-hidden bg-[#0b4f9c] transition group-hover:bg-[#083f7d]">
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-lg text-[#0b5baa] shadow">▶</span>
-              {duration ? <span className="absolute bottom-4 right-4 bg-black/55 px-2 py-1 text-xs text-white">{duration}</span> : null}
+    <div className="grid overflow-hidden border border-[#d8dee4] bg-white lg:grid-cols-[minmax(0,1.55fr)_minmax(290px,0.65fr)]">
+      <div className="bg-[#071e35]">
+        <div className="relative aspect-video w-full">
+          {embedUrl ? (
+            <iframe
+              key={embedUrl}
+              src={embedUrl}
+              title={activeTitle}
+              loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+              className="absolute inset-0 h-full w-full border-0"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center px-8 text-center text-white">
+              <div>
+                <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-xl text-[#0b5baa]">▶</span>
+                <p className="mt-5 text-[17px] font-semibold">{activeTitle}</p>
+              </div>
             </div>
-            <h3 className="mt-4 text-[18px] font-semibold leading-6 text-[#0a4d96]">{label}</h3>
-          </a>
-        );
-      })}
+          )}
+        </div>
+      </div>
+
+      <div className="flex min-h-0 flex-col bg-[#f5f6f7]">
+        <div className="border-b border-[#d8dee4] px-5 py-4">
+          <div className="text-[12px] font-bold uppercase tracking-[0.13em] text-[#0b5baa]">Playlist</div>
+          <div className="mt-1 text-sm text-[#666d73]">{items.length} {items.length === 1 ? "Video" : "Videos"}</div>
+        </div>
+        <div className="max-h-[360px] overflow-y-auto">
+          {items.map((item, index) => {
+            const label = String(item.label || item.title || `Video ${index + 1}`);
+            const duration = String(item.description || item.value || "").trim();
+            const selected = index === activeIndex;
+            return (
+              <button
+                key={item._key || `${label}-${index}`}
+                type="button"
+                onClick={() => setActiveIndex(index)}
+                className={`flex w-full items-center gap-4 border-b border-[#dde2e6] px-5 py-4 text-left transition ${selected ? "bg-white" : "hover:bg-white/75"}`}
+              >
+                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs ${selected ? "bg-[#0b5baa] text-white" : "border border-[#b9c3cc] bg-white text-[#0b5baa]"}`}>▶</span>
+                <span className="min-w-0 flex-1">
+                  <span className={`block text-[14px] font-semibold leading-5 ${selected ? "text-[#0b4f9c]" : "text-[#3f474e]"}`}>{label}</span>
+                  {duration ? <span className="mt-1 block text-xs text-[#7a8187]">{duration}</span> : null}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {activeUrl ? <a href={activeUrl} target="_blank" rel="noreferrer" className="mt-auto border-t border-[#d8dee4] px-5 py-3 text-xs font-semibold text-[#0b5baa] hover:underline">Open video in a new window ↗</a> : null}
+      </div>
+    </div>
+  );
+}
+
+function SpecificationGrid({ html }: { html: string }) {
+  const tables = tablesFromHtml(stripUnmanagedImages(html));
+  if (!tables.length) return <HtmlBlock html={html} />;
+  return (
+    <div className="grid gap-6 md:grid-cols-2">
+      {tables.map((table, index) => (
+        <div key={`spec-table-${index}`} className="kent-rich overflow-x-auto border border-[#dce2e7] bg-white px-1" dangerouslySetInnerHTML={{ __html: table }} />
+      ))}
     </div>
   );
 }
@@ -477,7 +632,7 @@ function DataTable({ rows }: { rows: Array<Record<string, unknown>> }) {
   );
 }
 
-function ProductSection({ section, index }: { section: SectionWithKey; index: number }) {
+function ProductSection({ section, index, videoCandidates }: { section: SectionWithKey; index: number; videoCandidates: KentSectionItem[] }) {
   const bucket = typeBucket(section);
   const title = String(section.title || (bucket === "overview" ? "Product overview" : bucket.replaceAll("-", " ")));
   const html = sectionHtml(section);
@@ -489,6 +644,7 @@ function ProductSection({ section, index }: { section: SectionWithKey; index: nu
   const reviewResourceTitle = bucket === "reviews" ? embeddedResourceTitle(html) : "";
   const parsedVideos = bucket === "videos" ? videoItemsFromHtml(html) : [];
   const parsedLinks = ["documents", "datasheet", "references"].includes(bucket) ? linkedItemsFromHtml(html) : [];
+  const parsedListItems = bucket === "included" || bucket === "addons" ? listItemsFromHtml(html) : [];
   const media = section.imageUrl ? <MediaImage src={String(section.imageUrl)} alt={String(section.imageAlt || title)} className="max-h-[500px]" /> : null;
 
   if (bucket === "faqs") {
@@ -520,10 +676,14 @@ function ProductSection({ section, index }: { section: SectionWithKey; index: nu
         </>
       );
     }
-    if (bucket === "included" || bucket === "addons") return items.length ? <ItemList items={items} /> : <HtmlBlock html={html} />;
+    if (bucket === "included" || bucket === "addons") {
+      const listItems = items.length ? items : parsedListItems;
+      return listItems.length ? <ItemList items={listItems} /> : <HtmlBlock html={html} />;
+    }
     if (bucket === "videos") {
       const videos = items.length ? items : parsedVideos;
-      return videos.length ? <VideoCards items={videos} /> : <HtmlBlock html={html} />;
+      const playableVideos = attachVideoUrls(videos, videoCandidates);
+      return playableVideos.length ? <VideoPlaylist items={playableVideos} /> : <HtmlBlock html={html} />;
     }
     if (["documents", "datasheet", "references"].includes(bucket)) {
       const resources = items.length ? items : parsedLinks;
@@ -532,6 +692,7 @@ function ProductSection({ section, index }: { section: SectionWithKey; index: nu
     if (rows.length) {
       return <><DataTable rows={rows} />{html ? <div className="mt-8"><HtmlBlock html={html} /></div> : null}</>;
     }
+    if (bucket === "specs") return <SpecificationGrid html={html} />;
 
     const content = (
       <>
@@ -621,5 +782,19 @@ export default function KentProductSectionRendererV2({
   const merged = [...explicit, ...legacy.filter((section) => !represented.has(section.fallbackKey || typeBucket(section)))]
     .filter((section) => typeBucket(section) !== "related-products");
   if (!merged.length) return null;
-  return <div className="mt-2">{merged.map((section, index) => <ProductSection key={section._key || `${normalizeType(section)}-${index}`} section={section} index={index} />)}</div>;
+  const videoCandidates = merged
+    .flatMap((section) => [...sectionItems(section), ...linkedItemsFromHtml(sectionHtml(section))])
+    .filter((item) => isVideoUrl(item.url || item.href));
+  return (
+    <div className="mt-2">
+      <nav aria-label="Product detail sections" className="scrollbar-hidden -mx-6 mb-2 flex overflow-x-auto border-y border-[#dfe4e8] bg-white px-6">
+        {merged.map((section, index) => {
+          const bucket = typeBucket(section);
+          const label = String(section.title || (bucket === "overview" ? "Product overview" : bucket.replaceAll("-", " ")));
+          return <a key={`section-link-${index}`} href={`#kent-section-${index}`} className="shrink-0 border-r border-[#e5e8eb] px-5 py-4 text-[13px] font-semibold text-[#4c555d] first:border-l hover:bg-[#f5f7f8] hover:text-[#0b4f9c]">{label}</a>;
+        })}
+      </nav>
+      {merged.map((section, index) => <ProductSection key={section._key || `${normalizeType(section)}-${index}`} section={section} index={index} videoCandidates={videoCandidates} />)}
+    </div>
+  );
 }
