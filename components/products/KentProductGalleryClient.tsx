@@ -50,8 +50,8 @@ export default function KentProductGalleryClient({
   const active = !failed ? heroImage : null;
 
   return (
-    <div className="relative overflow-hidden rounded-[12px] border border-slate-200 bg-white">
-      <div className="relative aspect-square min-h-[360px] lg:min-h-[520px]">
+    <div className="relative overflow-hidden border border-[#e0e4e8] bg-white">
+      <div className="relative aspect-square min-h-[320px] sm:min-h-[420px] lg:min-h-0">
         {active?.url ? (
           <Image
             src={active.url}
@@ -59,7 +59,7 @@ export default function KentProductGalleryClient({
             fill
             priority
             sizes="(max-width: 1024px) 100vw, 620px"
-            className="object-contain p-7 lg:p-9"
+            className="object-contain p-5 sm:p-7 lg:p-8"
             unoptimized
             onError={() => setFailed(true)}
           />
