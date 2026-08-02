@@ -18,9 +18,10 @@ const readArg = (flag, fallback = "") => {
 };
 
 const DRY_RUN = !has("--apply");
+const DEACTIVATE_MISSING = has("--deactivate-missing");
 const LIMIT = Number(readArg("--limit", "0")) || 0;
 const INPUT = path.resolve(
-  readArg("--input", path.join(process.cwd(), ".cache", "kent-products-from-listing.json"))
+  readArg("--input", path.join(process.cwd(), ".cache", "kent-shop-profiles.json"))
 );
 const BRAND_KEY = readArg("--brandKey", "kent");
 const BRAND_TITLE = readArg("--brandTitle", "Kent Scientific");
@@ -34,7 +35,8 @@ function env(name, fallback = "") {
 const projectId =
   env("NEXT_PUBLIC_SANITY_PROJECT_ID") ||
   env("SANITY_STUDIO_PROJECT_ID") ||
-  env("SANITY_PROJECT_ID");
+  env("SANITY_PROJECT_ID") ||
+  "9b5twpc8";
 
 const dataset =
   env("NEXT_PUBLIC_SANITY_DATASET") ||
@@ -53,8 +55,8 @@ if (!projectId) {
 if (!dataset) {
   throw new Error("Missing Sanity dataset env.");
 }
-if (!token) {
-  throw new Error("Missing Sanity write token env.");
+if (!token && !DRY_RUN) {
+  throw new Error("Missing Sanity write token env. Apply mode requires SANITY_WRITE_TOKEN.");
 }
 if (!fs.existsSync(INPUT)) {
   throw new Error(`Input JSON not found: ${INPUT}`);
@@ -567,6 +569,27 @@ function buildContentBlocks(product, docs, variants, categoryTitles) {
   return blocks;
 }
 
+function officialSections(product) {
+  return Array.isArray(product?.kentSections)
+    ? product.kentSections
+        .filter((section) => section && typeof section === "object")
+        .map((section, sectionIndex) => ({
+          ...section,
+          _key: section._key || stableKey(`kent-section:${section.title || sectionIndex}`),
+          _type: "kentSourceSection",
+          items: Array.isArray(section.items)
+            ? section.items
+                .filter((item) => item && typeof item === "object")
+                .map((item, itemIndex) => ({
+                  ...item,
+                  _key: item._key || stableKey(`kent-section-item:${section.title || sectionIndex}:${item.title || itemIndex}`),
+                  _type: "kentSourceSectionItem",
+                }))
+            : undefined,
+        }))
+    : [];
+}
+
 function buildListingPaths(sourceCategories) {
   return dedupeStrings(
     (sourceCategories || [])
@@ -675,6 +698,74 @@ async function loadKentCategories() {
   };
 }
 
+function loadShopManifest(inputJson) {
+  const candidates = [
+    inputJson?.listingFile,
+    path.join(process.cwd(), ".cache", "kent-shop-all.json"),
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    const resolved = path.resolve(String(candidate));
+    if (!fs.existsSync(resolved)) continue;
+    const parsed = JSON.parse(fs.readFileSync(resolved, "utf8"));
+    if (Array.isArray(parsed?.categories)) return parsed;
+  }
+  return null;
+}
+
+async function ensureShopCategories(inputJson, brand) {
+  const manifest = loadShopManifest(inputJson);
+  if (!manifest) {
+    warn("Kent Shop manifest not found; existing Sanity categories will be used.");
+    return;
+  }
+
+  const existingRows = await client.fetch(
+    `*[_type=="category" && (
+      brand->themeKey==$brandKey || brand->slug.current==$brandKey || themeKey==$brandKey
+    ) && defined(path)]{ _id, path }`,
+    { brandKey: BRAND_KEY },
+  );
+  const existingByPath = new Map(
+    (existingRows || []).map((row) => [(row.path || []).join("/"), row._id]),
+  );
+  const resolvedIdByPath = new Map();
+  const categories = [...manifest.categories]
+    .filter((category) => Array.isArray(category?.categoryPath) && category.categoryPath.length)
+    .sort((a, b) => a.categoryPath.length - b.categoryPath.length || a.categoryPath.join("/").localeCompare(b.categoryPath.join("/")));
+
+  for (let index = 0; index < categories.length; index += 1) {
+    const category = categories[index];
+    const pathArr = category.categoryPath;
+    const pathKey = pathArr.join("/");
+    const parentKey = pathArr.slice(0, -1).join("/");
+    const id = existingByPath.get(pathKey) || `cat_${BRAND_KEY}__${pathArr.join("__")}`;
+    const parentId = parentKey ? resolvedIdByPath.get(parentKey) || existingByPath.get(parentKey) : "";
+    resolvedIdByPath.set(pathKey, id);
+
+    const doc = {
+      _id: id,
+      _type: "category",
+      brand: { _type: "reference", _ref: brand._id },
+      themeKey: BRAND_KEY,
+      isActive: true,
+      title: textClean(category.title || pathArr.at(-1)),
+      path: pathArr,
+      sourceUrl: normalizeTrailingSlashUrl(category.sourceUrl || category.rootUrl || "") || undefined,
+      parent: parentId ? { _type: "reference", _ref: parentId } : undefined,
+      order: index + 1,
+    };
+
+    if (DRY_RUN) continue;
+    const tx = client.transaction();
+    tx.createIfNotExists({ _id: id, _type: "category" });
+    tx.patch(id, { set: doc, ...(parentId ? {} : { unset: ["parent"] }) });
+    await tx.commit({ autoGenerateArrayKeys: true });
+  }
+
+  log(`shop categories: ${categories.length}${DRY_RUN ? " (dry)" : ""}`);
+}
+
 async function loadExistingProducts() {
   const rows = await client.fetch(
     `*[_type=="product" && (
@@ -683,7 +774,12 @@ async function loadExistingProducts() {
     )]{
       _id,
       sourceUrl,
-      "slug": slug.current
+      "slug": slug.current,
+      images[]{
+        _key,
+        sourceUrl,
+        asset->{ _id, url }
+      }
     }`,
     { brandKey: BRAND_KEY }
   );
@@ -725,15 +821,11 @@ function buildProductDoc(inputProduct, ctx) {
     null;
 
   const summary =
-    firstSummary(stripHtmlTags(inputProduct?.overviewHtml || "")) ||
+    textClean(inputProduct?.summary || "") ||
     firstSummary(inputProduct?.bodyTextPreview || "");
-  const extraHtml = inputProduct?.overviewHtml || paragraphsToHtml(inputProduct?.bodyTextPreview || "");
-  const documentsHtml = inputProduct?.documentsHtml || buildDocumentsHtml(docs);
-  const resolvedSpecsHtml = inputProduct?.specsHtml || (variants.length ? buildVariantTableHtml(variants) : "");
-  const imageUrls = dedupeStrings((inputProduct?.imageUrls || []).map((u) => normalizeUrl(u))).slice(0, 40);
-  const contentBlocks = buildContentBlocks(inputProduct, docs, variants, categoryTitles);
+  const sections = officialSections(inputProduct);
 
-  const docId = existing?._id || `product-${BRAND_KEY}-${stableKey(sourceUrl || slugCurrent, 16)}`;
+  const docId = existing?._id || `prod_${BRAND_KEY}__${slugCurrent.replaceAll("/", "__")}`;
 
   const doc = {
     _id: docId,
@@ -752,16 +844,20 @@ function buildProductDoc(inputProduct, ctx) {
     categoryPathTitles: categoryTitles.length ? categoryTitles : undefined,
     order: ctx.orderMap.get(sourceUrl) ?? 0,
     sourceUrl: sourceUrl || undefined,
-    legacyHtml: undefined,
-    extraHtml: extraHtml || undefined,
-    specsHtml: resolvedSpecsHtml || undefined,
-    datasheetHtml: undefined,
-    documentsHtml: documentsHtml || undefined,
-    faqsHtml: undefined,
-    referencesHtml: undefined,
-    reviewsHtml: undefined,
-    imageUrls: imageUrls.length ? imageUrls : undefined,
+    sourceIntroHtml: String(inputProduct?.sourceIntroHtml || inputProduct?.overviewHtml || "").trim(),
+    overviewHtml: "",
+    legacyHtml: "",
+    extraHtml: "",
+    specsHtml: "",
+    datasheetHtml: "",
+    documentsHtml: "",
+    faqsHtml: "",
+    referencesHtml: "",
+    reviewsHtml: "",
     docs: docs.length ? docs : undefined,
+    kentSections: sections,
+    sourceProductId: Number(inputProduct?.wpProductId || 0) || undefined,
+    sourceModifiedAt: inputProduct?.sourceModifiedAt || undefined,
     productType: variants.length || optionGroups.length ? "variant" : "simple",
     defaultVariantId: defaultVariant?.variantId || undefined,
     optionGroups: optionGroups.length ? optionGroups : undefined,
@@ -769,7 +865,7 @@ function buildProductDoc(inputProduct, ctx) {
       ? variants.map(({ __priceText, __displayPrice, __displayRegularPrice, ...rest }) => rest)
       : undefined,
     enrichedAt: new Date().toISOString(),
-    contentBlocks: contentBlocks.length ? contentBlocks : undefined,
+    contentBlocks: [],
   };
 
   return {
@@ -782,6 +878,8 @@ function buildProductDoc(inputProduct, ctx) {
     listingPaths,
     variantsCount: variants.length,
     optionGroupCount: optionGroups.length,
+    heroImageUrl: normalizeUrl(inputProduct?.heroImageUrl || inputProduct?.imageUrls?.[0] || ""),
+    existing,
   };
 }
 
@@ -801,13 +899,97 @@ function buildOrderMap(inputJson) {
   return map;
 }
 
+async function fetchImage(url) {
+  const response = await fetch(url, {
+    headers: {
+      accept: "image/*,*/*;q=0.8",
+      referer: "https://www.kentscientific.com/",
+      "user-agent": "ITSBIO Kent Shop migration/1.0",
+    },
+    redirect: "follow",
+  });
+  if (!response.ok) throw new Error(`Hero image HTTP ${response.status}: ${url}`);
+  return {
+    buffer: Buffer.from(await response.arrayBuffer()),
+    contentType: response.headers.get("content-type") || undefined,
+  };
+}
+
+function existingHero(existing, sourceUrl) {
+  return (existing?.images || []).find(
+    (image) => normalizeUrl(image?.sourceUrl || "") === normalizeUrl(sourceUrl) && image?.asset?._id && image?.asset?.url,
+  );
+}
+
+async function resolveHeroMedia(built) {
+  const sourceUrl = built.heroImageUrl;
+  if (!sourceUrl) return { images: [], kentOfficialGallery: [], status: "UNVERIFIED" };
+
+  let assetId = "";
+  let assetUrl = "";
+  const reusable = existingHero(built.existing, sourceUrl);
+
+  if (reusable) {
+    assetId = reusable.asset._id;
+    assetUrl = reusable.asset.url;
+  } else {
+    const image = await fetchImage(sourceUrl);
+    const extension = String(image.contentType || "").includes("png") ? "png" : "jpg";
+    const asset = await client.assets.upload("image", image.buffer, {
+      filename: `kent-${built.slugCurrent}-${stableKey(sourceUrl, 10)}.${extension}`,
+      contentType: image.contentType,
+    });
+    assetId = asset._id;
+    assetUrl = asset.url;
+  }
+
+  return {
+    images: [{
+      _key: stableKey(`hero:${sourceUrl}`),
+      _type: "image",
+      asset: { _type: "reference", _ref: assetId },
+      caption: built.title,
+      sourceUrl,
+    }],
+    kentOfficialGallery: [{
+      _key: stableKey(`official-hero:${sourceUrl}`),
+      _type: "kentOfficialGalleryItem",
+      sourceUrl: assetUrl,
+      alt: built.title,
+      order: 0,
+    }],
+    status: "APPROVED",
+  };
+}
+
 async function upsertProduct(doc) {
   const tx = client.transaction();
   tx.createIfNotExists({ _id: doc._id, _type: "product" });
   tx.patch(doc._id, {
     set: doc,
+    unset: ["imageUrls", "galleryImageUrls", "imageFiles"],
   });
   return tx.commit({ autoGenerateArrayKeys: true });
+}
+
+async function reconcileInactiveProducts(existing, sourceProducts) {
+  const sourceUrls = new Set(
+    sourceProducts.map((product) => normalizeTrailingSlashUrl(product?.sourceUrl || "")).filter(Boolean),
+  );
+  const sourceSlugs = new Set(sourceProducts.map((product) => safeSlug(product?.slug || product?.title || "")).filter(Boolean));
+  const stale = existing.rows.filter((product) => {
+    const sourceUrl = normalizeTrailingSlashUrl(product?.sourceUrl || "");
+    const slug = textClean(product?.slug || "");
+    return !(sourceUrl && sourceUrls.has(sourceUrl)) && !(slug && sourceSlugs.has(slug));
+  });
+
+  log(`Sanity-only products outside current Shop: ${stale.length}`);
+  for (const product of stale) log(`  preserve${DEACTIVATE_MISSING ? " + deactivate" : ""}: ${product.slug || product._id}`);
+
+  if (DRY_RUN || !DEACTIVATE_MISSING || !stale.length) return;
+  for (const product of stale) {
+    await client.patch(product._id).set({ isActive: false }).commit();
+  }
 }
 
 async function main() {
@@ -823,6 +1005,7 @@ async function main() {
   }
 
   const brand = await ensureBrand();
+  await ensureShopCategories(inputJson, brand);
   const categories = await loadKentCategories();
   const existing = await loadExistingProducts();
   const orderMap = buildOrderMap(inputJson);
@@ -868,6 +1051,12 @@ async function main() {
         continue;
       }
 
+      const media = await resolveHeroMedia(built);
+      built.doc.images = media.images;
+      built.doc.kentOfficialGallery = media.kentOfficialGallery;
+      built.doc.kentOfficialGalleryStatus = media.status;
+      built.doc.kentOfficialSourceUrl = built.sourceUrl;
+      built.doc.kentOfficialGalleryVerifiedAt = new Date().toISOString();
       await upsertProduct(built.doc);
       ok += 1;
       process.stdout.write(
@@ -881,6 +1070,7 @@ async function main() {
   }
 
   process.stdout.write("\n");
+  await reconcileInactiveProducts(existing, allResults);
   log(`[DONE] ok=${ok} skip=${skip} fail=${fail} mode=${DRY_RUN ? "DRY_RUN" : "APPLY"}`);
 }
 

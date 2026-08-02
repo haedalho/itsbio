@@ -25,8 +25,12 @@ const CACHE_DIR = path.resolve(
 );
 const DELAY_MS = Number(readArg("--delay", "250")) || 250;
 const LIMIT = Number(readArg("--limit", "0")) || 0;
+const CONCURRENCY = Math.max(1, Math.min(8, Number(readArg("--concurrency", "4")) || 4));
+const ONLY_SLUG = readArg("--slug", "").trim();
 const NO_CACHE = has("--noCache");
 const VERBOSE = has("--verbose");
+const MONEY_RE = /(?:[$€£¥₩]\s*\d[\d,.]*|(?:USD|EUR|GBP|JPY|KRW)\s*\d[\d,.]*|\d[\d,.]*\s*(?:USD|EUR|GBP|JPY|KRW|원))/i;
+const EXCLUDED_SECTION_RE = /^(?:need help|help\s*&\s*support|call\s+\d|not sure which|how much could you save|calculate your savings|calculation based on|get early access|newsletter)/i;
 
 fs.mkdirSync(path.dirname(OUT), { recursive: true });
 fs.mkdirSync(CACHE_DIR, { recursive: true });
@@ -67,6 +71,68 @@ function normalizeTrailingSlashUrl(u) {
   } catch {
     return normalizeUrl(u);
   }
+}
+
+function stripHtmlTags(value) {
+  return textClean(
+    String(value || "")
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;|&#160;/gi, " ")
+      .replace(/&amp;/gi, "&"),
+  );
+}
+
+function removeResizeSuffix(value) {
+  try {
+    const url = new URL(String(value || ""));
+    url.pathname = url.pathname.replace(/-\d{2,5}x\d{2,5}(?=\.[a-z0-9]+$)/i, "");
+    return url.toString();
+  } catch {
+    return String(value || "").replace(/-\d{2,5}x\d{2,5}(?=\.[a-z0-9]+(?:\?|$))/i, "");
+  }
+}
+
+function normalizeImageUrl(value) {
+  const normalized = normalizeUrl(value);
+  if (!normalized) return "";
+  return removeResizeSuffix(normalized);
+}
+
+function parseSrcsetLargest(srcset, canonical) {
+  const candidates = String(srcset || "")
+    .split(",")
+    .map((entry) => {
+      const [url, width] = entry.trim().split(/\s+/);
+      return { url: absUrl(canonical, url), width: Number(String(width || "").replace(/\D/g, "")) || 0 };
+    })
+    .filter((entry) => entry.url)
+    .sort((a, b) => b.width - a.width);
+  return candidates[0]?.url || "";
+}
+
+function isJunkProductImage(value) {
+  const url = String(value || "").toLowerCase();
+  return !url || /(?:logo|favicon|sprite|icon|badge|avatar|flag|banner|placeholder)/i.test(url);
+}
+
+function chooseBestImage(values) {
+  return (values || []).find((value) => value && !isJunkProductImage(value)) || "";
+}
+
+function dedupeImageUrls(values) {
+  const seen = new Set();
+  const output = [];
+  for (const value of values || []) {
+    const url = normalizeImageUrl(value);
+    if (!url || isJunkProductImage(url)) continue;
+    const key = url.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    output.push(url);
+  }
+  return output;
 }
 
 function dedupeStrings(arr) {
@@ -345,6 +411,34 @@ function collectOptionGroups($) {
     addGroup(label, options, "select");
   });
 
+  const groupedInputs = new Map();
+  $('form.cart input[type="radio"], form.cart input[type="checkbox"]')
+    .each((_, input) => {
+      const $input = $(input);
+      const name = textClean($input.attr("name") || $input.attr("id") || "option");
+      if (!name || /quantity|qty/i.test(name)) return;
+
+      const id = $input.attr("id") || "";
+      const $label = id ? $(`label[for="${id}"]`).first() : $input.closest("label");
+      const text = textClean($label.text() || $input.closest("li,div").find("label").first().text());
+      const withoutPrice = text.replace(MONEY_RE, "").replace(/\s+/g, " ").trim();
+      if (!withoutPrice || isNoiseText(withoutPrice)) return;
+
+      if (!groupedInputs.has(name)) groupedInputs.set(name, []);
+      groupedInputs.get(name).push({
+        value: textClean($input.attr("value") || withoutPrice),
+        text: withoutPrice,
+      });
+    });
+
+  for (const [name, options] of groupedInputs) {
+    const first = $(`input[name="${name.replaceAll('"', '\\"')}"]`).first();
+    const label = textClean(
+      first.closest(".wpo-field, .form-row, fieldset, tr").find(".wpo-field-label, legend, th, > label").first().text(),
+    ) || name;
+    addGroup(label, options, "input");
+  }
+
   const rawVariationText = [];
   $(".summary, form.variations_form, form.cart")
     .find("*")
@@ -427,17 +521,17 @@ function collectVariationJson($) {
 }
 
 
-function absolutizeNodeUrls($scope, canonical) {
+function absolutizeNodeUrls($, $scope, canonical) {
   $scope.find("[href]").each((_, el) => {
-    const href = $scope(el).attr("href");
+    const href = $(el).attr("href");
     if (!href) return;
-    $scope(el).attr("href", normalizeUrl(absUrl(canonical, href)));
+    $(el).attr("href", normalizeUrl(absUrl(canonical, href)));
   });
 
   $scope.find("[src]").each((_, el) => {
-    const src = $scope(el).attr("src");
+    const src = $(el).attr("src");
     if (!src) return;
-    $scope(el).attr("src", normalizeImageUrl(absUrl(canonical, src)));
+    $(el).attr("src", normalizeImageUrl(absUrl(canonical, src)));
   });
 }
 
@@ -452,6 +546,7 @@ function cleanSectionHtml($, root, canonical) {
   $wrap.find([
     "script",
     "style",
+    "svg",
     "noscript",
     "form.cart",
     "form.variations_form",
@@ -468,9 +563,13 @@ function cleanSectionHtml($, root, canonical) {
     ".reset_variations",
     ".quantity",
     ".price",
+    ".pricing",
+    ".wpo-price-container",
+    ".woocommerce-Price-amount",
     ".posted_in",
     ".tagged_as",
     ".woocommerce-product-gallery",
+    "img",
   ].join(", ")).remove();
 
   $wrap.find("*").each((_, el) => {
@@ -486,19 +585,127 @@ function cleanSectionHtml($, root, canonical) {
     }
     if (txt && /^login to see prices$/i.test(txt)) {
       $el.remove();
+      return;
     }
+    if (txt && MONEY_RE.test(txt) && $el.children().length === 0) $el.remove();
   });
 
-  absolutizeNodeUrls($.bind(null), canonical);
+  $wrap.find("table tr").each((_, el) => {
+    const $row = $(el);
+    if (MONEY_RE.test(textClean($row.text()))) $row.remove();
+  });
+
+  absolutizeNodeUrls($, $wrap, canonical);
 
   $wrap.find("[class],[style],[id]").each((_, el) => {
     $(el).removeAttr("class").removeAttr("style").removeAttr("id");
   });
-  $wrap.find("[data-product_id],[data-product_variations],[data-attribute_name]").each((_, el) => {
-    $(el).removeAttr("data-product_id").removeAttr("data-product_variations").removeAttr("data-attribute_name");
+  $wrap.find("*").each((_, el) => {
+    for (const attribute of Object.keys(el.attribs || {})) {
+      if (attribute.startsWith("data-")) $(el).removeAttr(attribute);
+    }
   });
 
   return ($wrap.html() || "").trim();
+}
+
+function cleanSourceIntroHtml(rawHtml, canonical) {
+  const raw = String(rawHtml || "").trim();
+  if (!raw) return "";
+  const $fragment = load(`<div id="kent-source-intro">${raw}</div>`, null, false);
+  return cleanSectionHtml($fragment, $fragment("#kent-source-intro").contents(), canonical);
+}
+
+function sectionType(title) {
+  const value = textClean(title).toLowerCase();
+  if (/what you get|feature|benefit|highlight/.test(value)) return "features";
+  if (/peer|customer|testimonial|review/.test(value)) return "reviews";
+  if (/base system includes|what is included|in the box/.test(value)) return "included";
+  if (/optional|add-on|add on|accessor|extend .*capabilit/.test(value)) return "addons";
+  if (/specification|technical data/.test(value)) return "spec-table";
+  if (/resource|document|download|manual|guide|brochure/.test(value)) return "documents";
+  if (/video|playlist/.test(value)) return "videos";
+  if (/publication|reference|scientific article/.test(value)) return "publications";
+  if (/warranty/.test(value)) return "warranty";
+  if (/faq|frequently asked/.test(value)) return "faqs";
+  return "rich-text";
+}
+
+function stableSectionKey(title, index) {
+  return `kent-source-${sha1(`${index}:${title}`).slice(0, 12)}`;
+}
+
+function extractElementorSections($, canonical) {
+  const candidates = $("main div.elementor")
+    .toArray()
+    .filter((node) => !$(node).hasClass("e-loop-item"))
+    .filter((node) => !$(node).find(".product-summary-wrap, .woocommerce-product-gallery, .product_meta").length)
+    .map((node) => ({ node, size: textClean($(node).text()).length }))
+    .filter((row) => row.size >= 300)
+    .sort((a, b) => b.size - a.size);
+
+  const root = candidates[0] ? $(candidates[0].node) : null;
+  if (!root?.length) return [];
+
+  const sections = [];
+  let pendingTitle = "";
+
+  root.children(".e-con, .elementor-section").each((index, node) => {
+    const $node = $(node).clone();
+    $node.find("style,script,noscript").remove();
+    const heading = textClean($node.find("h2,h3,h4").first().text());
+    const nodeText = textClean($node.text());
+    if (!heading && nodeText.length < 30) return;
+    if (heading && EXCLUDED_SECTION_RE.test(heading)) {
+      pendingTitle = "";
+      return;
+    }
+
+    if (heading) $node.find("h2,h3,h4").first().remove();
+    const html = cleanSectionHtml($, $node, canonical);
+    const bodyText = stripHtmlTags(html);
+
+    if (heading && bodyText.length < 35) {
+      pendingTitle = heading;
+      return;
+    }
+
+    const title = pendingTitle || heading || "Product information";
+    pendingTitle = "";
+    if (!bodyText || EXCLUDED_SECTION_RE.test(title)) return;
+
+    sections.push({
+      _key: stableSectionKey(title, index),
+      type: sectionType(title),
+      title,
+      html,
+    });
+  });
+
+  return sections;
+}
+
+function extractFaqSection($) {
+  const items = [];
+  $("details.e-n-accordion-item").each((index, detail) => {
+    const question = textClean($(detail).children("summary").first().text());
+    const answerRoot = $(detail).children('[role="region"]').first();
+    const answer = cleanupPreviewText(answerRoot.text());
+    if (!question || !answer || isNoiseText(question)) return;
+    items.push({
+      _key: `kent-faq-${index}-${sha1(question).slice(0, 8)}`,
+      title: question,
+      description: answer,
+    });
+  });
+
+  if (!items.length) return null;
+  return {
+    _key: "kent-source-faqs",
+    type: "faqs",
+    title: "FAQs",
+    items,
+  };
 }
 
 function extractOverviewHtml($, canonical) {
@@ -559,17 +766,55 @@ function extractDocumentsHtml($, canonical) {
   return stripHtmlTags(html) ? html : "";
 }
 
-function parseProduct(html, url) {
+function parseProduct(html, url, sourceMeta = null) {
   const $ = load(html, { decodeEntities: false });
-  const canonical = normalizeTrailingSlashUrl($('link[rel="canonical"]').attr("href") || url);
-  const title = textClean($("h1").first().text()) || textClean($("title").text());
-  const metaText = cleanupPreviewText($(".product_meta").text());
+  const pageCanonical = normalizeTrailingSlashUrl($('link[rel="canonical"]').attr("href") || url);
+  const canonical = normalizeTrailingSlashUrl(sourceMeta?.sourceUrl || url);
+  const sourceSlug = textClean(sourceMeta?.slug || slugFromProductsUrl(canonical));
+  const redirectedToDifferentProduct = Boolean(
+    sourceSlug && slugFromProductsUrl(pageCanonical) && slugFromProductsUrl(pageCanonical) !== sourceSlug,
+  );
+  const title = textClean(sourceMeta?.title) || textClean($("h1").first().text()) || textClean($("title").text());
+  const metaText = redirectedToDifferentProduct ? "" : cleanupPreviewText($(".product_meta").text());
 
   const itemMatch = metaText.match(/\bItem\s*#\s*[:#]?\s*([^\s|,]{1,120})/i);
   const sku = itemMatch ? textClean(itemMatch[1]) : "";
 
-  const { optionGroups, rawVariationText } = collectOptionGroups($);
-  const variationPayloads = collectVariationJson($);
+  const { optionGroups, rawVariationText } = redirectedToDifferentProduct
+    ? { optionGroups: [], rawVariationText: [] }
+    : collectOptionGroups($);
+  const variationPayloads = redirectedToDifferentProduct ? [] : collectVariationJson($);
+  const sections = redirectedToDifferentProduct ? [] : extractElementorSections($, canonical);
+  const faqSection = redirectedToDifferentProduct ? null : extractFaqSection($);
+  if (faqSection && !sections.some((section) => section.type === "faqs")) sections.push(faqSection);
+  const pdfs = redirectedToDifferentProduct ? [] : collectPdfs($, canonical);
+  const videos = redirectedToDifferentProduct ? [] : collectVideos($, canonical);
+
+  if (pdfs.length && !sections.some((section) => section.type === "documents")) {
+    sections.push({
+      _key: "kent-source-documents",
+      type: "documents",
+      title: "Documents & Resources",
+      items: pdfs.map((pdf, index) => ({
+        _key: `kent-document-${index}-${sha1(pdf.href).slice(0, 8)}`,
+        title: pdf.title,
+        url: pdf.href,
+      })),
+    });
+  }
+
+  if (videos.length && !sections.some((section) => section.type === "videos")) {
+    sections.push({
+      _key: "kent-source-videos",
+      type: "videos",
+      title: "Product videos",
+      items: videos.map((video, index) => ({
+        _key: `kent-video-${index}-${sha1(video).slice(0, 8)}`,
+        title: `Video ${index + 1}`,
+        url: video,
+      })),
+    });
+  }
 
   let $contentRoot = $("#tab-description");
   if (!$contentRoot.length) $contentRoot = $("div.woocommerce-Tabs-panel--description").first();
@@ -579,7 +824,7 @@ function parseProduct(html, url) {
   if (!$contentRoot.length) $contentRoot = $("main").first();
   if (!$contentRoot.length) $contentRoot = $("body");
 
-  const overviewHtml = extractOverviewHtml($, canonical);
+  const overviewHtml = cleanSourceIntroHtml(sourceMeta?.sourceIntroHtml, canonical) || extractOverviewHtml($, canonical);
   const specsHtml = extractSpecsHtml($, canonical);
   const documentsHtml = extractDocumentsHtml($, canonical);
   const bodyTextPreview = cleanupPreviewText(stripHtmlTags(overviewHtml) || $contentRoot.text()).slice(0, 5000);
@@ -587,9 +832,16 @@ function parseProduct(html, url) {
 
   return {
     title,
-    slug: slugFromProductsUrl(canonical),
+    slug: sourceSlug,
     sourceUrl: canonical,
     sku,
+    summary: textClean(sourceMeta?.summary || ""),
+    summaryHtml: String(sourceMeta?.summaryHtml || "").trim(),
+    sourceIntroHtml: overviewHtml,
+    kentSections: sections,
+    heroImageUrl: normalizeImageUrl(sourceMeta?.heroImageUrl || collectImages($, canonical)[0] || ""),
+    wpProductId: Number(sourceMeta?.wpProductId || 0) || undefined,
+    sourceModifiedAt: sourceMeta?.modifiedAt || undefined,
     metaText,
     commerce: {
       model:
@@ -602,10 +854,14 @@ function parseProduct(html, url) {
       rawVariationText,
       variationPayloads: variationPayloads.slice(0, 80),
     },
-    imageUrls: dedupeImageUrls([...collectImages($, canonical), ...variantImageUrls]).slice(0, 24),
-    pdfs: collectPdfs($, canonical),
-    videos: collectVideos($, canonical),
-    relatedProducts: collectRelatedProducts($, canonical),
+    imageUrls: dedupeImageUrls([
+      sourceMeta?.heroImageUrl,
+      ...(redirectedToDifferentProduct ? [] : collectImages($, canonical)),
+      ...variantImageUrls,
+    ]).slice(0, 1),
+    pdfs,
+    videos,
+    relatedProducts: redirectedToDifferentProduct ? [] : collectRelatedProducts($, canonical),
     overviewHtml,
     specsHtml,
     documentsHtml,
@@ -653,6 +909,15 @@ function buildProductCategoryMap(listingJson) {
   return productMap;
 }
 
+function buildProductMetaMap(listingJson) {
+  const map = new Map();
+  for (const product of listingJson.products || []) {
+    const sourceUrl = normalizeTrailingSlashUrl(product?.sourceUrl || "");
+    if (sourceUrl) map.set(sourceUrl, product);
+  }
+  return map;
+}
+
 function choosePrimaryCategory(categories, parsed) {
   if (!categories?.length) return null;
 
@@ -688,8 +953,10 @@ async function main() {
 
   const listingJson = JSON.parse(fs.readFileSync(LISTING_JSON, "utf8"));
   const productMap = buildProductCategoryMap(listingJson);
+  const productMetaMap = buildProductMetaMap(listingJson);
 
   let productUrls = [...productMap.keys()].sort();
+  if (ONLY_SLUG) productUrls = productUrls.filter((url) => slugFromProductsUrl(url) === ONLY_SLUG);
   if (LIMIT > 0) productUrls = productUrls.slice(0, LIMIT);
 
   const output = {
@@ -708,53 +975,55 @@ async function main() {
     throw new Error("No product URLs found in listing JSON");
   }
 
-  for (let i = 0; i < productUrls.length; i += 1) {
-    const url = productUrls[i];
+  output.results = Array(productUrls.length).fill(null);
+  let cursor = 0;
+  let completed = 0;
 
-    try {
-      if (!isProductDetailUrl(url)) {
-        output.skipped += 1;
-        continue;
+  async function worker() {
+    while (true) {
+      const i = cursor;
+      cursor += 1;
+      if (i >= productUrls.length) return;
+      const url = productUrls[i];
+
+      try {
+        if (!isProductDetailUrl(url)) {
+          output.skipped += 1;
+          output.results[i] = { sourceUrl: url, skipped: true };
+        } else {
+          const html = await fetchCached(url);
+          const parsed = parseProduct(html, url, productMetaMap.get(url) || null);
+          const sourceCategories = productMap.get(url)?.categories || [];
+          const primaryCategory = productMetaMap.get(url)?.primaryCategory || choosePrimaryCategory(sourceCategories, parsed);
+
+          output.results[i] = {
+            ...parsed,
+            primaryCategory,
+            sourceCategories,
+            categoryPathCandidates: sourceCategories.map((v) => v.categoryPath || []),
+          };
+          output.ok += 1;
+        }
+      } catch (err) {
+        output.fail += 1;
+        output.results[i] = { sourceUrl: url, error: String(err?.message || err) };
       }
 
-      const html = await fetchCached(url);
-      const parsed = parseProduct(html, url);
-
-      const sourceCategories = productMap.get(url)?.categories || [];
-      const primaryCategory = choosePrimaryCategory(sourceCategories, parsed);
-
-      output.results.push({
-        ...parsed,
-        primaryCategory,
-        sourceCategories,
-        categoryPathCandidates: sourceCategories.map((v) => v.categoryPath || []),
-      });
-
-      output.ok += 1;
-      output.count = output.results.length;
-      saveSnapshot(output);
-
+      completed += 1;
+      output.count = completed;
+      if (completed % 10 === 0 || completed === productUrls.length) saveSnapshot(output);
       process.stdout.write(
-        `\r[${i + 1}/${productUrls.length}] ok=${output.ok} fail=${output.fail} skip=${output.skipped} ${parsed.slug || parsed.title}`
-      );
-    } catch (err) {
-      output.fail += 1;
-      output.results.push({
-        sourceUrl: url,
-        error: String(err?.message || err),
-      });
-      output.count = output.results.length;
-      saveSnapshot(output);
-
-      process.stdout.write(
-        `\r[${i + 1}/${productUrls.length}] ok=${output.ok} fail=${output.fail} skip=${output.skipped} ERROR`
+        `\r[${completed}/${productUrls.length}] ok=${output.ok} fail=${output.fail} skip=${output.skipped}`,
       );
     }
   }
 
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, productUrls.length) }, () => worker()));
+
   process.stdout.write("\n");
 
   output.generatedAt = new Date().toISOString();
+  output.results = output.results.filter(Boolean);
   output.count = output.results.length;
   saveSnapshot(output);
 
