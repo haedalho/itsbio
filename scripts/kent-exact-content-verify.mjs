@@ -13,42 +13,22 @@ dotenv.config({ path: path.join(ROOT, ".env"), quiet: true });
 
 const args = process.argv.slice(2);
 const strict = args.includes("--strict");
-const argValue = (name, fallback = "") => {
-  const exact = args.find((arg) => arg.startsWith(`${name}=`));
-  return exact ? exact.slice(name.length + 1) : fallback;
+const valueOf = (name, fallback = "") => {
+  const found = args.find((arg) => arg.startsWith(`${name}=`));
+  return found ? found.slice(name.length + 1) : fallback;
 };
 
-const SNAPSHOT_DIR = path.resolve(
-  ROOT,
-  argValue("--snapshots", "data/kent-official-source-snapshots"),
-);
-const OUTPUT_DIR = path.resolve(
-  ROOT,
-  argValue("--output", ".cache/kent-exact-content-verification"),
-);
-const ONLY_SLUG = argValue("--slug").trim().toLowerCase();
+const SNAPSHOT_DIR = path.resolve(ROOT, valueOf("--snapshots", "data/kent-official-source-snapshots"));
+const OUTPUT_DIR = path.resolve(ROOT, valueOf("--output", ".cache/kent-exact-content-verification"));
+const ONLY_SLUG = valueOf("--slug").trim().toLowerCase();
 
-const projectId =
-  process.env.NEXT_PUBLIC_SANITY_PROJECT_ID ||
-  process.env.SANITY_STUDIO_PROJECT_ID ||
-  process.env.SANITY_PROJECT_ID;
-const dataset =
-  process.env.NEXT_PUBLIC_SANITY_DATASET ||
-  process.env.SANITY_STUDIO_DATASET ||
-  process.env.SANITY_DATASET;
+const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || process.env.SANITY_STUDIO_PROJECT_ID || process.env.SANITY_PROJECT_ID;
+const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || process.env.SANITY_STUDIO_DATASET || process.env.SANITY_DATASET;
+if (!projectId || !dataset) throw new Error("Missing Sanity project ID or dataset in .env.local/.env.");
 
-if (!projectId || !dataset) {
-  throw new Error("Missing Sanity project ID or dataset in .env.local/.env.");
-}
+const sanity = createClient({ projectId, dataset, apiVersion: "2025-02-19", useCdn: false });
 
-const sanity = createClient({
-  projectId,
-  dataset,
-  apiVersion: "2025-02-19",
-  useCdn: false,
-});
-
-const PRODUCT_QUERY = `*[
+const QUERY = `*[
   _type == "product"
   && slug.current in $slugs
   && (
@@ -64,17 +44,9 @@ const PRODUCT_QUERY = `*[
   summary,
   sku,
   sourceUrl,
-  productType,
-  optionGroups[]{
-    _key,
-    key,
-    name,
-    label,
-    displayType,
-    options[]{ _key, value, label }
-  },
+  sourceIntroHtml,
+  optionGroups[]{ key, name, label, displayType, options[]{ value, label } },
   variants[]{
-    _key,
     variantId,
     title,
     sku,
@@ -84,10 +56,9 @@ const PRODUCT_QUERY = `*[
     attributes,
     sourceVariationId,
     imageUrl,
-    "imageAsset": image.asset->{ _id, sha1hash, originalFilename }
+    "imageAsset": image.asset->{ _id, sha1hash }
   },
   kentSections[]{
-    _key,
     _type,
     type,
     kind,
@@ -97,23 +68,18 @@ const PRODUCT_QUERY = `*[
     bodyHtml,
     description,
     imageUrl,
-    imageAlt,
     items,
     links,
     documents,
     videos,
     rows
   },
-  "images": images[]{
-    _key,
-    alt,
-    "asset": asset->{ _id, sha1hash, originalFilename }
-  },
+  "images": images[]{ alt, "asset": asset->{ _id, sha1hash } },
   imageUrls,
   galleryImageUrls
 }`;
 
-function decodeEntities(value) {
+function decode(value) {
   return String(value ?? "")
     .replace(/&nbsp;|&#160;/gi, " ")
     .replace(/&amp;/gi, "&")
@@ -123,12 +89,15 @@ function decodeEntities(value) {
     .replace(/&gt;/gi, ">");
 }
 
-function canonicalText(value) {
-  return decodeEntities(value)
+function exact(value) {
+  return decode(value).replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function text(value) {
+  return exact(value)
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<[^>]+>/g, " ")
-    .replace(/\u00a0/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -137,27 +106,23 @@ function sha256(value) {
   return crypto.createHash("sha256").update(String(value ?? ""), "utf8").digest("hex");
 }
 
-function stableSort(value) {
-  if (Array.isArray(value)) return value.map(stableSort);
+function stable(value) {
+  if (Array.isArray(value)) return value.map(stable);
   if (!value || typeof value !== "object") return value;
   return Object.fromEntries(
     Object.entries(value)
       .filter(([key]) => !key.startsWith("_"))
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([key, child]) => [key, stableSort(child)]),
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, child]) => [key, stable(child)]),
   );
 }
 
-function canonicalJson(value) {
-  return JSON.stringify(stableSort(value));
-}
-
-function exactString(value) {
-  return decodeEntities(value).replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+function same(a, b) {
+  return JSON.stringify(stable(a)) === JSON.stringify(stable(b));
 }
 
 function normalizeUrl(value) {
-  const raw = String(value ?? "").trim();
+  const raw = String(value || "").trim();
   if (!raw) return "";
   try {
     const url = new URL(raw);
@@ -177,228 +142,179 @@ function isKentUrl(value) {
   }
 }
 
-function isSanityAssetId(value) {
+function validAssetId(value) {
   return /^image-[a-f0-9]+-\d+x\d+-[a-z0-9]+$/i.test(String(value || ""));
 }
 
-function readSnapshots() {
+function snapshots() {
   if (!fs.existsSync(SNAPSHOT_DIR)) return [];
-  return fs
-    .readdirSync(SNAPSHOT_DIR)
+  return fs.readdirSync(SNAPSHOT_DIR)
     .filter((name) => name.toLowerCase().endsWith(".json"))
     .sort()
     .flatMap((name) => {
-      const filePath = path.join(SNAPSHOT_DIR, name);
-      const parsed = JSON.parse(fs.readFileSync(filePath, "utf8"));
-      const rows = Array.isArray(parsed) ? parsed : [parsed];
-      return rows.map((row) => ({ ...row, __file: path.relative(ROOT, filePath) }));
+      const file = path.join(SNAPSHOT_DIR, name);
+      const parsed = JSON.parse(fs.readFileSync(file, "utf8"));
+      return (Array.isArray(parsed) ? parsed : [parsed]).map((row) => ({ ...row, __file: path.relative(ROOT, file) }));
     });
 }
 
-function validateSnapshot(snapshot) {
+function validate(snapshot) {
   const errors = [];
-  if (snapshot?.schemaVersion !== 1) errors.push("schema_version_must_be_1");
+  if (snapshot?.schemaVersion !== 2) errors.push("schema_version_must_be_2");
   if (!snapshot?.slug) errors.push("slug_missing");
   if (!snapshot?.sourceUrl || !isKentUrl(snapshot.sourceUrl)) errors.push("official_source_url_missing_or_not_kent");
   if (!snapshot?.checkedAt) errors.push("checked_at_missing");
-  if (!snapshot?.sourcePageSha256 || !/^[a-f0-9]{64}$/i.test(snapshot.sourcePageSha256)) {
-    errors.push("source_page_sha256_missing_or_invalid");
-  }
-  if (!snapshot?.content || typeof snapshot.content !== "object") errors.push("content_missing");
+  if (!/^[a-f0-9]{64}$/i.test(String(snapshot?.sourcePageSha256 || ""))) errors.push("source_page_sha256_missing_or_invalid");
   if (!snapshot?.content?.title) errors.push("title_missing");
   if (!snapshot?.content?.itemNumber) errors.push("item_number_missing");
+  if (!/^[a-f0-9]{64}$/i.test(String(snapshot?.content?.introBodySha256 || ""))) errors.push("intro_body_sha256_missing_or_invalid");
   if (!Array.isArray(snapshot?.content?.sections)) errors.push("sections_missing");
-  if (!Array.isArray(snapshot?.content?.gallery)) errors.push("gallery_missing");
+
+  const hero = snapshot?.content?.heroImage;
+  if (!hero) errors.push("hero_image_missing");
+  else {
+    if (!validAssetId(hero.sanityAssetId)) errors.push("hero_image_asset_id_invalid");
+    if (!/^[a-f0-9]{40}$/i.test(String(hero.sha1 || ""))) errors.push("hero_image_sha1_invalid");
+    if (!/^[a-f0-9]{64}$/i.test(String(hero.sourceImageSha256 || ""))) errors.push("hero_source_sha256_invalid");
+  }
   return errors;
 }
 
-function sectionComparable(section) {
+function optionGroups(rows) {
+  return (Array.isArray(rows) ? rows : []).map((row) => ({
+    key: exact(row?.key || row?.name || ""),
+    label: exact(row?.label || row?.name || ""),
+    displayType: exact(row?.displayType || ""),
+    options: (Array.isArray(row?.options) ? row.options : []).map((option) => ({
+      value: exact(option?.value || ""),
+      label: exact(option?.label || option?.value || ""),
+    })),
+  }));
+}
+
+function variants(rows) {
+  return (Array.isArray(rows) ? rows : []).map((row) => ({
+    variantId: exact(row?.variantId || ""),
+    title: exact(row?.title || ""),
+    sku: exact(row?.sku || ""),
+    catNo: exact(row?.catNo || ""),
+    optionSummary: exact(row?.optionSummary || ""),
+    optionValues: stable(row?.optionValues || {}),
+    attributes: stable(row?.attributes || {}),
+    sourceVariationId: exact(row?.sourceVariationId || ""),
+  }));
+}
+
+function sectionData(section) {
   const items = [
     ...(Array.isArray(section?.items) ? section.items : []),
     ...(Array.isArray(section?.links) ? section.links : []),
     ...(Array.isArray(section?.documents) ? section.documents : []),
     ...(Array.isArray(section?.videos) ? section.videos : []),
   ].map((item) => ({
-    title: exactString(item?.title || item?.label || item?.text || ""),
-    description: canonicalText(item?.description || item?.html || item?.value || ""),
+    title: exact(item?.title || item?.label || item?.text || ""),
+    description: text(item?.description || item?.html || item?.value || ""),
     url: normalizeUrl(item?.url || item?.href || ""),
     imageUrl: String(item?.imageUrl || "").trim(),
   }));
 
   return {
-    title: exactString(section?.title || ""),
-    type: exactString(section?.type || section?.kind || section?._type || ""),
-    text: canonicalText(
-      [
-        section?.html,
-        section?.contentHtml,
-        section?.bodyHtml,
-        section?.description,
-      ]
-        .filter(Boolean)
-        .join(" "),
-    ),
+    title: exact(section?.title || ""),
+    type: exact(section?.type || section?.kind || section?._type || ""),
+    text: text([section?.html, section?.contentHtml, section?.bodyHtml, section?.description].filter(Boolean).join(" ")),
     items,
-    rows: Array.isArray(section?.rows) ? stableSort(section.rows) : [],
+    rows: Array.isArray(section?.rows) ? stable(section.rows) : [],
     imageUrl: String(section?.imageUrl || "").trim(),
   };
 }
 
-function sectionFingerprint(section) {
-  return sha256(canonicalJson(sectionComparable(section)));
-}
+function compare(product, snapshot) {
+  if (!product) return { status: "BLOCKED", flags: ["sanity_product_missing"], details: {} };
 
-function optionGroupsComparable(groups) {
-  return (Array.isArray(groups) ? groups : []).map((group) => ({
-    key: exactString(group?.key || group?.name || ""),
-    label: exactString(group?.label || group?.name || ""),
-    displayType: exactString(group?.displayType || ""),
-    options: (Array.isArray(group?.options) ? group.options : []).map((option) => ({
-      value: exactString(option?.value || ""),
-      label: exactString(option?.label || option?.value || ""),
-    })),
-  }));
-}
-
-function variantsComparable(variants) {
-  return (Array.isArray(variants) ? variants : []).map((variant) => ({
-    variantId: exactString(variant?.variantId || ""),
-    title: exactString(variant?.title || ""),
-    sku: exactString(variant?.sku || ""),
-    catNo: exactString(variant?.catNo || ""),
-    optionSummary: exactString(variant?.optionSummary || ""),
-    optionValues: stableSort(variant?.optionValues || {}),
-    attributes: stableSort(variant?.attributes || {}),
-    sourceVariationId: exactString(variant?.sourceVariationId || ""),
-    imageAssetId: exactString(variant?.imageAsset?._id || ""),
-    imageSha1: exactString(variant?.imageAsset?.sha1hash || ""),
-    legacyImageUrl: exactString(variant?.imageUrl || ""),
-  }));
-}
-
-function galleryComparable(product) {
-  return (Array.isArray(product?.images) ? product.images : []).map((image, index) => ({
-    order: index + 1,
-    assetId: exactString(image?.asset?._id || ""),
-    sha1: exactString(image?.asset?.sha1hash || ""),
-    alt: exactString(image?.alt || ""),
-  }));
-}
-
-function compareExact(label, actual, expected, flags, details) {
-  if (canonicalJson(actual) === canonicalJson(expected)) return;
-  flags.push(`${label}_mismatch`);
-  details[label] = { actual, expected };
-}
-
-function compareProduct(product, snapshot) {
   const flags = [];
   const details = {};
-  const expected = snapshot.content || {};
+  const expected = snapshot.content;
+  const mismatch = (name, actual, wanted) => {
+    flags.push(`${name}_mismatch`);
+    details[name] = { actual, expected: wanted };
+  };
 
-  if (!product) {
-    return {
-      status: "BLOCKED",
-      flags: ["sanity_product_missing"],
-      details: {},
-    };
-  }
+  if (exact(product.title) !== exact(expected.title)) mismatch("title", exact(product.title), exact(expected.title));
+  if (exact(product.summary) !== exact(expected.subtitle || "")) mismatch("subtitle", exact(product.summary), exact(expected.subtitle || ""));
+  if (exact(product.sku) !== exact(expected.itemNumber)) mismatch("item_number", exact(product.sku), exact(expected.itemNumber));
+  if (normalizeUrl(product.sourceUrl) !== normalizeUrl(snapshot.sourceUrl)) mismatch("source_url", normalizeUrl(product.sourceUrl), normalizeUrl(snapshot.sourceUrl));
 
-  if (exactString(product.title) !== exactString(expected.title)) {
-    flags.push("title_mismatch");
-    details.title = { actual: exactString(product.title), expected: exactString(expected.title) };
-  }
+  const introHash = sha256(text(product.sourceIntroHtml || ""));
+  if (introHash !== exact(expected.introBodySha256)) mismatch("intro_body", introHash, exact(expected.introBodySha256));
 
-  if (exactString(product.summary) !== exactString(expected.subtitle || "")) {
-    flags.push("subtitle_mismatch");
-    details.subtitle = { actual: exactString(product.summary), expected: exactString(expected.subtitle || "") };
-  }
+  const actualGroups = optionGroups(product.optionGroups);
+  const expectedGroups = Array.isArray(expected.optionGroups) ? expected.optionGroups : [];
+  if (!same(actualGroups, expectedGroups)) mismatch("option_groups", actualGroups, expectedGroups);
 
-  if (exactString(product.sku) !== exactString(expected.itemNumber)) {
-    flags.push("item_number_mismatch");
-    details.itemNumber = { actual: exactString(product.sku), expected: exactString(expected.itemNumber) };
-  }
+  const actualVariants = variants(product.variants);
+  const expectedVariants = Array.isArray(expected.variants) ? expected.variants : [];
+  if (!same(actualVariants, expectedVariants)) mismatch("variants", actualVariants, expectedVariants);
 
-  const actualSourceUrl = normalizeUrl(product.sourceUrl);
-  const expectedSourceUrl = normalizeUrl(snapshot.sourceUrl);
-  if (actualSourceUrl !== expectedSourceUrl) {
-    flags.push("source_url_mismatch");
-    details.sourceUrl = { actual: actualSourceUrl, expected: expectedSourceUrl };
-  }
-
-  compareExact(
-    "option_groups",
-    optionGroupsComparable(product.optionGroups),
-    Array.isArray(expected.optionGroups) ? expected.optionGroups : [],
-    flags,
-    details,
-  );
-
-  compareExact(
-    "variants",
-    variantsComparable(product.variants),
-    Array.isArray(expected.variants) ? expected.variants : [],
-    flags,
-    details,
-  );
-
-  const localSections = (Array.isArray(product.kentSections) ? product.kentSections : []).map((section, index) => ({
+  const actualSections = (Array.isArray(product.kentSections) ? product.kentSections : []).map((section, index) => ({
     order: index + 1,
-    title: exactString(section?.title || ""),
-    type: exactString(section?.type || section?.kind || section?._type || ""),
-    contentSha256: sectionFingerprint(section),
+    title: exact(section?.title || ""),
+    type: exact(section?.type || section?.kind || section?._type || ""),
+    contentSha256: sha256(JSON.stringify(stable(sectionData(section)))),
   }));
-  const expectedSections = (Array.isArray(expected.sections) ? expected.sections : []).map((section, index) => ({
+  const expectedSections = expected.sections.map((section, index) => ({
     order: Number(section?.order || index + 1),
-    title: exactString(section?.title || ""),
-    type: exactString(section?.type || ""),
-    contentSha256: exactString(section?.contentSha256 || ""),
+    title: exact(section?.title || ""),
+    type: exact(section?.type || ""),
+    contentSha256: exact(section?.contentSha256 || ""),
   }));
-  compareExact("sections", localSections, expectedSections, flags, details);
+  if (!same(actualSections, expectedSections)) mismatch("sections", actualSections, expectedSections);
 
-  const localGallery = galleryComparable(product);
-  const expectedGallery = (Array.isArray(expected.gallery) ? expected.gallery : []).map((image, index) => ({
-    order: Number(image?.order || index + 1),
-    assetId: exactString(image?.sanityAssetId || ""),
-    sha1: exactString(image?.sha1 || ""),
-    alt: exactString(image?.alt || ""),
-  }));
-  compareExact("gallery", localGallery, expectedGallery, flags, details);
+  const firstImage = Array.isArray(product.images) ? product.images[0] : null;
+  const actualHero = {
+    sanityAssetId: exact(firstImage?.asset?._id || ""),
+    sha1: exact(firstImage?.asset?.sha1hash || ""),
+    alt: exact(firstImage?.alt || ""),
+  };
+  const expectedHero = {
+    sanityAssetId: exact(expected?.heroImage?.sanityAssetId || ""),
+    sha1: exact(expected?.heroImage?.sha1 || ""),
+    alt: exact(expected?.heroImage?.alt || ""),
+  };
+  if (!same(actualHero, expectedHero)) mismatch("hero_image", actualHero, expectedHero);
+  if (!validAssetId(actualHero.sanityAssetId) || !/^[a-f0-9]{40}$/i.test(actualHero.sha1)) flags.push("hero_image_unmanaged_or_incomplete");
 
-  const legacyUrls = [
+  if ((Array.isArray(product.images) ? product.images.length : 0) > 1) {
+    flags.push("gallery_images_present");
+    details.extraImageCount = product.images.length - 1;
+  }
+
+  const variantImages = (Array.isArray(product.variants) ? product.variants : []).filter((row) => row?.imageUrl || row?.imageAsset?._id);
+  if (variantImages.length) {
+    flags.push("variant_images_present");
+    details.variantImages = variantImages.map((row) => row.variantId || row.sku || row.catNo || "unknown");
+  }
+
+  const imageUrls = [
     ...(Array.isArray(product.imageUrls) ? product.imageUrls : []),
     ...(Array.isArray(product.galleryImageUrls) ? product.galleryImageUrls : []),
-    ...(Array.isArray(product.variants) ? product.variants.map((variant) => variant?.imageUrl) : []),
+    ...(Array.isArray(product.variants) ? product.variants.map((row) => row?.imageUrl) : []),
     ...(Array.isArray(product.kentSections) ? product.kentSections.flatMap((section) => [
       section?.imageUrl,
       ...(Array.isArray(section?.items) ? section.items.map((item) => item?.imageUrl) : []),
     ]) : []),
-  ]
-    .map((value) => String(value || "").trim())
-    .filter(Boolean);
+  ].map((value) => String(value || "").trim()).filter(Boolean);
 
-  const kentRuntimeUrls = legacyUrls.filter(isKentUrl);
-  if (kentRuntimeUrls.length) {
+  const kentUrls = imageUrls.filter(isKentUrl);
+  if (kentUrls.length) {
     flags.push("kent_hosted_image_url_present");
-    details.kentHostedImageUrls = kentRuntimeUrls;
+    details.kentHostedImageUrls = kentUrls;
   }
 
-  for (const image of localGallery) {
-    if (!isSanityAssetId(image.assetId) || !/^[a-f0-9]{40}$/i.test(image.sha1)) {
-      flags.push("gallery_asset_unmanaged_or_incomplete");
-      break;
-    }
-  }
-
-  const serious = [...new Set(flags)];
-  return {
-    status: serious.length ? "NEEDS_FIX" : "VERIFIED",
-    flags: serious,
-    details,
-  };
+  const uniqueFlags = [...new Set(flags)];
+  return { status: uniqueFlags.length ? "NEEDS_FIX" : "VERIFIED", flags: uniqueFlags, details };
 }
 
-function writeOutputs(report) {
+function writeReport(report) {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   fs.writeFileSync(path.join(OUTPUT_DIR, "latest.json"), `${JSON.stringify(report, null, 2)}\n`, "utf8");
 
@@ -412,17 +328,14 @@ function writeOutputs(report) {
     `NEEDS_FIX: ${report.counts.needsFix}`,
     `BLOCKED: ${report.counts.blocked}`,
     "",
-    "A product is VERIFIED only when title, subtitle, Item #, source URL, option order, variant order, section order and hashes, and Sanity gallery asset order and hashes all match its approved official snapshot.",
+    "VERIFIED requires the exact title, subtitle, Item #, official source URL, intro-body hash, options, Variants, section order and hashes, and one approved Sanity hero image. Product galleries are intentionally excluded.",
     "",
   ];
 
   for (const status of ["BLOCKED", "NEEDS_FIX", "VERIFIED"]) {
     lines.push(`## ${status}`, "");
     const rows = report.products.filter((row) => row.status === status);
-    if (!rows.length) {
-      lines.push("- None", "");
-      continue;
-    }
+    if (!rows.length) lines.push("- None", "");
     for (const row of rows) {
       lines.push(
         `### ${row.slug || row.file}`,
@@ -438,81 +351,37 @@ function writeOutputs(report) {
   fs.writeFileSync(path.join(OUTPUT_DIR, "latest.md"), lines.join("\n"), "utf8");
 }
 
-const snapshots = readSnapshots().filter((snapshot) => {
-  if (!ONLY_SLUG) return true;
-  return String(snapshot?.slug || "").trim().toLowerCase() === ONLY_SLUG;
-});
-
-const duplicateSlugs = snapshots
-  .map((snapshot) => String(snapshot?.slug || "").trim().toLowerCase())
-  .filter((slug, index, values) => slug && values.indexOf(slug) !== index);
-
-const validSnapshots = [];
+const loaded = snapshots().filter((snapshot) => !ONLY_SLUG || String(snapshot?.slug || "").trim().toLowerCase() === ONLY_SLUG);
+const duplicateSlugs = loaded.map((row) => String(row?.slug || "").trim().toLowerCase()).filter((slug, index, all) => slug && all.indexOf(slug) !== index);
 const rows = [];
+const valid = [];
 
-for (const snapshot of snapshots) {
-  const errors = validateSnapshot(snapshot);
+for (const snapshot of loaded) {
+  const errors = validate(snapshot);
   if (errors.length) {
-    rows.push({
-      slug: String(snapshot?.slug || ""),
-      file: snapshot.__file,
-      sourceUrl: String(snapshot?.sourceUrl || ""),
-      checkedAt: String(snapshot?.checkedAt || ""),
-      status: "BLOCKED",
-      flags: errors,
-      details: {},
-    });
-  } else {
-    validSnapshots.push(snapshot);
-  }
+    rows.push({ slug: snapshot?.slug || "", file: snapshot.__file, sourceUrl: snapshot?.sourceUrl || "", checkedAt: snapshot?.checkedAt || "", status: "BLOCKED", flags: errors, details: {} });
+  } else valid.push(snapshot);
 }
 
 for (const slug of [...new Set(duplicateSlugs)]) {
-  for (const snapshot of validSnapshots.filter((row) => String(row.slug).toLowerCase() === slug)) {
-    rows.push({
-      slug,
-      file: snapshot.__file,
-      sourceUrl: snapshot.sourceUrl,
-      checkedAt: snapshot.checkedAt,
-      status: "BLOCKED",
-      flags: ["duplicate_snapshot_slug"],
-      details: {},
-    });
+  for (const snapshot of valid.filter((row) => String(row.slug).toLowerCase() === slug)) {
+    rows.push({ slug, file: snapshot.__file, sourceUrl: snapshot.sourceUrl, checkedAt: snapshot.checkedAt, status: "BLOCKED", flags: ["duplicate_snapshot_slug"], details: {} });
   }
 }
 
-const nonDuplicateSnapshots = validSnapshots.filter(
-  (snapshot) => !duplicateSlugs.includes(String(snapshot.slug).toLowerCase()),
-);
-const slugs = nonDuplicateSnapshots.map((snapshot) => String(snapshot.slug).trim());
-const products = slugs.length ? await sanity.fetch(PRODUCT_QUERY, { slugs }) : [];
-const productBySlug = new Map((products || []).map((product) => [String(product.slug || "").toLowerCase(), product]));
+const accepted = valid.filter((row) => !duplicateSlugs.includes(String(row.slug).toLowerCase()));
+const slugs = accepted.map((row) => String(row.slug).trim());
+const products = slugs.length ? await sanity.fetch(QUERY, { slugs }) : [];
+const bySlug = new Map((products || []).map((product) => [String(product.slug || "").toLowerCase(), product]));
 
-for (const snapshot of nonDuplicateSnapshots) {
+for (const snapshot of accepted) {
   const slug = String(snapshot.slug).trim().toLowerCase();
-  const result = compareProduct(productBySlug.get(slug), snapshot);
-  rows.push({
-    slug,
-    file: snapshot.__file,
-    sourceUrl: snapshot.sourceUrl,
-    checkedAt: snapshot.checkedAt,
-    sourcePageSha256: snapshot.sourcePageSha256,
-    status: result.status,
-    flags: result.flags,
-    details: result.details,
-  });
+  const result = compare(bySlug.get(slug), snapshot);
+  rows.push({ slug, file: snapshot.__file, sourceUrl: snapshot.sourceUrl, checkedAt: snapshot.checkedAt, sourcePageSha256: snapshot.sourcePageSha256, status: result.status, flags: result.flags, details: result.details });
 }
 
-if (!snapshots.length) {
-  rows.push({
-    slug: "",
-    file: path.relative(ROOT, SNAPSHOT_DIR),
-    sourceUrl: "",
-    checkedAt: "",
-    status: "BLOCKED",
-    flags: ["no_approved_official_snapshots"],
-    details: {},
-  });
+if (!loaded.length) {
+  rows.push({ slug: "", file: path.relative(ROOT, SNAPSHOT_DIR), sourceUrl: "", checkedAt: "", status: "BLOCKED", flags: ["no_approved_official_snapshots"], details: {} });
 }
 
 const report = {
@@ -521,16 +390,15 @@ const report = {
   sanity: { projectId, dataset, writes: 0 },
   kentWebRequests: 0,
   counts: {
-    snapshots: snapshots.length,
+    snapshots: loaded.length,
     verified: rows.filter((row) => row.status === "VERIFIED").length,
     needsFix: rows.filter((row) => row.status === "NEEDS_FIX").length,
     blocked: rows.filter((row) => row.status === "BLOCKED").length,
   },
-  products: rows.sort((left, right) => String(left.slug || left.file).localeCompare(String(right.slug || right.file))),
+  products: rows.sort((a, b) => String(a.slug || a.file).localeCompare(String(b.slug || b.file))),
 };
 
-writeOutputs(report);
-
+writeReport(report);
 console.log("=== Kent exact content verification ===");
 console.log(`Snapshots: ${report.counts.snapshots}`);
 console.log(`VERIFIED: ${report.counts.verified}`);
@@ -541,6 +409,4 @@ console.log("Sanity writes: 0");
 console.log(`Report: ${path.relative(ROOT, path.join(OUTPUT_DIR, "latest.md"))}`);
 console.log(`Data:   ${path.relative(ROOT, path.join(OUTPUT_DIR, "latest.json"))}`);
 
-if (strict && (report.counts.needsFix > 0 || report.counts.blocked > 0)) {
-  process.exit(1);
-}
+if (strict && (report.counts.needsFix > 0 || report.counts.blocked > 0)) process.exit(1);
