@@ -20,12 +20,15 @@ function isManagedImageUrl(value?: string) {
   }
 }
 
-function firstManagedImage(images: Img[]) {
-  for (const image of Array.isArray(images) ? images : []) {
-    const url = String(image?.url || "").trim();
-    if (isManagedImageUrl(url)) return { url, alt: image?.alt };
-  }
-  return null;
+function firstManagedProductImage(images: Img[], title: string) {
+  const managed = (Array.isArray(images) ? images : [])
+    .map((image) => ({
+      url: String(image?.url || "").trim(),
+      alt: String(image?.alt || "").trim(),
+    }))
+    .filter((image) => isManagedImageUrl(image.url));
+
+  return managed.find((image) => image.alt === title) || managed[0] || null;
 }
 
 export default function KentProductGalleryClient({
@@ -37,7 +40,7 @@ export default function KentProductGalleryClient({
   title: string;
   verifiedGallery?: boolean;
 }) {
-  const heroImage = React.useMemo(() => firstManagedImage(images), [images]);
+  const heroImage = React.useMemo(() => firstManagedProductImage(images, title), [images, title]);
   const [failed, setFailed] = React.useState(false);
 
   React.useEffect(() => {
