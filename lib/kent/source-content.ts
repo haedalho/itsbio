@@ -100,13 +100,13 @@ function removePriceColumns($: cheerio.CheerioAPI, root: any) {
 function removeCommerceNoise($: cheerio.CheerioAPI, root: any) {
   root
     .find(
-      "script,style,noscript,iframe,form,input,button,select,option,.price,.pricing,.product-price,.product_price,.price-box,.price-wrapper,.regular-price,.sale-price,.list-price,.retail-price,.unit-price,.msrp,.woocommerce-Price-amount,.woocommerce-price-suffix,.woocommerce-variation-price,.single_variation_wrap,[itemprop='price']",
+      "script,style,noscript,iframe,form,input,select,option,.price,.pricing,.product-price,.product_price,.price-box,.price-wrapper,.regular-price,.sale-price,.list-price,.retail-price,.unit-price,.msrp,.woocommerce-Price-amount,.woocommerce-price-suffix,.woocommerce-variation-price,.single_variation_wrap,[itemprop='price']",
     )
     .remove();
 
   removePriceColumns($, root);
 
-  root.find("p,li,td,th,span,strong,small").each((_index: number, node: any) => {
+  root.find("p,li,td,th,span,strong,small,button").each((_index: number, node: any) => {
     const element = $(node);
     const text = cleanText(element.text());
     if (!text) return;
@@ -154,7 +154,7 @@ export function sanitizeKentSourceHtml(input: unknown) {
 
   const cleaned = sanitizeHtml(root.html() || "", {
     allowedTags: [
-      "p", "br", "strong", "b", "em", "i", "u", "sup", "sub", "h2", "h3", "h4", "h5",
+      "p", "br", "strong", "b", "em", "i", "u", "sup", "sub", "h2", "h3", "h4", "h5", "button",
       "ul", "ol", "li", "blockquote", "a", "img", "figure", "figcaption", "table", "thead", "tbody",
       "tfoot", "tr", "th", "td", "div", "span", "hr",
     ],
@@ -163,6 +163,7 @@ export function sanitizeKentSourceHtml(input: unknown) {
       img: ["src", "alt", "width", "height", "loading"],
       th: ["colspan", "rowspan", "scope"],
       td: ["colspan", "rowspan"],
+      button: ["type"],
     },
     allowedSchemes: ["http", "https", "mailto"],
     transformTags: {
