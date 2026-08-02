@@ -1,19 +1,17 @@
 # Kent exact content verification
 
-## Why this exists
+## Purpose
 
-The previous verifier could use approximate token similarity and partial image overlap. That can detect obvious defects, but it cannot prove that an ITS BIO product page is identical to the reviewed Kent source.
-
-The approved verifier is now:
+The verifier proves that a reviewed ITS BIO Kent product matches the actual Kent detail page. Approximate similarity, neighboring-product inference and partial image overlap cannot produce `VERIFIED`.
 
 ```bash
 npm run kent:exact:verify
 npm run kent:exact:verify:strict
 ```
 
-It makes no Kent web requests and performs no Sanity writes.
+The verifier makes no Kent web requests and performs no Sanity writes.
 
-## VERIFIED means all checks passed
+## VERIFIED requirements
 
 A product is `VERIFIED` only when an approved source snapshot exists and all of the following match:
 
@@ -21,14 +19,36 @@ A product is `VERIFIED` only when an approved source snapshot exists and all of 
 2. exact subtitle
 3. exact Item #
 4. exact canonical Kent source URL
-5. option group labels and order
-6. option value labels and order
-7. Variant order, IDs, SKUs and option associations
-8. section title, type and order
-9. SHA-256 of every section's complete rendered data
-10. gallery image order
-11. Sanity image Asset IDs and SHA-1 fingerprints
-12. no Kent-hosted image URL remains in active product, Variant or section media fields
+5. SHA-256 of the complete top product body
+6. option group labels and order
+7. option value labels and order
+8. Variant order, IDs, SKUs and option associations
+9. section title, type and order
+10. SHA-256 of every section's complete rendered data
+11. one approved Sanity hero-image Asset ID and SHA-1
+12. no extra gallery images
+13. no Variant images
+14. no Kent-hosted image URL in active product, Variant or section fields
+
+## Media policy
+
+Kent gallery thumbnails are intentionally excluded. The product page displays only the official main product image after that file has been uploaded to Sanity.
+
+The page must not switch images when a Variant is selected. Missing image data uses the local placeholder and never falls back to a Kent URL.
+
+## Content policy
+
+The top product body and all retained product sections must preserve the official wording, values and order. Do not summarize, paraphrase or combine content from another product.
+
+Exclude commerce and supplier UI that is not product content:
+
+- login and price controls
+- quantity and cart controls
+- newsletter blocks
+- supplier help and order-support blocks
+- shopping recommendations such as `Customers who viewed this item also viewed`
+
+Retain genuine product sections that exist on the official page, including specifications, resources, videos, FAQs, publications, reviews, notices and warranty information.
 
 ## Statuses
 
@@ -38,25 +58,26 @@ Every exact comparison passes.
 
 ### NEEDS_FIX
 
-A valid source snapshot exists, but current Sanity data differs.
+A valid source snapshot exists, but the current Sanity product differs.
 
 ### BLOCKED
 
-Verification evidence is missing or invalid, the Sanity product is missing, duplicate snapshots exist, or the official source snapshot is incomplete.
+Verification evidence is missing or invalid, the Sanity product is missing, duplicate snapshots exist, or required official evidence is incomplete.
 
 No snapshot never means approved.
 
 ## Source review workflow
 
 1. Open and review the actual Kent product page.
-2. Record the exact short identification fields and visible ordering.
-3. Preserve approved full content in the controlled product record.
-4. Calculate the source-page and section fingerprints.
-5. Upload approved image bytes to Sanity.
-6. Record Sanity Asset IDs and SHA-1 values.
-7. Add the source snapshot JSON.
-8. Run strict verification for that product.
-9. Mark an override `VERIFIED` only after strict verification succeeds.
+2. Record the exact title, subtitle and Item #.
+3. Store the exact top product body in `sourceIntroHtml`.
+4. Preserve the official option and section ordering.
+5. Calculate the source-page, intro-body and section fingerprints.
+6. Verify the official main image and upload that one image to Sanity.
+7. Record the Sanity Asset ID, SHA-1 and source-image SHA-256.
+8. Add the schema-version 2 source snapshot.
+9. Run strict verification for that product.
+10. Mark an override `VERIFIED` only after strict verification succeeds.
 
 Unverified overrides are filtered out before rendering.
 
