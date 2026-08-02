@@ -224,9 +224,9 @@ export default function KentProductDetailClientV2({
   const quoteHref = `mailto:info@itsbio.co.kr?subject=${encodeURIComponent(`Kent ${title} 견적 문의`)}`;
 
   return (
-    <div className="pb-12">
-      <section className="pb-12 pt-2 md:pb-16 md:pt-5">
-        <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.04fr)_minmax(0,0.96fr)] xl:gap-16">
+    <div className="pb-6">
+      <section className="pb-10 pt-1 md:pb-14 md:pt-3">
+        <div className="grid items-start gap-9 lg:grid-cols-2 lg:gap-14 xl:gap-[68px]">
           <KentProductGalleryClient
             key={`${selectedVariant?.variantId || "base"}-${galleryImages[0]?.url || ""}`}
             productSlug={slug}
@@ -235,26 +235,26 @@ export default function KentProductDetailClientV2({
             verifiedGallery={verifiedGallery}
           />
 
-          <div className="min-w-0 lg:pt-1">
+          <div className="min-w-0 lg:pt-2">
             {badge ? (
               <div className="inline-flex bg-[#f5a400] px-3 py-1 text-[12px] font-bold uppercase tracking-[0.12em] text-white">{badge}</div>
             ) : null}
 
-            <h1 className={`${badge ? "mt-4" : "mt-0"} text-[35px] font-semibold tracking-[-0.035em] text-[#0a4d96] lg:text-[45px]`}>{title}</h1>
-            {summary ? <p className="mt-2 text-[20px] font-semibold leading-8 text-slate-600">{summary}</p> : null}
+            <h1 className={`${badge ? "mt-4" : "mt-0"} text-[34px] font-semibold leading-[1.12] tracking-[-0.035em] text-[#0b4f9c] md:text-[38px]`}>{title}</h1>
+            {summary ? <p className="mt-5 text-[19px] font-semibold leading-7 text-[#454b50]">{summary}</p> : null}
 
-            <a href={quoteHref} className="mt-7 inline-flex min-h-[48px] min-w-[210px] items-center justify-center bg-[#0b5baa] px-7 py-3 text-[16px] font-semibold text-white transition hover:bg-[#08467f]">
+            <a href={quoteHref} className="mt-7 inline-flex min-h-[50px] min-w-[210px] items-center justify-center bg-[#0b5baa] px-7 py-3 text-[15px] font-bold text-white transition hover:bg-[#08467f] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0b5baa] focus-visible:ring-offset-2">
               Request Quote
             </a>
 
-            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-600">
+            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-[#e0e4e8] pb-5 text-[14px] text-[#555b60]">
               <div><span className="font-semibold text-slate-900">Item # </span>{invalidCombination ? "Select an available combination" : itemNo || "Contact for details"}</div>
               {categoryLabel ? <div><span className="font-semibold text-slate-900">Category: </span>{categoryLabel}</div> : null}
             </div>
 
             {leadHtml ? (
               <div
-                className="mt-5 text-[16px] leading-7 text-slate-600 [&_a]:font-semibold [&_a]:text-[#0b5baa] [&_p]:mb-4 [&_p:last-child]:mb-0 [&_strong]:text-slate-800"
+                className="kent-product-intro mt-5 text-[15.5px] leading-[1.72] text-[#565d63] [&_a]:font-semibold [&_a]:text-[#0b5baa] [&_a]:underline [&_a]:underline-offset-2 [&_p]:mb-4 [&_p:last-child]:mb-0 [&_strong]:text-[#30363b]"
                 dangerouslySetInnerHTML={{ __html: leadHtml }}
               />
             ) : null}
