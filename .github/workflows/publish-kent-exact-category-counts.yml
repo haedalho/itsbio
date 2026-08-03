@@ -1,0 +1,55 @@
+name: Publish verified Kent category count fix
+
+on:
+  pull_request:
+    branches:
+      - agent/kent-preflight
+    paths:
+      - .github/scripts/apply-kent-exact-category-counts.py
+      - .github/scripts/apply-kent-category-aliases.py
+      - .github/scripts/apply-kent-exact-page-types.py
+      - .github/workflows/publish-kent-exact-category-counts.yml
+      - data/kent-current-taxonomy.json
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-kent-exact-counts-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Apply verified exact category rendering
+        run: |
+          python .github/scripts/apply-kent-exact-category-counts.py
+          python .github/scripts/apply-kent-category-aliases.py
+          python .github/scripts/apply-kent-exact-page-types.py
+
+      - name: Commit and publish safely
+        run: |
+          git config user.name "OpenAI"
+          git config user.email "openai@users.noreply.github.com"
+          git add app/products/kent/'[[...path]]'/page.tsx
+          git commit -m "Match Kent category counts and products exactly"
+
+          for attempt in 1 2 3 4 5; do
+            git fetch origin agent/kent-sanity-images-only
+            if git rebase origin/agent/kent-sanity-images-only; then
+              if git push origin HEAD:agent/kent-sanity-images-only; then
+                exit 0
+              fi
+            else
+              git rebase --abort || true
+            fi
+            sleep $((attempt * 2))
+          done
+          exit 1
