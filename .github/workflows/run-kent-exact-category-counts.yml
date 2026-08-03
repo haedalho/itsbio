@@ -46,7 +46,7 @@ jobs:
       - name: Validate taxonomy against Sanity
         run: |
           node <<'NODE'
-          const fs = require('fs');
+          import fs from 'node:fs';
           const taxonomy = JSON.parse(fs.readFileSync('data/kent-current-taxonomy.json', 'utf8'));
           if (taxonomy.publishedProductCount !== 204) throw new Error(`Expected 204 products, got ${taxonomy.publishedProductCount}`);
           if (taxonomy.countMismatchCount !== 0) throw new Error(`Taxonomy still has ${taxonomy.countMismatchCount} count mismatches`);
@@ -146,7 +146,7 @@ jobs:
       - name: Smoke exact category pages
         run: |
           node <<'NODE'
-          const fs = require('fs');
+          import fs from 'node:fs';
           const mappings = JSON.parse(fs.readFileSync('/tmp/kent-category-route-map.json', 'utf8'));
           const failures = [];
           const checked = new Set();
