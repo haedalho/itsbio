@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "kent:catalog:audit": "node scripts/kent-official-catalog-audit.mjs",
+    "kent:catalog:plan": "node scripts/kent-catalog-plan.mjs"
   },
   "dependencies": {
     "@portabletext/react": "^6.0.2",

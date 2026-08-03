@@ -20,6 +20,9 @@
 # production
 /build
 
+# local audit/cache output
+/.cache/
+
 # misc
 .DS_Store
 *.pem
