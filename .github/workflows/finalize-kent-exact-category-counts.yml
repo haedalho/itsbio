@@ -1,0 +1,89 @@
+name: Finalize exact Kent category counts
+
+on:
+  pull_request:
+    branches:
+      - agent/kent-preflight
+    paths:
+      - .github/scripts/apply-kent-exact-category-counts.py
+      - .github/scripts/apply-kent-category-aliases.py
+      - .github/scripts/apply-kent-exact-page-types.py
+      - scripts/validate-kent-exact-routes.mjs
+      - .github/workflows/finalize-kent-exact-category-counts.yml
+      - data/kent-current-taxonomy.json
+
+permissions:
+  contents: write
+
+concurrency:
+  group: finalize-kent-exact-counts-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-02-19
+      VERCEL_ENV: preview
+      VERCEL_GIT_COMMIT_REF: agent/kent-sanity-images-only
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Apply exact category rendering
+        run: |
+          python .github/scripts/apply-kent-exact-category-counts.py
+          python .github/scripts/apply-kent-category-aliases.py
+          python .github/scripts/apply-kent-exact-page-types.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm install --no-audit --no-fund
+      - run: node scripts/validate-kent-exact-routes.mjs --prepare
+      - run: npm run build
+
+      - name: Start app
+        run: |
+          npm start -- --hostname 127.0.0.1 --port 3000 > /tmp/itsbio-next.log 2>&1 &
+          for attempt in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:3000/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/itsbio-next.log
+          exit 1
+
+      - name: Validate every active Kent category page
+        run: node scripts/validate-kent-exact-routes.mjs --smoke
+
+      - name: Commit and rebase safely
+        run: |
+          git config user.name "OpenAI"
+          git config user.email "openai@users.noreply.github.com"
+          git add app/products/kent/'[[...path]]'/page.tsx
+          git commit -m "Match Kent category counts and products exactly"
+
+          for attempt in 1 2 3 4; do
+            git fetch origin agent/kent-sanity-images-only
+            if git rebase origin/agent/kent-sanity-images-only; then
+              if git push origin HEAD:agent/kent-sanity-images-only; then
+                exit 0
+              fi
+            else
+              git rebase --abort || true
+            fi
+            sleep $((attempt * 2))
+          done
+          echo "Unable to publish exact Kent category fix after retries."
+          exit 1
+
+      - name: Show server log on failure
+        if: failure()
+        run: cat /tmp/itsbio-next.log || true
