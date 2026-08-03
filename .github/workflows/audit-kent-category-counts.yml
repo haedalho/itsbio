@@ -1,0 +1,19 @@
+name: Audit Kent category counts
+
+on:
+  pull_request:
+    branches:
+      - agent/kent-preflight
+    paths:
+      - .github/scripts/audit-kent-category-counts.mjs
+      - .github/workflows/audit-kent-category-counts.yml
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Compare official and preview category counts
+        run: node .github/scripts/audit-kent-category-counts.mjs
