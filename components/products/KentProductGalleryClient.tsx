@@ -7,27 +7,33 @@ type Img = { url?: string; alt?: string };
 
 const PLACEHOLDER = "/kent-product-placeholder.svg";
 
-function isManagedImageUrl(value?: string) {
+function isAllowedProductImageUrl(value?: string) {
   const raw = String(value || "").trim();
   if (!raw) return false;
   if (raw.startsWith("/")) return !raw.startsWith("//");
 
   try {
     const parsed = new URL(raw);
-    return parsed.protocol === "https:" && parsed.hostname.toLowerCase() === "cdn.sanity.io";
+    const hostname = parsed.hostname.toLowerCase();
+    return (
+      parsed.protocol === "https:" &&
+      (hostname === "cdn.sanity.io" ||
+        hostname === "www.kentscientific.com" ||
+        hostname === "kentscientific.com")
+    );
   } catch {
     return false;
   }
 }
 
-function managedProductImages(images: Img[], title: string) {
+function productImages(images: Img[], title: string) {
   const seen = new Set<string>();
   return (Array.isArray(images) ? images : [])
     .map((image) => ({
       url: String(image?.url || "").trim(),
       alt: String(image?.alt || "").trim() || title,
     }))
-    .filter((image) => isManagedImageUrl(image.url))
+    .filter((image) => isAllowedProductImageUrl(image.url))
     .filter((image) => {
       if (seen.has(image.url)) return false;
       seen.add(image.url);
@@ -44,17 +50,17 @@ export default function KentProductGalleryClient({
   title: string;
   verifiedGallery?: boolean;
 }) {
-  const managedImages = React.useMemo(() => managedProductImages(images, title), [images, title]);
-  const imageSignature = managedImages.map((image) => image.url).join("|");
-  const [activeUrl, setActiveUrl] = React.useState(managedImages[0]?.url || "");
+  const availableProductImages = React.useMemo(() => productImages(images, title), [images, title]);
+  const imageSignature = availableProductImages.map((image) => image.url).join("|");
+  const [activeUrl, setActiveUrl] = React.useState(availableProductImages[0]?.url || "");
   const [failedUrls, setFailedUrls] = React.useState<Set<string>>(() => new Set());
 
   React.useEffect(() => {
-    setActiveUrl(managedImages[0]?.url || "");
+    setActiveUrl(availableProductImages[0]?.url || "");
     setFailedUrls(new Set());
   }, [imageSignature]);
 
-  const availableImages = managedImages.filter((image) => !failedUrls.has(image.url));
+  const availableImages = availableProductImages.filter((image) => !failedUrls.has(image.url));
   const active = availableImages.find((image) => image.url === activeUrl) || availableImages[0] || null;
   const markFailed = (url: string) => {
     setFailedUrls((current) => new Set([...current, url]));
