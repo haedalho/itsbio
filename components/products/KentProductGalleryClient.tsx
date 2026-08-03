@@ -62,9 +62,12 @@ export default function KentProductGalleryClient({
   };
 
   return (
-    <div className="grid gap-3 sm:grid-cols-[76px_minmax(0,1fr)]">
-      {availableImages.length > 1 ? (
-        <div className="order-2 flex gap-2 overflow-x-auto sm:order-1 sm:flex-col sm:overflow-x-visible" aria-label={`${title} product images`}>
+    <div className="grid min-w-0 gap-3 sm:grid-cols-[76px_minmax(0,1fr)]">
+      {availableImages.length > 0 ? (
+        <div
+          className="order-2 flex gap-2 overflow-x-auto sm:order-1 sm:flex-col sm:overflow-x-visible"
+          aria-label={`${title} product images`}
+        >
           {availableImages.map((image, index) => {
             const selected = image.url === active?.url;
             return (
@@ -91,28 +94,28 @@ export default function KentProductGalleryClient({
         </div>
       ) : null}
 
-      <div className="relative order-1 overflow-hidden rounded-sm border border-[#e0e4e8] bg-white sm:order-2">
-        <div className="relative aspect-square min-h-[320px] sm:min-h-[420px] lg:min-h-0">
-        {active?.url ? (
-          <Image
-            src={active.url}
-            alt={active.alt || title}
-            fill
-            priority
-            sizes="(max-width: 1024px) 100vw, 620px"
-            className="object-contain p-1 sm:p-2 lg:p-3"
-            unoptimized
-            onError={() => markFailed(active.url)}
-          />
-        ) : (
-          <Image
-            src={PLACEHOLDER}
-            alt={`${title} image unavailable`}
-            fill
-            sizes="(max-width: 1024px) 100vw, 620px"
-            className="object-contain p-10"
-          />
-        )}
+      <div className="relative order-1 min-w-0 overflow-hidden rounded-sm border border-[#e0e4e8] bg-white sm:order-2">
+        <div className="relative h-[360px] w-full sm:h-[460px] lg:h-[520px] xl:h-[560px]">
+          {active?.url ? (
+            <Image
+              src={active.url}
+              alt={active.alt || title}
+              fill
+              priority
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 620px"
+              className="object-contain p-2 sm:p-3"
+              unoptimized
+              onError={() => markFailed(active.url)}
+            />
+          ) : (
+            <Image
+              src={PLACEHOLDER}
+              alt={`${title} image unavailable`}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 620px"
+              className="object-contain p-8"
+            />
+          )}
         </div>
       </div>
     </div>
