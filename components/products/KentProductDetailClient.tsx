@@ -41,7 +41,11 @@ function slugifyLoose(input: string) {
 }
 
 function normalizeKey(input: string) {
-  return String(input || "").replace(/^attribute_/i, "").replace(/^pa_/i, "").trim().toLowerCase();
+  const raw = String(input || "")
+    .replace(/^attribute[-_]/i, "")
+    .replace(/^pa[-_]/i, "")
+    .trim();
+  return slugifyLoose(raw) || raw.toLowerCase();
 }
 
 function normalizeValue(input: string) {
@@ -49,13 +53,18 @@ function normalizeValue(input: string) {
   return slugifyLoose(raw) || raw.toLowerCase();
 }
 
-function safeManagedImageUrl(url?: string) {
+function safeVariantImageUrl(url?: string) {
   const raw = String(url || "").trim();
   if (!raw) return "";
   if (raw.startsWith("/")) return raw.startsWith("//") ? "" : raw;
   try {
     const parsed = new URL(raw);
-    return parsed.protocol === "https:" && parsed.hostname.toLowerCase() === "cdn.sanity.io" ? raw : "";
+    const hostname = parsed.hostname.toLowerCase();
+    const allowedHost =
+      hostname === "cdn.sanity.io" ||
+      hostname === "www.kentscientific.com" ||
+      hostname === "kentscientific.com";
+    return parsed.protocol === "https:" && allowedHost ? raw : "";
   } catch {
     return "";
   }
@@ -95,26 +104,61 @@ function buildVariantLookup(variant: Variant) {
   return { ...pairArrayToMap(variant?.attributes), ...pairArrayToMap(variant?.optionValues) };
 }
 
+function selectionEntries(selections: Record<string, string>) {
+  return Object.entries(selections).filter(([key, value]) => Boolean(key && value));
+}
+
 function variantMatchesSelections(variant: Variant, selections: Record<string, string>) {
+  const entries = selectionEntries(selections);
+  if (!entries.length) return true;
+
   const lookup = buildVariantLookup(variant);
-  for (const [key, value] of Object.entries(selections)) {
-    if (!value) continue;
-    if (!lookup[key] || lookup[key] !== value) return false;
-  }
-  return true;
+  if (entries.every(([key, value]) => lookup[key] === value)) return true;
+
+  const lookupValues = new Set(Object.values(lookup).filter(Boolean));
+  return entries.every(([, value]) => lookupValues.has(value));
 }
 
 function findMatchingVariant(variants: Variant[], selections: Record<string, string>) {
-  return variants.find((variant) => variantMatchesSelections(variant, selections)) || null;
+  const entries = selectionEntries(selections);
+  if (!variants.length) return null;
+  if (!entries.length) return variants[0] || null;
+
+  const exact = variants.find((variant) => {
+    const lookup = buildVariantLookup(variant);
+    return entries.every(([key, value]) => lookup[key] === value);
+  });
+  if (exact) return exact;
+
+  const byValues = variants.find((variant) => variantMatchesSelections(variant, selections));
+  if (byValues) return byValues;
+
+  return (
+    variants.find((variant) => {
+      const searchable = normalizeValue(
+        [variant?.optionSummary, variant?.title, variant?.sku, variant?.catNo]
+          .filter(Boolean)
+          .join(" "),
+      );
+      return entries.every(([, value]) => searchable.includes(value));
+    }) || null
+  );
 }
 
 function buildInitialSelections(optionGroups: OptionGroup[], variants: Variant[], defaultVariantId?: string) {
   const seed = (defaultVariantId ? variants.find((row) => row.variantId === defaultVariantId) : null) || variants[0] || null;
   const seedLookup = seed ? buildVariantLookup(seed) : {};
+  const seedValues = new Set(Object.values(seedLookup).filter(Boolean));
   const out: Record<string, string> = {};
+
   for (const group of optionGroups) {
-    const key = normalizeKey(group.key || group.name || "option");
-    const first = (group.options || []).find((row) => row?.label || row?.value);
+    const key = normalizeKey(group.key || group.name || group.label || "option");
+    const options = group.options || [];
+    const matchingSeedOption = options.find((row) => {
+      const value = normalizeValue(String(row?.value || row?.label || ""));
+      return value && seedValues.has(value);
+    });
+    const first = matchingSeedOption || options.find((row) => row?.label || row?.value);
     out[key] = seedLookup[key] || normalizeValue(first?.value || first?.label || "");
   }
   return out;
@@ -214,7 +258,7 @@ export default function KentProductDetailClientV2({
   const selectedSummary = selectedVariant?.optionSummary || "";
   const invalidCombination = hasVariantControls && safeVariants.length > 0 && !selectedVariant;
   const galleryImages = React.useMemo(() => {
-    const variantImage = safeManagedImageUrl(selectedVariant?.imageUrl);
+    const variantImage = safeVariantImageUrl(selectedVariant?.imageUrl);
     const head = variantImage ? [{ url: variantImage, alt: selectedVariant?.title || title }] : [];
     return dedupeImages([...(head as Img[]), ...(images || [])]);
   }, [images, selectedVariant?.imageUrl, selectedVariant?.title, title]);
@@ -261,7 +305,7 @@ export default function KentProductDetailClientV2({
             {hasVariantControls ? (
               <div className="mt-7 space-y-5 border-t border-slate-200 pt-6">
                 {safeGroups.map((group) => {
-                  const key = normalizeKey(group.key || group.name || "option");
+                  const key = normalizeKey(group.key || group.name || group.label || "option");
                   const selected = selections[key] || "";
                   const options = group.options || [];
                   return (
@@ -299,7 +343,7 @@ export default function KentProductDetailClientV2({
             {safeGroups.length ? (
               <div className="mt-5 space-y-1 text-sm text-slate-600">
                 {safeGroups.map((group) => {
-                  const key = normalizeKey(group.key || group.name || "option");
+                  const key = normalizeKey(group.key || group.name || group.label || "option");
                   return <div key={`selected-${key}`} className="flex gap-2"><span className="font-semibold uppercase text-slate-900">{group.label || group.name || "Option"}:</span><span>{pickOptionLabel(group, selections[key] || "")}</span></div>;
                 })}
               </div>
