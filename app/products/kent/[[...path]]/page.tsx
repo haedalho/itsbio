@@ -7,6 +7,7 @@ import * as cheerio from "cheerio";
 import Breadcrumb from "@/components/site/Breadcrumb";
 import HtmlContent from "@/components/site/HtmlContent";
 import { sanityClient } from "@/lib/sanity/sanity.client";
+import kentCurrentTaxonomy from "@/data/kent-current-taxonomy.json";
 
 export const revalidate = 300;
 
@@ -112,6 +113,29 @@ type StaticMenuNode = {
 
 type CardsKind = "product" | "category" | "resource" | "publication";
 
+type KentCurrentTaxonomyCategory = {
+  id: number;
+  parentId: number;
+  title: string;
+  slug: string;
+  count: number;
+  sourceUrl: string;
+  categoryPath: string[];
+  categoryPathTitles: string[];
+  directProductSlugs: string[];
+  productSlugs: string[];
+};
+
+type KentCurrentTaxonomy = {
+  generatedAt: string;
+  publishedProductCount: number;
+  categoryCount: number;
+  countMismatchCount: number;
+  categories: KentCurrentTaxonomyCategory[];
+};
+
+const CURRENT_KENT_TAXONOMY = kentCurrentTaxonomy as KentCurrentTaxonomy;
+
 const PAGE_QUERY = `
 {
   "brand": *[
@@ -132,7 +156,7 @@ const PAGE_QUERY = `
         || brandSlug==$brandKey
       )
       && array::join(path, "/")==$pathStr
-    ][0]{
+    ] | order(_updatedAt desc)[0]{
       _id,
       title,
       path,
@@ -224,6 +248,7 @@ const KENT_STATIC_MENU: StaticMenuNode[] = [
   },
   { title: "Body Composition Analysis", path: ["body-composition-analysis"] },
   { title: "Feeding Needles", path: ["feeding-needles"] },
+  { title: "Imaging System", path: ["imaging-system"] },
   { title: "Mobile Carts", path: ["mobile-carts"] },
   { title: "Nebulizer", path: ["nebulizers"] },
   {
@@ -535,6 +560,89 @@ function normalizePathSegments(path: string[]) {
   return Array.isArray(path)
     ? path.map((seg) => String(seg || "").trim().replace(/^\/+|\/+$/g, "")).filter(Boolean)
     : [];
+}
+
+function currentTaxonomyPathKey(path?: string[]) {
+  return normalizePathSegments(path || []).join("/");
+}
+
+const CURRENT_KENT_CATEGORIES = Array.isArray(CURRENT_KENT_TAXONOMY.categories)
+  ? CURRENT_KENT_TAXONOMY.categories
+  : [];
+const CURRENT_KENT_CATEGORY_BY_PATH = new Map(
+  CURRENT_KENT_CATEGORIES.map((category) => [currentTaxonomyPathKey(category.categoryPath), category]),
+);
+const CURRENT_KENT_CATEGORY_BY_SOURCE = new Map(
+  CURRENT_KENT_CATEGORIES
+    .map((category) => [normalizeUrl(category.sourceUrl).toLowerCase(), category] as const)
+    .filter(([source]) => Boolean(source)),
+);
+const CURRENT_KENT_PATH_ALIASES = new Map<string, string>([
+  ["animal-holders", "animal-handling/animal-holders"],
+  ["laboratory-animal-handling/animal-holders", "animal-handling/animal-holders"],
+]);
+const CURRENT_KENT_CATEGORIES_BY_LEAF = new Map<string, KentCurrentTaxonomyCategory[]>();
+const CURRENT_KENT_CATEGORIES_BY_TITLE = new Map<string, KentCurrentTaxonomyCategory[]>();
+
+for (const category of CURRENT_KENT_CATEGORIES) {
+  const path = normalizePathSegments(category.categoryPath || []);
+  const leaf = path[path.length - 1] || "";
+  if (leaf) {
+    const rows = CURRENT_KENT_CATEGORIES_BY_LEAF.get(leaf) || [];
+    rows.push(category);
+    CURRENT_KENT_CATEGORIES_BY_LEAF.set(leaf, rows);
+  }
+
+  const title = normalizeInlineText(category.title || "");
+  if (title) {
+    const rows = CURRENT_KENT_CATEGORIES_BY_TITLE.get(title) || [];
+    rows.push(category);
+    CURRENT_KENT_CATEGORIES_BY_TITLE.set(title, rows);
+  }
+}
+
+function resolveCurrentKentCategory(
+  path?: string[],
+  sourceUrl?: string,
+  title?: string,
+): KentCurrentTaxonomyCategory | null {
+  const normalizedPath = normalizePathSegments(path || []);
+  const normalizedKey = normalizedPath.join("/");
+  const aliasKey = CURRENT_KENT_PATH_ALIASES.get(normalizedKey);
+  const alias = aliasKey ? CURRENT_KENT_CATEGORY_BY_PATH.get(aliasKey) : null;
+  if (alias) return alias;
+
+  const exact = CURRENT_KENT_CATEGORY_BY_PATH.get(normalizedKey);
+  if (exact) return exact;
+
+  const source = normalizeUrl(String(sourceUrl || "")).toLowerCase();
+  const sourceMatch = source ? CURRENT_KENT_CATEGORY_BY_SOURCE.get(source) : null;
+  if (sourceMatch) return sourceMatch;
+
+  const leaf = normalizedPath[normalizedPath.length - 1] || "";
+  const leafMatches = leaf ? CURRENT_KENT_CATEGORIES_BY_LEAF.get(leaf) || [] : [];
+  if (leafMatches.length === 1) return leafMatches[0];
+
+  const normalizedTitle = normalizeInlineText(String(title || ""));
+  const titleMatches = normalizedTitle ? CURRENT_KENT_CATEGORIES_BY_TITLE.get(normalizedTitle) || [] : [];
+  if (titleMatches.length === 1) return titleMatches[0];
+
+  return null;
+}
+
+function productsForCurrentKentCategory(
+  category: KentCurrentTaxonomyCategory,
+  allProducts: ProductLite[],
+) {
+  const bySlug = new Map(
+    (Array.isArray(allProducts) ? allProducts : [])
+      .map((product) => [String(product.slug || "").trim().toLowerCase(), product] as const)
+      .filter(([slug]) => Boolean(slug)),
+  );
+
+  return category.productSlugs
+    .map((slug) => bySlug.get(String(slug || "").trim().toLowerCase()))
+    .filter((product): product is ProductLite => Boolean(product));
 }
 
 function isPrefix(prefix: string[], target: string[]) {
@@ -868,10 +976,17 @@ function dedupeProducts(products: ProductLite[]) {
 }
 
 function getDirectChildren(allCategories: CategoryLite[], currentPath: string[]) {
+  const seen = new Set<string>();
   return (Array.isArray(allCategories) ? allCategories : [])
     .filter((cat) => {
       const path = normalizePathSegments(cat.path || []);
-      return path.length === currentPath.length + 1 && isPrefix(currentPath, path);
+      if (path.length !== currentPath.length + 1 || !isPrefix(currentPath, path)) return false;
+      const currentCategory = resolveCurrentKentCategory(path, undefined, cat.title);
+      if (!currentCategory || currentCategory.count <= 0) return false;
+      const key = path.join("/");
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
     })
     .sort((a, b) => {
       const ao = typeof a.order === "number" ? a.order : Number.MAX_SAFE_INTEGER;
@@ -941,6 +1056,12 @@ function findRepresentativeProductForCategory(categoryPath: string[], allProduct
   const target = normalizePathSegments(categoryPath || []);
   if (!target.length) return undefined;
   const products = (Array.isArray(allProducts) ? allProducts : []).filter((product) => String(product.thumb || "").trim());
+  const currentCategory = resolveCurrentKentCategory(target);
+
+  if (currentCategory) {
+    const representative = productsForCurrentKentCategory(currentCategory, products)[0];
+    if (representative) return representative;
+  }
 
   const exact = products.find((product) =>
     productCategoryPaths(product).some((candidate) => candidate.join("/") === target.join("/")),
@@ -1151,14 +1272,28 @@ function hydrateProductsFromLegacyCards(
 }
 
 function resolveListingProducts(pathArr: string[], category: CategoryDoc | null, allProducts: ProductLite[]) {
-  const matched = matchProductsForListing(pathArr, category, allProducts);
-  const legacyCards = parseLegacyProductCards(category?.legacyHtml);
-
-  if (legacyCards.length) {
-    return hydrateProductsFromLegacyCards(matched, legacyCards, allProducts);
+  const currentCategory = resolveCurrentKentCategory(pathArr, category?.sourceUrl, category?.title);
+  if (currentCategory) {
+    return dedupeProducts(productsForCurrentKentCategory(currentCategory, allProducts));
   }
 
-  return matched;
+  // Strict fallback for a not-yet-mapped category. Never merge by leaf slug and
+  // never add products from stale legacy HTML because both inflate category counts.
+  const exactKeys = new Set<string>();
+  for (const candidate of [
+    pathArr,
+    category?.path || [],
+    kentCategoryPathFromUrl(String(category?.sourceUrl || "")),
+  ]) {
+    const key = currentTaxonomyPathKey(candidate);
+    if (key) exactKeys.add(key);
+  }
+
+  return dedupeProducts(
+    allProducts.filter((product) =>
+      productCategoryPaths(product).some((candidate) => exactKeys.has(candidate.join("/"))),
+    ),
+  );
 }
 
 function hydrateProductCardBlocks(blocks: ContentBlock[], allProducts: ProductLite[], allCategories: CategoryLite[]) {
@@ -1205,6 +1340,9 @@ function hydrateProductCardBlocks(blocks: ContentBlock[], allProducts: ProductLi
         const canonicalCategoryHref = canonicalCategoryPath.length
           ? buildCategoryHref(canonicalCategoryPath)
           : resolvedHref;
+        const currentCategory = kind === "category"
+          ? resolveCurrentKentCategory(canonicalCategoryPath, href, String(item?.title || ""))
+          : null;
         const categoryLabel = `${href} ${String(item?.title || "")}`.toLowerCase();
         const namedRepresentative = categoryLabel.includes("somnosuite")
           ? bySlug.get("somnosuite")
@@ -1228,6 +1366,7 @@ function hydrateProductCardBlocks(blocks: ContentBlock[], allProducts: ProductLi
           ...item,
           href: kind === "category" ? canonicalCategoryHref : resolvedHref,
           imageUrl: product?.thumb || existingManagedImage || "",
+          count: kind === "category" && currentCategory ? currentCategory.count : item.count,
         };
       }),
     } as ContentBlock;
@@ -1287,6 +1426,7 @@ function KentChildCategoryGrid({
           const href = buildCategoryHref(path);
           const titleText = STATIC_LABEL_BY_PATH.get(path.join("/")) || normalizeTitle(item.title || "", path[path.length - 1] || "");
           const summary = String(item.summary || "").trim();
+          const currentCategory = resolveCurrentKentCategory(path, undefined, item.title);
           const representative = findRepresentativeProductForCategory(path, products);
 
           return (
@@ -1313,6 +1453,7 @@ function KentChildCategoryGrid({
                 <div className="mt-2 text-[22px] font-semibold leading-snug tracking-tight text-slate-900 group-hover:text-blue-700">
                   {titleText}
                 </div>
+                {currentCategory ? <div className="mt-2 text-sm text-slate-500">{currentCategory.count} products</div> : null}
                 {summary ? <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">{summary}</p> : <div className="mt-3 h-[48px]" />}
                 <div className={`mt-5 inline-flex items-center gap-2 text-sm font-semibold ${theme.accentText}`}>
                   Browse category <span aria-hidden>›</span>
@@ -2128,7 +2269,22 @@ export default async function KentProductsPathPage({
   }
 
   const allCategories: CategoryLite[] = Array.isArray(data?.allCategories) ? data.allCategories : [];
-  const category: CategoryDoc | null = data?.category || null;
+  const taxonomyCategoryForPath = resolveCurrentKentCategory(pathArr);
+  let category: CategoryDoc | null = data?.category || null;
+
+  if (!category?._id && taxonomyCategoryForPath?.count) {
+    category = {
+      _id: `kent-current-taxonomy-${taxonomyCategoryForPath.id}`,
+      title: taxonomyCategoryForPath.title,
+      path: pathArr,
+      sourceUrl: taxonomyCategoryForPath.sourceUrl,
+      summary: "",
+      legacyHtml: "",
+      pageType: "listing",
+      contentBlocks: [],
+    };
+  }
+
   if (!category?._id) {
     const canonicalPath = findCanonicalCategoryPath(pathArr, allCategories);
     if (canonicalPath && canonicalPath.join("/") !== pathStr) {
@@ -2138,9 +2294,14 @@ export default async function KentProductsPathPage({
   }
 
   const allProducts: ProductLite[] = Array.isArray(data?.allProducts) ? data.allProducts : [];
+  const currentCategory = resolveCurrentKentCategory(pathArr, category.sourceUrl, category.title);
+  if (currentCategory?.count === 0) notFound();
   const productsInCategory = resolveListingProducts(pathArr, category, allProducts);
+  const officialProductCount = currentCategory?.count ?? dedupeProducts(productsInCategory).length;
   const directChildren = getDirectChildren(allCategories, pathArr);
-  const pageType = resolvePageType(category, pathStr, directChildren.length, dedupeProducts(productsInCategory).length);
+  const pageType: PageType = currentCategory
+    ? (directChildren.length > 0 ? "landing" : "listing")
+    : resolvePageType(category, pathStr, directChildren.length, officialProductCount);
 
   const pageTitle =
     STATIC_LABEL_BY_PATH.get(pathStr) || normalizeTitle(category.title || "", pathArr[pathArr.length - 1] || "");
@@ -2204,7 +2365,7 @@ export default async function KentProductsPathPage({
     mainContent = (
       <>
         <ListingIntro html={firstHtmlBlock?.html} summary={category.summary} />
-        <ListingHeader count={dedupeProducts(productsInCategory).length} theme={THEME_KENT} />
+        <ListingHeader count={officialProductCount} theme={THEME_KENT} />
         {!productsInCategory.length && directChildren.length ? (
           <KentChildCategoryGrid items={directChildren} products={allProducts} title="Subcategories" theme={THEME_KENT} />
         ) : null}
