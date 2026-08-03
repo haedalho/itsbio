@@ -28,12 +28,23 @@ jobs:
         with:
           node-version: 24
       - name: Generate exact current taxonomy
-        run: node scripts/kent-current-taxonomy-build.mjs data/kent-current-taxonomy.json
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          path = Path('scripts/kent-current-taxonomy-build.mjs')
+          text = path.read_text()
+          text = text.replace(
+              '    category.productSlugs = [...combined].sort();',
+              '    category.productSlugs = category.count === 0 ? [] : [...combined].sort();',
+          )
+          path.write_text(text)
+          PY
+          node scripts/kent-current-taxonomy-build.mjs data/kent-current-taxonomy.json
       - name: Commit generated taxonomy
         run: |
           git config user.name "OpenAI"
           git config user.email "openai@users.noreply.github.com"
-          git add data/kent-current-taxonomy.json
+          git add scripts/kent-current-taxonomy-build.mjs data/kent-current-taxonomy.json
           if git diff --cached --quiet; then
             echo "Exact Kent taxonomy is already current."
             exit 0
