@@ -100,7 +100,7 @@ export default function KentProductGalleryClient({
             fill
             priority
             sizes="(max-width: 1024px) 100vw, 620px"
-            className="object-contain p-5 sm:p-7 lg:p-8"
+            className="object-contain p-1 sm:p-2 lg:p-3"
             unoptimized
             onError={() => markFailed(active.url)}
           />
