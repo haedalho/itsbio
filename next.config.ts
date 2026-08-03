@@ -22,6 +22,7 @@ const nextConfig: NextConfig = {
     ],
   },
   async redirects() {
+    // Preserve old Kent category-card URLs while routing to the canonical nested category pages.
     const systems = ["somnoflo", "somnosuite", "vetflo"];
 
     return systems.flatMap((system) => {
