@@ -334,18 +334,20 @@ function MediaImage({ src, alt, className = "" }: { src?: string; alt: string; c
 
 function FeatureGrid({ items }: { items: KentSectionItem[] }) {
   return (
-    <div className="grid gap-x-10 gap-y-0 border-t border-[#d9dfe4] sm:grid-cols-2 lg:grid-cols-3">
+    <div className="columns-1 gap-x-12 sm:columns-2 lg:columns-3 lg:gap-x-16">
       {items.map((item, index) => {
         const title = String(item.title || item.label || item.text || `Feature ${index + 1}`);
         const description = String(item.description || item.value || "");
         return (
           <article
             key={item._key || `${title}-${index}`}
-            className="relative border-b border-[#d9dfe4] py-7 pr-4 lg:min-h-[145px]"
+            className="mb-7 inline-flex w-full break-inside-avoid items-start gap-3 pr-2"
           >
-            <span className="mb-5 block h-[4px] w-10 bg-[#f5a400]" aria-hidden />
-            <h3 className="text-[17px] font-semibold leading-6 text-[#0b4f9c]">{title}</h3>
-            {description ? <p className="mt-3 text-[14px] leading-6 text-[#62696f]">{description}</p> : null}
+            <span className="mt-[3px] flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border-[1.5px] border-[#0752ad] text-[15px] leading-none text-[#0752ad]" aria-hidden>→</span>
+            <div className="min-w-0">
+              <h3 className="text-[20px] font-normal leading-[1.25] tracking-[-0.015em] text-[#064aa5]">{title}</h3>
+              {description ? <p className="mt-1.5 text-[14px] leading-[1.45] text-[#77716c]">{description}</p> : null}
+            </div>
           </article>
         );
       })}
@@ -358,25 +360,108 @@ function splitReviewTitle(input: string) {
   return { person: person?.trim() || input, organization: rest.join(" — ").trim() };
 }
 
-function ReviewRail({ items }: { items: KentSectionItem[] }) {
+function useCarouselPageSize() {
+  const [pageSize, setPageSize] = React.useState(1);
+  React.useEffect(() => {
+    const media = window.matchMedia("(min-width: 768px)");
+    const update = () => setPageSize(media.matches ? 2 : 1);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  return pageSize;
+}
+
+function ReviewCarousel({ items }: { items: KentSectionItem[] }) {
+  const pageSize = useCarouselPageSize();
+  const maxIndex = Math.max(0, items.length - pageSize);
+  const [activeIndex, setActiveIndex] = React.useState(0);
+  React.useEffect(() => setActiveIndex((current) => Math.min(current, maxIndex)), [maxIndex]);
+  const visibleItems = items.slice(activeIndex, activeIndex + pageSize);
+
+  const move = (direction: -1 | 1) => {
+    setActiveIndex((current) => {
+      if (direction < 0) return current <= 0 ? maxIndex : current - 1;
+      return current >= maxIndex ? 0 : current + 1;
+    });
+  };
+
   return (
-    <div className="scrollbar-hidden flex snap-x gap-6 overflow-x-auto pb-4">
-      {items.map((item, index) => {
+    <div>
+      <div className="relative">
+        {items.length > pageSize ? (
+          <>
+            <button type="button" onClick={() => move(-1)} aria-label="Previous testimonial" className="absolute -left-3 top-1/2 z-10 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#d7dde3] bg-white text-[25px] text-[#0b4f9c] shadow-sm transition hover:border-[#0b4f9c] hover:bg-[#0b4f9c] hover:text-white">‹</button>
+            <button type="button" onClick={() => move(1)} aria-label="Next testimonial" className="absolute -right-3 top-1/2 z-10 flex h-11 w-11 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#d7dde3] bg-white text-[25px] text-[#0b4f9c] shadow-sm transition hover:border-[#0b4f9c] hover:bg-[#0b4f9c] hover:text-white">›</button>
+          </>
+        ) : null}
+        <div className="grid gap-5 md:grid-cols-2">
+      {visibleItems.map((item, offset) => {
+        const index = activeIndex + offset;
         const rawTitle = String(item.title || item.label || item.text || `Review ${index + 1}`);
         const { person, organization } = splitReviewTitle(rawTitle);
         const description = String(item.description || item.value || "");
         return (
           <article
             key={item._key || `${rawTitle}-${index}`}
-            className="min-w-[88%] snap-start border-t-4 border-[#0b5baa] bg-white px-7 py-7 shadow-[0_2px_12px_rgba(24,43,64,0.07)] sm:min-w-[70%] lg:min-w-[47%]"
+            className="min-h-[292px] bg-[#f6f7fa] px-9 py-9 md:px-11 md:py-10"
           >
-            {description ? <blockquote className="text-[15px] leading-7 text-[#51585e]">{description}</blockquote> : null}
-            <div className="mt-6 text-[16px] font-semibold text-[#0a4d96]">{person}</div>
-            {organization ? <div className="mt-1 text-sm leading-6 text-slate-500">{organization}</div> : null}
+            <div className="text-[17px] font-normal leading-6 text-[#0752ad]">{person}</div>
+            {organization ? <div className="mt-1 text-[18px] leading-6 text-[#171717]">{organization}</div> : null}
+            {description ? <blockquote className="mt-5 text-[15px] leading-[1.55] text-[#77716c]">{description}</blockquote> : null}
           </article>
         );
       })}
+        </div>
+      </div>
+      {items.length > pageSize ? (
+        <div className="mt-4 flex justify-center gap-2" aria-label="Testimonial pages">
+          {Array.from({ length: maxIndex + 1 }, (_, index) => (
+            <button key={`review-dot-${index}`} type="button" onClick={() => setActiveIndex(index)} aria-label={`Show testimonial page ${index + 1}`} aria-current={index === activeIndex ? "true" : undefined} className={`h-2.5 w-2.5 rounded-full transition ${index === activeIndex ? "bg-[#0b4f9c]" : "bg-[#c9cdd1] hover:bg-[#7f8a94]"}`} />
+          ))}
+        </div>
+      ) : null}
     </div>
+  );
+}
+
+function productSlugFromHref(input?: unknown) {
+  const raw = String(input || "").trim();
+  if (!raw) return "";
+  try {
+    const pathname = new URL(raw, "https://www.kentscientific.com").pathname;
+    return pathname.match(/\/products\/([^/]+)/i)?.[1] || "";
+  } catch {
+    return "";
+  }
+}
+
+function RelatedProductGrid({ items, productTitle }: { items: KentSectionItem[]; productTitle: string }) {
+  const quoteHref = `mailto:info@itsbio.co.kr?subject=${encodeURIComponent(`Kent ${productTitle} 견적 문의`)}`;
+  return (
+    <>
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {items.slice(0, 3).map((item, index) => {
+          const title = String(item.title || item.label || item.text || `Related product ${index + 1}`);
+          const slug = String(item.slug || productSlugFromHref(item.href || item.url));
+          const href = slug ? `/products/kent/item/${slug}` : String(item.href || item.url || "");
+          return (
+            <a key={item._key || `${title}-${index}`} href={href} className="group block min-w-0">
+              <div className="flex aspect-square items-center justify-center border border-[#e7e9ec] bg-white p-7 transition group-hover:border-[#0b4f9c]">
+                <MediaImage src={String(item.imageUrl || "")} alt={title} className="max-h-full transition duration-300 group-hover:scale-[1.025]" />
+              </div>
+              <h3 className="mt-4 line-clamp-2 text-[16px] font-normal leading-6 text-[#0752ad] group-hover:underline">{title}</h3>
+              {item.description ? <p className="mt-1 line-clamp-2 text-[14px] leading-5 text-[#767b80]">{String(item.description)}</p> : null}
+            </a>
+          );
+        })}
+      </div>
+      <div className="mt-12 bg-[#3282df] px-7 py-8 text-center text-white md:px-12">
+        <h3 className="text-[20px] font-semibold">Not sure which modules are right for you?</h3>
+        <p className="mt-3 text-[16px]">Our team can help you with product details, configurations, and quotes.</p>
+        <a href={quoteHref} className="mt-6 inline-flex min-h-[48px] items-center justify-center rounded-[6px] bg-[#ffb400] px-8 py-3 text-[14px] font-bold uppercase text-[#111] transition hover:bg-[#ffc533]">Contact us</a>
+      </div>
+    </>
   );
 }
 
@@ -632,7 +717,7 @@ function DataTable({ rows }: { rows: Array<Record<string, unknown>> }) {
   );
 }
 
-function ProductSection({ section, index, videoCandidates }: { section: SectionWithKey; index: number; videoCandidates: KentSectionItem[] }) {
+function ProductSection({ section, index, videoCandidates, productTitle }: { section: SectionWithKey; index: number; videoCandidates: KentSectionItem[]; productTitle: string }) {
   const bucket = typeBucket(section);
   const title = String(section.title || (bucket === "overview" ? "Product overview" : bucket.replaceAll("-", " ")));
   const html = sectionHtml(section);
@@ -659,20 +744,22 @@ function ProductSection({ section, index, videoCandidates }: { section: SectionW
   }
 
   const body = (() => {
-    if (bucket === "related-products") return null;
+    if (bucket === "related-products") return items.length ? <RelatedProductGrid items={items} productTitle={productTitle} /> : null;
     if (bucket === "features") return (items.length || parsedFeatures.length) ? <FeatureGrid items={items.length ? items : parsedFeatures} /> : <HtmlBlock html={html} />;
     if (bucket === "reviews") {
       const reviews = items.length ? items : parsedReviews;
       if (!reviews.length) return <HtmlBlock html={html} />;
       return (
         <>
-          <ReviewRail items={reviews} />
-          {reviewLinks.length ? (
-            <div className="mt-12 border-t border-[#d7dce0] pt-10">
-              {reviewResourceTitle ? <h3 className="mb-5 text-[23px] font-semibold text-[#0b4f9c]">{reviewResourceTitle}</h3> : null}
-              <ResourceList items={reviewLinks} />
-            </div>
-          ) : null}
+          <div className={`grid gap-10 ${reviewLinks.length ? "lg:grid-cols-[minmax(0,1.9fr)_minmax(300px,0.9fr)] lg:gap-16" : ""}`}>
+            <ReviewCarousel items={reviews} />
+            {reviewLinks.length ? (
+              <aside>
+                <h3 className="mb-5 text-[28px] font-normal tracking-[-0.02em] text-[#0b4f9c]">{reviewResourceTitle || `${productTitle} resources`}</h3>
+                <ResourceList items={reviewLinks} />
+              </aside>
+            ) : null}
+          </div>
         </>
       );
     }
@@ -709,7 +796,7 @@ function ProductSection({ section, index, videoCandidates }: { section: SectionW
   return (
     <section
       id={`kent-section-${index}`}
-      className={["scroll-mt-24 py-12 md:py-[66px]", index > 0 ? "border-t border-[#dfe4e8]" : "", bucket === "reviews" ? "-mx-6 bg-[#f4f5f3] px-6 md:-mx-10 md:px-10" : "", notice ? "-mx-6 bg-[#fff8e8] px-6 md:-mx-10 md:px-10" : ""].join(" ")}
+      className={["scroll-mt-24 py-12 md:py-[66px]", index > 0 ? "border-t border-[#dfe4e8]" : "", bucket === "features" ? "border-b-[4px] border-b-[#0b4f9c]" : "", bucket === "videos" ? "-mx-6 bg-[#f3f7fb] px-6 md:-mx-10 md:px-10 lg:-mx-12 lg:px-12" : "", notice ? "-mx-6 bg-[#fff8e8] px-6 md:-mx-10 md:px-10" : ""].join(" ")}
     >
       <h2 className={`mb-8 text-[28px] font-semibold leading-tight tracking-[-0.025em] md:text-[34px] ${notice ? "text-amber-900" : "text-[#0b4f9c]"}`}>{title}</h2>
       {body}
@@ -779,22 +866,14 @@ export default function KentProductSectionRendererV2({
   const explicit = (Array.isArray(sections) ? sections : []).filter(isRenderable) as SectionWithKey[];
   const represented = new Set<SectionBucket>(explicit.map(typeBucket));
   const legacy = fallbackSections({ title, descriptionHtml, specsHtml, datasheetHtml, documentsHtml, faqsHtml, referencesHtml, reviewsHtml, documents });
-  const merged = [...explicit, ...legacy.filter((section) => !represented.has(section.fallbackKey || typeBucket(section)))]
-    .filter((section) => typeBucket(section) !== "related-products");
+  const merged = [...explicit, ...legacy.filter((section) => !represented.has(section.fallbackKey || typeBucket(section)))];
   if (!merged.length) return null;
   const videoCandidates = merged
     .flatMap((section) => [...sectionItems(section), ...linkedItemsFromHtml(sectionHtml(section))])
     .filter((item) => isVideoUrl(item.url || item.href));
   return (
     <div className="mt-2">
-      <nav aria-label="Product detail sections" className="scrollbar-hidden -mx-6 mb-2 flex overflow-x-auto border-y border-[#dfe4e8] bg-white px-6">
-        {merged.map((section, index) => {
-          const bucket = typeBucket(section);
-          const label = String(section.title || (bucket === "overview" ? "Product overview" : bucket.replaceAll("-", " ")));
-          return <a key={`section-link-${index}`} href={`#kent-section-${index}`} className="shrink-0 border-r border-[#e5e8eb] px-5 py-4 text-[13px] font-semibold text-[#4c555d] first:border-l hover:bg-[#f5f7f8] hover:text-[#0b4f9c]">{label}</a>;
-        })}
-      </nav>
-      {merged.map((section, index) => <ProductSection key={section._key || `${normalizeType(section)}-${index}`} section={section} index={index} videoCandidates={videoCandidates} />)}
+      {merged.map((section, index) => <ProductSection key={section._key || `${normalizeType(section)}-${index}`} section={section} index={index} videoCandidates={videoCandidates} productTitle={title} />)}
     </div>
   );
 }
