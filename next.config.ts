@@ -21,6 +21,27 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    const systems = ["somnoflo", "somnosuite", "vetflo"];
+
+    return systems.flatMap((system) => {
+      const leaf = `anesthesia-accessories-for-${system}`;
+      const canonical = `/products/kent/anesthesia/anesthesia-accessories/${leaf}`;
+
+      return [
+        {
+          source: `/products/kent/anesthesia/${leaf}`,
+          destination: canonical,
+          permanent: false,
+        },
+        {
+          source: `/products/kent/${leaf}`,
+          destination: canonical,
+          permanent: false,
+        },
+      ];
+    });
+  },
 };
 
 export default nextConfig;
