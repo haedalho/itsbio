@@ -1,0 +1,38 @@
+name: Run Kent variant gallery repair
+
+on:
+  pull_request:
+    branches:
+      - agent/kent-preflight
+    paths:
+      - .github/scripts/fix-kent-variant-gallery.py
+      - .github/workflows/run-kent-variant-gallery-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Apply repair
+        run: python .github/scripts/fix-kent-variant-gallery.py
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Commit repair
+        run: |
+          git config user.name "OpenAI"
+          git config user.email "openai@users.noreply.github.com"
+          git add app/products/kent/item/'[...slug]'/page.tsx components/products/KentProductDetailClient.tsx components/products/KentProductGalleryClient.tsx
+          git commit -m "Fix Kent variant images across product galleries"
+          git push origin HEAD:${{ github.head_ref }}
