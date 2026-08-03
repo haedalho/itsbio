@@ -19,29 +19,52 @@ jobs:
       - uses: actions/checkout@v4
       - name: Extract reviewed preview snapshot
         run: tar -xzf data/kent-shop-preview-snapshot.tgz
-      - name: Print target variant image data
+      - name: Print variant image coverage
         run: |
           node <<'NODE'
           const fs = require('fs');
           const data = JSON.parse(fs.readFileSync('.cache/kent-shop-profiles.json', 'utf8'));
-          const slug = 'vaporizer-with-vetflo-single-channel-anesthesia-stand';
-          const product = (data.results || []).find((row) => row.slug === slug || String(row.sourceUrl || '').includes(`/${slug}/`));
-          if (!product) throw new Error(`Missing product: ${slug}`);
-          const variants = product?.commerce?.variationPayloads || [];
-          const audit = {
-            slug: product.slug,
-            title: product.title,
-            optionGroups: product?.commerce?.optionGroups || [],
-            gallery: product?.imageUrls || [],
-            variants: variants.map((variant) => ({
-              variationId: variant.variationId,
-              sku: variant.sku,
-              attributes: variant.attributes,
-              image: variant.image,
-            })),
-            uniqueVariantImages: [...new Set(variants.map((variant) => variant.image).filter(Boolean))],
+          const products = data.results || [];
+          const rows = products.flatMap((product) => {
+            const variants = product?.commerce?.variationPayloads || [];
+            if (!variants.length) return [];
+            const gallery = product?.imageUrls || [];
+            const uniqueVariantImages = [...new Set(variants.map((variant) => variant.image).filter(Boolean))];
+            return [{
+              slug: product.slug,
+              title: product.title,
+              variants: variants.length,
+              gallery: gallery.length,
+              uniqueVariantImages: uniqueVariantImages.length,
+              needsGalleryFallback: gallery.length > 1 && uniqueVariantImages.length <= 1,
+            }];
+          });
+          const targetSlug = 'vaporizer-with-vetflo-single-channel-anesthesia-stand';
+          const targetProduct = products.find((row) => row.slug === targetSlug || String(row.sourceUrl || '').includes(`/${targetSlug}/`));
+          const targetVariants = targetProduct?.commerce?.variationPayloads || [];
+          const output = {
+            totals: {
+              products: products.length,
+              variantProducts: rows.length,
+              withMultipleVariantImages: rows.filter((row) => row.uniqueVariantImages > 1).length,
+              withOneOrNoVariantImage: rows.filter((row) => row.uniqueVariantImages <= 1).length,
+              galleryFallbackCandidates: rows.filter((row) => row.needsGalleryFallback).length,
+            },
+            fallbackCandidates: rows.filter((row) => row.needsGalleryFallback),
+            target: {
+              slug: targetProduct?.slug,
+              title: targetProduct?.title,
+              optionGroups: targetProduct?.commerce?.optionGroups || [],
+              gallery: targetProduct?.imageUrls || [],
+              variants: targetVariants.map((variant) => ({
+                variationId: variant.variationId,
+                sku: variant.sku,
+                attributes: variant.attributes,
+                image: variant.image,
+              })),
+            },
           };
           console.log('KENT_VARIANT_AUDIT_START');
-          console.log(JSON.stringify(audit, null, 2));
+          console.log(JSON.stringify(output, null, 2));
           console.log('KENT_VARIANT_AUDIT_END');
           NODE
