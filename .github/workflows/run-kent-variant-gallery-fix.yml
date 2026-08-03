@@ -21,7 +21,22 @@ jobs:
           fetch-depth: 0
 
       - name: Apply repair
-        run: python .github/scripts/fix-kent-variant-gallery.py
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          path = Path('.github/scripts/fix-kent-variant-gallery.py')
+          text = path.read_text()
+          text = text.replace(
+              "    new_normalize + '\\n\\nfunction sectionBody',",
+              "    lambda _: new_normalize + '\\n\\nfunction sectionBody',",
+          )
+          text = text.replace(
+              "    new_resolution + '\\n\\nexport default function',",
+              "    lambda _: new_resolution + '\\n\\nexport default function',",
+          )
+          path.write_text(text)
+          PY
+          python .github/scripts/fix-kent-variant-gallery.py
 
       - name: Install dependencies
         run: npm ci
