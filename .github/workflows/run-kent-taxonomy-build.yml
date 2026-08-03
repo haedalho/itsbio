@@ -1,0 +1,42 @@
+name: Run exact Kent taxonomy build
+
+on:
+  pull_request:
+    branches:
+      - agent/kent-preflight
+    paths:
+      - scripts/kent-current-taxonomy-build.mjs
+      - .github/workflows/run-kent-taxonomy-build.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kent-taxonomy-build-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-taxonomy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Generate exact current taxonomy
+        run: node scripts/kent-current-taxonomy-build.mjs data/kent-current-taxonomy.json
+      - name: Commit generated taxonomy
+        run: |
+          git config user.name "OpenAI"
+          git config user.email "openai@users.noreply.github.com"
+          git add data/kent-current-taxonomy.json
+          if git diff --cached --quiet; then
+            echo "Exact Kent taxonomy is already current."
+            exit 0
+          fi
+          git commit -m "Update exact Kent category memberships"
+          git push origin HEAD:${{ github.head_ref }}
