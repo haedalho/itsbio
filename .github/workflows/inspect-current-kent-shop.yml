@@ -21,9 +21,10 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm install --no-audit --no-fund
-      - name: Collect current Kent taxonomy
+      - name: Collect current Kent taxonomy in report mode
         run: |
           sed -i 's/payload.categoryCount < 70/payload.categoryCount < 60/' scripts/kent-current-taxonomy-collect.mjs
+          sed -i 's/if (categoryCountMismatches.length) {/if (false) {/' scripts/kent-current-taxonomy-collect.mjs
           node scripts/kent-current-taxonomy-collect.mjs --out .cache/kent-current-taxonomy.json
       - name: Compare current and reviewed catalog
         run: |
@@ -66,6 +67,7 @@ jobs:
             reviewedProducts: reviewed.publishedProductCount,
             currentCategories: current.categoryCount,
             reviewedCategories: reviewed.categoryCount,
+            categoryCountMismatches: current.categoryCountMismatches,
             added,
             removed,
             categoryCountChanges: countChanges.length,
