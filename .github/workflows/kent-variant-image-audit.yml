@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Extract reviewed preview snapshot
         run: tar -xzf data/kent-shop-preview-snapshot.tgz
-      - name: Print variant image coverage
+      - name: Compare snapshot and Sanity variant images
         run: |
           node <<'NODE'
           const fs = require('fs');
@@ -50,11 +50,9 @@ jobs:
               withOneOrNoVariantImage: rows.filter((row) => row.uniqueVariantImages <= 1).length,
               galleryFallbackCandidates: rows.filter((row) => row.needsGalleryFallback).length,
             },
-            fallbackCandidates: rows.filter((row) => row.needsGalleryFallback),
             target: {
               slug: targetProduct?.slug,
               title: targetProduct?.title,
-              optionGroups: targetProduct?.commerce?.optionGroups || [],
               gallery: targetProduct?.imageUrls || [],
               variants: targetVariants.map((variant) => ({
                 variationId: variant.variationId,
@@ -64,7 +62,20 @@ jobs:
               })),
             },
           };
-          console.log('KENT_VARIANT_AUDIT_START');
+          console.log('KENT_SNAPSHOT_AUDIT_START');
           console.log(JSON.stringify(output, null, 2));
-          console.log('KENT_VARIANT_AUDIT_END');
+          console.log('KENT_SNAPSHOT_AUDIT_END');
+          NODE
+
+          curl --fail-with-body --silent --show-error --get \
+            'https://9b5twpc8.api.sanity.io/v2025-02-19/data/query/production' \
+            --data-urlencode 'query=*[_type in ["product","kentPreviewProduct"] && slug.current=="vaporizer-with-vetflo-single-channel-anesthesia-stand"]{_type,_id,title,variants[]{variantId,sku,catNo,optionSummary,imageUrl,optionValues,attributes},images[]{sourceUrl,"url":asset->url}}' \
+            --output /tmp/sanity-variants.json
+
+          node <<'NODE'
+          const fs = require('fs');
+          const payload = JSON.parse(fs.readFileSync('/tmp/sanity-variants.json', 'utf8'));
+          console.log('KENT_SANITY_AUDIT_START');
+          console.log(JSON.stringify(payload.result || [], null, 2));
+          console.log('KENT_SANITY_AUDIT_END');
           NODE
