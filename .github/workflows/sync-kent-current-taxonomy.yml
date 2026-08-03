@@ -1,6 +1,7 @@
 name: Sync exact Kent category taxonomy
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - agent/kent-sanity-images-only
