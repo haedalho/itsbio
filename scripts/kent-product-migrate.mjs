@@ -663,10 +663,16 @@ function restoreFirstFeatureHeading(product, section) {
   return { ...section, html: `<h3>${title}</h3>${html}` };
 }
 
+function isSyntheticDocumentsSection(section) {
+  const key = textClean(section?._key || "").toLowerCase();
+  const title = textClean(section?.title || "").toLowerCase().replace(/\s*&\s*/g, " & ");
+  return key === "kent-source-documents" || title === "documents & resources";
+}
+
 function officialSections(product) {
   const sourceSections = Array.isArray(product?.kentSections)
     ? product.kentSections
-        .filter((section) => section && typeof section === "object")
+        .filter((section) => section && typeof section === "object" && !isSyntheticDocumentsSection(section))
         .map((rawSection, sectionIndex) => {
           const section = restoreFirstFeatureHeading(product, rawSection);
           return ({

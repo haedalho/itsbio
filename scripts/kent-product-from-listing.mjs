@@ -867,19 +867,6 @@ function parseProduct(html, url, sourceMeta = null) {
   const pdfs = redirectedToDifferentProduct ? [] : collectPdfs($, canonical);
   const videos = redirectedToDifferentProduct ? [] : collectVideos($, canonical);
 
-  if (pdfs.length && !sections.some((section) => section.type === "documents")) {
-    sections.push({
-      _key: "kent-source-documents",
-      type: "documents",
-      title: "Documents & Resources",
-      items: pdfs.map((pdf, index) => ({
-        _key: `kent-document-${index}-${sha1(pdf.href).slice(0, 8)}`,
-        title: pdf.title,
-        url: pdf.href,
-      })),
-    });
-  }
-
   if (videos.length && !sections.some((section) => section.type === "videos")) {
     sections.push({
       _key: "kent-source-videos",

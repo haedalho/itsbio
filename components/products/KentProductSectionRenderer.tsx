@@ -156,6 +156,12 @@ function isRenderable(section: KentSection) {
   );
 }
 
+function isSyntheticDocumentsSection(section: KentSection) {
+  const key = cleanText(section._key).toLowerCase();
+  const title = cleanText(section.title).toLowerCase().replace(/\s*&\s*/g, " & ");
+  return key === "kent-source-documents" || title === "documents & resources";
+}
+
 function HtmlBlock({ html }: { html?: string }) {
   const managedHtml = stripUnmanagedImages(html);
   if (!cleanText(managedHtml)) return null;
@@ -820,31 +826,22 @@ function fallbackSections({
   descriptionHtml,
   specsHtml,
   datasheetHtml,
-  documentsHtml,
   faqsHtml,
   referencesHtml,
   reviewsHtml,
-  documents,
 }: {
   title: string;
   descriptionHtml?: string;
   specsHtml?: string;
   datasheetHtml?: string;
-  documentsHtml?: string;
   faqsHtml?: string;
   referencesHtml?: string;
   reviewsHtml?: string;
-  documents?: Doc[];
 }): SectionWithKey[] {
-  const docs: KentSectionItem[] = (documents || []).flatMap((doc) => {
-    const url = String(doc?.url || "").trim();
-    return url ? [{ url, label: String(doc?.label || doc?.title || url) }] : [];
-  });
   return [
     { fallbackKey: "overview", type: "rich-text", title: `About ${title}`, html: descriptionHtml },
     { fallbackKey: "specs", type: "spec-table", title: "Specifications", html: specsHtml },
     { fallbackKey: "datasheet", type: "datasheet", title: "Datasheet", html: datasheetHtml },
-    { fallbackKey: "documents", type: "resources", title: "Documents & Resources", html: documentsHtml, items: docs },
     { fallbackKey: "faqs", type: "faqs", title: "FAQs", html: faqsHtml },
     { fallbackKey: "references", type: "publications", title: "References & Publications", html: referencesHtml },
     { fallbackKey: "reviews", type: "reviews", title: "Reviews", html: reviewsHtml },
@@ -857,11 +854,11 @@ export default function KentProductSectionRendererV2({
   descriptionHtml,
   specsHtml,
   datasheetHtml,
-  documentsHtml,
+  documentsHtml: _documentsHtml,
   faqsHtml,
   referencesHtml,
   reviewsHtml,
-  documents,
+  documents: _documents,
 }: {
   title: string;
   sections?: KentSection[];
@@ -874,10 +871,18 @@ export default function KentProductSectionRendererV2({
   reviewsHtml?: string;
   documents?: Doc[];
 }) {
-  const explicit = (Array.isArray(sections) ? sections : []).filter(isRenderable) as SectionWithKey[];
+  const explicit = (Array.isArray(sections) ? sections : [])
+    .filter((section) => !isSyntheticDocumentsSection(section))
+    .filter(isRenderable) as SectionWithKey[];
   const represented = new Set<SectionBucket>(explicit.map(typeBucket));
-  const legacy = fallbackSections({ title, descriptionHtml, specsHtml, datasheetHtml, documentsHtml, faqsHtml, referencesHtml, reviewsHtml, documents });
-  const merged = [...explicit, ...legacy.filter((section) => !represented.has(section.fallbackKey || typeBucket(section)))];
+  const legacy = fallbackSections({ title, descriptionHtml, specsHtml, datasheetHtml, faqsHtml, referencesHtml, reviewsHtml });
+  const combined = [...explicit, ...legacy.filter((section) => !represented.has(section.fallbackKey || typeBucket(section)))];
+  // Kent places recommendations directly below the top product description,
+  // before the longer "What you get" and supporting detail sections.
+  const merged = [
+    ...combined.filter((section) => typeBucket(section) === "related-products"),
+    ...combined.filter((section) => typeBucket(section) !== "related-products"),
+  ];
   if (!merged.length) return null;
   const videoCandidates = merged
     .flatMap((section) => [...sectionItems(section), ...linkedItemsFromHtml(sectionHtml(section))])

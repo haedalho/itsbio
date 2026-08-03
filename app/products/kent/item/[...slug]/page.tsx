@@ -352,7 +352,6 @@ function supplementalSections(product: any, title: string) {
   const specs = htmlValue(product?.specsHtml);
   if (specs && !isContaminatedSpecsHtml(specs)) add("spec-table", "Specifications", specs);
   add("datasheet", "Datasheet", product?.datasheetHtml);
-  add("documents", "Documents & Resources", product?.documentsHtml, Array.isArray(product?.docs) ? product.docs : []);
   add("faqs", "FAQs", product?.faqsHtml);
   add("publications", "Scientific publications", product?.referencesHtml);
   add("reviews", "Reviews", product?.reviewsHtml);
