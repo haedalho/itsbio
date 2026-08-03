@@ -214,15 +214,10 @@ export default function KentProductDetailClientV2({
   const selectedSummary = selectedVariant?.optionSummary || "";
   const invalidCombination = hasVariantControls && safeVariants.length > 0 && !selectedVariant;
   const galleryImages = React.useMemo(() => {
-    // A verified official gallery is authoritative. Legacy variant image URLs may
-    // point to thumbnails, page-body graphics or stale assets, so they must not
-    // be injected into an approved/staging official gallery.
-    if (verifiedGallery) return dedupeImages(images || []);
-
     const variantImage = safeManagedImageUrl(selectedVariant?.imageUrl);
     const head = variantImage ? [{ url: variantImage, alt: selectedVariant?.title || title }] : [];
     return dedupeImages([...(head as Img[]), ...(images || [])]);
-  }, [images, selectedVariant?.imageUrl, selectedVariant?.title, title, verifiedGallery]);
+  }, [images, selectedVariant?.imageUrl, selectedVariant?.title, title]);
   const safeDocs = React.useMemo(() => normalizeDocs(documents), [documents]);
   const quoteHref = "/contact";
 
