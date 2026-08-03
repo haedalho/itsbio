@@ -6,36 +6,69 @@ on:
       - agent/kent-preflight
     paths:
       - .github/workflows/inspect-current-kent-shop.yml
+      - scripts/kent-shop-collect.mjs
 
 jobs:
   inspect:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
-      - name: Probe Kent catalog reader sources
-        shell: bash
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Collect current WordPress catalog
+        run: node scripts/kent-shop-collect.mjs --out .cache/kent-shop-current.json
+      - name: Compare current and reviewed catalog
         run: |
-          set -u
-          probe() {
-            label="$1"
-            url="$2"
-            out="/tmp/kent-probe-${label}.out"
-            code=$(curl --http1.1 -L --retry 2 --retry-delay 2 -sS \
-              -H 'accept: text/plain,text/markdown,application/json,text/html;q=0.9,*/*;q=0.8' \
-              -o "$out" -w '%{http_code}' "$url" || true)
-            ctype=$(file -b --mime-type "$out" 2>/dev/null || true)
-            bytes=$(wc -c < "$out" 2>/dev/null || echo 0)
-            products=$(grep -Eoi 'https?://(www\.)?kentscientific\.com/products/[a-z0-9-]+/?' "$out" 2>/dev/null | sort -u | wc -l || true)
-            echo "PROBE $label status=$code type=$ctype bytes=$bytes products=$products url=$url"
-            head -c 500 "$out" | tr '\n' ' ' || true
-            echo
+          tar -xzf data/kent-shop-preview-snapshot.tgz
+          node <<'NODE'
+          const fs = require('fs');
+          const current = JSON.parse(fs.readFileSync('.cache/kent-shop-current.json', 'utf8'));
+          const reviewed = JSON.parse(fs.readFileSync('.cache/kent-shop-all.json', 'utf8'));
+          const cur = new Set(current.products.map((p) => p.slug));
+          const old = new Set(reviewed.products.map((p) => p.slug));
+          const added = [...cur].filter((slug) => !old.has(slug));
+          const removed = [...old].filter((slug) => !cur.has(slug));
+          const oldById = new Map(reviewed.categories.map((c) => [Number(c.id), c]));
+          const countChanges = [];
+          const membershipChanges = [];
+          for (const category of current.categories) {
+            const previous = oldById.get(Number(category.id));
+            const oldUrls = new Set(previous?.productUrls || []);
+            const newUrls = new Set(category.productUrls || []);
+            const addedProducts = [...newUrls].filter((url) => !oldUrls.has(url));
+            const removedProducts = [...oldUrls].filter((url) => !newUrls.has(url));
+            if ((previous?.count ?? null) !== category.count || oldUrls.size !== newUrls.size) {
+              countChanges.push({
+                id: category.id,
+                path: category.categoryPath.join('/'),
+                title: category.title,
+                oldTermCount: previous?.count ?? null,
+                newTermCount: category.count,
+                oldProductCount: oldUrls.size,
+                newProductCount: newUrls.size,
+              });
+            }
+            if (addedProducts.length || removedProducts.length) {
+              membershipChanges.push({ path: category.categoryPath.join('/'), addedProducts, removedProducts });
+            }
           }
-
-          probe jina_http_listing 'https://r.jina.ai/http://www.kentscientific.com/product/anesthesia/anesthesia-accessories/'
-          probe jina_https_listing 'https://r.jina.ai/https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/'
-          probe jina_http_page2 'https://r.jina.ai/http://www.kentscientific.com/product/anesthesia/anesthesia-accessories/page/2/'
-          probe jina_wp_categories 'https://r.jina.ai/http://www.kentscientific.com/wp-json/wp/v2/product_cat?per_page=100&page=1&hide_empty=false&_fields=id,parent,name,slug,count,link'
-          probe google_cache_listing 'https://r.jina.ai/http://r.jina.ai/http://www.kentscientific.com/product/anesthesia/anesthesia-accessories/'
+          console.log(JSON.stringify({
+            transport: current.transport,
+            currentProducts: current.publishedProductCount,
+            reviewedProducts: reviewed.publishedProductCount,
+            currentCategories: current.categoryCount,
+            reviewedCategories: reviewed.categoryCount,
+            added,
+            removed,
+            categoryCountChanges: countChanges.length,
+            countChanges,
+            membershipChanges: membershipChanges.length,
+            membershipChangeDetails: membershipChanges,
+          }, null, 2));
+          NODE
