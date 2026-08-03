@@ -6,7 +6,7 @@ on:
       - agent/kent-preflight
     paths:
       - .github/workflows/inspect-current-kent-shop.yml
-      - scripts/kent-shop-collect.mjs
+      - scripts/kent-current-taxonomy-collect.mjs
 
 jobs:
   inspect:
@@ -21,14 +21,14 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm install --no-audit --no-fund
-      - name: Collect current WordPress catalog
-        run: node scripts/kent-shop-collect.mjs --out .cache/kent-shop-current.json
+      - name: Collect current Kent taxonomy
+        run: node scripts/kent-current-taxonomy-collect.mjs --out .cache/kent-current-taxonomy.json
       - name: Compare current and reviewed catalog
         run: |
           tar -xzf data/kent-shop-preview-snapshot.tgz
           node <<'NODE'
           const fs = require('fs');
-          const current = JSON.parse(fs.readFileSync('.cache/kent-shop-current.json', 'utf8'));
+          const current = JSON.parse(fs.readFileSync('.cache/kent-current-taxonomy.json', 'utf8'));
           const reviewed = JSON.parse(fs.readFileSync('.cache/kent-shop-all.json', 'utf8'));
           const cur = new Set(current.products.map((p) => p.slug));
           const old = new Set(reviewed.products.map((p) => p.slug));
@@ -39,19 +39,19 @@ jobs:
           const membershipChanges = [];
           for (const category of current.categories) {
             const previous = oldById.get(Number(category.id));
-            const oldUrls = new Set(previous?.productUrls || []);
-            const newUrls = new Set(category.productUrls || []);
-            const addedProducts = [...newUrls].filter((url) => !oldUrls.has(url));
-            const removedProducts = [...oldUrls].filter((url) => !newUrls.has(url));
-            if ((previous?.count ?? null) !== category.count || oldUrls.size !== newUrls.size) {
+            const oldSlugs = new Set((previous?.productUrls || []).map((url) => String(url).split('/').filter(Boolean).at(-1)));
+            const newSlugs = new Set(category.productSlugs || []);
+            const addedProducts = [...newSlugs].filter((slug) => !oldSlugs.has(slug));
+            const removedProducts = [...oldSlugs].filter((slug) => !newSlugs.has(slug));
+            if ((previous?.count ?? null) !== category.count || oldSlugs.size !== newSlugs.size) {
               countChanges.push({
                 id: category.id,
                 path: category.categoryPath.join('/'),
                 title: category.title,
                 oldTermCount: previous?.count ?? null,
                 newTermCount: category.count,
-                oldProductCount: oldUrls.size,
-                newProductCount: newUrls.size,
+                oldProductCount: oldSlugs.size,
+                newProductCount: newSlugs.size,
               });
             }
             if (addedProducts.length || removedProducts.length) {
