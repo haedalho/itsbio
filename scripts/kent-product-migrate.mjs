@@ -22,6 +22,7 @@ const DEACTIVATE_MISSING = has("--deactivate-missing");
 const PREVIEW_MODE = has("--preview");
 const PRODUCT_DOC_TYPE = PREVIEW_MODE ? "kentPreviewProduct" : "product";
 const PRODUCT_ID_PREFIX = PREVIEW_MODE ? "preview_prod" : "prod";
+const DISPLAY_PRICE_RE = /(?:[$€£¥₩]\s*\d[\d,.]*(?:\s*[–-]\s*[$€£¥₩]?\s*\d[\d,.]*)?|(?:USD|EUR|GBP|JPY|KRW)\s*\d[\d,.]*|\d[\d,.]*\s*(?:USD|EUR|GBP|JPY|KRW|원))/gi;
 const LIMIT = Number(readArg("--limit", "0")) || 0;
 const INPUT = path.resolve(
   readArg("--input", path.join(process.cwd(), ".cache", "kent-shop-profiles.json"))
@@ -573,7 +574,7 @@ function buildContentBlocks(product, docs, variants, categoryTitles) {
 }
 
 function officialSections(product) {
-  return Array.isArray(product?.kentSections)
+  const sourceSections = Array.isArray(product?.kentSections)
     ? product.kentSections
         .filter((section) => section && typeof section === "object")
         .map((section, sectionIndex) => ({
@@ -591,6 +592,28 @@ function officialSections(product) {
             : undefined,
         }))
     : [];
+
+  const relatedItems = (Array.isArray(product?.relatedProducts) ? product.relatedProducts : [])
+    .flatMap((item, itemIndex) => {
+      const href = normalizeTrailingSlashUrl(item?.href || item?.url || "");
+      const title = textClean(item?.label || item?.title || "").replace(DISPLAY_PRICE_RE, "").replace(/\s+/g, " ").trim();
+      if (!href || !title) return [];
+      return [{
+        _key: stableKey(`kent-related-item:${href}:${itemIndex}`),
+        _type: "kentSourceSectionItem",
+        title,
+        href,
+      }];
+    });
+
+  if (!relatedItems.length) return sourceSections;
+  return [{
+    _key: stableKey(`kent-related:${product?.sourceUrl || product?.slug || "product"}`),
+    _type: "kentSourceSection",
+    type: "related-products",
+    title: "Customers who viewed this item also viewed",
+    items: relatedItems,
+  }, ...sourceSections];
 }
 
 function buildListingPaths(sourceCategories) {
