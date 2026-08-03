@@ -10,10 +10,35 @@ on:
 jobs:
   smoke:
     runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-02-19
+      VERCEL_ENV: preview
+      VERCEL_GIT_COMMIT_REF: agent/kent-sanity-images-only
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build preview app
+        run: npm run build
+
+      - name: Start preview app
+        run: |
+          npm start -- --hostname 127.0.0.1 --port 3000 > /tmp/itsbio-next.log 2>&1 &
+          echo $! > /tmp/itsbio-next.pid
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/itsbio-next.log
+          exit 1
+
       - name: Verify all Kent category routes and card images
-        env:
-          PREVIEW_BASE: https://itsbio-git-agent-kent-sanity-images-only-hadel-hos-projects.vercel.app
         run: |
           node <<'NODE'
           const projectId = '9b5twpc8';
@@ -30,18 +55,27 @@ jobs:
           for (const category of categories) {
             const path = Array.isArray(category.path) ? category.path.filter(Boolean).join('/') : '';
             if (!path) continue;
-            const url = `${process.env.PREVIEW_BASE}/products/kent/${path}?smoke=1f8e35d`;
+            const url = `http://127.0.0.1:3000/products/kent/${path}`;
             const response = await fetch(url, { redirect: 'follow' });
-            if (!response.ok) failures.push({ path, status: response.status, finalUrl: response.url });
+            const html = await response.text();
+            if (!response.ok || !html.includes('Kent Scientific')) {
+              failures.push({ path, status: response.status, finalUrl: response.url });
+            }
           }
 
-          const handlingUrl = `${process.env.PREVIEW_BASE}/products/kent/laboratory-animal-handling?smoke=1f8e35d`;
-          const handling = await fetch(handlingUrl, { redirect: 'follow' });
+          const handling = await fetch('http://127.0.0.1:3000/products/kent/laboratory-animal-handling');
           const html = await handling.text();
           const sanityImages = (html.match(/cdn\.sanity\.io/g) || []).length;
+          const hasHandlingCards = ['Laboratory Animal Handling', 'Animal Holders', 'Clippers', 'Scales']
+            .every((label) => html.includes(label));
 
-          console.log(JSON.stringify({ categoryCount: categories.length, failures, handlingStatus: handling.status, sanityImages }, null, 2));
+          console.log(JSON.stringify({ categoryCount: categories.length, failures, handlingStatus: handling.status, sanityImages, hasHandlingCards }, null, 2));
           if (failures.length) throw new Error(`${failures.length} Kent category routes failed`);
           if (!handling.ok) throw new Error(`Animal Handling HTTP ${handling.status}`);
+          if (!hasHandlingCards) throw new Error('Animal Handling category cards are missing');
           if (sanityImages < 4) throw new Error(`Animal Handling only rendered ${sanityImages} Sanity image references`);
           NODE
+
+      - name: Show server log on failure
+        if: failure()
+        run: cat /tmp/itsbio-next.log || true
