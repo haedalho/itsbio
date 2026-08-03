@@ -100,6 +100,21 @@ const ITEM_PAGE_QUERY = `
     kentOfficialSourceUrl,
     kentOfficialGalleryVerifiedAt,
     kentOfficialGalleryFingerprint
+  },
+
+  "relatedProductPool": *[
+    _type == $productType
+    && (!defined(isActive) || isActive == true)
+    && (
+      brand->slug.current == $brandKey
+      || brand->themeKey == $brandKey
+      || brandSlug == $brandKey
+    )
+  ]{
+    title,
+    summary,
+    "slug": slug.current,
+    "imageUrl": images[0].asset->url
   }
 }
 `;
@@ -138,6 +153,46 @@ function signature(input?: unknown) {
     .replace(/[^a-z0-9가-힣]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function kentProductSlugFromUrl(input?: unknown) {
+  const raw = String(input || "").trim();
+  if (!raw) return "";
+  try {
+    const pathname = new URL(raw, "https://www.kentscientific.com").pathname;
+    return pathname.match(/\/products\/([^/]+)/i)?.[1] || "";
+  } catch {
+    return "";
+  }
+}
+
+function hydrateRelatedProductSections(sections: Section[], pool: any[]) {
+  const bySlug = new Map(
+    (Array.isArray(pool) ? pool : [])
+      .filter((product) => product?.slug)
+      .map((product) => [String(product.slug).toLowerCase(), product]),
+  );
+
+  return sections.map((section) => {
+    const type = String(section?.type || section?.kind || section?._type || "").toLowerCase();
+    if (!/related-product|customers-who-viewed|you-may-also/.test(type)) return section;
+    return {
+      ...section,
+      items: (Array.isArray(section.items) ? section.items : []).flatMap((item: any) => {
+        const slug = kentProductSlugFromUrl(item?.href || item?.url).toLowerCase();
+        const product = bySlug.get(slug);
+        if (!slug || !product?.imageUrl || !isManagedKentImageUrl(product.imageUrl)) return [];
+        return [{
+          ...item,
+          title: cleanText(product.title) || cleanText(item?.title || item?.label),
+          description: cleanText(product.summary),
+          slug,
+          href: `/products/kent/item/${slug}`,
+          imageUrl: String(product.imageUrl),
+        }];
+      }),
+    };
+  });
 }
 
 function decodeHtmlEntities(input?: string | null) {
@@ -363,7 +418,10 @@ export default async function KentProductDetailPage({
 
   const universal = universalProductContent(product, title);
   const leadHtml = official?.leadHtml || universal.leadHtml;
-  const kentSections = sanitizeKentSections(official?.sections || universal.sections);
+  const kentSections = hydrateRelatedProductSections(
+    sanitizeKentSections(official?.sections || universal.sections) as Section[],
+    bundle?.relatedProductPool,
+  );
   const galleryStatus = String(product?.kentOfficialGalleryStatus || "");
   const stagedOfficialImages = ["STAGING", "APPROVED"].includes(galleryStatus)
     ? (Array.isArray(product?.kentOfficialGallery) ? product.kentOfficialGallery : [])
@@ -388,7 +446,7 @@ export default async function KentProductDetailPage({
 
   return (
     <main className="pb-16">
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-[1410px] px-6">
         <div className="py-7">
           <Breadcrumb items={breadcrumbItems} />
         </div>
