@@ -368,10 +368,12 @@ function extractPlaylistItems($, scope, canonical) {
 
 function collectRelatedProducts($, canonical) {
   const relatedProducts = [];
-  $('section.related a[href*="/products/"], .related a[href*="/products/"], .upsells a[href*="/products/"]').each(
-    (_, a) => {
+  const currentProductSlug = slugFromProductsUrl(canonical);
+
+  function collectFrom(scope) {
+    scope.find('a[href*="/products/"]').each((_, a) => {
       const href = normalizeTrailingSlashUrl(absUrl(canonical, $(a).attr("href") || ""));
-      if (!isProductDetailUrl(href)) return;
+      if (!isProductDetailUrl(href) || slugFromProductsUrl(href) === currentProductSlug) return;
       const card = $(a).closest("li.product, .product, .product-small, .product-grid-item");
       const label = textClean(
         card.find(".woocommerce-loop-product__title, h2, h3, h4").first().text() ||
@@ -381,8 +383,35 @@ function collectRelatedProducts($, canonical) {
       ).replace(MONEY_RE, "").replace(/\s+/g, " ").trim() || slugFromProductsUrl(href);
       if (!href || isNoiseText(label)) return;
       relatedProducts.push({ label, href });
+    });
+  }
+
+  collectFrom($('section.related, .related, .upsells'));
+
+  // Kent's newer Elementor product template does not consistently keep the
+  // WooCommerce `.related` class. Locate the official section by its heading,
+  // then use the smallest ancestor that actually owns the product cards. This
+  // avoids pulling product links from the global navigation.
+  $("h2,h3,h4").each((_, heading) => {
+    if (!/customers who viewed this item also viewed|you may also like/i.test(textClean($(heading).text()))) return;
+    let scope = $(heading);
+    for (let depth = 0; depth < 7; depth += 1) {
+      scope = scope.parent();
+      if (!scope.length || scope.is("body,html")) break;
+      const productLinks = dedupeStrings(
+        scope
+          .find('a[href*="/products/"]')
+          .toArray()
+          .map((a) => normalizeTrailingSlashUrl(absUrl(canonical, $(a).attr("href") || "")))
+          .filter((href) => isProductDetailUrl(href) && slugFromProductsUrl(href) !== currentProductSlug),
+      );
+      if (productLinks.length >= 1 && productLinks.length <= 12) {
+        collectFrom(scope);
+        break;
+      }
     }
-  );
+  });
+
   return dedupeByHref(relatedProducts);
 }
 
@@ -701,7 +730,11 @@ function extractElementorSections($, canonical) {
       return;
     }
 
-    if (heading) $node.find("h2,h3,h4").first().remove();
+    // A heading-only Elementor container is often followed by a content
+    // container whose first heading is the first feature title. When a pending
+    // section title already exists, removing that content heading drops the
+    // first feature name (for example SomnoSuite's flow-rate feature).
+    if (heading && !pendingTitle) $node.find("h2,h3,h4").first().remove();
     const html = cleanSectionHtml($, $node, canonical);
     const bodyText = stripHtmlTags(html);
 

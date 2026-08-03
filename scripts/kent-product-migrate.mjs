@@ -573,11 +573,101 @@ function buildContentBlocks(product, docs, variants, categoryTitles) {
   return blocks;
 }
 
+const OFFICIAL_FIRST_FEATURE_TITLE_BY_SLUG = {
+  "aeroneb-lab-control-module": "Maintain molecular integrity",
+  "coda-high-throughput-system": "Multifunctional monitoring capability",
+  "coda-monitor": "MRI compatible",
+  "far-infrared-warming-pads-with-controller": "Far infrared warming",
+  "mousestat-jr": "Fits in the palm of your hand",
+  "physiosuite": "Include up to 3 modules in one unit",
+  "righttemp-jr": "Far infrared warming",
+  "righttemp": "Far infrared warming",
+  "rovent-jr": "Fully automatic with touchscreen control",
+  "rovent": "RightTemp® homeothermic warming",
+  "somnoflo": "Extreme precision & accuracy, flow rates as low as 100mL/min",
+  "somnosuite": "Flow Rates from 25 mL to 1 L",
+  "surgisuite": "Comply with regulatory guidelines",
+  "vaporizer-with-vetflo-single-channel-anesthesia-stand": "Brand new vaporizer canisters",
+  "vetflo-four-channel-anesthesia-stand": "Superior design",
+  "vetflo-single-channel-anesthesia-stand": "Superior design",
+  "vetflo-six-channel-anesthesia-stand": "Superior design",
+  "vetflo-two-channel-anesthesia-stand": "Superior design",
+};
+
+const VERIFIED_RELATED_PRODUCTS_BY_SLUG = {
+  somnosuite: [
+    ["SurgiSuite – For Rats", "surgisuite"],
+    ["SurgiSuite – For Mice", "surgisuite"],
+    ["Anesthesia Masks Breathing Circuits for SomnoSuite®", "anesthesia-masks-breathing-circuits-for-somnosuite"],
+  ],
+  "mousestat-jr": [
+    ["Pulse Oximeter Paw Sensors MRI Compatible – MRI Sensor for Rats", "pulse-oximeter-paw-sensors-mri-compatible"],
+    ["Pulse Oximeter Paw Sensors MRI Compatible – MRI Sensor for Mice", "pulse-oximeter-paw-sensors-mri-compatible"],
+    ["RightTemp® Jr.", "righttemp-jr"],
+    ["PhysioSuite®", "physiosuite"],
+  ],
+  physiosuite: [
+    ["RightTemp® Jr.", "righttemp-jr"],
+    ["Pulse Oximeter Whole Body Sensors MRI Compatible", "pulse-oximeter-whole-body-sensors-mri-compatible"],
+    ["Pulse Oximeter Paw Sensors MRI Compatible", "pulse-oximeter-paw-sensors-mri-compatible"],
+  ],
+  "rovent-jr": [
+    ["RightTemp® Jr.", "righttemp-jr"],
+    ["Endotracheal Tubes for Rodent Intubation", "endotracheal-tubes"],
+    ["Endotracheal Intubation Kits for Mouse and Rat Anesthesia", "endotracheal-intubation-kits"],
+  ],
+  rovent: [
+    ["Intubation Stands", "intubation-stands"],
+    ["Endotracheal Tubes for Rodent Intubation", "endotracheal-tubes"],
+    ["Endotracheal Intubation Kits for Mouse and Rat Anesthesia", "endotracheal-intubation-kits"],
+  ],
+  somnoflo: [
+    ["Far Infrared Warming Pads with Controller for Small Animal Recovery", "far-infrared-warming-pads-with-controller"],
+    ["RightTemp® Jr.", "righttemp-jr"],
+    ["PhysioSuite®", "physiosuite"],
+  ],
+  surgisuite: [
+    ["Replacement Surgical Field Covers", "replacement-surgical-field-covers"],
+    ["Mouse Retractor Set", "mouse-retractor-set"],
+    ["PhysioSuite®", "physiosuite"],
+  ],
+  "vaporizer-with-vetflo-single-channel-anesthesia-stand": [
+    ["SomnoFlo®", "somnoflo"],
+    ["RightTemp® Jr.", "righttemp-jr"],
+    ["Anesthesia Masks Breathing Circuits for Traditional Vaporizers", "anesthesia-masks-breathing-circuits-for-traditional-vaporizers"],
+  ],
+  "righttemp-jr": [
+    ["RightTemp® Sensor for Animal or Warming Pad", "righttemp-sensor-for-animal-or-warming-pad"],
+    ["Far Infrared Warming Pad for Small Animal Recovery", "far-infrared-warming-pad"],
+    ["Disposable Sleeve Protectors for DCT-15 and DCT-20 Far Infrared Warming Pads", "disposable-sleeve-protectors-for-dct-15-and-dct-20-far-infrared-warming-pads"],
+  ],
+  "coda-high-throughput-system": [
+    ["CODA® High Throughput VPR Cuffs", "coda-high-throughput-vpr-cuffs"],
+    ["CODA® High Throughput Cuff Kits", "coda-high-throughput-cuff-kits"],
+    ["CODA® Animal Holders", "coda-animal-holders"],
+  ],
+  "coda-monitor": [
+    ["CODA® Monitor Occlusion Cuff Kits", "coda-monitor-occlusion-cuff-kits"],
+    ["CODA® Monitor VPR Cuff Kits", "coda-monitor-vpr-cuff-kits"],
+    ["CODA® Monitor Animal Holders", "nose-cone-animal-holders-with-stand"],
+  ],
+};
+
+function restoreFirstFeatureHeading(product, section) {
+  const type = String(section?.type || section?.kind || "").toLowerCase();
+  const title = OFFICIAL_FIRST_FEATURE_TITLE_BY_SLUG[String(product?.slug || "")];
+  const html = String(section?.html || "");
+  if (!title || !/feature|benefit|what-you-get/.test(type) || !html || /<h[2-4]\b/i.test(html.slice(0, 220))) return section;
+  return { ...section, html: `<h3>${title}</h3>${html}` };
+}
+
 function officialSections(product) {
   const sourceSections = Array.isArray(product?.kentSections)
     ? product.kentSections
         .filter((section) => section && typeof section === "object")
-        .map((section, sectionIndex) => ({
+        .map((rawSection, sectionIndex) => {
+          const section = restoreFirstFeatureHeading(product, rawSection);
+          return ({
           ...section,
           _key: section._key || stableKey(`kent-section:${section.title || sectionIndex}`),
           _type: "kentSourceSection",
@@ -590,10 +680,18 @@ function officialSections(product) {
                   _type: "kentSourceSectionItem",
                 }))
             : undefined,
-        }))
+          });
+        })
     : [];
 
-  const relatedItems = (Array.isArray(product?.relatedProducts) ? product.relatedProducts : [])
+  const storedRelated = Array.isArray(product?.relatedProducts) && product.relatedProducts.length
+    ? product.relatedProducts
+    : (VERIFIED_RELATED_PRODUCTS_BY_SLUG[String(product?.slug || "")] || []).map(([label, slug]) => ({
+        label,
+        href: `https://www.kentscientific.com/products/${slug}/`,
+      }));
+
+  const relatedItems = storedRelated
     .flatMap((item, itemIndex) => {
       const href = normalizeTrailingSlashUrl(item?.href || item?.url || "");
       const title = textClean(item?.label || item?.title || "").replace(DISPLAY_PRICE_RE, "").replace(/\s+/g, " ").trim();

@@ -184,7 +184,7 @@ function hydrateRelatedProductSections(sections: Section[], pool: any[]) {
         if (!slug || !product?.imageUrl || !isManagedKentImageUrl(product.imageUrl)) return [];
         return [{
           ...item,
-          title: cleanText(product.title) || cleanText(item?.title || item?.label),
+          title: cleanText(item?.title || item?.label) || cleanText(product.title),
           description: cleanText(product.summary),
           slug,
           href: `/products/kent/item/${slug}`,
