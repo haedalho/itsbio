@@ -372,7 +372,13 @@ function collectRelatedProducts($, canonical) {
     (_, a) => {
       const href = normalizeTrailingSlashUrl(absUrl(canonical, $(a).attr("href") || ""));
       if (!isProductDetailUrl(href)) return;
-      const label = textClean($(a).text()) || slugFromProductsUrl(href);
+      const card = $(a).closest("li.product, .product, .product-small, .product-grid-item");
+      const label = textClean(
+        card.find(".woocommerce-loop-product__title, h2, h3, h4").first().text() ||
+        $(a).find(".woocommerce-loop-product__title, h2, h3, h4").first().text() ||
+        $(a).attr("aria-label") ||
+        $(a).text(),
+      ).replace(MONEY_RE, "").replace(/\s+/g, " ").trim() || slugFromProductsUrl(href);
       if (!href || isNoiseText(label)) return;
       relatedProducts.push({ label, href });
     }
