@@ -10,45 +10,39 @@ on:
 jobs:
   inspect:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm install --no-audit --no-fund
-      - name: Collect current WordPress catalog
-        run: node scripts/kent-shop-collect.mjs --out .cache/kent-shop-current.json
-      - name: Compare current and reviewed catalog
+      - name: Probe Kent public catalog endpoints
+        shell: bash
         run: |
-          tar -xzf data/kent-shop-preview-snapshot.tgz
-          node <<'NODE'
-          const fs = require('fs');
-          const current = JSON.parse(fs.readFileSync('.cache/kent-shop-current.json', 'utf8'));
-          const reviewed = JSON.parse(fs.readFileSync('.cache/kent-shop-all.json', 'utf8'));
-          const cur = new Set(current.products.map((p) => p.slug));
-          const old = new Set(reviewed.products.map((p) => p.slug));
-          const added = [...cur].filter((slug) => !old.has(slug));
-          const removed = [...old].filter((slug) => !cur.has(slug));
-          const countChanges = [];
-          const oldByUrl = new Map(reviewed.categories.map((c) => [c.rootUrl, c]));
-          for (const category of current.categories) {
-            const previous = oldByUrl.get(category.rootUrl);
-            const oldCount = previous?.productUrls?.length ?? null;
-            const newCount = category.productUrls.length;
-            if (oldCount !== newCount) countChanges.push({ path: category.categoryPath.join('/'), title: category.title, oldCount, newCount, rootUrl: category.rootUrl });
+          set -u
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36'
+          HOME_URL='https://www.kentscientific.com/'
+          curl --http1.1 -L -sS -A "$UA" -c /tmp/kent.cookies -o /tmp/kent-home.html "$HOME_URL" || true
+
+          probe() {
+            label="$1"
+            url="$2"
+            out="/tmp/kent-probe-${label}.out"
+            code=$(curl --http1.1 -L -sS -A "$UA" -b /tmp/kent.cookies -c /tmp/kent.cookies \
+              -e "$HOME_URL" -H 'accept: application/json,text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
+              -o "$out" -w '%{http_code}' "$url" || true)
+            ctype=$(file -b --mime-type "$out" 2>/dev/null || true)
+            bytes=$(wc -c < "$out" 2>/dev/null || echo 0)
+            echo "PROBE $label status=$code type=$ctype bytes=$bytes url=$url"
+            head -c 240 "$out" | tr '\n' ' ' || true
+            echo
           }
-          console.log(JSON.stringify({
-            currentProducts: current.publishedProductCount,
-            reviewedProducts: reviewed.publishedProductCount,
-            currentCategories: current.categoryCount,
-            reviewedCategories: reviewed.categoryCount,
-            added,
-            removed,
-            categoryCountChanges: countChanges.length,
-            countChanges,
-          }, null, 2));
-          NODE
+
+          probe wp_categories 'https://www.kentscientific.com/wp-json/wp/v2/product_cat?per_page=100&page=1&hide_empty=false&_fields=id,parent,name,slug,count,link'
+          probe rest_route_categories 'https://www.kentscientific.com/?rest_route=%2Fwp%2Fv2%2Fproduct_cat&per_page=100&page=1&hide_empty=false&_fields=id,parent,name,slug,count,link'
+          probe no_www_categories 'https://kentscientific.com/wp-json/wp/v2/product_cat?per_page=100&page=1&hide_empty=false&_fields=id,parent,name,slug,count,link'
+          probe wp_products 'https://www.kentscientific.com/wp-json/wp/v2/product?per_page=1&page=1&_fields=id,slug,link,product_cat'
+          probe store_categories 'https://www.kentscientific.com/wp-json/wc/store/v1/products/categories?per_page=100'
+          probe store_products 'https://www.kentscientific.com/wp-json/wc/store/v1/products?per_page=1&page=1'
+          probe taxonomy_sitemap 'https://www.kentscientific.com/wp-sitemap-taxonomies-product_cat-1.xml'
+          probe product_sitemap 'https://www.kentscientific.com/wp-sitemap-posts-product-1.xml'
+          probe known_listing 'https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/'
