@@ -1,0 +1,47 @@
+name: Smoke test Kent category preview
+
+on:
+  pull_request:
+    branches:
+      - agent/kent-preflight
+    paths:
+      - .github/workflows/smoke-kent-category-preview.yml
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify all Kent category routes and card images
+        env:
+          PREVIEW_BASE: https://itsbio-git-agent-kent-sanity-images-only-hadel-hos-projects.vercel.app
+        run: |
+          node <<'NODE'
+          const projectId = '9b5twpc8';
+          const dataset = 'production';
+          const apiVersion = '2025-02-19';
+          const query = `*[_type=="category" && (!defined(isActive) || isActive==true) && (brand->themeKey=="kent" || brand->slug.current=="kent" || themeKey=="kent" || brandSlug=="kent") && defined(path)]{path}`;
+          const sanityUrl = new URL(`https://${projectId}.api.sanity.io/v${apiVersion}/data/query/${dataset}`);
+          sanityUrl.searchParams.set('query', query);
+          const sanityResponse = await fetch(sanityUrl);
+          if (!sanityResponse.ok) throw new Error(`Sanity ${sanityResponse.status}`);
+          const categories = (await sanityResponse.json()).result || [];
+          const failures = [];
+
+          for (const category of categories) {
+            const path = Array.isArray(category.path) ? category.path.filter(Boolean).join('/') : '';
+            if (!path) continue;
+            const url = `${process.env.PREVIEW_BASE}/products/kent/${path}?smoke=1f8e35d`;
+            const response = await fetch(url, { redirect: 'follow' });
+            if (!response.ok) failures.push({ path, status: response.status, finalUrl: response.url });
+          }
+
+          const handlingUrl = `${process.env.PREVIEW_BASE}/products/kent/laboratory-animal-handling?smoke=1f8e35d`;
+          const handling = await fetch(handlingUrl, { redirect: 'follow' });
+          const html = await handling.text();
+          const sanityImages = (html.match(/cdn\.sanity\.io/g) || []).length;
+
+          console.log(JSON.stringify({ categoryCount: categories.length, failures, handlingStatus: handling.status, sanityImages }, null, 2));
+          if (failures.length) throw new Error(`${failures.length} Kent category routes failed`);
+          if (!handling.ok) throw new Error(`Animal Handling HTTP ${handling.status}`);
+          if (sanityImages < 4) throw new Error(`Animal Handling only rendered ${sanityImages} Sanity image references`);
+          NODE
