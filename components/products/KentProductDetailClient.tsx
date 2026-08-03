@@ -42,11 +42,12 @@ function slugifyLoose(input: string) {
 }
 
 function normalizeKey(input: string) {
-  return String(input || "")
-    .replace(/^attribute_/i, "")
-    .replace(/^pa_/i, "")
-    .trim()
-    .toLowerCase();
+  const withoutPrefixes = String(input || "")
+    .replace(/^attribute[-_]/i, "")
+    .replace(/^pa[-_]/i, "")
+    .trim();
+
+  return slugifyLoose(withoutPrefixes) || withoutPrefixes.toLowerCase();
 }
 
 function normalizeValue(input: string) {
@@ -105,14 +106,29 @@ function buildVariantLookup(variant: Variant) {
 function findMatchingVariant(variants: Variant[], selections: Record<string, string>) {
   if (!variants.length) return null;
 
+  const activeSelections = Object.entries(selections).filter(([key, value]) => key && value);
+  if (!activeSelections.length) return variants[0] || null;
+
+  const exactMatch = variants.find((variant) => {
+    const lookup = buildVariantLookup(variant);
+    return activeSelections.every(([key, value]) => lookup[key] === value);
+  });
+  if (exactMatch) return exactMatch;
+
+  const valueMatch = variants.find((variant) => {
+    const lookupValues = new Set(Object.values(buildVariantLookup(variant)).filter(Boolean));
+    return activeSelections.every(([, value]) => lookupValues.has(value));
+  });
+  if (valueMatch) return valueMatch;
+
   return (
     variants.find((variant) => {
-      const lookup = buildVariantLookup(variant);
-      for (const [key, value] of Object.entries(selections)) {
-        if (!value) continue;
-        if (lookup[key] && lookup[key] !== value) return false;
-      }
-      return true;
+      const searchable = normalizeValue(
+        [variant?.optionSummary, variant?.title, variant?.sku, variant?.catNo]
+          .filter(Boolean)
+          .join(" "),
+      );
+      return activeSelections.every(([, value]) => searchable.includes(value));
     }) || null
   );
 }
