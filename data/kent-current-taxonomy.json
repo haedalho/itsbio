@@ -1,0 +1,4686 @@
+{
+  "generatedAt": "2026-08-03T13:04:32.862Z",
+  "source": "https://www.kentscientific.com/wp-json/wp/v2",
+  "transport": "r.jina.ai reader mirror",
+  "publishedProductCount": 204,
+  "categoryCount": 69,
+  "countMismatchCount": 0,
+  "countMismatches": [],
+  "categories": [
+    {
+      "id": 16,
+      "parentId": 0,
+      "title": "Anesthesia",
+      "slug": "anesthesia",
+      "count": 38,
+      "sourceUrl": "https://www.kentscientific.com/product/anesthesia/",
+      "categoryPath": [
+        "anesthesia"
+      ],
+      "categoryPathTitles": [
+        "Anesthesia"
+      ],
+      "directProductSlugs": [
+        "3-accessory-connector",
+        "ac-adapters-and-power-cords",
+        "activated-charcoal-absorption-filters-1",
+        "anesthesia-masks-breathing-circuits-for-somnosuite",
+        "anesthesia-masks-breathing-circuits-for-traditional-vaporizers",
+        "anesthetic-depth-indicator",
+        "anti-spill-device-for-funnel-filled-vaporizers",
+        "glass-syringe-10-ml",
+        "glass-syringe-5-ml",
+        "holder-for-activated-charcoal-absorption-filter",
+        "isoflurane",
+        "low-cost-chambers-for-somnosuite",
+        "low-cost-chambers-for-traditional-vaporizers",
+        "low-profile-anesthesia-masks-for-somnosuite",
+        "low-profile-anesthesia-masks-for-traditional-vaporizers",
+        "oxygen-concentrator",
+        "oxygen-concentrator-filters",
+        "oxygen-regulator",
+        "preset-pressure-reducer-for-somnosuite",
+        "replacement-diaphragms-for-somnosuite-anesthesia-masks",
+        "sliding-top-chambers-for-somnosuite",
+        "sliding-top-chambers-for-traditional-vaporizers",
+        "somnoflo",
+        "somnoflo-o2care",
+        "somnosuite",
+        "somnosuite-anti-spill-anti-vapor-bottle-top-adapter",
+        "somnosuite-delivery-tube",
+        "somnosuite-y-adapter",
+        "stereotaxic-adapter-kit",
+        "vaporizer-for-isoflurane-funnel-filled",
+        "vaporizer-for-isoflurane-key-filled",
+        "vaporizer-for-sevoflurane-key-filled",
+        "vaporizer-with-vetflo-single-channel-anesthesia-stand",
+        "vetflo-four-channel-anesthesia-stand",
+        "vetflo-single-channel-anesthesia-stand",
+        "vetflo-six-channel-anesthesia-stand",
+        "vetflo-two-channel-anesthesia-stand"
+      ],
+      "productSlugs": [
+        "3-accessory-connector",
+        "ac-adapters-and-power-cords",
+        "activated-charcoal-absorption-filters-1",
+        "anesthesia-masks-breathing-circuits-for-somnosuite",
+        "anesthesia-masks-breathing-circuits-for-traditional-vaporizers",
+        "anesthetic-depth-indicator",
+        "anti-spill-device-for-funnel-filled-vaporizers",
+        "glass-syringe-10-ml",
+        "glass-syringe-5-ml",
+        "holder-for-activated-charcoal-absorption-filter",
+        "isoflurane",
+        "low-cost-chambers-for-somnosuite",
+        "low-cost-chambers-for-traditional-vaporizers",
+        "low-profile-anesthesia-masks-for-somnosuite",
+        "low-profile-anesthesia-masks-for-traditional-vaporizers",
+        "oxygen-concentrator",
+        "oxygen-concentrator-filters",
+        "oxygen-regulator",
+        "preset-pressure-reducer-for-somnosuite",
+        "replacement-diaphragms-for-somnosuite-anesthesia-masks",
+        "sliding-top-chambers-for-somnosuite",
+        "sliding-top-chambers-for-traditional-vaporizers",
+        "somnoflo",
+        "somnoflo-o2care",
+        "somnosuite",
+        "somnosuite-anti-spill-anti-vapor-bottle-top-adapter",
+        "somnosuite-delivery-tube",
+        "somnosuite-y-adapter",
+        "stereotaxic-adapter-kit",
+        "stereotaxic-adapter-kit-for-vetflo",
+        "vaporizer-for-isoflurane-funnel-filled",
+        "vaporizer-for-isoflurane-key-filled",
+        "vaporizer-for-sevoflurane-key-filled",
+        "vaporizer-with-vetflo-single-channel-anesthesia-stand",
+        "vetflo-four-channel-anesthesia-stand",
+        "vetflo-single-channel-anesthesia-stand",
+        "vetflo-six-channel-anesthesia-stand",
+        "vetflo-two-channel-anesthesia-stand"
+      ]
+    },
+    {
+      "id": 74,
+      "parentId": 0,
+      "title": "Animal Handling",
+      "slug": "animal-handling",
+      "count": 0,
+      "sourceUrl": "https://www.kentscientific.com/product/animal-handling/",
+      "categoryPath": [
+        "animal-handling"
+      ],
+      "categoryPathTitles": [
+        "Animal Handling"
+      ],
+      "directProductSlugs": [],
+      "productSlugs": []
+    },
+    {
+      "id": 79,
+      "parentId": 0,
+      "title": "Body Composition Analysis for Small Animals",
+      "slug": "body-composition-analysis",
+      "count": 1,
+      "sourceUrl": "https://www.kentscientific.com/product/body-composition-analysis/",
+      "categoryPath": [
+        "body-composition-analysis"
+      ],
+      "categoryPathTitles": [
+        "Body Composition Analysis for Small Animals"
+      ],
+      "directProductSlugs": [
+        "skinscanner-1"
+      ],
+      "productSlugs": [
+        "skinscanner-1"
+      ]
+    },
+    {
+      "id": 75,
+      "parentId": 0,
+      "title": "Rat and Mouse Oral Gavage Feeding Needles",
+      "slug": "feeding-needles",
+      "count": 2,
+      "sourceUrl": "https://www.kentscientific.com/product/feeding-needles/",
+      "categoryPath": [
+        "feeding-needles"
+      ],
+      "categoryPathTitles": [
+        "Rat and Mouse Oral Gavage Feeding Needles"
+      ],
+      "directProductSlugs": [
+        "curved-feeding-needles",
+        "straight-feeding-needles"
+      ],
+      "productSlugs": [
+        "curved-feeding-needles",
+        "straight-feeding-needles"
+      ]
+    },
+    {
+      "id": 274,
+      "parentId": 0,
+      "title": "Imaging System",
+      "slug": "imaging-system",
+      "count": 3,
+      "sourceUrl": "https://www.kentscientific.com/product/imaging-system/",
+      "categoryPath": [
+        "imaging-system"
+      ],
+      "categoryPathTitles": [
+        "Imaging System"
+      ],
+      "directProductSlugs": [
+        "prism-bio-box-in-vivo-imaging-system",
+        "prism-in-vivo-imaging-system-visible-nir-i",
+        "prism-swir-in-vivo-imaging-system"
+      ],
+      "productSlugs": [
+        "prism-bio-box-in-vivo-imaging-system",
+        "prism-in-vivo-imaging-system-visible-nir-i",
+        "prism-swir-in-vivo-imaging-system"
+      ]
+    },
+    {
+      "id": 94,
+      "parentId": 0,
+      "title": "Laboratory Animal Handling",
+      "slug": "laboratory-animal-handling",
+      "count": 9,
+      "sourceUrl": "https://www.kentscientific.com/product/laboratory-animal-handling/",
+      "categoryPath": [
+        "laboratory-animal-handling"
+      ],
+      "categoryPathTitles": [
+        "Laboratory Animal Handling"
+      ],
+      "directProductSlugs": [
+        "accuris-mini-balances",
+        "animal-weighing-scale",
+        "elizabethan-collars",
+        "flat-bottom-rodent-holders",
+        "mouse-handling-tunnels",
+        "nebulizer-animal-holders",
+        "nose-cone-animal-holders-with-stand",
+        "tube-rodent-holders"
+      ],
+      "productSlugs": [
+        "accuris-mini-balances",
+        "animal-weighing-scale",
+        "elizabethan-collars",
+        "flat-bottom-rodent-holders",
+        "mouse-handling-tunnels",
+        "nebulizer-animal-holders",
+        "nose-cone-animal-holders-with-stand",
+        "tube-rodent-holders",
+        "wahl-fidela-cordless-clipper-kit-for-laboratory-animal-prep"
+      ]
+    },
+    {
+      "id": 77,
+      "parentId": 0,
+      "title": "Mobile Carts",
+      "slug": "mobile-carts",
+      "count": 3,
+      "sourceUrl": "https://www.kentscientific.com/product/mobile-carts/",
+      "categoryPath": [
+        "mobile-carts"
+      ],
+      "categoryPathTitles": [
+        "Mobile Carts"
+      ],
+      "directProductSlugs": [
+        "cylinder-bracket",
+        "mobile-cart-for-laboratory-equipment-large",
+        "mobile-cart-for-laboratory-equipment-small"
+      ],
+      "productSlugs": [
+        "cylinder-bracket",
+        "mobile-cart-for-laboratory-equipment-large",
+        "mobile-cart-for-laboratory-equipment-small"
+      ]
+    },
+    {
+      "id": 72,
+      "parentId": 0,
+      "title": "Nebulizers",
+      "slug": "nebulizers",
+      "count": 10,
+      "sourceUrl": "https://www.kentscientific.com/product/nebulizers/",
+      "categoryPath": [
+        "nebulizers"
+      ],
+      "categoryPathTitles": [
+        "Nebulizers"
+      ],
+      "directProductSlugs": [
+        "aeroneb-lab-control-module",
+        "aeroneb-lab-control-module-kit",
+        "aeroneb-lab-nebulizer-unit",
+        "anesthesia-mask-nebulizer-delivery-system",
+        "chamber-nebulizer-delivery-system",
+        "lung-instillation-nebulizer-delivery-system",
+        "nebulizer-adapter-kit",
+        "nebulizer-animal-holders",
+        "nose-cone-nebulizer-delivery-system",
+        "standalone-flowmeter-with-stand-0-05lpm"
+      ],
+      "productSlugs": [
+        "aeroneb-lab-control-module",
+        "aeroneb-lab-control-module-kit",
+        "aeroneb-lab-nebulizer-unit",
+        "anesthesia-mask-nebulizer-delivery-system",
+        "chamber-nebulizer-delivery-system",
+        "lung-instillation-nebulizer-delivery-system",
+        "nebulizer-adapter-kit",
+        "nebulizer-animal-holders",
+        "nose-cone-nebulizer-delivery-system",
+        "standalone-flowmeter-with-stand-0-05lpm"
+      ]
+    },
+    {
+      "id": 69,
+      "parentId": 0,
+      "title": "Non-Invasive Blood Pressure",
+      "slug": "noninvasive-blood-pressure",
+      "count": 15,
+      "sourceUrl": "https://www.kentscientific.com/product/noninvasive-blood-pressure/",
+      "categoryPath": [
+        "noninvasive-blood-pressure"
+      ],
+      "categoryPathTitles": [
+        "Non-Invasive Blood Pressure"
+      ],
+      "directProductSlugs": [
+        "coda-animal-holders",
+        "coda-cuff-storage-container",
+        "coda-data-acquisition-software",
+        "coda-high-throughput-cuff-kits",
+        "coda-high-throughput-occlusion-cuffs",
+        "coda-high-throughput-system",
+        "coda-high-throughput-vpr-cuffs",
+        "coda-monitor",
+        "coda-monitor-cuff-kits",
+        "coda-monitor-occlusion-cuff-kits",
+        "coda-monitor-vpr-cuff-kits",
+        "mri-tubing-kit",
+        "replacement-bladder-kits",
+        "stand-for-coda-holders"
+      ],
+      "productSlugs": [
+        "coda-animal-holders",
+        "coda-cuff-storage-container",
+        "coda-data-acquisition-software",
+        "coda-high-throughput-cuff-kits",
+        "coda-high-throughput-occlusion-cuffs",
+        "coda-high-throughput-system",
+        "coda-high-throughput-vpr-cuffs",
+        "coda-monitor",
+        "coda-monitor-cuff-kits",
+        "coda-monitor-occlusion-cuff-kits",
+        "coda-monitor-vpr-cuff-kits",
+        "mri-tubing-kit",
+        "nose-cone-animal-holders-with-stand",
+        "replacement-bladder-kits",
+        "stand-for-coda-holders"
+      ]
+    },
+    {
+      "id": 68,
+      "parentId": 0,
+      "title": "Physiological Monitoring",
+      "slug": "physiological-monitoring",
+      "count": 20,
+      "sourceUrl": "https://www.kentscientific.com/product/physiological-monitoring/",
+      "categoryPath": [
+        "physiological-monitoring"
+      ],
+      "categoryPathTitles": [
+        "Physiological Monitoring"
+      ],
+      "directProductSlugs": [
+        "analog-output-cable",
+        "anipill",
+        "cannula-adapter",
+        "capnoscan",
+        "large-animal-sensors",
+        "mouse-paw-pulse-oximeter-sensors",
+        "mousestat-jr",
+        "mousestat-pulse-oximeter-whole-body-sensors-for-mouse-pups",
+        "mousestat-pulse-oximeter-whole-body-sensors-for-rat-pups",
+        "non-contact-infrared-thermometer-with-laser-sight",
+        "physiosuite",
+        "pulse-oximeter-paw-sensors-mri-compatible",
+        "pulse-oximeter-sensor-extension-cable",
+        "pulse-oximeter-whole-body-sensors-mri-compatible",
+        "rat-paw-pulse-oximeter-sensors",
+        "rectal-probe-for-mice",
+        "rectal-probe-for-rats",
+        "righttemp",
+        "righttemp-sensor-for-animal-or-warming-pad",
+        "type-jkt-thermocouple-meter"
+      ],
+      "productSlugs": [
+        "analog-output-cable",
+        "anipill",
+        "cannula-adapter",
+        "capnoscan",
+        "large-animal-sensors",
+        "mouse-paw-pulse-oximeter-sensors",
+        "mousestat-jr",
+        "mousestat-pulse-oximeter-whole-body-sensors-for-mouse-pups",
+        "mousestat-pulse-oximeter-whole-body-sensors-for-rat-pups",
+        "non-contact-infrared-thermometer-with-laser-sight",
+        "physiosuite",
+        "pulse-oximeter-paw-sensors-mri-compatible",
+        "pulse-oximeter-sensor-extension-cable",
+        "pulse-oximeter-whole-body-sensors-mri-compatible",
+        "rat-paw-pulse-oximeter-sensors",
+        "rectal-probe-for-mice",
+        "rectal-probe-for-rats",
+        "righttemp",
+        "righttemp-sensor-for-animal-or-warming-pad",
+        "type-jkt-thermocouple-meter"
+      ]
+    },
+    {
+      "id": 73,
+      "parentId": 0,
+      "title": "Rodent Identification",
+      "slug": "rodent-identification",
+      "count": 13,
+      "sourceUrl": "https://www.kentscientific.com/product/rodent-identification/",
+      "categoryPath": [
+        "rodent-identification"
+      ],
+      "categoryPathTitles": [
+        "Rodent Identification"
+      ],
+      "directProductSlugs": [
+        "bluetooth-low-energy-handheld-reader",
+        "ear-tag-applicator-with-spring-1",
+        "la-pias-ear-tag-applicator",
+        "la-pias-ear-tags-extra-backs",
+        "la-pias-mouse-ear-tags",
+        "la-pias-rat-ear-tags",
+        "laser-etched-ear-tags-one-sided",
+        "laser-etched-ear-tags-two-sided",
+        "micro-transponder-with-lancet-for-direct-implantation",
+        "mid-range-reader-usb",
+        "pistol-grip-implanter",
+        "pocket-reader-with-usb-connection",
+        "stamped-ear-tags"
+      ],
+      "productSlugs": [
+        "bluetooth-low-energy-handheld-reader",
+        "ear-tag-applicator-with-spring-1",
+        "la-pias-ear-tag-applicator",
+        "la-pias-ear-tags-extra-backs",
+        "la-pias-mouse-ear-tags",
+        "la-pias-rat-ear-tags",
+        "laser-etched-ear-tags-one-sided",
+        "laser-etched-ear-tags-two-sided",
+        "micro-transponder-with-lancet-for-direct-implantation",
+        "mid-range-reader-usb",
+        "pistol-grip-implanter",
+        "pocket-reader-with-usb-connection",
+        "stamped-ear-tags"
+      ]
+    },
+    {
+      "id": 70,
+      "parentId": 0,
+      "title": "Surgical Tools and Supplies",
+      "slug": "surgery",
+      "count": 50,
+      "sourceUrl": "https://www.kentscientific.com/product/surgery/",
+      "categoryPath": [
+        "surgery"
+      ],
+      "categoryPathTitles": [
+        "Surgical Tools and Supplies"
+      ],
+      "directProductSlugs": [
+        "angled-5-tweezer-kit",
+        "autoclip-applier",
+        "autoclips-9-mm",
+        "castroviejo-needle-holder-serrated",
+        "dissecting-scissors-straight-10-cm-long",
+        "elastic-wire-positioner",
+        "fine-dressing-forceps-10-cm-long",
+        "fine-dressing-forceps-155-cm-long",
+        "hartman-mosquito-hemostatic-forceps-curved",
+        "hartman-mosquito-hemostatic-forceps-straight",
+        "instrument-micro-bead-sterilizer",
+        "iris-dressing-forceps",
+        "iris-scissors-straight-11-cm-long",
+        "led-lighting-kit",
+        "magnetic-fixators-with-spring-locks",
+        "magnetic-positioners-and-stabilizers",
+        "mayo-operating-scissors-straight",
+        "mcpherson-vannas-micro-scissors-7-cm-long",
+        "mcpherson-vannas-micro-scissors-8-cm-long",
+        "micro-bulldog-clamp",
+        "micro-dissecting-forceps-serrated-straight",
+        "mouse-and-rat-vessel-cannulation-kit",
+        "mouse-retractor-set",
+        "mouse-surgical-kit",
+        "procedure-bowl",
+        "rat-retractor-set",
+        "rat-surgical-kit",
+        "reflex-clip-applier",
+        "reflex-clips-7-mm",
+        "reflex-clips-9-mm",
+        "removing-forceps",
+        "replacement-glass-beads",
+        "replacement-surgical-field-covers",
+        "retractor-tips",
+        "retractor-wires",
+        "small-bulldog-clamp",
+        "spring-scissors-curved-105-cm-long",
+        "spring-scissors-straight-12-cm-long-extra-fine",
+        "sterile-disposable-towel-drapes",
+        "straight-5-tweezer-kit",
+        "straight-serrated-needle-holder-14-cm-long",
+        "super-fine-dressing-forceps-125-cm-long",
+        "supercut-iris-scissors-straight-125-cm-long",
+        "surgical-magnifier-glasses",
+        "surgisuite",
+        "tweezer-5-001-mm-tips",
+        "tweezer-5-0025-mm-tips",
+        "tweezer-5-006-mm-tips",
+        "tweezer-5-006-mm-tips-curved",
+        "tweezer-5b-001-mm-tips-45-angle"
+      ],
+      "productSlugs": [
+        "angled-5-tweezer-kit",
+        "autoclip-applier",
+        "autoclips-9-mm",
+        "castroviejo-needle-holder-serrated",
+        "dissecting-scissors-straight-10-cm-long",
+        "elastic-wire-positioner",
+        "fine-dressing-forceps-10-cm-long",
+        "fine-dressing-forceps-155-cm-long",
+        "hartman-mosquito-hemostatic-forceps-curved",
+        "hartman-mosquito-hemostatic-forceps-straight",
+        "instrument-micro-bead-sterilizer",
+        "iris-dressing-forceps",
+        "iris-scissors-straight-11-cm-long",
+        "led-lighting-kit",
+        "magnetic-fixators-with-spring-locks",
+        "magnetic-positioners-and-stabilizers",
+        "mayo-operating-scissors-straight",
+        "mcpherson-vannas-micro-scissors-7-cm-long",
+        "mcpherson-vannas-micro-scissors-8-cm-long",
+        "micro-bulldog-clamp",
+        "micro-dissecting-forceps-serrated-straight",
+        "mouse-and-rat-vessel-cannulation-kit",
+        "mouse-retractor-set",
+        "mouse-surgical-kit",
+        "procedure-bowl",
+        "rat-retractor-set",
+        "rat-surgical-kit",
+        "reflex-clip-applier",
+        "reflex-clips-7-mm",
+        "reflex-clips-9-mm",
+        "removing-forceps",
+        "replacement-glass-beads",
+        "replacement-surgical-field-covers",
+        "retractor-tips",
+        "retractor-wires",
+        "small-bulldog-clamp",
+        "spring-scissors-curved-105-cm-long",
+        "spring-scissors-straight-12-cm-long-extra-fine",
+        "sterile-disposable-towel-drapes",
+        "straight-5-tweezer-kit",
+        "straight-serrated-needle-holder-14-cm-long",
+        "super-fine-dressing-forceps-125-cm-long",
+        "supercut-iris-scissors-straight-125-cm-long",
+        "surgical-magnifier-glasses",
+        "surgisuite",
+        "tweezer-5-001-mm-tips",
+        "tweezer-5-0025-mm-tips",
+        "tweezer-5-006-mm-tips",
+        "tweezer-5-006-mm-tips-curved",
+        "tweezer-5b-001-mm-tips-45-angle"
+      ]
+    },
+    {
+      "id": 78,
+      "parentId": 0,
+      "title": "Tail Vein Training Materials",
+      "slug": "tail-vein-training-materials",
+      "count": 4,
+      "sourceUrl": "https://www.kentscientific.com/product/tail-vein-training-materials/",
+      "categoryPath": [
+        "tail-vein-training-materials"
+      ],
+      "categoryPathTitles": [
+        "Tail Vein Training Materials"
+      ],
+      "directProductSlugs": [
+        "humaneway-blood-collection-needles",
+        "humaneway-rodent-restraint",
+        "humaneway-winged-infusion-sets",
+        "tail-vein-simulator"
+      ],
+      "productSlugs": [
+        "humaneway-blood-collection-needles",
+        "humaneway-rodent-restraint",
+        "humaneway-winged-infusion-sets",
+        "tail-vein-simulator"
+      ]
+    },
+    {
+      "id": 76,
+      "parentId": 0,
+      "title": "Tissue Collection",
+      "slug": "tissue-collection",
+      "count": 7,
+      "sourceUrl": "https://www.kentscientific.com/product/tissue-collection/",
+      "categoryPath": [
+        "tissue-collection"
+      ],
+      "categoryPathTitles": [
+        "Tissue Collection"
+      ],
+      "directProductSlugs": [
+        "acrylic-brain-matrices",
+        "microvette-100-capillary-blood-collection-with-round-bottom-inner-tube-edta",
+        "microvette-200-capillary-blood-collection-with-round-bottom-inner-tube-edta",
+        "microvette-cb-300-blood-collection-system",
+        "microvette-prepared-micro-tubes-with-screw-cap-closure-edta",
+        "stainless-steel-brain-matrices"
+      ],
+      "productSlugs": [
+        "acrylic-brain-matrices",
+        "humaneway-winged-infusion-sets",
+        "microvette-100-capillary-blood-collection-with-round-bottom-inner-tube-edta",
+        "microvette-200-capillary-blood-collection-with-round-bottom-inner-tube-edta",
+        "microvette-cb-300-blood-collection-system",
+        "microvette-prepared-micro-tubes-with-screw-cap-closure-edta",
+        "stainless-steel-brain-matrices"
+      ]
+    },
+    {
+      "id": 15,
+      "parentId": 0,
+      "title": "Uncategorized",
+      "slug": "uncategorized",
+      "count": 0,
+      "sourceUrl": "https://www.kentscientific.com/product/uncategorized/",
+      "categoryPath": [
+        "uncategorized"
+      ],
+      "categoryPathTitles": [
+        "Uncategorized"
+      ],
+      "directProductSlugs": [],
+      "productSlugs": []
+    },
+    {
+      "id": 17,
+      "parentId": 0,
+      "title": "Ventilation",
+      "slug": "ventilation",
+      "count": 9,
+      "sourceUrl": "https://www.kentscientific.com/product/ventilation/",
+      "categoryPath": [
+        "ventilation"
+      ],
+      "categoryPathTitles": [
+        "Ventilation"
+      ],
+      "directProductSlugs": [
+        "3-accessory-connector",
+        "anesthesia-mask-tubing-kits-for-intubation",
+        "endotracheal-intubation-kits",
+        "endotracheal-tubes",
+        "fiber-optic-lighting-assembly",
+        "fiber-optic-lighting-kits",
+        "intubation-stands",
+        "rovent",
+        "rovent-jr"
+      ],
+      "productSlugs": [
+        "3-accessory-connector",
+        "anesthesia-mask-tubing-kits-for-intubation",
+        "endotracheal-intubation-kits",
+        "endotracheal-tubes",
+        "fiber-optic-lighting-assembly",
+        "fiber-optic-lighting-kits",
+        "intubation-stands",
+        "rovent",
+        "rovent-jr"
+      ]
+    },
+    {
+      "id": 71,
+      "parentId": 0,
+      "title": "Warming",
+      "slug": "warming",
+      "count": 7,
+      "sourceUrl": "https://www.kentscientific.com/product/warming/",
+      "categoryPath": [
+        "warming"
+      ],
+      "categoryPathTitles": [
+        "Warming"
+      ],
+      "directProductSlugs": [
+        "disposable-sleeve-protectors-for-dct-15-and-dct-20-far-infrared-warming-pads",
+        "disposable-warming-pads",
+        "far-infrared-warming-pad",
+        "far-infrared-warming-pads-with-controller",
+        "htp-1500-heat-therapy-pump",
+        "righttemp",
+        "righttemp-jr"
+      ],
+      "productSlugs": [
+        "disposable-sleeve-protectors-for-dct-15-and-dct-20-far-infrared-warming-pads",
+        "disposable-warming-pads",
+        "far-infrared-warming-pad",
+        "far-infrared-warming-pads-with-controller",
+        "htp-1500-heat-therapy-pump",
+        "righttemp",
+        "righttemp-jr"
+      ]
+    },
+    {
+      "id": 81,
+      "parentId": 0,
+      "title": "Warranty",
+      "slug": "warranty",
+      "count": 18,
+      "sourceUrl": "https://www.kentscientific.com/product/warranty/",
+      "categoryPath": [
+        "warranty"
+      ],
+      "categoryPathTitles": [
+        "Warranty"
+      ],
+      "directProductSlugs": [
+        "warranty-coda-high-throughput-system-extended",
+        "warranty-coda-high-throughput-system-premium",
+        "warranty-coda-monitor-extended",
+        "warranty-coda-monitor-premium",
+        "warranty-physiosuite-extended",
+        "warranty-physiosuite-with-1-module-extended",
+        "warranty-physiosuite-with-1-module-premium",
+        "warranty-rovent-extended",
+        "warranty-rovent-premium",
+        "warranty-skinscanner-extended",
+        "warranty-somnoflo-extended",
+        "warranty-somnoflo-premium",
+        "warranty-somnosuite-extended",
+        "warranty-somnosuite-premium",
+        "warranty-somnosuite-with-1-module-extended",
+        "warranty-somnosuite-with-1-module-premium",
+        "warranty-somnosuite-with-2-modules-extended",
+        "warranty-somnosuite-with-2-modules-premium"
+      ],
+      "productSlugs": [
+        "warranty-coda-high-throughput-system-extended",
+        "warranty-coda-high-throughput-system-premium",
+        "warranty-coda-monitor-extended",
+        "warranty-coda-monitor-premium",
+        "warranty-physiosuite-extended",
+        "warranty-physiosuite-with-1-module-extended",
+        "warranty-physiosuite-with-1-module-premium",
+        "warranty-rovent-extended",
+        "warranty-rovent-premium",
+        "warranty-skinscanner-extended",
+        "warranty-somnoflo-extended",
+        "warranty-somnoflo-premium",
+        "warranty-somnosuite-extended",
+        "warranty-somnosuite-premium",
+        "warranty-somnosuite-with-1-module-extended",
+        "warranty-somnosuite-with-1-module-premium",
+        "warranty-somnosuite-with-2-modules-extended",
+        "warranty-somnosuite-with-2-modules-premium"
+      ]
+    },
+    {
+      "id": 185,
+      "parentId": 16,
+      "title": "Anesthesia Accessories",
+      "slug": "anesthesia-accessories",
+      "count": 32,
+      "sourceUrl": "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/",
+      "categoryPath": [
+        "anesthesia",
+        "anesthesia-accessories"
+      ],
+      "categoryPathTitles": [
+        "Anesthesia",
+        "Anesthesia Accessories"
+      ],
+      "directProductSlugs": [
+        "3-accessory-connector",
+        "ac-adapters-and-power-cords",
+        "activated-charcoal-absorption-filters-1",
+        "anesthesia-masks-breathing-circuits-for-somnosuite",
+        "anesthesia-masks-breathing-circuits-for-traditional-vaporizers",
+        "anesthetic-depth-indicator",
+        "holder-for-activated-charcoal-absorption-filter",
+        "low-cost-chambers-for-somnosuite",
+        "low-cost-chambers-for-traditional-vaporizers",
+        "low-profile-anesthesia-masks-for-somnosuite",
+        "low-profile-anesthesia-masks-for-traditional-vaporizers",
+        "oxygen-concentrator",
+        "oxygen-concentrator-filters",
+        "preset-pressure-reducer-for-somnosuite",
+        "replacement-diaphragms-for-somnosuite-anesthesia-masks",
+        "sliding-top-chambers-for-somnosuite",
+        "sliding-top-chambers-for-traditional-vaporizers",
+        "somnosuite-anti-spill-anti-vapor-bottle-top-adapter",
+        "somnosuite-delivery-tube",
+        "somnosuite-y-adapter",
+        "vaporizer-for-isoflurane-funnel-filled",
+        "vaporizer-for-isoflurane-key-filled",
+        "vaporizer-for-sevoflurane-key-filled",
+        "vetflo-four-channel-anesthesia-stand",
+        "vetflo-single-channel-anesthesia-stand",
+        "vetflo-six-channel-anesthesia-stand",
+        "vetflo-two-channel-anesthesia-stand"
+      ],
+      "productSlugs": [
+        "3-accessory-connector",
+        "ac-adapters-and-power-cords",
+        "activated-charcoal-absorption-filters-1",
+        "anesthesia-masks-breathing-circuits-for-somnosuite",
+        "anesthesia-masks-breathing-circuits-for-traditional-vaporizers",
+        "anesthetic-depth-indicator",
+        "anti-spill-device-for-funnel-filled-vaporizers",
+        "glass-syringe-10-ml",
+        "glass-syringe-5-ml",
+        "holder-for-activated-charcoal-absorption-filter",
+        "low-cost-chambers-for-somnosuite",
+        "low-cost-chambers-for-traditional-vaporizers",
+        "low-profile-anesthesia-masks-for-somnosuite",
+        "low-profile-anesthesia-masks-for-traditional-vaporizers",
+        "oxygen-concentrator",
+        "oxygen-concentrator-filters",
+        "preset-pressure-reducer-for-somnosuite",
+        "replacement-diaphragms-for-somnosuite-anesthesia-masks",
+        "sliding-top-chambers-for-somnosuite",
+        "sliding-top-chambers-for-traditional-vaporizers",
+        "somnosuite-anti-spill-anti-vapor-bottle-top-adapter",
+        "somnosuite-delivery-tube",
+        "somnosuite-y-adapter",
+        "stereotaxic-adapter-kit",
+        "stereotaxic-adapter-kit-for-vetflo",
+        "vaporizer-for-isoflurane-funnel-filled",
+        "vaporizer-for-isoflurane-key-filled",
+        "vaporizer-for-sevoflurane-key-filled",
+        "vetflo-four-channel-anesthesia-stand",
+        "vetflo-single-channel-anesthesia-stand",
+        "vetflo-six-channel-anesthesia-stand",
+        "vetflo-two-channel-anesthesia-stand"
+      ]
+    },
+    {
+      "id": 158,
+      "parentId": 16,
+      "title": "Mouse and Rat Anesthesia Machines",
+      "slug": "mouse-rat-anesthesia-machines",
+      "count": 0,
+      "sourceUrl": "https://www.kentscientific.com/product/anesthesia/mouse-rat-anesthesia-machines/",
+      "categoryPath": [
+        "anesthesia",
+        "mouse-rat-anesthesia-machines"
+      ],
+      "categoryPathTitles": [
+        "Anesthesia",
+        "Mouse and Rat Anesthesia Machines"
+      ],
+      "directProductSlugs": [],
+      "productSlugs": []
+    },
+    {
+      "id": 215,
+      "parentId": 16,
+      "title": "Vaporizers",
+      "slug": "vaporizers-for-small-animals",
+      "count": 0,
+      "sourceUrl": "https://www.kentscientific.com/product/anesthesia/vaporizers-for-small-animals/",
+      "categoryPath": [
+        "anesthesia",
+        "vaporizers-for-small-animals"
+      ],
+      "categoryPathTitles": [
+        "Anesthesia",
+        "Vaporizers"
+      ],
+      "directProductSlugs": [],
+      "productSlugs": []
+    },
+    {
+      "id": 144,
+      "parentId": 16,
+      "title": "VetFlo™ Isoflurane Vaporizers for Small Animals and Rodents",
+      "slug": "vetflo-isoflurane-vaporizers-for-small-animals-rodents",
+      "count": 1,
+      "sourceUrl": "https://www.kentscientific.com/product/anesthesia/vetflo-isoflurane-vaporizers-for-small-animals-rodents/",
+      "categoryPath": [
+        "anesthesia",
+        "vetflo-isoflurane-vaporizers-for-small-animals-rodents"
+      ],
+      "categoryPathTitles": [
+        "Anesthesia",
+        "VetFlo™ Isoflurane Vaporizers for Small Animals and Rodents"
+      ],
+      "directProductSlugs": [
+        "stereotaxic-adapter-kit-for-vetflo"
+      ],
+      "productSlugs": [
+        "stereotaxic-adapter-kit-for-vetflo"
+      ]
+    },
+    {
+      "id": 191,
+      "parentId": 74,
+      "title": "Animal Holders",
+      "slug": "animal-holders",
+      "count": 6,
+      "sourceUrl": "https://www.kentscientific.com/product/animal-handling/animal-holders/",
+      "categoryPath": [
+        "animal-handling",
+        "animal-holders"
+      ],
+      "categoryPathTitles": [
+        "Animal Handling",
+        "Animal Holders"
+      ],
+      "directProductSlugs": [
+        "elizabethan-collars",
+        "flat-bottom-rodent-holders",
+        "mouse-handling-tunnels",
+        "nebulizer-animal-holders",
+        "nose-cone-animal-holders-with-stand",
+        "tube-rodent-holders"
+      ],
+      "productSlugs": [
+        "elizabethan-collars",
+        "flat-bottom-rodent-holders",
+        "mouse-handling-tunnels",
+        "nebulizer-animal-holders",
+        "nose-cone-animal-holders-with-stand",
+        "tube-rodent-holders"
+      ]
+    },
+    {
+      "id": 167,
+      "parentId": 94,
+      "title": "Clippers",
+      "slug": "clippers",
+      "count": 1,
+      "sourceUrl": "https://www.kentscientific.com/product/laboratory-animal-handling/clippers/",
+      "categoryPath": [
+        "laboratory-animal-handling",
+        "clippers"
+      ],
+      "categoryPathTitles": [
+        "Laboratory Animal Handling",
+        "Clippers"
+      ],
+      "directProductSlugs": [
+        "wahl-fidela-cordless-clipper-kit-for-laboratory-animal-prep"
+      ],
+      "productSlugs": [
+        "wahl-fidela-cordless-clipper-kit-for-laboratory-animal-prep"
+      ]
+    },
+    {
+      "id": 166,
+      "parentId": 94,
+      "title": "Mouse and Rat Restraints",
+      "slug": "mouse-rat-restraints",
+      "count": 0,
+      "sourceUrl": "https://www.kentscientific.com/product/laboratory-animal-handling/mouse-rat-restraints/",
+      "categoryPath": [
+        "laboratory-animal-handling",
+        "mouse-rat-restraints"
+      ],
+      "categoryPathTitles": [
+        "Laboratory Animal Handling",
+        "Mouse and Rat Restraints"
+      ],
+      "directProductSlugs": [],
+      "productSlugs": []
+    },
+    {
+      "id": 168,
+      "parentId": 94,
+      "title": "Scales",
+      "slug": "scales",
+      "count": 2,
+      "sourceUrl": "https://www.kentscientific.com/product/laboratory-animal-handling/scales/",
+      "categoryPath": [
+        "laboratory-animal-handling",
+        "scales"
+      ],
+      "categoryPathTitles": [
+        "Laboratory Animal Handling",
+        "Scales"
+      ],
+      "directProductSlugs": [
+        "accuris-mini-balances",
+        "animal-weighing-scale"
+      ],
+      "productSlugs": [
+        "accuris-mini-balances",
+        "animal-weighing-scale"
+      ]
+    },
+    {
+      "id": 196,
+      "parentId": 77,
+      "title": "Carts",
+      "slug": "carts",
+      "count": 2,
+      "sourceUrl": "https://www.kentscientific.com/product/mobile-carts/carts/",
+      "categoryPath": [
+        "mobile-carts",
+        "carts"
+      ],
+      "categoryPathTitles": [
+        "Mobile Carts",
+        "Carts"
+      ],
+      "directProductSlugs": [
+        "mobile-cart-for-laboratory-equipment-large",
+        "mobile-cart-for-laboratory-equipment-small"
+      ],
+      "productSlugs": [
+        "mobile-cart-for-laboratory-equipment-large",
+        "mobile-cart-for-laboratory-equipment-small"
+      ]
+    },
+    {
+      "id": 169,
+      "parentId": 72,
+      "title": "Aerosol Nebulizers",
+      "slug": "aerosol-nebulizers",
+      "count": 0,
+      "sourceUrl": "https://www.kentscientific.com/product/nebulizers/aerosol-nebulizers/",
+      "categoryPath": [
+        "nebulizers",
+        "aerosol-nebulizers"
+      ],
+      "categoryPathTitles": [
+        "Nebulizers",
+        "Aerosol Nebulizers"
+      ],
+      "directProductSlugs": [],
+      "productSlugs": []
+    },
+    {
+      "id": 173,
+      "parentId": 69,
+      "title": "Non-Invasive Blood Pressure Accessories",
+      "slug": "noninvasive-blood-pressure-accessories",
+      "count": 13,
+      "sourceUrl": "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/",
+      "categoryPath": [
+        "noninvasive-blood-pressure",
+        "noninvasive-blood-pressure-accessories"
+      ],
+      "categoryPathTitles": [
+        "Non-Invasive Blood Pressure",
+        "Non-Invasive Blood Pressure Accessories"
+      ],
+      "directProductSlugs": [
+        "coda-animal-holders",
+        "coda-data-acquisition-software",
+        "coda-high-throughput-cuff-kits",
+        "coda-high-throughput-occlusion-cuffs",
+        "coda-high-throughput-vpr-cuffs",
+        "mri-tubing-kit",
+        "replacement-bladder-kits",
+        "stand-for-coda-holders"
+      ],
+      "productSlugs": [
+        "coda-animal-holders",
+        "coda-cuff-storage-container",
+        "coda-data-acquisition-software",
+        "coda-high-throughput-cuff-kits",
+        "coda-high-throughput-occlusion-cuffs",
+        "coda-high-throughput-vpr-cuffs",
+        "coda-monitor-cuff-kits",
+        "coda-monitor-occlusion-cuff-kits",
+        "coda-monitor-vpr-cuff-kits",
+        "mri-tubing-kit",
+        "nose-cone-animal-holders-with-stand",
+        "replacement-bladder-kits",
+        "stand-for-coda-holders"
+      ]
+    },
+    {
+      "id": 163,
+      "parentId": 68,
+      "title": "Physiological Monitoring Accessories",
+      "slug": "physiological-monitoring-accessories",
+      "count": 17,
+      "sourceUrl": "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/",
+      "categoryPath": [
+        "physiological-monitoring",
+        "physiological-monitoring-accessories"
+      ],
+      "categoryPathTitles": [
+        "Physiological Monitoring",
+        "Physiological Monitoring Accessories"
+      ],
+      "directProductSlugs": [
+        "analog-output-cable",
+        "cannula-adapter",
+        "large-animal-sensors",
+        "mouse-paw-pulse-oximeter-sensors",
+        "mousestat-pulse-oximeter-whole-body-sensors-for-mouse-pups",
+        "mousestat-pulse-oximeter-whole-body-sensors-for-rat-pups",
+        "non-contact-infrared-thermometer-with-laser-sight",
+        "pulse-oximeter-paw-sensors-mri-compatible",
+        "pulse-oximeter-sensor-extension-cable",
+        "pulse-oximeter-whole-body-sensors-mri-compatible",
+        "rat-paw-pulse-oximeter-sensors"
+      ],
+      "productSlugs": [
+        "analog-output-cable",
+        "cannula-adapter",
+        "large-animal-sensors",
+        "mouse-paw-pulse-oximeter-sensors",
+        "mousestat-jr",
+        "mousestat-pulse-oximeter-whole-body-sensors-for-mouse-pups",
+        "mousestat-pulse-oximeter-whole-body-sensors-for-rat-pups",
+        "non-contact-infrared-thermometer-with-laser-sight",
+        "pulse-oximeter-paw-sensors-mri-compatible",
+        "pulse-oximeter-sensor-extension-cable",
+        "pulse-oximeter-whole-body-sensors-mri-compatible",
+        "rat-paw-pulse-oximeter-sensors",
+        "rectal-probe-for-mice",
+        "rectal-probe-for-rats",
+        "righttemp",
+        "righttemp-sensor-for-animal-or-warming-pad",
+        "type-jkt-thermocouple-meter"
+      ]
+    },
+    {
+      "id": 171,
+      "parentId": 73,
+      "title": "Ear Tags",
+      "slug": "ear-tags",
+      "count": 8,
+      "sourceUrl": "https://www.kentscientific.com/product/rodent-identification/ear-tags/",
+      "categoryPath": [
+        "rodent-identification",
+        "ear-tags"
+      ],
+      "categoryPathTitles": [
+        "Rodent Identification",
+        "Ear Tags"
+      ],
+      "directProductSlugs": [
+        "ear-tag-applicator-with-spring-1",
+        "la-pias-ear-tag-applicator",
+        "la-pias-ear-tags-extra-backs",
+        "la-pias-mouse-ear-tags",
+        "la-pias-rat-ear-tags",
+        "laser-etched-ear-tags-one-sided",
+        "laser-etched-ear-tags-two-sided",
+        "stamped-ear-tags"
+      ],
+      "productSlugs": [
+        "ear-tag-applicator-with-spring-1",
+        "la-pias-ear-tag-applicator",
+        "la-pias-ear-tags-extra-backs",
+        "la-pias-mouse-ear-tags",
+        "la-pias-rat-ear-tags",
+        "laser-etched-ear-tags-one-sided",
+        "laser-etched-ear-tags-two-sided",
+        "stamped-ear-tags"
+      ]
+    },
+    {
+      "id": 172,
+      "parentId": 73,
+      "title": "RFID Transponder System",
+      "slug": "rfid-transponder-system",
+      "count": 5,
+      "sourceUrl": "https://www.kentscientific.com/product/rodent-identification/rfid-transponder-system/",
+      "categoryPath": [
+        "rodent-identification",
+        "rfid-transponder-system"
+      ],
+      "categoryPathTitles": [
+        "Rodent Identification",
+        "RFID Transponder System"
+      ],
+      "directProductSlugs": [
+        "bluetooth-low-energy-handheld-reader",
+        "micro-transponder-with-lancet-for-direct-implantation",
+        "mid-range-reader-usb",
+        "pistol-grip-implanter",
+        "pocket-reader-with-usb-connection"
+      ],
+      "productSlugs": [
+        "bluetooth-low-energy-handheld-reader",
+        "micro-transponder-with-lancet-for-direct-implantation",
+        "mid-range-reader-usb",
+        "pistol-grip-implanter",
+        "pocket-reader-with-usb-connection"
+      ]
+    },
+    {
+      "id": 266,
+      "parentId": 73,
+      "title": "UID RFID Lab Animal Identification",
+      "slug": "uid-rfid-lab-animal-identification",
+      "count": 0,
+      "sourceUrl": "https://www.kentscientific.com/product/rodent-identification/uid-rfid-lab-animal-identification/",
+      "categoryPath": [
+        "rodent-identification",
+        "uid-rfid-lab-animal-identification"
+      ],
+      "categoryPathTitles": [
+        "Rodent Identification",
+        "UID RFID Lab Animal Identification"
+      ],
+      "directProductSlugs": [],
+      "productSlugs": []
+    },
+    {
+      "id": 150,
+      "parentId": 70,
+      "title": "Instrument Cleaning",
+      "slug": "instrument-cleaning",
+      "count": 2,
+      "sourceUrl": "https://www.kentscientific.com/product/surgery/instrument-cleaning/",
+      "categoryPath": [
+        "surgery",
+        "instrument-cleaning"
+      ],
+      "categoryPathTitles": [
+        "Surgical Tools and Supplies",
+        "Instrument Cleaning"
+      ],
+      "directProductSlugs": [
+        "instrument-micro-bead-sterilizer",
+        "replacement-glass-beads"
+      ],
+      "productSlugs": [
+        "instrument-micro-bead-sterilizer",
+        "replacement-glass-beads"
+      ]
+    },
+    {
+      "id": 147,
+      "parentId": 70,
+      "title": "Surgical Accessories",
+      "slug": "surgical-accessories",
+      "count": 28,
+      "sourceUrl": "https://www.kentscientific.com/product/surgery/surgical-accessories/",
+      "categoryPath": [
+        "surgery",
+        "surgical-accessories"
+      ],
+      "categoryPathTitles": [
+        "Surgical Tools and Supplies",
+        "Surgical Accessories"
+      ],
+      "directProductSlugs": [
+        "elastic-wire-positioner",
+        "led-lighting-kit",
+        "magnetic-fixators-with-spring-locks",
+        "magnetic-positioners-and-stabilizers",
+        "mouse-and-rat-vessel-cannulation-kit",
+        "mouse-retractor-set",
+        "mouse-surgical-kit",
+        "procedure-bowl",
+        "rat-retractor-set",
+        "reflex-clip-applier",
+        "reflex-clips-7-mm",
+        "reflex-clips-9-mm",
+        "removing-forceps",
+        "replacement-surgical-field-covers",
+        "retractor-tips",
+        "retractor-wires",
+        "small-bulldog-clamp",
+        "spring-scissors-straight-12-cm-long-extra-fine",
+        "sterile-disposable-towel-drapes",
+        "straight-5-tweezer-kit",
+        "straight-serrated-needle-holder-14-cm-long",
+        "supercut-iris-scissors-straight-125-cm-long",
+        "surgical-magnifier-glasses",
+        "tweezer-5-001-mm-tips",
+        "tweezer-5-0025-mm-tips",
+        "tweezer-5-006-mm-tips",
+        "tweezer-5-006-mm-tips-curved",
+        "tweezer-5b-001-mm-tips-45-angle"
+      ],
+      "productSlugs": [
+        "elastic-wire-positioner",
+        "led-lighting-kit",
+        "magnetic-fixators-with-spring-locks",
+        "magnetic-positioners-and-stabilizers",
+        "mouse-and-rat-vessel-cannulation-kit",
+        "mouse-retractor-set",
+        "mouse-surgical-kit",
+        "procedure-bowl",
+        "rat-retractor-set",
+        "reflex-clip-applier",
+        "reflex-clips-7-mm",
+        "reflex-clips-9-mm",
+        "removing-forceps",
+        "replacement-surgical-field-covers",
+        "retractor-tips",
+        "retractor-wires",
+        "small-bulldog-clamp",
+        "spring-scissors-straight-12-cm-long-extra-fine",
+        "sterile-disposable-towel-drapes",
+        "straight-5-tweezer-kit",
+        "straight-serrated-needle-holder-14-cm-long",
+        "supercut-iris-scissors-straight-125-cm-long",
+        "surgical-magnifier-glasses",
+        "tweezer-5-001-mm-tips",
+        "tweezer-5-0025-mm-tips",
+        "tweezer-5-006-mm-tips",
+        "tweezer-5-006-mm-tips-curved",
+        "tweezer-5b-001-mm-tips-45-angle"
+      ]
+    },
+    {
+      "id": 190,
+      "parentId": 70,
+      "title": "Surgical Instruments",
+      "slug": "surgical-instruments",
+      "count": 34,
+      "sourceUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments"
+      ],
+      "categoryPathTitles": [
+        "Surgical Tools and Supplies",
+        "Surgical Instruments"
+      ],
+      "directProductSlugs": [
+        "angled-5-tweezer-kit",
+        "autoclip-applier",
+        "autoclips-9-mm",
+        "castroviejo-needle-holder-serrated",
+        "dissecting-scissors-straight-10-cm-long",
+        "fine-dressing-forceps-10-cm-long",
+        "fine-dressing-forceps-155-cm-long",
+        "hartman-mosquito-hemostatic-forceps-curved",
+        "hartman-mosquito-hemostatic-forceps-straight",
+        "iris-dressing-forceps",
+        "iris-scissors-straight-11-cm-long",
+        "mayo-operating-scissors-straight",
+        "mcpherson-vannas-micro-scissors-7-cm-long",
+        "mcpherson-vannas-micro-scissors-8-cm-long",
+        "micro-bulldog-clamp",
+        "micro-dissecting-forceps-serrated-straight",
+        "mouse-and-rat-vessel-cannulation-kit",
+        "mouse-surgical-kit",
+        "rat-surgical-kit",
+        "reflex-clip-applier",
+        "reflex-clips-7-mm",
+        "reflex-clips-9-mm",
+        "removing-forceps",
+        "straight-5-tweezer-kit",
+        "super-fine-dressing-forceps-125-cm-long",
+        "supercut-iris-scissors-straight-125-cm-long",
+        "tweezer-5-001-mm-tips",
+        "tweezer-5-0025-mm-tips",
+        "tweezer-5-006-mm-tips",
+        "tweezer-5-006-mm-tips-curved",
+        "tweezer-5b-001-mm-tips-45-angle"
+      ],
+      "productSlugs": [
+        "angled-5-tweezer-kit",
+        "autoclip-applier",
+        "autoclips-9-mm",
+        "castroviejo-needle-holder-serrated",
+        "dissecting-scissors-straight-10-cm-long",
+        "fine-dressing-forceps-10-cm-long",
+        "fine-dressing-forceps-155-cm-long",
+        "hartman-mosquito-hemostatic-forceps-curved",
+        "hartman-mosquito-hemostatic-forceps-straight",
+        "iris-dressing-forceps",
+        "iris-scissors-straight-11-cm-long",
+        "mayo-operating-scissors-straight",
+        "mcpherson-vannas-micro-scissors-7-cm-long",
+        "mcpherson-vannas-micro-scissors-8-cm-long",
+        "micro-bulldog-clamp",
+        "micro-dissecting-forceps-serrated-straight",
+        "mouse-and-rat-vessel-cannulation-kit",
+        "mouse-surgical-kit",
+        "rat-surgical-kit",
+        "reflex-clip-applier",
+        "reflex-clips-7-mm",
+        "reflex-clips-9-mm",
+        "removing-forceps",
+        "small-bulldog-clamp",
+        "spring-scissors-straight-12-cm-long-extra-fine",
+        "straight-5-tweezer-kit",
+        "straight-serrated-needle-holder-14-cm-long",
+        "super-fine-dressing-forceps-125-cm-long",
+        "supercut-iris-scissors-straight-125-cm-long",
+        "tweezer-5-001-mm-tips",
+        "tweezer-5-0025-mm-tips",
+        "tweezer-5-006-mm-tips",
+        "tweezer-5-006-mm-tips-curved",
+        "tweezer-5b-001-mm-tips-45-angle"
+      ]
+    },
+    {
+      "id": 170,
+      "parentId": 76,
+      "title": "Blood Collection",
+      "slug": "blood-collection",
+      "count": 5,
+      "sourceUrl": "https://www.kentscientific.com/product/tissue-collection/blood-collection/",
+      "categoryPath": [
+        "tissue-collection",
+        "blood-collection"
+      ],
+      "categoryPathTitles": [
+        "Tissue Collection",
+        "Blood Collection"
+      ],
+      "directProductSlugs": [
+        "humaneway-winged-infusion-sets",
+        "microvette-100-capillary-blood-collection-with-round-bottom-inner-tube-edta",
+        "microvette-200-capillary-blood-collection-with-round-bottom-inner-tube-edta",
+        "microvette-cb-300-blood-collection-system",
+        "microvette-prepared-micro-tubes-with-screw-cap-closure-edta"
+      ],
+      "productSlugs": [
+        "humaneway-winged-infusion-sets",
+        "microvette-100-capillary-blood-collection-with-round-bottom-inner-tube-edta",
+        "microvette-200-capillary-blood-collection-with-round-bottom-inner-tube-edta",
+        "microvette-cb-300-blood-collection-system",
+        "microvette-prepared-micro-tubes-with-screw-cap-closure-edta"
+      ]
+    },
+    {
+      "id": 91,
+      "parentId": 76,
+      "title": "Brain Matricies",
+      "slug": "brain-matricies",
+      "count": 2,
+      "sourceUrl": "https://www.kentscientific.com/product/tissue-collection/brain-matricies/",
+      "categoryPath": [
+        "tissue-collection",
+        "brain-matricies"
+      ],
+      "categoryPathTitles": [
+        "Tissue Collection",
+        "Brain Matricies"
+      ],
+      "directProductSlugs": [
+        "acrylic-brain-matrices",
+        "stainless-steel-brain-matrices"
+      ],
+      "productSlugs": [
+        "acrylic-brain-matrices",
+        "stainless-steel-brain-matrices"
+      ]
+    },
+    {
+      "id": 180,
+      "parentId": 17,
+      "title": "Intubation",
+      "slug": "intubation",
+      "count": 6,
+      "sourceUrl": "https://www.kentscientific.com/product/ventilation/intubation/",
+      "categoryPath": [
+        "ventilation",
+        "intubation"
+      ],
+      "categoryPathTitles": [
+        "Ventilation",
+        "Intubation"
+      ],
+      "directProductSlugs": [
+        "anesthesia-mask-tubing-kits-for-intubation",
+        "endotracheal-intubation-kits",
+        "endotracheal-tubes",
+        "fiber-optic-lighting-assembly",
+        "fiber-optic-lighting-kits",
+        "intubation-stands"
+      ],
+      "productSlugs": [
+        "anesthesia-mask-tubing-kits-for-intubation",
+        "endotracheal-intubation-kits",
+        "endotracheal-tubes",
+        "fiber-optic-lighting-assembly",
+        "fiber-optic-lighting-kits",
+        "intubation-stands"
+      ]
+    },
+    {
+      "id": 176,
+      "parentId": 71,
+      "title": "Animal Warming",
+      "slug": "animal-warming",
+      "count": 0,
+      "sourceUrl": "https://www.kentscientific.com/product/warming/animal-warming/",
+      "categoryPath": [
+        "warming",
+        "animal-warming"
+      ],
+      "categoryPathTitles": [
+        "Warming",
+        "Animal Warming"
+      ],
+      "directProductSlugs": [],
+      "productSlugs": []
+    },
+    {
+      "id": 179,
+      "parentId": 71,
+      "title": "Small Animal Heating Pads and Warming Systems",
+      "slug": "small-animal-heating-pads-warming-systems",
+      "count": 0,
+      "sourceUrl": "https://www.kentscientific.com/product/warming/small-animal-heating-pads-warming-systems/",
+      "categoryPath": [
+        "warming",
+        "small-animal-heating-pads-warming-systems"
+      ],
+      "categoryPathTitles": [
+        "Warming",
+        "Small Animal Heating Pads and Warming Systems"
+      ],
+      "directProductSlugs": [],
+      "productSlugs": []
+    },
+    {
+      "id": 178,
+      "parentId": 71,
+      "title": "Warming Pads and Blankets",
+      "slug": "warming-pads-blankets",
+      "count": 4,
+      "sourceUrl": "https://www.kentscientific.com/product/warming/warming-pads-blankets/",
+      "categoryPath": [
+        "warming",
+        "warming-pads-blankets"
+      ],
+      "categoryPathTitles": [
+        "Warming",
+        "Warming Pads and Blankets"
+      ],
+      "directProductSlugs": [
+        "disposable-sleeve-protectors-for-dct-15-and-dct-20-far-infrared-warming-pads",
+        "disposable-warming-pads",
+        "far-infrared-warming-pad",
+        "far-infrared-warming-pads-with-controller"
+      ],
+      "productSlugs": [
+        "disposable-sleeve-protectors-for-dct-15-and-dct-20-far-infrared-warming-pads",
+        "disposable-warming-pads",
+        "far-infrared-warming-pad",
+        "far-infrared-warming-pads-with-controller"
+      ]
+    },
+    {
+      "id": 177,
+      "parentId": 71,
+      "title": "Water Recirculators",
+      "slug": "water-recirculators",
+      "count": 1,
+      "sourceUrl": "https://www.kentscientific.com/product/warming/water-recirculators/",
+      "categoryPath": [
+        "warming",
+        "water-recirculators"
+      ],
+      "categoryPathTitles": [
+        "Warming",
+        "Water Recirculators"
+      ],
+      "directProductSlugs": [
+        "htp-1500-heat-therapy-pump"
+      ],
+      "productSlugs": [
+        "htp-1500-heat-therapy-pump"
+      ]
+    },
+    {
+      "id": 159,
+      "parentId": 185,
+      "title": "Anesthesia Accessories for SomnoFlo®",
+      "slug": "anesthesia-accessories-for-somnoflo",
+      "count": 15,
+      "sourceUrl": "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnoflo/",
+      "categoryPath": [
+        "anesthesia",
+        "anesthesia-accessories",
+        "anesthesia-accessories-for-somnoflo"
+      ],
+      "categoryPathTitles": [
+        "Anesthesia",
+        "Anesthesia Accessories",
+        "Anesthesia Accessories for SomnoFlo®"
+      ],
+      "directProductSlugs": [
+        "3-accessory-connector",
+        "ac-adapters-and-power-cords",
+        "anesthesia-masks-breathing-circuits-for-somnosuite",
+        "anesthetic-depth-indicator",
+        "glass-syringe-10-ml",
+        "glass-syringe-5-ml",
+        "holder-for-activated-charcoal-absorption-filter",
+        "low-cost-chambers-for-somnosuite",
+        "low-profile-anesthesia-masks-for-somnosuite",
+        "oxygen-concentrator",
+        "replacement-diaphragms-for-somnosuite-anesthesia-masks",
+        "sliding-top-chambers-for-somnosuite",
+        "somnosuite-delivery-tube",
+        "somnosuite-y-adapter",
+        "stereotaxic-adapter-kit"
+      ],
+      "productSlugs": [
+        "3-accessory-connector",
+        "ac-adapters-and-power-cords",
+        "anesthesia-masks-breathing-circuits-for-somnosuite",
+        "anesthetic-depth-indicator",
+        "glass-syringe-10-ml",
+        "glass-syringe-5-ml",
+        "holder-for-activated-charcoal-absorption-filter",
+        "low-cost-chambers-for-somnosuite",
+        "low-profile-anesthesia-masks-for-somnosuite",
+        "oxygen-concentrator",
+        "replacement-diaphragms-for-somnosuite-anesthesia-masks",
+        "sliding-top-chambers-for-somnosuite",
+        "somnosuite-delivery-tube",
+        "somnosuite-y-adapter",
+        "stereotaxic-adapter-kit"
+      ]
+    },
+    {
+      "id": 192,
+      "parentId": 185,
+      "title": "Anesthesia Accessories for SomnoSuite®",
+      "slug": "anesthesia-accessories-for-somnosuite",
+      "count": 13,
+      "sourceUrl": "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnosuite/",
+      "categoryPath": [
+        "anesthesia",
+        "anesthesia-accessories",
+        "anesthesia-accessories-for-somnosuite"
+      ],
+      "categoryPathTitles": [
+        "Anesthesia",
+        "Anesthesia Accessories",
+        "Anesthesia Accessories for SomnoSuite®"
+      ],
+      "directProductSlugs": [
+        "3-accessory-connector",
+        "ac-adapters-and-power-cords",
+        "anesthetic-depth-indicator",
+        "glass-syringe-10-ml",
+        "glass-syringe-5-ml",
+        "holder-for-activated-charcoal-absorption-filter",
+        "oxygen-concentrator",
+        "preset-pressure-reducer-for-somnosuite",
+        "replacement-diaphragms-for-somnosuite-anesthesia-masks",
+        "somnosuite-anti-spill-anti-vapor-bottle-top-adapter",
+        "somnosuite-delivery-tube",
+        "somnosuite-y-adapter",
+        "stereotaxic-adapter-kit"
+      ],
+      "productSlugs": [
+        "3-accessory-connector",
+        "ac-adapters-and-power-cords",
+        "anesthetic-depth-indicator",
+        "glass-syringe-10-ml",
+        "glass-syringe-5-ml",
+        "holder-for-activated-charcoal-absorption-filter",
+        "oxygen-concentrator",
+        "preset-pressure-reducer-for-somnosuite",
+        "replacement-diaphragms-for-somnosuite-anesthesia-masks",
+        "somnosuite-anti-spill-anti-vapor-bottle-top-adapter",
+        "somnosuite-delivery-tube",
+        "somnosuite-y-adapter",
+        "stereotaxic-adapter-kit"
+      ]
+    },
+    {
+      "id": 161,
+      "parentId": 185,
+      "title": "Anesthesia Accessories for VetFlo™",
+      "slug": "anesthesia-accessories-for-vetflo",
+      "count": 15,
+      "sourceUrl": "https://www.kentscientific.com/product/anesthesia/anesthesia-accessories/anesthesia-accessories-for-vetflo/",
+      "categoryPath": [
+        "anesthesia",
+        "anesthesia-accessories",
+        "anesthesia-accessories-for-vetflo"
+      ],
+      "categoryPathTitles": [
+        "Anesthesia",
+        "Anesthesia Accessories",
+        "Anesthesia Accessories for VetFlo™"
+      ],
+      "directProductSlugs": [
+        "activated-charcoal-absorption-filters-1",
+        "anesthesia-masks-breathing-circuits-for-traditional-vaporizers",
+        "anti-spill-device-for-funnel-filled-vaporizers",
+        "low-cost-chambers-for-traditional-vaporizers",
+        "low-profile-anesthesia-masks-for-traditional-vaporizers",
+        "oxygen-concentrator",
+        "sliding-top-chambers-for-traditional-vaporizers",
+        "stereotaxic-adapter-kit-for-vetflo",
+        "vaporizer-for-isoflurane-funnel-filled",
+        "vaporizer-for-isoflurane-key-filled",
+        "vaporizer-for-sevoflurane-key-filled",
+        "vetflo-four-channel-anesthesia-stand",
+        "vetflo-single-channel-anesthesia-stand",
+        "vetflo-six-channel-anesthesia-stand",
+        "vetflo-two-channel-anesthesia-stand"
+      ],
+      "productSlugs": [
+        "activated-charcoal-absorption-filters-1",
+        "anesthesia-masks-breathing-circuits-for-traditional-vaporizers",
+        "anti-spill-device-for-funnel-filled-vaporizers",
+        "low-cost-chambers-for-traditional-vaporizers",
+        "low-profile-anesthesia-masks-for-traditional-vaporizers",
+        "oxygen-concentrator",
+        "sliding-top-chambers-for-traditional-vaporizers",
+        "stereotaxic-adapter-kit-for-vetflo",
+        "vaporizer-for-isoflurane-funnel-filled",
+        "vaporizer-for-isoflurane-key-filled",
+        "vaporizer-for-sevoflurane-key-filled",
+        "vetflo-four-channel-anesthesia-stand",
+        "vetflo-single-channel-anesthesia-stand",
+        "vetflo-six-channel-anesthesia-stand",
+        "vetflo-two-channel-anesthesia-stand"
+      ]
+    },
+    {
+      "id": 195,
+      "parentId": 173,
+      "title": "Accessories for CODA® Monitor",
+      "slug": "accessories-for-coda-monitor",
+      "count": 10,
+      "sourceUrl": "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/",
+      "categoryPath": [
+        "noninvasive-blood-pressure",
+        "noninvasive-blood-pressure-accessories",
+        "accessories-for-coda-monitor"
+      ],
+      "categoryPathTitles": [
+        "Non-Invasive Blood Pressure",
+        "Non-Invasive Blood Pressure Accessories",
+        "Accessories for CODA® Monitor"
+      ],
+      "directProductSlugs": [
+        "coda-cuff-storage-container",
+        "coda-data-acquisition-software",
+        "coda-high-throughput-cuff-kits",
+        "coda-high-throughput-occlusion-cuffs",
+        "coda-high-throughput-vpr-cuffs",
+        "coda-monitor-cuff-kits",
+        "coda-monitor-occlusion-cuff-kits",
+        "coda-monitor-vpr-cuff-kits",
+        "nose-cone-animal-holders-with-stand",
+        "replacement-bladder-kits"
+      ],
+      "productSlugs": [
+        "coda-cuff-storage-container",
+        "coda-data-acquisition-software",
+        "coda-high-throughput-cuff-kits",
+        "coda-high-throughput-occlusion-cuffs",
+        "coda-high-throughput-vpr-cuffs",
+        "coda-monitor-cuff-kits",
+        "coda-monitor-occlusion-cuff-kits",
+        "coda-monitor-vpr-cuff-kits",
+        "nose-cone-animal-holders-with-stand",
+        "replacement-bladder-kits"
+      ]
+    },
+    {
+      "id": 164,
+      "parentId": 163,
+      "title": "Pulse Oximetry",
+      "slug": "pulse-oximetry",
+      "count": 1,
+      "sourceUrl": "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/pulse-oximetry/",
+      "categoryPath": [
+        "physiological-monitoring",
+        "physiological-monitoring-accessories",
+        "pulse-oximetry"
+      ],
+      "categoryPathTitles": [
+        "Physiological Monitoring",
+        "Physiological Monitoring Accessories",
+        "Pulse Oximetry"
+      ],
+      "directProductSlugs": [
+        "mousestat-jr"
+      ],
+      "productSlugs": [
+        "mousestat-jr"
+      ]
+    },
+    {
+      "id": 162,
+      "parentId": 163,
+      "title": "Temperature",
+      "slug": "temperature",
+      "count": 6,
+      "sourceUrl": "https://www.kentscientific.com/product/physiological-monitoring/physiological-monitoring-accessories/temperature/",
+      "categoryPath": [
+        "physiological-monitoring",
+        "physiological-monitoring-accessories",
+        "temperature"
+      ],
+      "categoryPathTitles": [
+        "Physiological Monitoring",
+        "Physiological Monitoring Accessories",
+        "Temperature"
+      ],
+      "directProductSlugs": [
+        "non-contact-infrared-thermometer-with-laser-sight",
+        "rectal-probe-for-mice",
+        "rectal-probe-for-rats",
+        "righttemp",
+        "righttemp-sensor-for-animal-or-warming-pad",
+        "type-jkt-thermocouple-meter"
+      ],
+      "productSlugs": [
+        "non-contact-infrared-thermometer-with-laser-sight",
+        "rectal-probe-for-mice",
+        "rectal-probe-for-rats",
+        "righttemp",
+        "righttemp-sensor-for-animal-or-warming-pad",
+        "type-jkt-thermocouple-meter"
+      ]
+    },
+    {
+      "id": 269,
+      "parentId": 266,
+      "title": "UID Cage Monitoring",
+      "slug": "uid-cage-monitoring",
+      "count": 0,
+      "sourceUrl": "https://www.kentscientific.com/product/rodent-identification/uid-rfid-lab-animal-identification/uid-cage-monitoring/",
+      "categoryPath": [
+        "rodent-identification",
+        "uid-rfid-lab-animal-identification",
+        "uid-cage-monitoring"
+      ],
+      "categoryPathTitles": [
+        "Rodent Identification",
+        "UID RFID Lab Animal Identification",
+        "UID Cage Monitoring"
+      ],
+      "directProductSlugs": [],
+      "productSlugs": []
+    },
+    {
+      "id": 270,
+      "parentId": 266,
+      "title": "UID Data Collection Software",
+      "slug": "uid-data-collection-software",
+      "count": 0,
+      "sourceUrl": "https://www.kentscientific.com/product/rodent-identification/uid-rfid-lab-animal-identification/uid-data-collection-software/",
+      "categoryPath": [
+        "rodent-identification",
+        "uid-rfid-lab-animal-identification",
+        "uid-data-collection-software"
+      ],
+      "categoryPathTitles": [
+        "Rodent Identification",
+        "UID RFID Lab Animal Identification",
+        "UID Data Collection Software"
+      ],
+      "directProductSlugs": [],
+      "productSlugs": []
+    },
+    {
+      "id": 272,
+      "parentId": 266,
+      "title": "UID Injectors",
+      "slug": "uid-injectors",
+      "count": 0,
+      "sourceUrl": "https://www.kentscientific.com/product/rodent-identification/uid-rfid-lab-animal-identification/uid-injectors/",
+      "categoryPath": [
+        "rodent-identification",
+        "uid-rfid-lab-animal-identification",
+        "uid-injectors"
+      ],
+      "categoryPathTitles": [
+        "Rodent Identification",
+        "UID RFID Lab Animal Identification",
+        "UID Injectors"
+      ],
+      "directProductSlugs": [],
+      "productSlugs": []
+    },
+    {
+      "id": 271,
+      "parentId": 266,
+      "title": "UID RFID Accessories",
+      "slug": "uid-rfid-accessories",
+      "count": 0,
+      "sourceUrl": "https://www.kentscientific.com/product/rodent-identification/uid-rfid-lab-animal-identification/uid-rfid-accessories/",
+      "categoryPath": [
+        "rodent-identification",
+        "uid-rfid-lab-animal-identification",
+        "uid-rfid-accessories"
+      ],
+      "categoryPathTitles": [
+        "Rodent Identification",
+        "UID RFID Lab Animal Identification",
+        "UID RFID Accessories"
+      ],
+      "directProductSlugs": [],
+      "productSlugs": []
+    },
+    {
+      "id": 267,
+      "parentId": 266,
+      "title": "UID RFID Microchips",
+      "slug": "uid-rfid-microchips",
+      "count": 0,
+      "sourceUrl": "https://www.kentscientific.com/product/rodent-identification/uid-rfid-lab-animal-identification/uid-rfid-microchips/",
+      "categoryPath": [
+        "rodent-identification",
+        "uid-rfid-lab-animal-identification",
+        "uid-rfid-microchips"
+      ],
+      "categoryPathTitles": [
+        "Rodent Identification",
+        "UID RFID Lab Animal Identification",
+        "UID RFID Microchips"
+      ],
+      "directProductSlugs": [],
+      "productSlugs": []
+    },
+    {
+      "id": 268,
+      "parentId": 266,
+      "title": "UID RFID Readers",
+      "slug": "uid-rfid-readers",
+      "count": 0,
+      "sourceUrl": "https://www.kentscientific.com/product/rodent-identification/uid-rfid-lab-animal-identification/uid-rfid-readers/",
+      "categoryPath": [
+        "rodent-identification",
+        "uid-rfid-lab-animal-identification",
+        "uid-rfid-readers"
+      ],
+      "categoryPathTitles": [
+        "Rodent Identification",
+        "UID RFID Lab Animal Identification",
+        "UID RFID Readers"
+      ],
+      "directProductSlugs": [],
+      "productSlugs": []
+    },
+    {
+      "id": 194,
+      "parentId": 147,
+      "title": "Surgical Accessories for SurgiSuite",
+      "slug": "surgical-accessories-for-surgisuite",
+      "count": 7,
+      "sourceUrl": "https://www.kentscientific.com/product/surgery/surgical-accessories/surgical-accessories-for-surgisuite/",
+      "categoryPath": [
+        "surgery",
+        "surgical-accessories",
+        "surgical-accessories-for-surgisuite"
+      ],
+      "categoryPathTitles": [
+        "Surgical Tools and Supplies",
+        "Surgical Accessories",
+        "Surgical Accessories for SurgiSuite"
+      ],
+      "directProductSlugs": [
+        "elastic-wire-positioner",
+        "mouse-retractor-set",
+        "procedure-bowl",
+        "rat-retractor-set",
+        "replacement-surgical-field-covers",
+        "retractor-tips",
+        "retractor-wires"
+      ],
+      "productSlugs": [
+        "elastic-wire-positioner",
+        "mouse-retractor-set",
+        "procedure-bowl",
+        "rat-retractor-set",
+        "replacement-surgical-field-covers",
+        "retractor-tips",
+        "retractor-wires"
+      ]
+    },
+    {
+      "id": 154,
+      "parentId": 190,
+      "title": "Forceps",
+      "slug": "forceps",
+      "count": 7,
+      "sourceUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "forceps"
+      ],
+      "categoryPathTitles": [
+        "Surgical Tools and Supplies",
+        "Surgical Instruments",
+        "Forceps"
+      ],
+      "directProductSlugs": [
+        "fine-dressing-forceps-10-cm-long",
+        "fine-dressing-forceps-155-cm-long",
+        "hartman-mosquito-hemostatic-forceps-curved",
+        "hartman-mosquito-hemostatic-forceps-straight",
+        "iris-dressing-forceps",
+        "micro-dissecting-forceps-serrated-straight",
+        "super-fine-dressing-forceps-125-cm-long"
+      ],
+      "productSlugs": [
+        "fine-dressing-forceps-10-cm-long",
+        "fine-dressing-forceps-155-cm-long",
+        "hartman-mosquito-hemostatic-forceps-curved",
+        "hartman-mosquito-hemostatic-forceps-straight",
+        "iris-dressing-forceps",
+        "micro-dissecting-forceps-serrated-straight",
+        "super-fine-dressing-forceps-125-cm-long"
+      ]
+    },
+    {
+      "id": 155,
+      "parentId": 190,
+      "title": "Laboratory Scissors",
+      "slug": "laboratory-scissors",
+      "count": 7,
+      "sourceUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/laboratory-scissors/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "laboratory-scissors"
+      ],
+      "categoryPathTitles": [
+        "Surgical Tools and Supplies",
+        "Surgical Instruments",
+        "Laboratory Scissors"
+      ],
+      "directProductSlugs": [
+        "dissecting-scissors-straight-10-cm-long",
+        "iris-scissors-straight-11-cm-long",
+        "mayo-operating-scissors-straight",
+        "mcpherson-vannas-micro-scissors-7-cm-long",
+        "mcpherson-vannas-micro-scissors-8-cm-long",
+        "spring-scissors-straight-12-cm-long-extra-fine",
+        "supercut-iris-scissors-straight-125-cm-long"
+      ],
+      "productSlugs": [
+        "dissecting-scissors-straight-10-cm-long",
+        "iris-scissors-straight-11-cm-long",
+        "mayo-operating-scissors-straight",
+        "mcpherson-vannas-micro-scissors-7-cm-long",
+        "mcpherson-vannas-micro-scissors-8-cm-long",
+        "spring-scissors-straight-12-cm-long-extra-fine",
+        "supercut-iris-scissors-straight-125-cm-long"
+      ]
+    },
+    {
+      "id": 197,
+      "parentId": 190,
+      "title": "Needle Holders",
+      "slug": "needle-holders",
+      "count": 2,
+      "sourceUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/needle-holders/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "needle-holders"
+      ],
+      "categoryPathTitles": [
+        "Surgical Tools and Supplies",
+        "Surgical Instruments",
+        "Needle Holders"
+      ],
+      "directProductSlugs": [
+        "castroviejo-needle-holder-serrated",
+        "straight-serrated-needle-holder-14-cm-long"
+      ],
+      "productSlugs": [
+        "castroviejo-needle-holder-serrated",
+        "straight-serrated-needle-holder-14-cm-long"
+      ]
+    },
+    {
+      "id": 153,
+      "parentId": 190,
+      "title": "Surgical Instrument Kits",
+      "slug": "surgical-instrument-kits",
+      "count": 3,
+      "sourceUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/surgical-instrument-kits/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "surgical-instrument-kits"
+      ],
+      "categoryPathTitles": [
+        "Surgical Tools and Supplies",
+        "Surgical Instruments",
+        "Surgical Instrument Kits"
+      ],
+      "directProductSlugs": [
+        "mouse-and-rat-vessel-cannulation-kit",
+        "mouse-surgical-kit",
+        "rat-surgical-kit"
+      ],
+      "productSlugs": [
+        "mouse-and-rat-vessel-cannulation-kit",
+        "mouse-surgical-kit",
+        "rat-surgical-kit"
+      ]
+    },
+    {
+      "id": 145,
+      "parentId": 190,
+      "title": "Surgical Tweezers",
+      "slug": "surgical-tweezers",
+      "count": 7,
+      "sourceUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/surgical-tweezers/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "surgical-tweezers"
+      ],
+      "categoryPathTitles": [
+        "Surgical Tools and Supplies",
+        "Surgical Instruments",
+        "Surgical Tweezers"
+      ],
+      "directProductSlugs": [
+        "angled-5-tweezer-kit",
+        "straight-5-tweezer-kit",
+        "tweezer-5-001-mm-tips",
+        "tweezer-5-0025-mm-tips",
+        "tweezer-5-006-mm-tips",
+        "tweezer-5-006-mm-tips-curved",
+        "tweezer-5b-001-mm-tips-45-angle"
+      ],
+      "productSlugs": [
+        "angled-5-tweezer-kit",
+        "straight-5-tweezer-kit",
+        "tweezer-5-001-mm-tips",
+        "tweezer-5-0025-mm-tips",
+        "tweezer-5-006-mm-tips",
+        "tweezer-5-006-mm-tips-curved",
+        "tweezer-5b-001-mm-tips-45-angle"
+      ]
+    },
+    {
+      "id": 193,
+      "parentId": 190,
+      "title": "Wound Closure",
+      "slug": "wound-closure",
+      "count": 8,
+      "sourceUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "wound-closure"
+      ],
+      "categoryPathTitles": [
+        "Surgical Tools and Supplies",
+        "Surgical Instruments",
+        "Wound Closure"
+      ],
+      "directProductSlugs": [
+        "autoclip-applier",
+        "autoclips-9-mm",
+        "micro-bulldog-clamp",
+        "reflex-clip-applier",
+        "reflex-clips-7-mm",
+        "reflex-clips-9-mm",
+        "removing-forceps",
+        "small-bulldog-clamp"
+      ],
+      "productSlugs": [
+        "autoclip-applier",
+        "autoclips-9-mm",
+        "micro-bulldog-clamp",
+        "reflex-clip-applier",
+        "reflex-clips-7-mm",
+        "reflex-clips-9-mm",
+        "removing-forceps",
+        "small-bulldog-clamp"
+      ]
+    },
+    {
+      "id": 174,
+      "parentId": 195,
+      "title": "CODA® Cuffs",
+      "slug": "coda-cuffs",
+      "count": 5,
+      "sourceUrl": "https://www.kentscientific.com/product/noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor/coda-cuffs/",
+      "categoryPath": [
+        "noninvasive-blood-pressure",
+        "noninvasive-blood-pressure-accessories",
+        "accessories-for-coda-monitor",
+        "coda-cuffs"
+      ],
+      "categoryPathTitles": [
+        "Non-Invasive Blood Pressure",
+        "Non-Invasive Blood Pressure Accessories",
+        "Accessories for CODA® Monitor",
+        "CODA® Cuffs"
+      ],
+      "directProductSlugs": [
+        "coda-cuff-storage-container",
+        "coda-high-throughput-cuff-kits",
+        "coda-high-throughput-occlusion-cuffs",
+        "coda-high-throughput-vpr-cuffs",
+        "replacement-bladder-kits"
+      ],
+      "productSlugs": [
+        "coda-cuff-storage-container",
+        "coda-high-throughput-cuff-kits",
+        "coda-high-throughput-occlusion-cuffs",
+        "coda-high-throughput-vpr-cuffs",
+        "replacement-bladder-kits"
+      ]
+    },
+    {
+      "id": 156,
+      "parentId": 154,
+      "title": "Dressing Forceps",
+      "slug": "dressing-forceps",
+      "count": 4,
+      "sourceUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/dressing-forceps/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "forceps",
+        "dressing-forceps"
+      ],
+      "categoryPathTitles": [
+        "Surgical Tools and Supplies",
+        "Surgical Instruments",
+        "Forceps",
+        "Dressing Forceps"
+      ],
+      "directProductSlugs": [
+        "fine-dressing-forceps-10-cm-long",
+        "fine-dressing-forceps-155-cm-long",
+        "iris-dressing-forceps",
+        "super-fine-dressing-forceps-125-cm-long"
+      ],
+      "productSlugs": [
+        "fine-dressing-forceps-10-cm-long",
+        "fine-dressing-forceps-155-cm-long",
+        "iris-dressing-forceps",
+        "super-fine-dressing-forceps-125-cm-long"
+      ]
+    },
+    {
+      "id": 157,
+      "parentId": 154,
+      "title": "Hemostat Forceps",
+      "slug": "hemostat-forceps",
+      "count": 2,
+      "sourceUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/forceps/hemostat-forceps/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "forceps",
+        "hemostat-forceps"
+      ],
+      "categoryPathTitles": [
+        "Surgical Tools and Supplies",
+        "Surgical Instruments",
+        "Forceps",
+        "Hemostat Forceps"
+      ],
+      "directProductSlugs": [
+        "hartman-mosquito-hemostatic-forceps-curved",
+        "hartman-mosquito-hemostatic-forceps-straight"
+      ],
+      "productSlugs": [
+        "hartman-mosquito-hemostatic-forceps-curved",
+        "hartman-mosquito-hemostatic-forceps-straight"
+      ]
+    },
+    {
+      "id": 148,
+      "parentId": 155,
+      "title": "Micro Scissors",
+      "slug": "micro-scissors",
+      "count": 3,
+      "sourceUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/laboratory-scissors/micro-scissors/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "laboratory-scissors",
+        "micro-scissors"
+      ],
+      "categoryPathTitles": [
+        "Surgical Tools and Supplies",
+        "Surgical Instruments",
+        "Laboratory Scissors",
+        "Micro Scissors"
+      ],
+      "directProductSlugs": [
+        "mcpherson-vannas-micro-scissors-7-cm-long",
+        "mcpherson-vannas-micro-scissors-8-cm-long",
+        "spring-scissors-straight-12-cm-long-extra-fine"
+      ],
+      "productSlugs": [
+        "mcpherson-vannas-micro-scissors-7-cm-long",
+        "mcpherson-vannas-micro-scissors-8-cm-long",
+        "spring-scissors-straight-12-cm-long-extra-fine"
+      ]
+    },
+    {
+      "id": 151,
+      "parentId": 193,
+      "title": "Autoclips",
+      "slug": "autoclips",
+      "count": 3,
+      "sourceUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/autoclips/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "wound-closure",
+        "autoclips"
+      ],
+      "categoryPathTitles": [
+        "Surgical Tools and Supplies",
+        "Surgical Instruments",
+        "Wound Closure",
+        "Autoclips"
+      ],
+      "directProductSlugs": [
+        "autoclip-applier",
+        "autoclips-9-mm",
+        "removing-forceps"
+      ],
+      "productSlugs": [
+        "autoclip-applier",
+        "autoclips-9-mm",
+        "removing-forceps"
+      ]
+    },
+    {
+      "id": 149,
+      "parentId": 193,
+      "title": "Bull Dog Clamps",
+      "slug": "bull-dog-clamps",
+      "count": 2,
+      "sourceUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/bull-dog-clamps/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "wound-closure",
+        "bull-dog-clamps"
+      ],
+      "categoryPathTitles": [
+        "Surgical Tools and Supplies",
+        "Surgical Instruments",
+        "Wound Closure",
+        "Bull Dog Clamps"
+      ],
+      "directProductSlugs": [
+        "micro-bulldog-clamp",
+        "small-bulldog-clamp"
+      ],
+      "productSlugs": [
+        "micro-bulldog-clamp",
+        "small-bulldog-clamp"
+      ]
+    },
+    {
+      "id": 152,
+      "parentId": 193,
+      "title": "Reflex Clips",
+      "slug": "reflex-clips",
+      "count": 3,
+      "sourceUrl": "https://www.kentscientific.com/product/surgery/surgical-instruments/wound-closure/reflex-clips/",
+      "categoryPath": [
+        "surgery",
+        "surgical-instruments",
+        "wound-closure",
+        "reflex-clips"
+      ],
+      "categoryPathTitles": [
+        "Surgical Tools and Supplies",
+        "Surgical Instruments",
+        "Wound Closure",
+        "Reflex Clips"
+      ],
+      "directProductSlugs": [
+        "reflex-clip-applier",
+        "reflex-clips-7-mm",
+        "reflex-clips-9-mm"
+      ],
+      "productSlugs": [
+        "reflex-clip-applier",
+        "reflex-clips-7-mm",
+        "reflex-clips-9-mm"
+      ]
+    }
+  ],
+  "products": [
+    {
+      "id": 7127,
+      "slug": "3-accessory-connector",
+      "title": "3 Accessory Connector",
+      "sourceUrl": "https://www.kentscientific.com/products/3-accessory-connector/",
+      "modifiedAt": "2026-02-21T00:01:17Z",
+      "categoryIds": [
+        16,
+        185,
+        159,
+        192,
+        17
+      ]
+    },
+    {
+      "id": 7128,
+      "slug": "ac-adapters-and-power-cords",
+      "title": "AC Adapters and Power Cords",
+      "sourceUrl": "https://www.kentscientific.com/products/ac-adapters-and-power-cords/",
+      "modifiedAt": "2026-02-24T18:12:45Z",
+      "categoryIds": [
+        16,
+        185,
+        159,
+        192
+      ]
+    },
+    {
+      "id": 7129,
+      "slug": "accuris-mini-balances",
+      "title": "Accuris™ Mini Balances",
+      "sourceUrl": "https://www.kentscientific.com/products/accuris-mini-balances/",
+      "modifiedAt": "2026-07-29T17:29:24Z",
+      "categoryIds": [
+        94,
+        168
+      ]
+    },
+    {
+      "id": 7130,
+      "slug": "acrylic-brain-matrices",
+      "title": "Acrylic Brain Matrices",
+      "sourceUrl": "https://www.kentscientific.com/products/acrylic-brain-matrices/",
+      "modifiedAt": "2026-02-21T00:01:24Z",
+      "categoryIds": [
+        91,
+        76
+      ]
+    },
+    {
+      "id": 7131,
+      "slug": "activated-charcoal-absorption-filters-1",
+      "title": "Activated Charcoal Absorption Filters",
+      "sourceUrl": "https://www.kentscientific.com/products/activated-charcoal-absorption-filters-1/",
+      "modifiedAt": "2026-03-27T19:18:44Z",
+      "categoryIds": [
+        16,
+        185,
+        161
+      ]
+    },
+    {
+      "id": 7133,
+      "slug": "aeroneb-lab-control-module",
+      "title": "Aeroneb® Lab Control Module",
+      "sourceUrl": "https://www.kentscientific.com/products/aeroneb-lab-control-module/",
+      "modifiedAt": "2026-02-21T00:01:23Z",
+      "categoryIds": [
+        72
+      ]
+    },
+    {
+      "id": 8855,
+      "slug": "aeroneb-lab-control-module-kit",
+      "title": "Aeroneb® Lab Control Module Kit",
+      "sourceUrl": "https://www.kentscientific.com/products/aeroneb-lab-control-module-kit/",
+      "modifiedAt": "2026-07-23T20:16:31Z",
+      "categoryIds": [
+        72
+      ]
+    },
+    {
+      "id": 7134,
+      "slug": "aeroneb-lab-nebulizer-unit",
+      "title": "Aeroneb® Lab Nebulizer",
+      "sourceUrl": "https://www.kentscientific.com/products/aeroneb-lab-nebulizer-unit/",
+      "modifiedAt": "2026-07-23T20:17:34Z",
+      "categoryIds": [
+        72
+      ]
+    },
+    {
+      "id": 7135,
+      "slug": "analog-output-cable",
+      "title": "Analog Output Cable",
+      "sourceUrl": "https://www.kentscientific.com/products/analog-output-cable/",
+      "modifiedAt": "2026-02-21T00:01:26Z",
+      "categoryIds": [
+        68,
+        163
+      ]
+    },
+    {
+      "id": 7136,
+      "slug": "anesthesia-mask-nebulizer-delivery-system",
+      "title": "Anesthesia Mask Nebulizer Delivery System",
+      "sourceUrl": "https://www.kentscientific.com/products/anesthesia-mask-nebulizer-delivery-system/",
+      "modifiedAt": "2026-02-21T00:01:27Z",
+      "categoryIds": [
+        72
+      ]
+    },
+    {
+      "id": 7137,
+      "slug": "anesthesia-mask-tubing-kits-for-intubation",
+      "title": "Anesthesia Mask Tubing Kits for Intubation",
+      "sourceUrl": "https://www.kentscientific.com/products/anesthesia-mask-tubing-kits-for-intubation/",
+      "modifiedAt": "2026-02-21T06:32:11Z",
+      "categoryIds": [
+        180,
+        17
+      ]
+    },
+    {
+      "id": 7138,
+      "slug": "anesthesia-masks-breathing-circuits-for-somnosuite",
+      "title": "Anesthesia Masks Breathing Circuits for SomnoSuite®",
+      "sourceUrl": "https://www.kentscientific.com/products/anesthesia-masks-breathing-circuits-for-somnosuite/",
+      "modifiedAt": "2026-02-21T00:01:30Z",
+      "categoryIds": [
+        16,
+        185,
+        159
+      ]
+    },
+    {
+      "id": 7139,
+      "slug": "anesthesia-masks-breathing-circuits-for-traditional-vaporizers",
+      "title": "Anesthesia Masks Breathing Circuits for Traditional Vaporizers",
+      "sourceUrl": "https://www.kentscientific.com/products/anesthesia-masks-breathing-circuits-for-traditional-vaporizers/",
+      "modifiedAt": "2026-02-21T00:01:34Z",
+      "categoryIds": [
+        16,
+        185,
+        161
+      ]
+    },
+    {
+      "id": 7140,
+      "slug": "anesthetic-depth-indicator",
+      "title": "Anesthetic Depth Indicator",
+      "sourceUrl": "https://www.kentscientific.com/products/anesthetic-depth-indicator/",
+      "modifiedAt": "2026-02-21T00:01:33Z",
+      "categoryIds": [
+        16,
+        185,
+        159,
+        192
+      ]
+    },
+    {
+      "id": 7141,
+      "slug": "angled-5-tweezer-kit",
+      "title": "Angled 5 Tweezer Kit",
+      "sourceUrl": "https://www.kentscientific.com/products/angled-5-tweezer-kit/",
+      "modifiedAt": "2026-02-21T00:01:33Z",
+      "categoryIds": [
+        190,
+        70,
+        145
+      ]
+    },
+    {
+      "id": 7142,
+      "slug": "animal-weighing-scale",
+      "title": "Animal Weighing Scale",
+      "sourceUrl": "https://www.kentscientific.com/products/animal-weighing-scale/",
+      "modifiedAt": "2026-02-21T00:01:36Z",
+      "categoryIds": [
+        94,
+        168
+      ]
+    },
+    {
+      "id": 11167,
+      "slug": "anipill",
+      "title": "AniPill",
+      "sourceUrl": "https://www.kentscientific.com/products/anipill/",
+      "modifiedAt": "2026-07-27T16:24:25Z",
+      "categoryIds": [
+        68
+      ]
+    },
+    {
+      "id": 7143,
+      "slug": "anti-spill-device-for-funnel-filled-vaporizers",
+      "title": "Anti-Spill Device for Funnel Filled Anesthesia Vaporizers",
+      "sourceUrl": "https://www.kentscientific.com/products/anti-spill-device-for-funnel-filled-vaporizers/",
+      "modifiedAt": "2026-06-05T18:06:22Z",
+      "categoryIds": [
+        16,
+        161
+      ]
+    },
+    {
+      "id": 7145,
+      "slug": "autoclip-applier",
+      "title": "Autoclip Applier for Laboratory Animal Wound Clips",
+      "sourceUrl": "https://www.kentscientific.com/products/autoclip-applier/",
+      "modifiedAt": "2026-05-13T04:13:44Z",
+      "categoryIds": [
+        151,
+        190,
+        70,
+        193
+      ]
+    },
+    {
+      "id": 7146,
+      "slug": "autoclips-9-mm",
+      "title": "Autoclips 9 mm",
+      "sourceUrl": "https://www.kentscientific.com/products/autoclips-9-mm/",
+      "modifiedAt": "2026-02-21T00:01:40Z",
+      "categoryIds": [
+        151,
+        190,
+        70,
+        193
+      ]
+    },
+    {
+      "id": 7147,
+      "slug": "bluetooth-low-energy-handheld-reader",
+      "title": "Bluetooth Low Energy Handheld Reader",
+      "sourceUrl": "https://www.kentscientific.com/products/bluetooth-low-energy-handheld-reader/",
+      "modifiedAt": "2026-07-29T17:30:38Z",
+      "categoryIds": [
+        172,
+        73
+      ]
+    },
+    {
+      "id": 7149,
+      "slug": "cannula-adapter",
+      "title": "Cannula Adapter",
+      "sourceUrl": "https://www.kentscientific.com/products/cannula-adapter/",
+      "modifiedAt": "2026-02-21T00:01:42Z",
+      "categoryIds": [
+        68,
+        163
+      ]
+    },
+    {
+      "id": 8157,
+      "slug": "capnoscan",
+      "title": "CapnoScan®",
+      "sourceUrl": "https://www.kentscientific.com/products/capnoscan/",
+      "modifiedAt": "2026-07-27T16:33:46Z",
+      "categoryIds": [
+        68
+      ]
+    },
+    {
+      "id": 7150,
+      "slug": "castroviejo-needle-holder-serrated",
+      "title": "Castroviejo Needle Holder – Serrated, 14 cm for Rodent Microsurgery",
+      "sourceUrl": "https://www.kentscientific.com/products/castroviejo-needle-holder-serrated/",
+      "modifiedAt": "2026-05-13T03:38:55Z",
+      "categoryIds": [
+        197,
+        190,
+        70
+      ]
+    },
+    {
+      "id": 7152,
+      "slug": "chamber-nebulizer-delivery-system",
+      "title": "Animal Chamber Nebulizer Delivery System",
+      "sourceUrl": "https://www.kentscientific.com/products/chamber-nebulizer-delivery-system/",
+      "modifiedAt": "2026-02-21T00:01:34Z",
+      "categoryIds": [
+        72
+      ]
+    },
+    {
+      "id": 7153,
+      "slug": "coda-animal-holders",
+      "title": "CODA® Animal Holders",
+      "sourceUrl": "https://www.kentscientific.com/products/coda-animal-holders/",
+      "modifiedAt": "2026-02-21T00:01:46Z",
+      "categoryIds": [
+        69,
+        173
+      ]
+    },
+    {
+      "id": 7154,
+      "slug": "coda-cuff-storage-container",
+      "title": "CODA® Cuff Storage Container",
+      "sourceUrl": "https://www.kentscientific.com/products/coda-cuff-storage-container/",
+      "modifiedAt": "2026-02-21T00:01:45Z",
+      "categoryIds": [
+        195,
+        174,
+        69
+      ]
+    },
+    {
+      "id": 7155,
+      "slug": "coda-data-acquisition-software",
+      "title": "CODA® Data Acquisition Software",
+      "sourceUrl": "https://www.kentscientific.com/products/coda-data-acquisition-software/",
+      "modifiedAt": "2026-02-21T00:01:45Z",
+      "categoryIds": [
+        195,
+        69,
+        173
+      ]
+    },
+    {
+      "id": 7156,
+      "slug": "coda-high-throughput-cuff-kits",
+      "title": "CODA® High Throughput Cuff Kits",
+      "sourceUrl": "https://www.kentscientific.com/products/coda-high-throughput-cuff-kits/",
+      "modifiedAt": "2026-02-21T00:01:46Z",
+      "categoryIds": [
+        195,
+        174,
+        69,
+        173
+      ]
+    },
+    {
+      "id": 9105,
+      "slug": "coda-high-throughput-occlusion-cuffs",
+      "title": "CODA® High Throughput Occlusion Cuffs",
+      "sourceUrl": "https://www.kentscientific.com/products/coda-high-throughput-occlusion-cuffs/",
+      "modifiedAt": "2026-02-21T00:01:49Z",
+      "categoryIds": [
+        195,
+        174,
+        69,
+        173
+      ]
+    },
+    {
+      "id": 7157,
+      "slug": "coda-high-throughput-system",
+      "title": "CODA® High Throughput System",
+      "sourceUrl": "https://www.kentscientific.com/products/coda-high-throughput-system/",
+      "modifiedAt": "2026-06-09T17:17:59Z",
+      "categoryIds": [
+        69
+      ]
+    },
+    {
+      "id": 9091,
+      "slug": "coda-high-throughput-vpr-cuffs",
+      "title": "CODA® High Throughput VPR Cuffs",
+      "sourceUrl": "https://www.kentscientific.com/products/coda-high-throughput-vpr-cuffs/",
+      "modifiedAt": "2026-02-21T00:01:53Z",
+      "categoryIds": [
+        195,
+        174,
+        69,
+        173
+      ]
+    },
+    {
+      "id": 7159,
+      "slug": "coda-monitor",
+      "title": "CODA® Monitor",
+      "sourceUrl": "https://www.kentscientific.com/products/coda-monitor/",
+      "modifiedAt": "2026-06-09T17:10:10Z",
+      "categoryIds": [
+        69
+      ]
+    },
+    {
+      "id": 7158,
+      "slug": "coda-monitor-cuff-kits",
+      "title": "CODA® Monitor Cuff Kits",
+      "sourceUrl": "https://www.kentscientific.com/products/coda-monitor-cuff-kits/",
+      "modifiedAt": "2026-03-27T18:29:29Z",
+      "categoryIds": [
+        195,
+        69
+      ]
+    },
+    {
+      "id": 9190,
+      "slug": "coda-monitor-occlusion-cuff-kits",
+      "title": "CODA® Monitor Occlusion Cuff Kits",
+      "sourceUrl": "https://www.kentscientific.com/products/coda-monitor-occlusion-cuff-kits/",
+      "modifiedAt": "2026-03-27T18:31:06Z",
+      "categoryIds": [
+        195,
+        69
+      ]
+    },
+    {
+      "id": 9179,
+      "slug": "coda-monitor-vpr-cuff-kits",
+      "title": "CODA® Monitor VPR Cuff Kits",
+      "sourceUrl": "https://www.kentscientific.com/products/coda-monitor-vpr-cuff-kits/",
+      "modifiedAt": "2026-03-27T18:29:12Z",
+      "categoryIds": [
+        195,
+        69
+      ]
+    },
+    {
+      "id": 7160,
+      "slug": "curved-feeding-needles",
+      "title": "Curved Feeding Needles for Rodent Oral Gavage",
+      "sourceUrl": "https://www.kentscientific.com/products/curved-feeding-needles/",
+      "modifiedAt": "2026-05-13T13:39:06Z",
+      "categoryIds": [
+        75
+      ]
+    },
+    {
+      "id": 8958,
+      "slug": "cylinder-bracket",
+      "title": "Cylinder Bracket",
+      "sourceUrl": "https://www.kentscientific.com/products/cylinder-bracket/",
+      "modifiedAt": "2026-02-21T00:02:03Z",
+      "categoryIds": [
+        77
+      ]
+    },
+    {
+      "id": 7161,
+      "slug": "disposable-sleeve-protectors-for-dct-15-and-dct-20-far-infrared-warming-pads",
+      "title": "Disposable Sleeve Protectors for DCT-15 and DCT-20 Far Infrared Warming Pads",
+      "sourceUrl": "https://www.kentscientific.com/products/disposable-sleeve-protectors-for-dct-15-and-dct-20-far-infrared-warming-pads/",
+      "modifiedAt": "2026-05-13T15:50:38Z",
+      "categoryIds": [
+        71,
+        178
+      ]
+    },
+    {
+      "id": 7162,
+      "slug": "disposable-warming-pads",
+      "title": "Water Recirculating Warming Pads for Small Animal Surgical Warming",
+      "sourceUrl": "https://www.kentscientific.com/products/disposable-warming-pads/",
+      "modifiedAt": "2026-07-27T16:38:38Z",
+      "categoryIds": [
+        71,
+        178
+      ]
+    },
+    {
+      "id": 7163,
+      "slug": "dissecting-scissors-straight-10-cm-long",
+      "title": "Dissecting Scissors Straight 10 cm Long",
+      "sourceUrl": "https://www.kentscientific.com/products/dissecting-scissors-straight-10-cm-long/",
+      "modifiedAt": "2026-02-21T00:02:03Z",
+      "categoryIds": [
+        155,
+        190,
+        70
+      ]
+    },
+    {
+      "id": 8961,
+      "slug": "ear-tag-applicator-with-spring-1",
+      "title": "Ear Tag Applicator for Laboratory Animals",
+      "sourceUrl": "https://www.kentscientific.com/products/ear-tag-applicator-with-spring-1/",
+      "modifiedAt": "2026-05-13T13:34:35Z",
+      "categoryIds": [
+        171,
+        73
+      ]
+    },
+    {
+      "id": 7164,
+      "slug": "elastic-wire-positioner",
+      "title": "Elastic Wire Positioners",
+      "sourceUrl": "https://www.kentscientific.com/products/elastic-wire-positioner/",
+      "modifiedAt": "2026-02-21T00:02:05Z",
+      "categoryIds": [
+        147,
+        194,
+        70
+      ]
+    },
+    {
+      "id": 7165,
+      "slug": "elizabethan-collars",
+      "title": "Elizabethan Collars",
+      "sourceUrl": "https://www.kentscientific.com/products/elizabethan-collars/",
+      "modifiedAt": "2026-02-21T00:02:06Z",
+      "categoryIds": [
+        191,
+        94
+      ]
+    },
+    {
+      "id": 7166,
+      "slug": "endotracheal-intubation-kits",
+      "title": "Endotracheal Intubation Kits for Mouse and Rat Anesthesia",
+      "sourceUrl": "https://www.kentscientific.com/products/endotracheal-intubation-kits/",
+      "modifiedAt": "2026-06-05T18:13:24Z",
+      "categoryIds": [
+        180,
+        17
+      ]
+    },
+    {
+      "id": 7167,
+      "slug": "endotracheal-tubes",
+      "title": "Endotracheal Tubes for Rodent Intubation",
+      "sourceUrl": "https://www.kentscientific.com/products/endotracheal-tubes/",
+      "modifiedAt": "2026-05-13T04:01:59Z",
+      "categoryIds": [
+        180,
+        17
+      ]
+    },
+    {
+      "id": 7169,
+      "slug": "far-infrared-warming-pad",
+      "title": "Far Infrared Warming Pad for Small Animal Recovery",
+      "sourceUrl": "https://www.kentscientific.com/products/far-infrared-warming-pad/",
+      "modifiedAt": "2026-05-13T13:08:54Z",
+      "categoryIds": [
+        71,
+        178
+      ]
+    },
+    {
+      "id": 7170,
+      "slug": "far-infrared-warming-pads-with-controller",
+      "title": "Far Infrared Warming Pads with Controller for Small Animal Recovery",
+      "sourceUrl": "https://www.kentscientific.com/products/far-infrared-warming-pads-with-controller/",
+      "modifiedAt": "2026-05-13T13:16:07Z",
+      "categoryIds": [
+        71,
+        178
+      ]
+    },
+    {
+      "id": 7171,
+      "slug": "fiber-optic-lighting-assembly",
+      "title": "Fiber Optic Lighting Assembly",
+      "sourceUrl": "https://www.kentscientific.com/products/fiber-optic-lighting-assembly/",
+      "modifiedAt": "2026-07-17T15:47:03Z",
+      "categoryIds": [
+        180,
+        17
+      ]
+    },
+    {
+      "id": 7172,
+      "slug": "fiber-optic-lighting-kits",
+      "title": "Fiber Optic Lighting Kits for Mouse and Rat Intubation",
+      "sourceUrl": "https://www.kentscientific.com/products/fiber-optic-lighting-kits/",
+      "modifiedAt": "2026-07-16T20:16:09Z",
+      "categoryIds": [
+        180,
+        17
+      ]
+    },
+    {
+      "id": 7173,
+      "slug": "fine-dressing-forceps-10-cm-long",
+      "title": "Fine Dressing Forceps 10 cm Long",
+      "sourceUrl": "https://www.kentscientific.com/products/fine-dressing-forceps-10-cm-long/",
+      "modifiedAt": "2026-02-21T00:02:12Z",
+      "categoryIds": [
+        156,
+        154,
+        190,
+        70
+      ]
+    },
+    {
+      "id": 8953,
+      "slug": "fine-dressing-forceps-155-cm-long",
+      "title": "Fine Dressing Forceps, 15.5 cm Long",
+      "sourceUrl": "https://www.kentscientific.com/products/fine-dressing-forceps-155-cm-long/",
+      "modifiedAt": "2026-02-21T00:02:12Z",
+      "categoryIds": [
+        156,
+        154,
+        190,
+        70
+      ]
+    },
+    {
+      "id": 7175,
+      "slug": "flat-bottom-rodent-holders",
+      "title": "Flat Bottom Rodent Holders",
+      "sourceUrl": "https://www.kentscientific.com/products/flat-bottom-rodent-holders/",
+      "modifiedAt": "2026-02-21T00:02:15Z",
+      "categoryIds": [
+        191,
+        94
+      ]
+    },
+    {
+      "id": 8968,
+      "slug": "glass-syringe-10-ml",
+      "title": "Glass Syringe, 10 mL",
+      "sourceUrl": "https://www.kentscientific.com/products/glass-syringe-10-ml/",
+      "modifiedAt": "2026-02-21T00:02:15Z",
+      "categoryIds": [
+        16,
+        159,
+        192
+      ]
+    },
+    {
+      "id": 8969,
+      "slug": "glass-syringe-5-ml",
+      "title": "Glass Syringe, 5 mL",
+      "sourceUrl": "https://www.kentscientific.com/products/glass-syringe-5-ml/",
+      "modifiedAt": "2026-02-21T00:02:19Z",
+      "categoryIds": [
+        16,
+        159,
+        192
+      ]
+    },
+    {
+      "id": 7176,
+      "slug": "hartman-mosquito-hemostatic-forceps-curved",
+      "title": "Hartman Mosquito Hemostatic Forceps Curved",
+      "sourceUrl": "https://www.kentscientific.com/products/hartman-mosquito-hemostatic-forceps-curved/",
+      "modifiedAt": "2026-02-21T00:02:18Z",
+      "categoryIds": [
+        154,
+        157,
+        190,
+        70
+      ]
+    },
+    {
+      "id": 8950,
+      "slug": "hartman-mosquito-hemostatic-forceps-straight",
+      "title": "Hartman Mosquito Hemostatic Forceps, Straight",
+      "sourceUrl": "https://www.kentscientific.com/products/hartman-mosquito-hemostatic-forceps-straight/",
+      "modifiedAt": "2026-02-21T00:02:18Z",
+      "categoryIds": [
+        154,
+        157,
+        190,
+        70
+      ]
+    },
+    {
+      "id": 7177,
+      "slug": "holder-for-activated-charcoal-absorption-filter",
+      "title": "Holder for Activated Charcoal Absorption Filter",
+      "sourceUrl": "https://www.kentscientific.com/products/holder-for-activated-charcoal-absorption-filter/",
+      "modifiedAt": "2026-07-22T20:15:37Z",
+      "categoryIds": [
+        16,
+        185,
+        159,
+        192
+      ]
+    },
+    {
+      "id": 7178,
+      "slug": "htp-1500-heat-therapy-pump",
+      "title": "HTP-1500 Heat Therapy Pump for Water Recirculating Warming Pads – Laboratory",
+      "sourceUrl": "https://www.kentscientific.com/products/htp-1500-heat-therapy-pump/",
+      "modifiedAt": "2026-07-27T16:38:47Z",
+      "categoryIds": [
+        71,
+        177
+      ]
+    },
+    {
+      "id": 7179,
+      "slug": "humaneway-blood-collection-needles",
+      "title": "Humaneway™ Blood Collection Needles",
+      "sourceUrl": "https://www.kentscientific.com/products/humaneway-blood-collection-needles/",
+      "modifiedAt": "2026-02-21T00:02:18Z",
+      "categoryIds": [
+        78
+      ]
+    },
+    {
+      "id": 7180,
+      "slug": "humaneway-rodent-restraint",
+      "title": "Humaneway™ Rodent Restraint Device",
+      "sourceUrl": "https://www.kentscientific.com/products/humaneway-rodent-restraint/",
+      "modifiedAt": "2026-02-21T00:02:22Z",
+      "categoryIds": [
+        78
+      ]
+    },
+    {
+      "id": 7181,
+      "slug": "humaneway-winged-infusion-sets",
+      "title": "Humaneway™ Injection and Blood Collection Needles",
+      "sourceUrl": "https://www.kentscientific.com/products/humaneway-winged-infusion-sets/",
+      "modifiedAt": "2026-02-21T00:02:18Z",
+      "categoryIds": [
+        170,
+        78
+      ]
+    },
+    {
+      "id": 7182,
+      "slug": "instrument-micro-bead-sterilizer",
+      "title": "Instrument Micro Bead Sterilizer",
+      "sourceUrl": "https://www.kentscientific.com/products/instrument-micro-bead-sterilizer/",
+      "modifiedAt": "2026-02-21T00:02:25Z",
+      "categoryIds": [
+        150,
+        70
+      ]
+    },
+    {
+      "id": 7183,
+      "slug": "intubation-stands",
+      "title": "Intubation Stands",
+      "sourceUrl": "https://www.kentscientific.com/products/intubation-stands/",
+      "modifiedAt": "2026-04-09T19:11:32Z",
+      "categoryIds": [
+        180,
+        17
+      ]
+    },
+    {
+      "id": 7184,
+      "slug": "iris-dressing-forceps",
+      "title": "Iris Dressing Forceps",
+      "sourceUrl": "https://www.kentscientific.com/products/iris-dressing-forceps/",
+      "modifiedAt": "2026-02-21T00:02:25Z",
+      "categoryIds": [
+        156,
+        154,
+        190,
+        70
+      ]
+    },
+    {
+      "id": 7185,
+      "slug": "iris-scissors-straight-11-cm-long",
+      "title": "Iris Scissors Straight 11 cm Long",
+      "sourceUrl": "https://www.kentscientific.com/products/iris-scissors-straight-11-cm-long/",
+      "modifiedAt": "2026-02-21T00:02:25Z",
+      "categoryIds": [
+        155,
+        190,
+        70
+      ]
+    },
+    {
+      "id": 6691,
+      "slug": "isoflurane",
+      "title": "Isoflurane, USP",
+      "sourceUrl": "https://www.kentscientific.com/products/isoflurane/",
+      "modifiedAt": "2026-02-21T00:02:25Z",
+      "categoryIds": [
+        16
+      ]
+    },
+    {
+      "id": 7186,
+      "slug": "la-pias-ear-tag-applicator",
+      "title": "La Pias Ear Tag Applicator for Laboratory Mouse Ear Tags",
+      "sourceUrl": "https://www.kentscientific.com/products/la-pias-ear-tag-applicator/",
+      "modifiedAt": "2026-07-29T17:25:49Z",
+      "categoryIds": [
+        171,
+        73
+      ]
+    },
+    {
+      "id": 9200,
+      "slug": "la-pias-ear-tags-extra-backs",
+      "title": "La Pias Ear Tags Extra Backs",
+      "sourceUrl": "https://www.kentscientific.com/products/la-pias-ear-tags-extra-backs/",
+      "modifiedAt": "2026-07-29T17:27:33Z",
+      "categoryIds": [
+        171,
+        73
+      ]
+    },
+    {
+      "id": 7187,
+      "slug": "la-pias-mouse-ear-tags",
+      "title": "La Pias Mouse Ear Tags",
+      "sourceUrl": "https://www.kentscientific.com/products/la-pias-mouse-ear-tags/",
+      "modifiedAt": "2026-07-29T17:26:55Z",
+      "categoryIds": [
+        171,
+        73
+      ]
+    },
+    {
+      "id": 7188,
+      "slug": "la-pias-rat-ear-tags",
+      "title": "La Pias Rat Ear Tags",
+      "sourceUrl": "https://www.kentscientific.com/products/la-pias-rat-ear-tags/",
+      "modifiedAt": "2026-07-29T17:27:11Z",
+      "categoryIds": [
+        171,
+        73
+      ]
+    },
+    {
+      "id": 7189,
+      "slug": "large-animal-sensors",
+      "title": "Large Animal Sensors",
+      "sourceUrl": "https://www.kentscientific.com/products/large-animal-sensors/",
+      "modifiedAt": "2026-07-31T15:11:02Z",
+      "categoryIds": [
+        68,
+        163
+      ]
+    },
+    {
+      "id": 7190,
+      "slug": "laser-etched-ear-tags-one-sided",
+      "title": "Laser Etched Ear Tags, One Sided",
+      "sourceUrl": "https://www.kentscientific.com/products/laser-etched-ear-tags-one-sided/",
+      "modifiedAt": "2026-02-21T00:03:15Z",
+      "categoryIds": [
+        171,
+        73
+      ]
+    },
+    {
+      "id": 7191,
+      "slug": "laser-etched-ear-tags-two-sided",
+      "title": "Laser Etched Ear Tags, Two Sided",
+      "sourceUrl": "https://www.kentscientific.com/products/laser-etched-ear-tags-two-sided/",
+      "modifiedAt": "2026-02-21T00:03:22Z",
+      "categoryIds": [
+        171,
+        73
+      ]
+    },
+    {
+      "id": 7192,
+      "slug": "led-lighting-kit",
+      "title": "LED Lighting and Magnification Kit",
+      "sourceUrl": "https://www.kentscientific.com/products/led-lighting-kit/",
+      "modifiedAt": "2026-02-21T00:03:22Z",
+      "categoryIds": [
+        147,
+        70
+      ]
+    },
+    {
+      "id": 7193,
+      "slug": "low-cost-chambers-for-somnosuite",
+      "title": "Low Cost Chambers",
+      "sourceUrl": "https://www.kentscientific.com/products/low-cost-chambers-for-somnosuite/",
+      "modifiedAt": "2026-02-21T00:03:26Z",
+      "categoryIds": [
+        16,
+        185,
+        159
+      ]
+    },
+    {
+      "id": 7194,
+      "slug": "low-cost-chambers-for-traditional-vaporizers",
+      "title": "Low Cost Chambers for Traditional Vaporizers",
+      "sourceUrl": "https://www.kentscientific.com/products/low-cost-chambers-for-traditional-vaporizers/",
+      "modifiedAt": "2026-02-21T00:03:26Z",
+      "categoryIds": [
+        16,
+        185,
+        161
+      ]
+    },
+    {
+      "id": 7195,
+      "slug": "low-profile-anesthesia-masks-for-somnosuite",
+      "title": "Low-Profile Anesthesia Masks for Mice and Rats",
+      "sourceUrl": "https://www.kentscientific.com/products/low-profile-anesthesia-masks-for-somnosuite/",
+      "modifiedAt": "2026-06-05T16:52:34Z",
+      "categoryIds": [
+        16,
+        185,
+        159
+      ]
+    },
+    {
+      "id": 7196,
+      "slug": "low-profile-anesthesia-masks-for-traditional-vaporizers",
+      "title": "Low Profile Anesthesia Masks for Traditional Vaporizers",
+      "sourceUrl": "https://www.kentscientific.com/products/low-profile-anesthesia-masks-for-traditional-vaporizers/",
+      "modifiedAt": "2026-02-21T00:03:29Z",
+      "categoryIds": [
+        16,
+        185,
+        161
+      ]
+    },
+    {
+      "id": 7197,
+      "slug": "lung-instillation-nebulizer-delivery-system",
+      "title": "Lung Instillation Nebulizer Delivery System",
+      "sourceUrl": "https://www.kentscientific.com/products/lung-instillation-nebulizer-delivery-system/",
+      "modifiedAt": "2026-03-27T18:47:21Z",
+      "categoryIds": [
+        72
+      ]
+    },
+    {
+      "id": 7198,
+      "slug": "magnetic-fixators-with-spring-locks",
+      "title": "Magnetic Fixators with Spring Locks",
+      "sourceUrl": "https://www.kentscientific.com/products/magnetic-fixators-with-spring-locks/",
+      "modifiedAt": "2026-02-21T00:03:32Z",
+      "categoryIds": [
+        147,
+        70
+      ]
+    },
+    {
+      "id": 7199,
+      "slug": "magnetic-positioners-and-stabilizers",
+      "title": "Magnetic Positioners and Stabilizers",
+      "sourceUrl": "https://www.kentscientific.com/products/magnetic-positioners-and-stabilizers/",
+      "modifiedAt": "2026-02-21T00:03:31Z",
+      "categoryIds": [
+        147,
+        70
+      ]
+    },
+    {
+      "id": 7200,
+      "slug": "mayo-operating-scissors-straight",
+      "title": "Mayo Operating Scissors Straight",
+      "sourceUrl": "https://www.kentscientific.com/products/mayo-operating-scissors-straight/",
+      "modifiedAt": "2026-02-21T00:03:31Z",
+      "categoryIds": [
+        155,
+        190,
+        70
+      ]
+    },
+    {
+      "id": 7201,
+      "slug": "mcpherson-vannas-micro-scissors-7-cm-long",
+      "title": "McPherson-Vannas Micro Scissors – 7 cm for Rodent Microsurgery",
+      "sourceUrl": "https://www.kentscientific.com/products/mcpherson-vannas-micro-scissors-7-cm-long/",
+      "modifiedAt": "2026-05-13T04:00:00Z",
+      "categoryIds": [
+        155,
+        148,
+        190,
+        70
+      ]
+    },
+    {
+      "id": 7202,
+      "slug": "mcpherson-vannas-micro-scissors-8-cm-long",
+      "title": "McPherson-Vannas Micro Scissors – 8 cm for Rodent Microsurgery",
+      "sourceUrl": "https://www.kentscientific.com/products/mcpherson-vannas-micro-scissors-8-cm-long/",
+      "modifiedAt": "2026-05-13T03:56:12Z",
+      "categoryIds": [
+        155,
+        148,
+        190,
+        70
+      ]
+    },
+    {
+      "id": 7203,
+      "slug": "micro-bulldog-clamp",
+      "title": "Micro Bulldog Clamp",
+      "sourceUrl": "https://www.kentscientific.com/products/micro-bulldog-clamp/",
+      "modifiedAt": "2026-02-21T00:03:32Z",
+      "categoryIds": [
+        149,
+        190,
+        70,
+        193
+      ]
+    },
+    {
+      "id": 7204,
+      "slug": "micro-dissecting-forceps-serrated-straight",
+      "title": "Micro Dissecting Forceps Serrated Straight",
+      "sourceUrl": "https://www.kentscientific.com/products/micro-dissecting-forceps-serrated-straight/",
+      "modifiedAt": "2026-02-21T00:03:32Z",
+      "categoryIds": [
+        154,
+        190,
+        70
+      ]
+    },
+    {
+      "id": 7205,
+      "slug": "micro-transponder-with-lancet-for-direct-implantation",
+      "title": "Micro Transponder with Lancet for Direct Implantation",
+      "sourceUrl": "https://www.kentscientific.com/products/micro-transponder-with-lancet-for-direct-implantation/",
+      "modifiedAt": "2026-07-29T18:25:25Z",
+      "categoryIds": [
+        172,
+        73
+      ]
+    },
+    {
+      "id": 7206,
+      "slug": "microvette-100-capillary-blood-collection-with-round-bottom-inner-tube-edta",
+      "title": "Microvette® 100 Blood Collection Tubes",
+      "sourceUrl": "https://www.kentscientific.com/products/microvette-100-capillary-blood-collection-with-round-bottom-inner-tube-edta/",
+      "modifiedAt": "2026-02-21T00:03:35Z",
+      "categoryIds": [
+        170,
+        76
+      ]
+    },
+    {
+      "id": 8959,
+      "slug": "microvette-200-capillary-blood-collection-with-round-bottom-inner-tube-edta",
+      "title": "Microvette® 200 Capillary Blood Collection Tubes for Mice and Rats",
+      "sourceUrl": "https://www.kentscientific.com/products/microvette-200-capillary-blood-collection-with-round-bottom-inner-tube-edta/",
+      "modifiedAt": "2026-05-13T03:48:36Z",
+      "categoryIds": [
+        170,
+        76
+      ]
+    },
+    {
+      "id": 7207,
+      "slug": "microvette-cb-300-blood-collection-system",
+      "title": "Microvette® CB 300 Blood Collection Tubes for Rodent Sampling",
+      "sourceUrl": "https://www.kentscientific.com/products/microvette-cb-300-blood-collection-system/",
+      "modifiedAt": "2026-07-29T19:03:51Z",
+      "categoryIds": [
+        170,
+        76
+      ]
+    },
+    {
+      "id": 7208,
+      "slug": "microvette-prepared-micro-tubes-with-screw-cap-closure-edta",
+      "title": "Microvette® Prepared Micro Tubes for Rodent Blood Collection",
+      "sourceUrl": "https://www.kentscientific.com/products/microvette-prepared-micro-tubes-with-screw-cap-closure-edta/",
+      "modifiedAt": "2026-05-13T03:52:33Z",
+      "categoryIds": [
+        170,
+        76
+      ]
+    },
+    {
+      "id": 7209,
+      "slug": "mid-range-reader-usb",
+      "title": "Mid Range Reader USB",
+      "sourceUrl": "https://www.kentscientific.com/products/mid-range-reader-usb/",
+      "modifiedAt": "2026-07-29T20:31:15Z",
+      "categoryIds": [
+        172,
+        73
+      ]
+    },
+    {
+      "id": 7211,
+      "slug": "mobile-cart-for-laboratory-equipment-large",
+      "title": "Mobile Cart for Laboratory Equipment, Large",
+      "sourceUrl": "https://www.kentscientific.com/products/mobile-cart-for-laboratory-equipment-large/",
+      "modifiedAt": "2026-02-21T00:03:38Z",
+      "categoryIds": [
+        196,
+        77
+      ]
+    },
+    {
+      "id": 7212,
+      "slug": "mobile-cart-for-laboratory-equipment-small",
+      "title": "Mobile Cart for Laboratory Equipment, Small",
+      "sourceUrl": "https://www.kentscientific.com/products/mobile-cart-for-laboratory-equipment-small/",
+      "modifiedAt": "2026-02-21T00:03:40Z",
+      "categoryIds": [
+        196,
+        77
+      ]
+    },
+    {
+      "id": 7213,
+      "slug": "mouse-and-rat-vessel-cannulation-kit",
+      "title": "Vessel Cannulation Kit",
+      "sourceUrl": "https://www.kentscientific.com/products/mouse-and-rat-vessel-cannulation-kit/",
+      "modifiedAt": "2026-02-21T00:04:36Z",
+      "categoryIds": [
+        147,
+        153,
+        190,
+        70
+      ]
+    },
+    {
+      "id": 7214,
+      "slug": "mouse-handling-tunnels",
+      "title": "Mouse Handling Tunnels",
+      "sourceUrl": "https://www.kentscientific.com/products/mouse-handling-tunnels/",
+      "modifiedAt": "2026-02-21T00:03:41Z",
+      "categoryIds": [
+        191,
+        94
+      ]
+    },
+    {
+      "id": 7215,
+      "slug": "mouse-paw-pulse-oximeter-sensors",
+      "title": "Mouse Paw Pulse Oximeter Sensors",
+      "sourceUrl": "https://www.kentscientific.com/products/mouse-paw-pulse-oximeter-sensors/",
+      "modifiedAt": "2026-02-21T00:03:41Z",
+      "categoryIds": [
+        68,
+        163
+      ]
+    },
+    {
+      "id": 7216,
+      "slug": "mouse-retractor-set",
+      "title": "Mouse Retractor Set",
+      "sourceUrl": "https://www.kentscientific.com/products/mouse-retractor-set/",
+      "modifiedAt": "2026-02-21T00:03:41Z",
+      "categoryIds": [
+        147,
+        194,
+        70
+      ]
+    },
+    {
+      "id": 7217,
+      "slug": "mouse-surgical-kit",
+      "title": "Mouse Surgical Kit – 7 Piece Essential Instruments for Rodent Surgery",
+      "sourceUrl": "https://www.kentscientific.com/products/mouse-surgical-kit/",
+      "modifiedAt": "2026-05-13T04:17:17Z",
+      "categoryIds": [
+        147,
+        153,
+        190,
+        70
+      ]
+    },
+    {
+      "id": 7218,
+      "slug": "mousestat-jr",
+      "title": "MouseSTAT® Jr.",
+      "sourceUrl": "https://www.kentscientific.com/products/mousestat-jr/",
+      "modifiedAt": "2026-07-14T19:14:09Z",
+      "categoryIds": [
+        68,
+        164
+      ]
+    },
+    {
+      "id": 7220,
+      "slug": "mousestat-pulse-oximeter-whole-body-sensors-for-mouse-pups",
+      "title": "MouseSTAT® Pulse Oximeter Whole Body Sensor for Mouse Pups",
+      "sourceUrl": "https://www.kentscientific.com/products/mousestat-pulse-oximeter-whole-body-sensors-for-mouse-pups/",
+      "modifiedAt": "2026-02-21T00:03:44Z",
+      "categoryIds": [
+        68,
+        163
+      ]
+    },
+    {
+      "id": 7219,
+      "slug": "mousestat-pulse-oximeter-whole-body-sensors-for-rat-pups",
+      "title": "MouseSTAT® Pulse Oximeter Whole Body Sensors for Rat Pups",
+      "sourceUrl": "https://www.kentscientific.com/products/mousestat-pulse-oximeter-whole-body-sensors-for-rat-pups/",
+      "modifiedAt": "2026-02-21T00:03:44Z",
+      "categoryIds": [
+        68,
+        163
+      ]
+    },
+    {
+      "id": 7221,
+      "slug": "mri-tubing-kit",
+      "title": "MRI Tubing Kit",
+      "sourceUrl": "https://www.kentscientific.com/products/mri-tubing-kit/",
+      "modifiedAt": "2026-02-21T00:03:44Z",
+      "categoryIds": [
+        69,
+        173
+      ]
+    },
+    {
+      "id": 7222,
+      "slug": "nebulizer-adapter-kit",
+      "title": "Nebulizer Adapter Kit",
+      "sourceUrl": "https://www.kentscientific.com/products/nebulizer-adapter-kit/",
+      "modifiedAt": "2026-07-23T20:17:26Z",
+      "categoryIds": [
+        72
+      ]
+    },
+    {
+      "id": 7223,
+      "slug": "nebulizer-animal-holders",
+      "title": "Nebulizer Animal Holders",
+      "sourceUrl": "https://www.kentscientific.com/products/nebulizer-animal-holders/",
+      "modifiedAt": "2026-02-21T00:03:47Z",
+      "categoryIds": [
+        191,
+        94,
+        72
+      ]
+    },
+    {
+      "id": 7224,
+      "slug": "non-contact-infrared-thermometer-with-laser-sight",
+      "title": "Non-Contact Infrared Thermometer with Laser Sight for Rodent Temperature Monitoring",
+      "sourceUrl": "https://www.kentscientific.com/products/non-contact-infrared-thermometer-with-laser-sight/",
+      "modifiedAt": "2026-05-13T13:30:54Z",
+      "categoryIds": [
+        68,
+        163,
+        162
+      ]
+    },
+    {
+      "id": 7225,
+      "slug": "nose-cone-animal-holders-with-stand",
+      "title": "CODA® Monitor Animal Holders",
+      "sourceUrl": "https://www.kentscientific.com/products/nose-cone-animal-holders-with-stand/",
+      "modifiedAt": "2026-02-21T00:01:56Z",
+      "categoryIds": [
+        195,
+        191,
+        94
+      ]
+    },
+    {
+      "id": 8964,
+      "slug": "nose-cone-nebulizer-delivery-system",
+      "title": "Animal Holder Nebulizer Delivery System",
+      "sourceUrl": "https://www.kentscientific.com/products/nose-cone-nebulizer-delivery-system/",
+      "modifiedAt": "2026-02-21T00:01:37Z",
+      "categoryIds": [
+        72
+      ]
+    },
+    {
+      "id": 7226,
+      "slug": "oxygen-concentrator",
+      "title": "Oxygen Concentrator for Small Animal Anesthesia – 5 LPM",
+      "sourceUrl": "https://www.kentscientific.com/products/oxygen-concentrator/",
+      "modifiedAt": "2026-07-27T16:44:09Z",
+      "categoryIds": [
+        16,
+        185,
+        159,
+        192,
+        161
+      ]
+    },
+    {
+      "id": 8966,
+      "slug": "oxygen-concentrator-filters",
+      "title": "Replacement Filters for Small Animal Oxygen Concentrator",
+      "sourceUrl": "https://www.kentscientific.com/products/oxygen-concentrator-filters/",
+      "modifiedAt": "2026-05-13T13:28:24Z",
+      "categoryIds": [
+        16,
+        185
+      ]
+    },
+    {
+      "id": 7227,
+      "slug": "oxygen-regulator",
+      "title": "Oxygen Regulator",
+      "sourceUrl": "https://www.kentscientific.com/products/oxygen-regulator/",
+      "modifiedAt": "2026-02-21T00:03:50Z",
+      "categoryIds": [
+        16
+      ]
+    },
+    {
+      "id": 6623,
+      "slug": "physiosuite",
+      "title": "PhysioSuite®",
+      "sourceUrl": "https://www.kentscientific.com/products/physiosuite/",
+      "modifiedAt": "2026-07-27T16:34:35Z",
+      "categoryIds": [
+        68
+      ]
+    },
+    {
+      "id": 7228,
+      "slug": "pistol-grip-implanter",
+      "title": "Pistol Grip Implanter",
+      "sourceUrl": "https://www.kentscientific.com/products/pistol-grip-implanter/",
+      "modifiedAt": "2026-07-29T18:25:45Z",
+      "categoryIds": [
+        172,
+        73
+      ]
+    },
+    {
+      "id": 7229,
+      "slug": "pocket-reader-with-usb-connection",
+      "title": "Pocket Reader with USB Connection",
+      "sourceUrl": "https://www.kentscientific.com/products/pocket-reader-with-usb-connection/",
+      "modifiedAt": "2026-07-29T18:21:30Z",
+      "categoryIds": [
+        172,
+        73
+      ]
+    },
+    {
+      "id": 6256,
+      "slug": "preset-pressure-reducer-for-somnosuite",
+      "title": "Preset Pressure Reducer",
+      "sourceUrl": "https://www.kentscientific.com/products/preset-pressure-reducer-for-somnosuite/",
+      "modifiedAt": "2026-02-21T00:03:50Z",
+      "categoryIds": [
+        16,
+        185,
+        192
+      ]
+    },
+    {
+      "id": 13028,
+      "slug": "prism-bio-box-in-vivo-imaging-system",
+      "title": "PRISM™ BIO-BOX In Vivo Imaging System",
+      "sourceUrl": "https://www.kentscientific.com/products/prism-bio-box-in-vivo-imaging-system/",
+      "modifiedAt": "2026-07-28T19:22:13Z",
+      "categoryIds": [
+        274
+      ]
+    },
+    {
+      "id": 13030,
+      "slug": "prism-in-vivo-imaging-system-visible-nir-i",
+      "title": "PRISM™ In Vivo Imaging System (Visible / NIR-I)",
+      "sourceUrl": "https://www.kentscientific.com/products/prism-in-vivo-imaging-system-visible-nir-i/",
+      "modifiedAt": "2026-07-28T19:22:13Z",
+      "categoryIds": [
+        274
+      ]
+    },
+    {
+      "id": 13032,
+      "slug": "prism-swir-in-vivo-imaging-system",
+      "title": "PRISM™ SWIR In Vivo Imaging System",
+      "sourceUrl": "https://www.kentscientific.com/products/prism-swir-in-vivo-imaging-system/",
+      "modifiedAt": "2026-07-28T19:22:13Z",
+      "categoryIds": [
+        274
+      ]
+    },
+    {
+      "id": 7230,
+      "slug": "procedure-bowl",
+      "title": "Procedure Bowl",
+      "sourceUrl": "https://www.kentscientific.com/products/procedure-bowl/",
+      "modifiedAt": "2026-02-21T00:03:50Z",
+      "categoryIds": [
+        147,
+        194,
+        70
+      ]
+    },
+    {
+      "id": 7231,
+      "slug": "pulse-oximeter-paw-sensors-mri-compatible",
+      "title": "Pulse Oximeter Paw Sensors MRI Compatible",
+      "sourceUrl": "https://www.kentscientific.com/products/pulse-oximeter-paw-sensors-mri-compatible/",
+      "modifiedAt": "2026-02-21T00:03:53Z",
+      "categoryIds": [
+        68,
+        163
+      ]
+    },
+    {
+      "id": 7232,
+      "slug": "pulse-oximeter-sensor-extension-cable",
+      "title": "Pulse Oximeter Sensor Extension Cable",
+      "sourceUrl": "https://www.kentscientific.com/products/pulse-oximeter-sensor-extension-cable/",
+      "modifiedAt": "2026-02-21T00:03:53Z",
+      "categoryIds": [
+        68,
+        163
+      ]
+    },
+    {
+      "id": 7234,
+      "slug": "pulse-oximeter-whole-body-sensors-mri-compatible",
+      "title": "Pulse Oximeter Whole Body Sensors MRI Compatible",
+      "sourceUrl": "https://www.kentscientific.com/products/pulse-oximeter-whole-body-sensors-mri-compatible/",
+      "modifiedAt": "2026-02-21T00:03:53Z",
+      "categoryIds": [
+        68,
+        163
+      ]
+    },
+    {
+      "id": 7235,
+      "slug": "rat-paw-pulse-oximeter-sensors",
+      "title": "Rat Paw Pulse Oximeter Sensors",
+      "sourceUrl": "https://www.kentscientific.com/products/rat-paw-pulse-oximeter-sensors/",
+      "modifiedAt": "2026-02-21T00:03:53Z",
+      "categoryIds": [
+        68,
+        163
+      ]
+    },
+    {
+      "id": 7236,
+      "slug": "rat-retractor-set",
+      "title": "Rat Retractor Set",
+      "sourceUrl": "https://www.kentscientific.com/products/rat-retractor-set/",
+      "modifiedAt": "2026-02-21T00:03:55Z",
+      "categoryIds": [
+        147,
+        194,
+        70
+      ]
+    },
+    {
+      "id": 7237,
+      "slug": "rat-surgical-kit",
+      "title": "Rat Surgical Kit",
+      "sourceUrl": "https://www.kentscientific.com/products/rat-surgical-kit/",
+      "modifiedAt": "2026-02-21T00:03:55Z",
+      "categoryIds": [
+        153,
+        190,
+        70
+      ]
+    },
+    {
+      "id": 7238,
+      "slug": "rectal-probe-for-mice",
+      "title": "Rectal Probe for Mice",
+      "sourceUrl": "https://www.kentscientific.com/products/rectal-probe-for-mice/",
+      "modifiedAt": "2026-02-21T00:03:55Z",
+      "categoryIds": [
+        68,
+        162
+      ]
+    },
+    {
+      "id": 7239,
+      "slug": "rectal-probe-for-rats",
+      "title": "Rectal Probe for Rats",
+      "sourceUrl": "https://www.kentscientific.com/products/rectal-probe-for-rats/",
+      "modifiedAt": "2026-02-21T00:03:55Z",
+      "categoryIds": [
+        68,
+        162
+      ]
+    },
+    {
+      "id": 7240,
+      "slug": "reflex-clip-applier",
+      "title": "Reflex Clip Applier",
+      "sourceUrl": "https://www.kentscientific.com/products/reflex-clip-applier/",
+      "modifiedAt": "2026-02-21T00:03:56Z",
+      "categoryIds": [
+        152,
+        147,
+        190,
+        70,
+        193
+      ]
+    },
+    {
+      "id": 7241,
+      "slug": "reflex-clips-7-mm",
+      "title": "Reflex Clips 7 mm",
+      "sourceUrl": "https://www.kentscientific.com/products/reflex-clips-7-mm/",
+      "modifiedAt": "2026-02-21T00:03:56Z",
+      "categoryIds": [
+        152,
+        147,
+        190,
+        70,
+        193
+      ]
+    },
+    {
+      "id": 7242,
+      "slug": "reflex-clips-9-mm",
+      "title": "Reflex Clips 9 mm",
+      "sourceUrl": "https://www.kentscientific.com/products/reflex-clips-9-mm/",
+      "modifiedAt": "2026-02-21T00:03:59Z",
+      "categoryIds": [
+        152,
+        147,
+        190,
+        70,
+        193
+      ]
+    },
+    {
+      "id": 7243,
+      "slug": "removing-forceps",
+      "title": "Wound Clip Removing Forceps for Laboratory Animal Surgery",
+      "sourceUrl": "https://www.kentscientific.com/products/removing-forceps/",
+      "modifiedAt": "2026-06-05T17:54:40Z",
+      "categoryIds": [
+        151,
+        147,
+        190,
+        70,
+        193
+      ]
+    },
+    {
+      "id": 7244,
+      "slug": "replacement-bladder-kits",
+      "title": "Replacement Bladder Kits",
+      "sourceUrl": "https://www.kentscientific.com/products/replacement-bladder-kits/",
+      "modifiedAt": "2026-02-21T00:04:02Z",
+      "categoryIds": [
+        195,
+        174,
+        69,
+        173
+      ]
+    },
+    {
+      "id": 7245,
+      "slug": "replacement-diaphragms-for-somnosuite-anesthesia-masks",
+      "title": "Replacement Diaphragms for SomnoSuite Anesthesia Masks",
+      "sourceUrl": "https://www.kentscientific.com/products/replacement-diaphragms-for-somnosuite-anesthesia-masks/",
+      "modifiedAt": "2026-02-21T00:04:02Z",
+      "categoryIds": [
+        16,
+        185,
+        159,
+        192
+      ]
+    },
+    {
+      "id": 7246,
+      "slug": "replacement-glass-beads",
+      "title": "Replacement Glass Beads",
+      "sourceUrl": "https://www.kentscientific.com/products/replacement-glass-beads/",
+      "modifiedAt": "2026-02-21T00:04:02Z",
+      "categoryIds": [
+        150,
+        70
+      ]
+    },
+    {
+      "id": 7247,
+      "slug": "replacement-surgical-field-covers",
+      "title": "Replacement Surgical Field Covers",
+      "sourceUrl": "https://www.kentscientific.com/products/replacement-surgical-field-covers/",
+      "modifiedAt": "2026-02-21T00:04:02Z",
+      "categoryIds": [
+        147,
+        194,
+        70
+      ]
+    },
+    {
+      "id": 7248,
+      "slug": "retractor-tips",
+      "title": "Retractor Tips",
+      "sourceUrl": "https://www.kentscientific.com/products/retractor-tips/",
+      "modifiedAt": "2026-02-21T00:04:05Z",
+      "categoryIds": [
+        147,
+        194,
+        70
+      ]
+    },
+    {
+      "id": 7249,
+      "slug": "retractor-wires",
+      "title": "Retractor Wires",
+      "sourceUrl": "https://www.kentscientific.com/products/retractor-wires/",
+      "modifiedAt": "2026-02-21T00:04:05Z",
+      "categoryIds": [
+        147,
+        194,
+        70
+      ]
+    },
+    {
+      "id": 8032,
+      "slug": "righttemp",
+      "title": "RightTemp®",
+      "sourceUrl": "https://www.kentscientific.com/products/righttemp/",
+      "modifiedAt": "2026-02-21T00:04:05Z",
+      "categoryIds": [
+        68,
+        162,
+        71
+      ]
+    },
+    {
+      "id": 7250,
+      "slug": "righttemp-jr",
+      "title": "RightTemp® Jr.",
+      "sourceUrl": "https://www.kentscientific.com/products/righttemp-jr/",
+      "modifiedAt": "2026-06-09T17:47:16Z",
+      "categoryIds": [
+        71
+      ]
+    },
+    {
+      "id": 7251,
+      "slug": "righttemp-sensor-for-animal-or-warming-pad",
+      "title": "RightTemp® Sensor for Animal or Warming Pad",
+      "sourceUrl": "https://www.kentscientific.com/products/righttemp-sensor-for-animal-or-warming-pad/",
+      "modifiedAt": "2026-03-18T21:24:49Z",
+      "categoryIds": [
+        68,
+        162
+      ]
+    },
+    {
+      "id": 7254,
+      "slug": "rovent",
+      "title": "RoVent®",
+      "sourceUrl": "https://www.kentscientific.com/products/rovent/",
+      "modifiedAt": "2026-06-08T21:04:18Z",
+      "categoryIds": [
+        17
+      ]
+    },
+    {
+      "id": 62,
+      "slug": "rovent-jr",
+      "title": "RoVent® Jr.",
+      "sourceUrl": "https://www.kentscientific.com/products/rovent-jr/",
+      "modifiedAt": "2026-06-09T16:18:14Z",
+      "categoryIds": [
+        17
+      ]
+    },
+    {
+      "id": 6692,
+      "slug": "skinscanner-1",
+      "title": "SkinScanner",
+      "sourceUrl": "https://www.kentscientific.com/products/skinscanner-1/",
+      "modifiedAt": "2026-07-27T16:36:31Z",
+      "categoryIds": [
+        79
+      ]
+    },
+    {
+      "id": 7255,
+      "slug": "sliding-top-chambers-for-somnosuite",
+      "title": "Sliding Top Chambers",
+      "sourceUrl": "https://www.kentscientific.com/products/sliding-top-chambers-for-somnosuite/",
+      "modifiedAt": "2026-02-21T00:04:11Z",
+      "categoryIds": [
+        16,
+        185,
+        159
+      ]
+    },
+    {
+      "id": 7256,
+      "slug": "sliding-top-chambers-for-traditional-vaporizers",
+      "title": "Sliding Top Chambers for Traditional Vaporizers",
+      "sourceUrl": "https://www.kentscientific.com/products/sliding-top-chambers-for-traditional-vaporizers/",
+      "modifiedAt": "2026-02-21T00:04:11Z",
+      "categoryIds": [
+        16,
+        185,
+        161
+      ]
+    },
+    {
+      "id": 7257,
+      "slug": "small-bulldog-clamp",
+      "title": "Small Bulldog Clamp",
+      "sourceUrl": "https://www.kentscientific.com/products/small-bulldog-clamp/",
+      "modifiedAt": "2026-02-21T00:04:11Z",
+      "categoryIds": [
+        149,
+        147,
+        70,
+        193
+      ]
+    },
+    {
+      "id": 7259,
+      "slug": "somnoflo",
+      "title": "SomnoFlo®",
+      "sourceUrl": "https://www.kentscientific.com/products/somnoflo/",
+      "modifiedAt": "2026-06-08T20:19:59Z",
+      "categoryIds": [
+        16
+      ]
+    },
+    {
+      "id": 60,
+      "slug": "somnoflo-o2care",
+      "title": "SomnoFlo® O2Care",
+      "sourceUrl": "https://www.kentscientific.com/products/somnoflo-o2care/",
+      "modifiedAt": "2026-06-08T20:31:49Z",
+      "categoryIds": [
+        16
+      ]
+    },
+    {
+      "id": 7264,
+      "slug": "somnosuite",
+      "title": "SomnoSuite®",
+      "sourceUrl": "https://www.kentscientific.com/products/somnosuite/",
+      "modifiedAt": "2026-07-27T16:35:06Z",
+      "categoryIds": [
+        16
+      ]
+    },
+    {
+      "id": 7260,
+      "slug": "somnosuite-anti-spill-anti-vapor-bottle-top-adapter",
+      "title": "Anti-Spill, Anti-Vapor Bottle Top Adapter for Anesthesia Systems",
+      "sourceUrl": "https://www.kentscientific.com/products/somnosuite-anti-spill-anti-vapor-bottle-top-adapter/",
+      "modifiedAt": "2026-06-05T18:08:31Z",
+      "categoryIds": [
+        16,
+        185,
+        192
+      ]
+    },
+    {
+      "id": 7261,
+      "slug": "somnosuite-delivery-tube",
+      "title": "SomnoSuite® Delivery Tube",
+      "sourceUrl": "https://www.kentscientific.com/products/somnosuite-delivery-tube/",
+      "modifiedAt": "2026-02-21T00:04:13Z",
+      "categoryIds": [
+        16,
+        185,
+        159,
+        192
+      ]
+    },
+    {
+      "id": 7263,
+      "slug": "somnosuite-y-adapter",
+      "title": "2-Accessory Connector",
+      "sourceUrl": "https://www.kentscientific.com/products/somnosuite-y-adapter/",
+      "modifiedAt": "2026-02-21T00:01:17Z",
+      "categoryIds": [
+        16,
+        185,
+        159,
+        192
+      ]
+    },
+    {
+      "id": 7265,
+      "slug": "spring-scissors-curved-105-cm-long",
+      "title": "Spring Scissors Curved 10.5 cm Long",
+      "sourceUrl": "https://www.kentscientific.com/products/spring-scissors-curved-105-cm-long/",
+      "modifiedAt": "2026-02-21T00:04:13Z",
+      "categoryIds": [
+        70
+      ]
+    },
+    {
+      "id": 7266,
+      "slug": "spring-scissors-straight-12-cm-long-extra-fine",
+      "title": "Spring Scissors Straight 12 cm Long Extra Fine",
+      "sourceUrl": "https://www.kentscientific.com/products/spring-scissors-straight-12-cm-long-extra-fine/",
+      "modifiedAt": "2026-02-21T00:04:13Z",
+      "categoryIds": [
+        155,
+        148,
+        147,
+        70
+      ]
+    },
+    {
+      "id": 7267,
+      "slug": "stainless-steel-brain-matrices",
+      "title": "Stainless Steel Brain Matrices",
+      "sourceUrl": "https://www.kentscientific.com/products/stainless-steel-brain-matrices/",
+      "modifiedAt": "2026-02-21T00:04:17Z",
+      "categoryIds": [
+        91,
+        76
+      ]
+    },
+    {
+      "id": 7268,
+      "slug": "stamped-ear-tags",
+      "title": "Stamped Ear Tags",
+      "sourceUrl": "https://www.kentscientific.com/products/stamped-ear-tags/",
+      "modifiedAt": "2026-02-21T00:04:24Z",
+      "categoryIds": [
+        171,
+        73
+      ]
+    },
+    {
+      "id": 7269,
+      "slug": "stand-for-coda-holders",
+      "title": "Stand for CODA® Holders",
+      "sourceUrl": "https://www.kentscientific.com/products/stand-for-coda-holders/",
+      "modifiedAt": "2026-02-21T00:04:23Z",
+      "categoryIds": [
+        69,
+        173
+      ]
+    },
+    {
+      "id": 7270,
+      "slug": "standalone-flowmeter-with-stand-0-05lpm",
+      "title": "Standalone Flowmeter with Stand",
+      "sourceUrl": "https://www.kentscientific.com/products/standalone-flowmeter-with-stand-0-05lpm/",
+      "modifiedAt": "2026-02-21T00:04:23Z",
+      "categoryIds": [
+        72
+      ]
+    },
+    {
+      "id": 8967,
+      "slug": "stereotaxic-adapter-kit",
+      "title": "Stereotaxic Adapter Kit",
+      "sourceUrl": "https://www.kentscientific.com/products/stereotaxic-adapter-kit/",
+      "modifiedAt": "2026-02-21T00:04:23Z",
+      "categoryIds": [
+        16,
+        159,
+        192
+      ]
+    },
+    {
+      "id": 13096,
+      "slug": "stereotaxic-adapter-kit-for-vetflo",
+      "title": "Stereotaxic Adapter Kit for Vetflo",
+      "sourceUrl": "https://www.kentscientific.com/products/stereotaxic-adapter-kit-for-vetflo/",
+      "modifiedAt": "2026-07-28T13:31:11Z",
+      "categoryIds": [
+        161,
+        144
+      ]
+    },
+    {
+      "id": 7271,
+      "slug": "sterile-disposable-towel-drapes",
+      "title": "Sterile Disposable Towel Drapes for Laboratory Animal Surgery",
+      "sourceUrl": "https://www.kentscientific.com/products/sterile-disposable-towel-drapes/",
+      "modifiedAt": "2026-05-13T03:46:09Z",
+      "categoryIds": [
+        147,
+        70
+      ]
+    },
+    {
+      "id": 7272,
+      "slug": "straight-5-tweezer-kit",
+      "title": "Straight #5 Tweezer Kit",
+      "sourceUrl": "https://www.kentscientific.com/products/straight-5-tweezer-kit/",
+      "modifiedAt": "2026-02-21T00:04:26Z",
+      "categoryIds": [
+        147,
+        190,
+        70,
+        145
+      ]
+    },
+    {
+      "id": 7273,
+      "slug": "straight-feeding-needles",
+      "title": "Straight Feeding Needles",
+      "sourceUrl": "https://www.kentscientific.com/products/straight-feeding-needles/",
+      "modifiedAt": "2026-02-21T00:04:27Z",
+      "categoryIds": [
+        75
+      ]
+    },
+    {
+      "id": 7274,
+      "slug": "straight-serrated-needle-holder-14-cm-long",
+      "title": "Straight Serrated Needle Holder 14 cm Long",
+      "sourceUrl": "https://www.kentscientific.com/products/straight-serrated-needle-holder-14-cm-long/",
+      "modifiedAt": "2026-02-21T00:04:27Z",
+      "categoryIds": [
+        197,
+        147,
+        70
+      ]
+    },
+    {
+      "id": 8952,
+      "slug": "super-fine-dressing-forceps-125-cm-long",
+      "title": "Super Fine Dressing Forceps, 12.5 cm Long",
+      "sourceUrl": "https://www.kentscientific.com/products/super-fine-dressing-forceps-125-cm-long/",
+      "modifiedAt": "2026-02-21T00:04:27Z",
+      "categoryIds": [
+        156,
+        154,
+        190,
+        70
+      ]
+    },
+    {
+      "id": 7275,
+      "slug": "supercut-iris-scissors-straight-125-cm-long",
+      "title": "Supercut Iris Scissors Straight 12.5 cm Long",
+      "sourceUrl": "https://www.kentscientific.com/products/supercut-iris-scissors-straight-125-cm-long/",
+      "modifiedAt": "2026-02-21T00:04:27Z",
+      "categoryIds": [
+        155,
+        147,
+        190,
+        70
+      ]
+    },
+    {
+      "id": 7276,
+      "slug": "surgical-magnifier-glasses",
+      "title": "Surgical Magnifier Glasses for Laboratory Animal Surgery – Adjustable LED",
+      "sourceUrl": "https://www.kentscientific.com/products/surgical-magnifier-glasses/",
+      "modifiedAt": "2026-05-13T03:32:59Z",
+      "categoryIds": [
+        147,
+        70
+      ]
+    },
+    {
+      "id": 7277,
+      "slug": "surgisuite",
+      "title": "SurgiSuite",
+      "sourceUrl": "https://www.kentscientific.com/products/surgisuite/",
+      "modifiedAt": "2026-06-09T19:15:50Z",
+      "categoryIds": [
+        70
+      ]
+    },
+    {
+      "id": 7278,
+      "slug": "tail-vein-simulator",
+      "title": "Humaneway™ Tail Vein Simulator",
+      "sourceUrl": "https://www.kentscientific.com/products/tail-vein-simulator/",
+      "modifiedAt": "2026-07-29T18:23:13Z",
+      "categoryIds": [
+        78
+      ]
+    },
+    {
+      "id": 7279,
+      "slug": "tube-rodent-holders",
+      "title": "Tube Rodent Holders",
+      "sourceUrl": "https://www.kentscientific.com/products/tube-rodent-holders/",
+      "modifiedAt": "2026-02-21T00:04:34Z",
+      "categoryIds": [
+        191,
+        94
+      ]
+    },
+    {
+      "id": 7280,
+      "slug": "tweezer-5-001-mm-tips",
+      "title": "Tweezer 5 0.01 mm Tips",
+      "sourceUrl": "https://www.kentscientific.com/products/tweezer-5-001-mm-tips/",
+      "modifiedAt": "2026-02-21T00:04:34Z",
+      "categoryIds": [
+        147,
+        190,
+        70,
+        145
+      ]
+    },
+    {
+      "id": 7281,
+      "slug": "tweezer-5-0025-mm-tips",
+      "title": "Tweezer 5 0.025 mm Tips",
+      "sourceUrl": "https://www.kentscientific.com/products/tweezer-5-0025-mm-tips/",
+      "modifiedAt": "2026-02-21T00:04:36Z",
+      "categoryIds": [
+        147,
+        190,
+        70,
+        145
+      ]
+    },
+    {
+      "id": 7283,
+      "slug": "tweezer-5-006-mm-tips",
+      "title": "Tweezer #5 0.06 mm Tips",
+      "sourceUrl": "https://www.kentscientific.com/products/tweezer-5-006-mm-tips/",
+      "modifiedAt": "2026-02-21T00:04:34Z",
+      "categoryIds": [
+        147,
+        190,
+        70,
+        145
+      ]
+    },
+    {
+      "id": 7282,
+      "slug": "tweezer-5-006-mm-tips-curved",
+      "title": "Tweezer 5 0.06 mm Tips Curved",
+      "sourceUrl": "https://www.kentscientific.com/products/tweezer-5-006-mm-tips-curved/",
+      "modifiedAt": "2026-02-21T00:04:36Z",
+      "categoryIds": [
+        147,
+        190,
+        70,
+        145
+      ]
+    },
+    {
+      "id": 7284,
+      "slug": "tweezer-5b-001-mm-tips-45-angle",
+      "title": "Tweezer 5B 0.01 mm Tips 45 Angle",
+      "sourceUrl": "https://www.kentscientific.com/products/tweezer-5b-001-mm-tips-45-angle/",
+      "modifiedAt": "2026-02-21T00:04:36Z",
+      "categoryIds": [
+        147,
+        190,
+        70,
+        145
+      ]
+    },
+    {
+      "id": 7285,
+      "slug": "type-jkt-thermocouple-meter",
+      "title": "Type JKT Thermocouple Meter",
+      "sourceUrl": "https://www.kentscientific.com/products/type-jkt-thermocouple-meter/",
+      "modifiedAt": "2026-07-29T19:07:06Z",
+      "categoryIds": [
+        68,
+        162
+      ]
+    },
+    {
+      "id": 7286,
+      "slug": "vaporizer-for-isoflurane-funnel-filled",
+      "title": "Isoflurane Funnel Filled Vaporizer for Rodent Anesthesia",
+      "sourceUrl": "https://www.kentscientific.com/products/vaporizer-for-isoflurane-funnel-filled/",
+      "modifiedAt": "2026-06-05T18:10:43Z",
+      "categoryIds": [
+        16,
+        185,
+        161
+      ]
+    },
+    {
+      "id": 7287,
+      "slug": "vaporizer-for-isoflurane-key-filled",
+      "title": "Isoflurane Key Filled Vaporizer for Rodent Anesthesia",
+      "sourceUrl": "https://www.kentscientific.com/products/vaporizer-for-isoflurane-key-filled/",
+      "modifiedAt": "2026-06-05T18:11:14Z",
+      "categoryIds": [
+        16,
+        185,
+        161
+      ]
+    },
+    {
+      "id": 7288,
+      "slug": "vaporizer-for-sevoflurane-key-filled",
+      "title": "Sevoflurane Key Filled Vaporizer for Rodent Anesthesia",
+      "sourceUrl": "https://www.kentscientific.com/products/vaporizer-for-sevoflurane-key-filled/",
+      "modifiedAt": "2026-06-05T18:11:48Z",
+      "categoryIds": [
+        16,
+        185,
+        161
+      ]
+    },
+    {
+      "id": 6690,
+      "slug": "vaporizer-with-vetflo-single-channel-anesthesia-stand",
+      "title": "VetFlo™ Vaporizer",
+      "sourceUrl": "https://www.kentscientific.com/products/vaporizer-with-vetflo-single-channel-anesthesia-stand/",
+      "modifiedAt": "2026-06-09T16:06:04Z",
+      "categoryIds": [
+        16
+      ]
+    },
+    {
+      "id": 7290,
+      "slug": "vetflo-four-channel-anesthesia-stand",
+      "title": "VetFlo™ Four Channel Anesthesia Stand",
+      "sourceUrl": "https://www.kentscientific.com/products/vetflo-four-channel-anesthesia-stand/",
+      "modifiedAt": "2026-02-21T00:04:39Z",
+      "categoryIds": [
+        16,
+        185,
+        161
+      ]
+    },
+    {
+      "id": 7291,
+      "slug": "vetflo-single-channel-anesthesia-stand",
+      "title": "VetFlo™ Single Channel Anesthesia Stand",
+      "sourceUrl": "https://www.kentscientific.com/products/vetflo-single-channel-anesthesia-stand/",
+      "modifiedAt": "2026-02-21T00:04:39Z",
+      "categoryIds": [
+        16,
+        185,
+        161
+      ]
+    },
+    {
+      "id": 7292,
+      "slug": "vetflo-six-channel-anesthesia-stand",
+      "title": "VetFlo™ Six Channel Anesthesia Stand",
+      "sourceUrl": "https://www.kentscientific.com/products/vetflo-six-channel-anesthesia-stand/",
+      "modifiedAt": "2026-02-21T00:04:39Z",
+      "categoryIds": [
+        16,
+        185,
+        161
+      ]
+    },
+    {
+      "id": 7293,
+      "slug": "vetflo-two-channel-anesthesia-stand",
+      "title": "VetFlo™ Two Channel Anesthesia Stand",
+      "sourceUrl": "https://www.kentscientific.com/products/vetflo-two-channel-anesthesia-stand/",
+      "modifiedAt": "2026-02-21T00:04:39Z",
+      "categoryIds": [
+        16,
+        185,
+        161
+      ]
+    },
+    {
+      "id": 12926,
+      "slug": "wahl-fidela-cordless-clipper-kit-for-laboratory-animal-prep",
+      "title": "Wahl Fidela Cordless Clipper Kit for Laboratory Animal Prep",
+      "sourceUrl": "https://www.kentscientific.com/products/wahl-fidela-cordless-clipper-kit-for-laboratory-animal-prep/",
+      "modifiedAt": "2026-07-15T18:50:09Z",
+      "categoryIds": [
+        167
+      ]
+    },
+    {
+      "id": 10992,
+      "slug": "warranty-coda-high-throughput-system-extended",
+      "title": "Warranty – CODA® High Throughput System – Extended",
+      "sourceUrl": "https://www.kentscientific.com/products/warranty-coda-high-throughput-system-extended/",
+      "modifiedAt": "2026-02-21T00:04:45Z",
+      "categoryIds": [
+        81
+      ]
+    },
+    {
+      "id": 10993,
+      "slug": "warranty-coda-high-throughput-system-premium",
+      "title": "Warranty – CODA® High Throughput System – Premium",
+      "sourceUrl": "https://www.kentscientific.com/products/warranty-coda-high-throughput-system-premium/",
+      "modifiedAt": "2026-02-21T00:04:42Z",
+      "categoryIds": [
+        81
+      ]
+    },
+    {
+      "id": 10991,
+      "slug": "warranty-coda-monitor-extended",
+      "title": "Warranty – CODA® Monitor – Extended",
+      "sourceUrl": "https://www.kentscientific.com/products/warranty-coda-monitor-extended/",
+      "modifiedAt": "2026-02-21T00:04:45Z",
+      "categoryIds": [
+        81
+      ]
+    },
+    {
+      "id": 10990,
+      "slug": "warranty-coda-monitor-premium",
+      "title": "Warranty – CODA® Monitor – Premium",
+      "sourceUrl": "https://www.kentscientific.com/products/warranty-coda-monitor-premium/",
+      "modifiedAt": "2026-02-21T00:04:42Z",
+      "categoryIds": [
+        81
+      ]
+    },
+    {
+      "id": 10986,
+      "slug": "warranty-physiosuite-extended",
+      "title": "Warranty – PhysioSuite® – Extended",
+      "sourceUrl": "https://www.kentscientific.com/products/warranty-physiosuite-extended/",
+      "modifiedAt": "2026-02-21T00:04:45Z",
+      "categoryIds": [
+        81
+      ]
+    },
+    {
+      "id": 10983,
+      "slug": "warranty-physiosuite-with-1-module-extended",
+      "title": "Warranty – PhysioSuite® with 1 module – Extended",
+      "sourceUrl": "https://www.kentscientific.com/products/warranty-physiosuite-with-1-module-extended/",
+      "modifiedAt": "2026-02-21T00:04:45Z",
+      "categoryIds": [
+        81
+      ]
+    },
+    {
+      "id": 10984,
+      "slug": "warranty-physiosuite-with-1-module-premium",
+      "title": "Warranty – PhysioSuite® with 1 module – Premium",
+      "sourceUrl": "https://www.kentscientific.com/products/warranty-physiosuite-with-1-module-premium/",
+      "modifiedAt": "2026-02-21T00:04:45Z",
+      "categoryIds": [
+        81
+      ]
+    },
+    {
+      "id": 8637,
+      "slug": "warranty-rovent-extended",
+      "title": "Warranty – RoVent® – Extended",
+      "sourceUrl": "https://www.kentscientific.com/products/warranty-rovent-extended/",
+      "modifiedAt": "2026-02-21T00:04:42Z",
+      "categoryIds": [
+        81
+      ]
+    },
+    {
+      "id": 8636,
+      "slug": "warranty-rovent-premium",
+      "title": "Warranty – RoVent® – Premium",
+      "sourceUrl": "https://www.kentscientific.com/products/warranty-rovent-premium/",
+      "modifiedAt": "2026-02-21T00:04:42Z",
+      "categoryIds": [
+        81
+      ]
+    },
+    {
+      "id": 10974,
+      "slug": "warranty-skinscanner-extended",
+      "title": "Warranty – SkinScanner – Extended",
+      "sourceUrl": "https://www.kentscientific.com/products/warranty-skinscanner-extended/",
+      "modifiedAt": "2026-02-21T00:04:44Z",
+      "categoryIds": [
+        81
+      ]
+    },
+    {
+      "id": 10972,
+      "slug": "warranty-somnoflo-extended",
+      "title": "Warranty – SomnoFlo® – Extended",
+      "sourceUrl": "https://www.kentscientific.com/products/warranty-somnoflo-extended/",
+      "modifiedAt": "2026-02-21T00:04:45Z",
+      "categoryIds": [
+        81
+      ]
+    },
+    {
+      "id": 10971,
+      "slug": "warranty-somnoflo-premium",
+      "title": "Warranty – SomnoFlo® – Premium",
+      "sourceUrl": "https://www.kentscientific.com/products/warranty-somnoflo-premium/",
+      "modifiedAt": "2026-02-21T00:04:45Z",
+      "categoryIds": [
+        81
+      ]
+    },
+    {
+      "id": 8639,
+      "slug": "warranty-somnosuite-extended",
+      "title": "Warranty – SomnoSuite® – Extended",
+      "sourceUrl": "https://www.kentscientific.com/products/warranty-somnosuite-extended/",
+      "modifiedAt": "2026-02-21T00:04:45Z",
+      "categoryIds": [
+        81
+      ]
+    },
+    {
+      "id": 8640,
+      "slug": "warranty-somnosuite-premium",
+      "title": "Warranty – SomnoSuite® – Premium",
+      "sourceUrl": "https://www.kentscientific.com/products/warranty-somnosuite-premium/",
+      "modifiedAt": "2026-02-21T00:04:45Z",
+      "categoryIds": [
+        81
+      ]
+    },
+    {
+      "id": 10997,
+      "slug": "warranty-somnosuite-with-1-module-extended",
+      "title": "Warranty – SomnoSuite® with 1 module – Extended",
+      "sourceUrl": "https://www.kentscientific.com/products/warranty-somnosuite-with-1-module-extended/",
+      "modifiedAt": "2026-02-21T00:04:45Z",
+      "categoryIds": [
+        81
+      ]
+    },
+    {
+      "id": 10998,
+      "slug": "warranty-somnosuite-with-1-module-premium",
+      "title": "Warranty – SomnoSuite® with 1 module – Premium",
+      "sourceUrl": "https://www.kentscientific.com/products/warranty-somnosuite-with-1-module-premium/",
+      "modifiedAt": "2026-02-21T00:04:45Z",
+      "categoryIds": [
+        81
+      ]
+    },
+    {
+      "id": 10999,
+      "slug": "warranty-somnosuite-with-2-modules-extended",
+      "title": "Warranty – SomnoSuite® with 2 modules – Extended",
+      "sourceUrl": "https://www.kentscientific.com/products/warranty-somnosuite-with-2-modules-extended/",
+      "modifiedAt": "2026-02-21T00:04:45Z",
+      "categoryIds": [
+        81
+      ]
+    },
+    {
+      "id": 11000,
+      "slug": "warranty-somnosuite-with-2-modules-premium",
+      "title": "Warranty – SomnoSuite® with 2 modules – Premium",
+      "sourceUrl": "https://www.kentscientific.com/products/warranty-somnosuite-with-2-modules-premium/",
+      "modifiedAt": "2026-02-21T00:04:46Z",
+      "categoryIds": [
+        81
+      ]
+    }
+  ]
+}

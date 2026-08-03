@@ -201,7 +201,7 @@ async function main() {
     for (const descendantId of descendantIds(category.id, childrenByParent, descendantMemo)) {
       for (const slug of byId.get(descendantId)?.directProductSlugs || []) combined.add(slug);
     }
-    category.productSlugs = [...combined].sort();
+    category.productSlugs = category.count === 0 ? [] : [...combined].sort();
   }
 
   const mismatches = categories
