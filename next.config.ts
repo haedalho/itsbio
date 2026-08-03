@@ -11,6 +11,16 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "www.kentscientific.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "kentscientific.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "www.abmgood.com",
         pathname: "/**",
       },
@@ -22,22 +32,21 @@ const nextConfig: NextConfig = {
     ],
   },
   async redirects() {
-    // Preserve old Kent category-card URLs while routing to the canonical nested category pages.
     const systems = ["somnoflo", "somnosuite", "vetflo"];
 
     return systems.flatMap((system) => {
       const leaf = `anesthesia-accessories-for-${system}`;
-      const canonical = `/products/kent/anesthesia/anesthesia-accessories/${leaf}`;
+      const existingCategory = `/products/kent/anesthesia/${leaf}`;
 
       return [
         {
-          source: `/products/kent/anesthesia/${leaf}`,
-          destination: canonical,
+          source: `/products/kent/anesthesia/anesthesia-accessories/${leaf}`,
+          destination: existingCategory,
           permanent: false,
         },
         {
           source: `/products/kent/${leaf}`,
-          destination: canonical,
+          destination: existingCategory,
           permanent: false,
         },
       ];
