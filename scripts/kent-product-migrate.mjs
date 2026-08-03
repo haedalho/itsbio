@@ -595,6 +595,8 @@ const OFFICIAL_FIRST_FEATURE_TITLE_BY_SLUG = {
 };
 
 const VERIFIED_RELATED_PRODUCTS_BY_SLUG = {
+  // Source-evidence fallbacks for the archived preview snapshot. A future live
+  // collection replaces these whenever Kent returns structured related cards.
   somnosuite: [
     ["SurgiSuite – For Rats", "surgisuite"],
     ["SurgiSuite – For Mice", "surgisuite"],
