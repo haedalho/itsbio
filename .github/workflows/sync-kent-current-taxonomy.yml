@@ -1,0 +1,41 @@
+name: Sync exact Kent category taxonomy
+
+on:
+  push:
+    branches:
+      - agent/kent-sanity-images-only
+    paths:
+      - scripts/kent-current-taxonomy-build.mjs
+      - .github/workflows/sync-kent-current-taxonomy.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kent-current-taxonomy
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Build exact current taxonomy
+        run: node scripts/kent-current-taxonomy-build.mjs data/kent-current-taxonomy.json
+      - name: Commit taxonomy snapshot
+        run: |
+          git config user.name "OpenAI"
+          git config user.email "openai@users.noreply.github.com"
+          git add data/kent-current-taxonomy.json
+          if git diff --cached --quiet; then
+            echo "Taxonomy is already current."
+            exit 0
+          fi
+          git commit -m "Update exact Kent category memberships [skip taxonomy sync]"
+          git push origin HEAD:agent/kent-sanity-images-only
