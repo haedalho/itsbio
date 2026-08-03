@@ -30,6 +30,8 @@ type Variant = {
   sourceVariationId?: string;
 };
 
+const VETFLO_VAPORIZER_SLUG = "vaporizer-with-vetflo-single-channel-anesthesia-stand";
+
 function slugifyLoose(input: string) {
   return String(input || "")
     .toLowerCase()
@@ -180,6 +182,57 @@ function shouldUseSelect(group: OptionGroup) {
   return type === "select" || type === "dropdown" || (group.options || []).length > 6;
 }
 
+function variantSearchText(variant: Variant | null) {
+  if (!variant) return "";
+  return normalizeValue(
+    [
+      variant.optionSummary,
+      variant.title,
+      ...Object.values(buildVariantLookup(variant)),
+    ]
+      .filter(Boolean)
+      .join(" "),
+  );
+}
+
+function resolveSelectedGalleryImage({
+  slug,
+  selectedVariant,
+  variants,
+  images,
+}: {
+  slug: string;
+  selectedVariant: Variant | null;
+  variants: Variant[];
+  images: { url: string; alt?: string }[];
+}) {
+  if (!images.length) return null;
+
+  // Kent publishes one shared WooCommerce variant image for all eight VetFlo
+  // options. The managed gallery contains the two actual system views: the
+  // tabletop system first and the pole-mounted system fourth. The other two
+  // gallery images are tubing accessories and must not be used as option art.
+  if (slug === VETFLO_VAPORIZER_SLUG && images.length >= 4) {
+    const isPoleMounted = variantSearchText(selectedVariant).includes("pole-mounted");
+    return isPoleMounted ? images[3] : images[0];
+  }
+
+  const distinctVariantImages = new Set(
+    variants
+      .map((variant) => safeVariantImageUrl(variant.imageUrl))
+      .filter(Boolean),
+  );
+  const selectedVariantImage = safeVariantImageUrl(selectedVariant?.imageUrl);
+
+  // Only trust a variant image as a selector when Kent actually supplies more
+  // than one distinct variant image. A shared image cannot represent a change.
+  if (selectedVariantImage && distinctVariantImages.size > 1) {
+    return { url: selectedVariantImage, alt: selectedVariant?.title };
+  }
+
+  return images[0];
+}
+
 export default function KentProductDetailClientV2({
   slug,
   title,
@@ -258,10 +311,18 @@ export default function KentProductDetailClientV2({
   const selectedSummary = selectedVariant?.optionSummary || "";
   const invalidCombination = hasVariantControls && safeVariants.length > 0 && !selectedVariant;
   const galleryImages = React.useMemo(() => {
-    const variantImage = safeVariantImageUrl(selectedVariant?.imageUrl);
-    const head = variantImage ? [{ url: variantImage, alt: selectedVariant?.title || title }] : [];
-    return dedupeImages([...(head as Img[]), ...(images || [])]);
-  }, [images, selectedVariant?.imageUrl, selectedVariant?.title, title]);
+    const baseImages = dedupeImages(images || []);
+    const selectedImage = resolveSelectedGalleryImage({
+      slug,
+      selectedVariant,
+      variants: safeVariants,
+      images: baseImages,
+    });
+    const head = selectedImage
+      ? [{ url: selectedImage.url, alt: selectedImage.alt || selectedVariant?.title || title }]
+      : [];
+    return dedupeImages([...(head as Img[]), ...baseImages]);
+  }, [images, safeVariants, selectedVariant, slug, title]);
   const safeDocs = React.useMemo(() => normalizeDocs(documents), [documents]);
   const quoteHref = "/contact";
 
