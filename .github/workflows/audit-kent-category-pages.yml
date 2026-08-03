@@ -1,0 +1,23 @@
+name: Audit Kent category pages
+
+on:
+  pull_request:
+    branches:
+      - agent/kent-preflight
+    paths:
+      - .github/scripts/audit-kent-category-pages.mjs
+      - .github/workflows/audit-kent-category-pages.yml
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-02-19
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Audit categories, card images, and routes
+        run: node .github/scripts/audit-kent-category-pages.mjs
