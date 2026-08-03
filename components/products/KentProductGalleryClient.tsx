@@ -3,7 +3,7 @@
 import Image from "next/image";
 import * as React from "react";
 
-type Img = { url?: string; alt?: string };
+type Img = { url?: string; alt?: string; sourceUrl?: string };
 
 const PLACEHOLDER = "/kent-product-placeholder.svg";
 
@@ -32,6 +32,7 @@ function productImages(images: Img[], title: string) {
     .map((image) => ({
       url: String(image?.url || "").trim(),
       alt: String(image?.alt || "").trim() || title,
+      sourceUrl: String(image?.sourceUrl || "").trim(),
     }))
     .filter((image) => isAllowedProductImageUrl(image.url))
     .filter((image) => {

@@ -86,7 +86,7 @@ const ITEM_PAGE_QUERY = `
     galleryImageUrls,
     imageUrls,
     imageFiles,
-    images[]{ _key, asset->{ url } },
+    images[]{ _key, sourceUrl, asset->{ url } },
     kentOfficialGalleryStatus,
     kentOfficialGallery[]{
       _key,
@@ -262,25 +262,27 @@ function isManagedKentImageUrl(input?: unknown) {
 }
 
 function normalizeImages(product: any, title: string) {
-  // Active product galleries may only use files uploaded to Sanity. Legacy
-  // imageUrls/galleryImageUrls remain source metadata and never render.
+  // Preserve Kent's original image URL beside the Sanity asset. Variant data
+  // still identifies images by the Kent URL, so sourceUrl is the join key.
   const source = Array.isArray(product?.images)
     ? product.images
-        .map((image: any) => image?.asset?.url)
-        .filter((url: any) => isManagedKentImageUrl(url))
+        .map((image: any) => ({
+          url: String(image?.asset?.url || "").trim(),
+          sourceUrl: String(image?.sourceUrl || "").trim(),
+          alt: title,
+        }))
+        .filter((image: any) => isManagedKentImageUrl(image.url))
     : [];
   const seen = new Set<string>();
   return source
-    .map((url: unknown) => String(url).trim())
-    .filter((url: string) => url && !isGalleryNoiseUrl(url))
-    .filter((url: string) => {
-      const key = imageMasterKey(url);
+    .filter((image: any) => image.url && !isGalleryNoiseUrl(image.url) && !isGalleryNoiseUrl(image.sourceUrl))
+    .filter((image: any) => {
+      const key = imageMasterKey(image.url);
       if (!key || seen.has(key)) return false;
       seen.add(key);
       return true;
     })
-    .slice(0, 8)
-    .map((url: string) => ({ url, alt: title }));
+    .slice(0, 8);
 }
 
 function sectionBody(section: Section) {
@@ -421,12 +423,27 @@ export default async function KentProductDetailPage({
     sanitizeKentSections(official?.sections || universal.sections) as Section[],
     bundle?.relatedProductPool,
   );
+  const sourceUrlByAssetUrl = new Map<string, string>(
+    (Array.isArray(product?.images) ? product.images : [])
+      .filter((image: any) => isManagedKentImageUrl(image?.asset?.url))
+      .map((image: any) => [
+        String(image.asset.url).trim(),
+        String(image?.sourceUrl || "").trim(),
+      ]),
+  );
   const galleryStatus = String(product?.kentOfficialGalleryStatus || "");
   const stagedOfficialImages = ["STAGING", "APPROVED"].includes(galleryStatus)
     ? (Array.isArray(product?.kentOfficialGallery) ? product.kentOfficialGallery : [])
         .filter((image: any) => isManagedKentImageUrl(image?.sourceUrl))
         .sort((a: any, b: any) => Number(a?.order || 0) - Number(b?.order || 0))
-        .map((image: any) => ({ url: String(image.sourceUrl).trim(), alt: cleanText(image.alt) || title }))
+        .map((image: any) => {
+        const url = String(image.sourceUrl).trim();
+        return {
+          url,
+          sourceUrl: sourceUrlByAssetUrl.get(url) || "",
+          alt: cleanText(image.alt) || title,
+        };
+      })
     : [];
   const overrideOfficialImages = Array.isArray(official?.fallbackImages)
     ? official.fallbackImages.filter((image) => isManagedKentImageUrl(image?.url))

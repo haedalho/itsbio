@@ -7,7 +7,7 @@ import KentProductSectionRendererV2, {
   type KentSection,
 } from "@/components/products/KentProductSectionRendererV2";
 
-type Img = { url?: string; alt?: string };
+type Img = { url?: string; alt?: string; sourceUrl?: string };
 type Doc = { url?: string; label?: string; title?: string };
 type OptionValue = { value?: string; label?: string };
 type OptionGroup = {
@@ -79,7 +79,7 @@ function dedupeImages(images: Img[]) {
     if (!key || seen.has(key)) return false;
     seen.add(key);
     return true;
-  }) as { url: string; alt?: string }[];
+  }) as { url: string; alt?: string; sourceUrl?: string }[];
 }
 
 function pairArrayToMap(input: Record<string, string> | VariantPair[] | undefined) {
@@ -195,6 +195,62 @@ function variantSearchText(variant: Variant | null) {
   );
 }
 
+function imageSourceKey(input?: string) {
+  const raw = String(input || "").trim();
+  if (!raw) return "";
+  try {
+    const url = new URL(raw, "https://www.kentscientific.com");
+    const decoded = decodeURIComponent(url.pathname).toLowerCase();
+    return decoded.replace(/-\d{2,5}x\d{2,5}(?=\.[a-z0-9]+$)/i, "");
+  } catch {
+    return raw.split("?")[0].toLowerCase().replace(/-\d{2,5}x\d{2,5}(?=\.[a-z0-9]+$)/i, "");
+  }
+}
+
+const IMAGE_TOKEN_STOP_WORDS = new Set([
+  "image", "img", "product", "copy", "final", "new", "v2", "left", "right",
+  "front", "back", "side", "view", "single", "channel", "system", "with", "for",
+  "the", "and", "jpg", "jpeg", "png", "webp", "kent", "scientific",
+]);
+
+function sourceTokens(input?: string) {
+  const key = imageSourceKey(input)
+    .replace(/^.*\//, "")
+    .replace(/\.[a-z0-9]+$/i, "")
+    .replace(/[^a-z0-9]+/g, " ");
+  return new Set(
+    key.split(/\s+/)
+      .filter((token) => token.length >= 2)
+      .filter((token) => !IMAGE_TOKEN_STOP_WORDS.has(token)),
+  );
+}
+
+function findKeywordImage(
+  selectedVariant: Variant | null,
+  images: Array<{ url: string; alt?: string; sourceUrl?: string }>,
+) {
+  const variantTokens = new Set(
+    variantSearchText(selectedVariant)
+      .split("-")
+      .filter((token) => token.length >= 2)
+      .filter((token) => !IMAGE_TOKEN_STOP_WORDS.has(token)),
+  );
+  if (!variantTokens.size) return null;
+
+  const ranked = images
+    .map((image) => {
+      const tokens = sourceTokens(image.sourceUrl || image.url);
+      let score = 0;
+      for (const token of tokens) if (variantTokens.has(token)) score += 1;
+      return { image, score };
+    })
+    .sort((a, b) => b.score - a.score);
+
+  if (!ranked[0] || ranked[0].score < 1) return null;
+  if (ranked[1] && ranked[1].score === ranked[0].score) return null;
+  return ranked[0].image;
+}
+
 function resolveSelectedGalleryImage({
   slug,
   selectedVariant,
@@ -204,14 +260,21 @@ function resolveSelectedGalleryImage({
   slug: string;
   selectedVariant: Variant | null;
   variants: Variant[];
-  images: { url: string; alt?: string }[];
+  images: { url: string; alt?: string; sourceUrl?: string }[];
 }) {
   if (!images.length) return null;
 
-  // Kent publishes one shared WooCommerce variant image for all eight VetFlo
-  // options. The managed gallery contains the two actual system views: the
-  // tabletop system first and the pole-mounted system fourth. The other two
-  // gallery images are tubing accessories and must not be used as option art.
+  const selectedVariantImage = safeVariantImageUrl(selectedVariant?.imageUrl);
+  const selectedSourceKey = imageSourceKey(selectedVariantImage);
+  const managedVariantImage = selectedSourceKey
+    ? images.find((image) => imageSourceKey(image.sourceUrl) === selectedSourceKey)
+    : null;
+
+  // Use the Sanity-managed copy of the exact Kent variant image first.
+  if (managedVariantImage) return managedVariantImage;
+
+  // Kent supplies one shared variant image for all VetFlo vaporizer options.
+  // Its gallery still contains distinct tabletop and pole-mounted system views.
   if (slug === VETFLO_VAPORIZER_SLUG && images.length >= 4) {
     const isPoleMounted = variantSearchText(selectedVariant).includes("pole-mounted");
     return isPoleMounted ? images[3] : images[0];
@@ -219,18 +282,25 @@ function resolveSelectedGalleryImage({
 
   const distinctVariantImages = new Set(
     variants
-      .map((variant) => safeVariantImageUrl(variant.imageUrl))
+      .map((variant) => imageSourceKey(safeVariantImageUrl(variant.imageUrl)))
       .filter(Boolean),
   );
-  const selectedVariantImage = safeVariantImageUrl(selectedVariant?.imageUrl);
 
-  // Only trust a variant image as a selector when Kent actually supplies more
-  // than one distinct variant image. A shared image cannot represent a change.
   if (selectedVariantImage && distinctVariantImages.size > 1) {
-    return { url: selectedVariantImage, alt: selectedVariant?.title };
+    return { url: selectedVariantImage, alt: selectedVariant?.title, sourceUrl: selectedVariantImage };
   }
 
-  return images[0];
+  const selectedIndex = selectedVariant
+    ? variants.findIndex((variant) => variant.variantId === selectedVariant.variantId)
+    : -1;
+
+  // Exact one-to-one galleries retain the source ordering of their variants.
+  if (selectedIndex >= 0 && variants.length === images.length) {
+    return images[selectedIndex] || images[0];
+  }
+
+  // Only accept filename matching when one image is the unique best match.
+  return findKeywordImage(selectedVariant, images) || images[0];
 }
 
 export default function KentProductDetailClientV2({
