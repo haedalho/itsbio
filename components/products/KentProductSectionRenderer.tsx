@@ -444,15 +444,16 @@ function productSlugFromHref(input?: unknown) {
   }
 }
 
-function RelatedProductGrid({ items, productTitle }: { items: KentSectionItem[]; productTitle: string }) {
-  const quoteHref = `mailto:info@itsbio.co.kr?subject=${encodeURIComponent(`Kent ${productTitle} 견적 문의`)}`;
+function RelatedProductGrid({ items }: { items: KentSectionItem[]; productTitle: string }) {
+  const internalItems = items.flatMap((item) => {
+    const slug = String(item.slug || productSlugFromHref(item.href || item.url)).trim();
+    return slug ? [{ item, slug }] : [];
+  });
   return (
-    <>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {items.slice(0, 4).map((item, index) => {
+        {internalItems.slice(0, 4).map(({ item, slug }, index) => {
           const title = String(item.title || item.label || item.text || `Related product ${index + 1}`);
-          const slug = String(item.slug || productSlugFromHref(item.href || item.url));
-          const href = slug ? `/products/kent/item/${slug}` : String(item.href || item.url || "");
+          const href = `/products/kent/item/${slug}`;
           return (
             <a key={item._key || `${title}-${index}`} href={href} className="group block min-w-0 overflow-hidden rounded-2xl border border-[#e0e7ee] bg-white shadow-[0_10px_32px_rgba(18,55,92,0.06)] transition duration-300 hover:-translate-y-1 hover:border-[#91b9df] hover:shadow-[0_18px_42px_rgba(18,71,130,0.11)]">
               <div className="flex aspect-[4/3] items-center justify-center bg-gradient-to-b from-[#f8fbfe] to-white p-6">
@@ -467,12 +468,6 @@ function RelatedProductGrid({ items, productTitle }: { items: KentSectionItem[];
           );
         })}
       </div>
-      <div className="mt-12 overflow-hidden rounded-2xl bg-gradient-to-r from-[#084b94] via-[#0b63b4] to-[#2680cf] px-7 py-9 text-center text-white shadow-[0_18px_45px_rgba(11,79,156,0.18)] md:px-12">
-        <h3 className="text-[20px] font-semibold">Not sure which modules are right for you?</h3>
-        <p className="mt-3 text-[16px]">Our team can help you with product details, configurations, and quotes.</p>
-        <a href={quoteHref} className="mt-6 inline-flex min-h-[48px] items-center justify-center rounded-xl bg-[#ffb400] px-8 py-3 text-[14px] font-bold uppercase text-[#111] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#ffc533]">Contact us</a>
-      </div>
-    </>
   );
 }
 

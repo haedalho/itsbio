@@ -436,15 +436,16 @@ function productSlugFromHref(input?: unknown) {
   }
 }
 
-function RelatedProductGrid({ items, productTitle }: { items: KentSectionItem[]; productTitle: string }) {
-  const quoteHref = `mailto:info@itsbio.co.kr?subject=${encodeURIComponent(`Kent ${productTitle} 견적 문의`)}`;
+function RelatedProductGrid({ items }: { items: KentSectionItem[]; productTitle: string }) {
+  const internalItems = items.flatMap((item) => {
+    const slug = String(item.slug || productSlugFromHref(item.href || item.url)).trim();
+    return slug ? [{ item, slug }] : [];
+  });
   return (
-    <>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {items.slice(0, 3).map((item, index) => {
+        {internalItems.slice(0, 3).map(({ item, slug }, index) => {
           const title = String(item.title || item.label || item.text || `Related product ${index + 1}`);
-          const slug = String(item.slug || productSlugFromHref(item.href || item.url));
-          const href = slug ? `/products/kent/item/${slug}` : String(item.href || item.url || "");
+          const href = `/products/kent/item/${slug}`;
           return (
             <a key={item._key || `${title}-${index}`} href={href} className="group block min-w-0">
               <div className="flex aspect-square items-center justify-center border border-[#e7e9ec] bg-white p-7 transition group-hover:border-[#0b4f9c]">
@@ -456,12 +457,6 @@ function RelatedProductGrid({ items, productTitle }: { items: KentSectionItem[];
           );
         })}
       </div>
-      <div className="mt-12 bg-[#3282df] px-7 py-8 text-center text-white md:px-12">
-        <h3 className="text-[20px] font-semibold">Not sure which modules are right for you?</h3>
-        <p className="mt-3 text-[16px]">Our team can help you with product details, configurations, and quotes.</p>
-        <a href={quoteHref} className="mt-6 inline-flex min-h-[48px] items-center justify-center rounded-[6px] bg-[#ffb400] px-8 py-3 text-[14px] font-bold uppercase text-[#111] transition hover:bg-[#ffc533]">Contact us</a>
-      </div>
-    </>
   );
 }
 
@@ -833,7 +828,6 @@ function fallbackSections({
     { fallbackKey: "overview", type: "rich-text", title: `About ${title}`, html: descriptionHtml },
     { fallbackKey: "specs", type: "spec-table", title: "Specifications", html: specsHtml },
     { fallbackKey: "datasheet", type: "datasheet", title: "Datasheet", html: datasheetHtml },
-    { fallbackKey: "documents", type: "resources", title: "Documents & Resources", html: documentsHtml, items: docs },
     { fallbackKey: "faqs", type: "faqs", title: "FAQs", html: faqsHtml },
     { fallbackKey: "references", type: "publications", title: "References & Publications", html: referencesHtml },
     { fallbackKey: "reviews", type: "reviews", title: "Reviews", html: reviewsHtml },

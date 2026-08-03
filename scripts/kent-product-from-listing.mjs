@@ -641,6 +641,14 @@ function cleanSectionHtml($, root, canonical) {
     "img",
   ].join(", ")).remove();
 
+  // Kent product builders sometimes place commerce or cross-page promotional
+  // cards inside otherwise valid product-detail containers. These cards are
+  // not product copy and their headings can incorrectly become section titles.
+  $wrap.find(".elementor-widget-call-to-action, .elementor-widget-porto_button").each((_, el) => {
+    const text = textClean($(el).text());
+    if (/buy on amazon|get your accessories|don'?t miss|need help with your order/i.test(text)) $(el).remove();
+  });
+
   $wrap.find("*").each((_, el) => {
     const $el = $(el);
     const txt = textClean($el.text());
@@ -722,9 +730,14 @@ function extractElementorSections($, canonical) {
   root.children(".e-con, .elementor-section").each((index, node) => {
     const $node = $(node).clone();
     $node.find("style,script,noscript").remove();
+    $node.find(".elementor-widget-call-to-action, .elementor-widget-porto_button").each((_, el) => {
+      const text = textClean($(el).text());
+      if (/buy on amazon|get your accessories|don'?t miss|need help with your order/i.test(text)) $(el).remove();
+    });
     const heading = textClean($node.find("h2,h3,h4").first().text());
     const nodeText = textClean($node.text());
     if (!heading && nodeText.length < 30) return;
+    if (/our team can help you with product details, configurations, and quotes/i.test(nodeText) && /contact us/i.test(nodeText)) return;
     if (heading && EXCLUDED_SECTION_RE.test(heading)) {
       pendingTitle = "";
       return;
@@ -759,7 +772,23 @@ function extractElementorSections($, canonical) {
     });
   });
 
-  return sections;
+  const repaired = [];
+  for (const section of sections) {
+    const previous = repaired.at(-1);
+    const continuationText = stripHtmlTags(section?.html || "");
+    const isReferenceContinuation =
+      previous?.type === "publications" &&
+      /^product information$/i.test(textClean(section?.title || "")) &&
+      /new edition|bibliography|anaesthetist|laboratory animal welfare/i.test(continuationText);
+
+    if (isReferenceContinuation) {
+      previous.html = `${previous.html || ""}${section.html || ""}`;
+      continue;
+    }
+    repaired.push(section);
+  }
+
+  return repaired;
 }
 
 function extractFaqSection($) {
@@ -925,7 +954,7 @@ function parseProduct(html, url, sourceMeta = null) {
       sourceMeta?.heroImageUrl,
       ...(redirectedToDifferentProduct ? [] : collectImages($, canonical)),
       ...variantImageUrls,
-    ]).slice(0, 1),
+    ]).slice(0, 8),
     pdfs,
     videos,
     relatedProducts: redirectedToDifferentProduct ? [] : collectRelatedProducts($, canonical),

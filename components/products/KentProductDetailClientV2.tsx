@@ -49,13 +49,16 @@ function normalizeValue(input: string) {
   return slugifyLoose(raw) || raw.toLowerCase();
 }
 
-function safeExternalUrl(url?: string) {
+function safeManagedImageUrl(url?: string) {
   const raw = String(url || "").trim();
   if (!raw) return "";
-  if (/^https?:\/\//i.test(raw)) return raw;
-  if (raw.startsWith("//")) return `https:${raw}`;
-  if (raw.startsWith("/")) return `https://www.kentscientific.com${raw}`;
-  return raw;
+  if (raw.startsWith("/")) return raw.startsWith("//") ? "" : raw;
+  try {
+    const parsed = new URL(raw);
+    return parsed.protocol === "https:" && parsed.hostname.toLowerCase() === "cdn.sanity.io" ? raw : "";
+  } catch {
+    return "";
+  }
 }
 
 function dedupeImages(images: Img[]) {
@@ -216,12 +219,12 @@ export default function KentProductDetailClientV2({
     // be injected into an approved/staging official gallery.
     if (verifiedGallery) return dedupeImages(images || []);
 
-    const variantImage = safeExternalUrl(selectedVariant?.imageUrl);
+    const variantImage = safeManagedImageUrl(selectedVariant?.imageUrl);
     const head = variantImage ? [{ url: variantImage, alt: selectedVariant?.title || title }] : [];
     return dedupeImages([...(head as Img[]), ...(images || [])]);
   }, [images, selectedVariant?.imageUrl, selectedVariant?.title, title, verifiedGallery]);
   const safeDocs = React.useMemo(() => normalizeDocs(documents), [documents]);
-  const quoteHref = `mailto:info@itsbio.co.kr?subject=${encodeURIComponent(`Kent ${title} 견적 문의`)}`;
+  const quoteHref = "/contact";
 
   return (
     <div className="pb-6">

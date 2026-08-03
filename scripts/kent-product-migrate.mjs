@@ -117,6 +117,58 @@ function dedupeStrings(arr) {
   return [...new Set((arr || []).filter(Boolean))];
 }
 
+const FORBIDDEN_PROMO_RE = /(?:buy on amazon|get your accessories|don'?t miss|not sure which modules are right for you|our team can help you with product details, configurations, and quotes)/i;
+
+function validateInputProducts(products) {
+  const seenSources = new Set();
+  const seenSlugs = new Set();
+  const errors = [];
+
+  for (const product of products) {
+    const title = textClean(product?.title || "") || "Untitled product";
+    const sourceUrl = normalizeTrailingSlashUrl(product?.sourceUrl || "");
+    const slug = safeSlug(product?.slug || title);
+    const gallery = dedupeStrings([
+      normalizeUrl(product?.heroImageUrl || ""),
+      ...(Array.isArray(product?.imageUrls) ? product.imageUrls.map(normalizeUrl) : []),
+    ]).filter(Boolean).slice(0, 8);
+    const sections = Array.isArray(product?.kentSections)
+      ? product.kentSections
+      : Array.isArray(product?.sections)
+        ? product.sections
+        : [];
+    const searchable = [
+      product?.sourceIntroHtml,
+      product?.overviewHtml,
+      ...sections.flatMap((section) => [section?.title, section?.html, section?.text]),
+    ].map((value) => String(value || "")).join(" ");
+
+    if (!sourceUrl) errors.push(`${title}: missing source URL`);
+    if (!gallery.length) errors.push(`${title}: missing reviewed gallery image`);
+    if (sourceUrl && seenSources.has(sourceUrl)) errors.push(`${title}: duplicate source URL`);
+    if (slug && seenSlugs.has(slug)) errors.push(`${title}: duplicate slug ${slug}`);
+    if (FORBIDDEN_PROMO_RE.test(searchable)) errors.push(`${title}: forbidden Kent commerce/support promotion`);
+
+    for (const section of sections) {
+      const sectionTitle = textClean(section?.title || "");
+      const sectionBody = String(section?.html || section?.text || "");
+      if (/^accessories$/i.test(sectionTitle) && /(?:laboratory animal anesthesia|publication date|author\s*:)/i.test(sectionBody)) {
+        errors.push(`${title}: publication content incorrectly grouped as Accessories`);
+      }
+    }
+
+    if (sourceUrl) seenSources.add(sourceUrl);
+    if (slug) seenSlugs.add(slug);
+  }
+
+  if (PREVIEW_MODE && products.length !== 204) {
+    errors.push(`preview snapshot must contain exactly 204 products (found ${products.length})`);
+  }
+  if (errors.length) {
+    throw new Error(`Kent input validation failed:\n- ${errors.slice(0, 30).join("\n- ")}`);
+  }
+}
+
 function stableKey(input, len = 12) {
   return crypto.createHash("sha1").update(String(input)).digest("hex").slice(0, len);
 }
@@ -713,13 +765,13 @@ function officialSections(product) {
     });
 
   if (!relatedItems.length) return sourceSections;
-  return [{
+  return [...sourceSections, {
     _key: stableKey(`kent-related:${product?.sourceUrl || product?.slug || "product"}`),
     _type: "kentSourceSection",
     type: "related-products",
     title: "Customers who viewed this item also viewed",
     items: relatedItems,
-  }, ...sourceSections];
+  }];
 }
 
 function buildListingPaths(sourceCategories) {
@@ -903,7 +955,7 @@ async function ensureShopCategories(inputJson, brand) {
   log(`shop categories: ${categories.length}${DRY_RUN ? " (dry)" : ""}`);
 }
 
-async function loadExistingProducts() {
+async function loadExistingProducts(productType = PRODUCT_DOC_TYPE) {
   const rows = await client.fetch(
     `*[_type==$productType && (
       brand->themeKey==$brandKey
@@ -918,7 +970,7 @@ async function loadExistingProducts() {
         asset->{ _id, url }
       }
     }`,
-    { brandKey: BRAND_KEY, productType: PRODUCT_DOC_TYPE }
+    { brandKey: BRAND_KEY, productType }
   );
 
   const bySourceUrl = new Map();
@@ -941,6 +993,10 @@ function buildProductDoc(inputProduct, ctx) {
   const existing =
     ctx.existing.bySourceUrl.get(sourceUrl) ||
     ctx.existing.bySlug.get(slugCurrent) ||
+    null;
+  const sourceExisting =
+    ctx.sourceExisting.bySourceUrl.get(sourceUrl) ||
+    ctx.sourceExisting.bySlug.get(slugCurrent) ||
     null;
 
   const resolvedCategory = choosePrimaryCategoryDoc(inputProduct, ctx.categories.index);
@@ -1015,8 +1071,12 @@ function buildProductDoc(inputProduct, ctx) {
     listingPaths,
     variantsCount: variants.length,
     optionGroupCount: optionGroups.length,
-    heroImageUrl: normalizeUrl(inputProduct?.heroImageUrl || inputProduct?.imageUrls?.[0] || ""),
+    galleryImageUrls: dedupeStrings([
+      normalizeUrl(inputProduct?.heroImageUrl || ""),
+      ...(Array.isArray(inputProduct?.imageUrls) ? inputProduct.imageUrls.map(normalizeUrl) : []),
+    ]).filter(Boolean).slice(0, 8),
     existing,
+    sourceExisting,
   };
 }
 
@@ -1052,49 +1112,61 @@ async function fetchImage(url) {
   };
 }
 
-function existingHero(existing, sourceUrl) {
+function existingImage(existing, sourceUrl) {
   return (existing?.images || []).find(
     (image) => normalizeUrl(image?.sourceUrl || "") === normalizeUrl(sourceUrl) && image?.asset?._id && image?.asset?.url,
   );
 }
 
-async function resolveHeroMedia(built) {
-  const sourceUrl = built.heroImageUrl;
-  if (!sourceUrl) return { images: [], kentOfficialGallery: [], status: "UNVERIFIED" };
+async function resolveGalleryMedia(built) {
+  const sourceUrls = Array.isArray(built.galleryImageUrls) ? built.galleryImageUrls : [];
+  if (!sourceUrls.length) return { images: [], kentOfficialGallery: [], status: "UNVERIFIED" };
 
-  let assetId = "";
-  let assetUrl = "";
-  const reusable = existingHero(built.existing, sourceUrl);
+  const resolved = [];
+  for (const [index, sourceUrl] of sourceUrls.entries()) {
+    let assetId = "";
+    let assetUrl = "";
+    const reusable = existingImage(built.existing, sourceUrl) || existingImage(built.sourceExisting, sourceUrl);
 
-  if (reusable) {
-    assetId = reusable.asset._id;
-    assetUrl = reusable.asset.url;
-  } else {
-    const image = await fetchImage(sourceUrl);
-    const extension = String(image.contentType || "").includes("png") ? "png" : "jpg";
-    const asset = await client.assets.upload("image", image.buffer, {
-      filename: `kent-${built.slugCurrent}-${stableKey(sourceUrl, 10)}.${extension}`,
-      contentType: image.contentType,
-    });
-    assetId = asset._id;
-    assetUrl = asset.url;
+    if (reusable) {
+      assetId = reusable.asset._id;
+      assetUrl = reusable.asset.url;
+    } else {
+      const image = await fetchImage(sourceUrl);
+      const contentType = String(image.contentType || "").toLowerCase();
+      const extension = contentType.includes("png")
+        ? "png"
+        : contentType.includes("webp")
+          ? "webp"
+          : contentType.includes("svg")
+            ? "svg"
+            : "jpg";
+      const asset = await client.assets.upload("image", image.buffer, {
+        filename: `kent-${built.slugCurrent}-${stableKey(sourceUrl, 10)}.${extension}`,
+        contentType: image.contentType,
+      });
+      assetId = asset._id;
+      assetUrl = asset.url;
+    }
+
+    resolved.push({ sourceUrl, assetId, assetUrl, index });
   }
 
   return {
-    images: [{
-      _key: stableKey(`hero:${sourceUrl}`),
+    images: resolved.map(({ sourceUrl, assetId }) => ({
+      _key: stableKey(`gallery:${sourceUrl}`),
       _type: "image",
       asset: { _type: "reference", _ref: assetId },
       caption: built.title,
       sourceUrl,
-    }],
-    kentOfficialGallery: [{
-      _key: stableKey(`official-hero:${sourceUrl}`),
+    })),
+    kentOfficialGallery: resolved.map(({ sourceUrl, assetUrl, index }) => ({
+      _key: stableKey(`official-gallery:${sourceUrl}`),
       _type: "kentOfficialGalleryItem",
       sourceUrl: assetUrl,
       alt: built.title,
-      order: 0,
-    }],
+      order: index,
+    })),
     status: "APPROVED",
   };
 }
@@ -1141,11 +1213,13 @@ async function main() {
   if (!products.length) {
     throw new Error("No products in input JSON.");
   }
+  validateInputProducts(products);
 
   const brand = await ensureBrand();
   await ensureShopCategories(inputJson, brand);
   const categories = await loadKentCategories();
   const existing = await loadExistingProducts();
+  const sourceExisting = PREVIEW_MODE ? await loadExistingProducts("product") : existing;
   const orderMap = buildOrderMap(inputJson);
 
   log(`brand: ${brand._id}`);
@@ -1153,7 +1227,7 @@ async function main() {
   log(`existing products: ${existing.rows.length}`);
   log(`targets: ${products.length}`);
 
-  const ctx = { brand, categories, existing, orderMap };
+  const ctx = { brand, categories, existing, sourceExisting, orderMap };
 
   let ok = 0;
   let skip = 0;
@@ -1189,7 +1263,7 @@ async function main() {
         continue;
       }
 
-      const media = await resolveHeroMedia(built);
+      const media = await resolveGalleryMedia(built);
       built.doc.images = media.images;
       built.doc.kentOfficialGallery = media.kentOfficialGallery;
       built.doc.kentOfficialGalleryStatus = media.status;

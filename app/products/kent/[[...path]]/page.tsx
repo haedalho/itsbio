@@ -350,10 +350,6 @@ function buildProductHref(slug: string) {
   return clean ? `/products/${BRAND_KEY}/item/${clean}` : "#";
 }
 
-function legacyHref(url: string) {
-  return `/products/${BRAND_KEY}/legacy?u=${encodeURIComponent(url)}`;
-}
-
 function toAbs(url: string) {
   if (!url) return "";
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
@@ -486,7 +482,7 @@ function resolveKentHref(href: string) {
   }
 
   if (/^\/?products\/kent\/legacy/i.test(raw)) {
-    return raw.startsWith("/") ? raw : `/${raw}`;
+    return `/products/${BRAND_KEY}`;
   }
 
   if (/^\/?products\/kent\//i.test(raw) && !/\/item\//i.test(raw)) {
@@ -503,10 +499,10 @@ function resolveKentHref(href: string) {
 
   if (isKentCategoryUrl(abs)) {
     const path = kentCategoryPathFromUrl(abs);
-    return path.length ? buildCategoryHref(path) : legacyHref(abs);
+    return path.length ? buildCategoryHref(path) : `/products/${BRAND_KEY}`;
   }
 
-  return legacyHref(abs);
+  return `/products/${BRAND_KEY}`;
 }
 
 function rewriteAnchorsToInternalAware(html: string) {
@@ -2071,18 +2067,6 @@ export default async function KentProductsPathPage({
           className={`mt-6 rounded-2xl border ${THEME_KENT.accentBorder} ${THEME_KENT.accentSoftBg} p-6 text-sm leading-7 text-slate-800`}
         >
           {category.summary}
-          {category.sourceUrl ? (
-            <>
-              {" "}
-              <Link
-                className={`font-semibold underline underline-offset-4 ${THEME_KENT.accentUnderline}`}
-                href={legacyHref(category.sourceUrl)}
-                prefetch={false}
-              >
-                원문 보기
-              </Link>
-            </>
-          ) : null}
         </div>
       );
     } else {
@@ -2091,18 +2075,6 @@ export default async function KentProductsPathPage({
           className={`mt-6 rounded-2xl border ${THEME_KENT.accentBorder} ${THEME_KENT.accentSoftBg} p-6 text-sm text-slate-800`}
         >
           본문 데이터가 아직 없습니다.
-          {category.sourceUrl ? (
-            <>
-              {" "}
-              <Link
-                className={`font-semibold underline underline-offset-4 ${THEME_KENT.accentUnderline}`}
-                href={legacyHref(category.sourceUrl)}
-                prefetch={false}
-              >
-                원문 보기
-              </Link>
-            </>
-          ) : null}
         </div>
       );
     }
@@ -2125,18 +2097,6 @@ export default async function KentProductsPathPage({
               className={`mt-6 rounded-2xl border ${THEME_KENT.accentBorder} ${THEME_KENT.accentSoftBg} p-6 text-sm text-slate-800`}
             >
               본문 데이터가 아직 없습니다.
-              {category.sourceUrl ? (
-                <>
-                  {" "}
-                  <Link
-                    className={`font-semibold underline underline-offset-4 ${THEME_KENT.accentUnderline}`}
-                    href={legacyHref(category.sourceUrl)}
-                    prefetch={false}
-                  >
-                    원문 보기
-                  </Link>
-                </>
-              ) : null}
             </div>
           )
         ) : null}
