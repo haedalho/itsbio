@@ -1,0 +1,47 @@
+name: Audit Kent variant images
+
+on:
+  pull_request:
+    branches:
+      - agent/kent-preflight
+    paths:
+      - .github/workflows/kent-variant-image-audit.yml
+      - data/kent-shop-preview-snapshot.tgz
+      - scripts/kent-product-migrate.mjs
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract reviewed preview snapshot
+        run: tar -xzf data/kent-shop-preview-snapshot.tgz
+      - name: Print target variant image data
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const data = JSON.parse(fs.readFileSync('.cache/kent-shop-profiles.json', 'utf8'));
+          const slug = 'vaporizer-with-vetflo-single-channel-anesthesia-stand';
+          const product = (data.results || []).find((row) => row.slug === slug || String(row.sourceUrl || '').includes(`/${slug}/`));
+          if (!product) throw new Error(`Missing product: ${slug}`);
+          const variants = product?.commerce?.variationPayloads || [];
+          const audit = {
+            slug: product.slug,
+            title: product.title,
+            optionGroups: product?.commerce?.optionGroups || [],
+            gallery: product?.imageUrls || [],
+            variants: variants.map((variant) => ({
+              variationId: variant.variationId,
+              sku: variant.sku,
+              attributes: variant.attributes,
+              image: variant.image,
+            })),
+            uniqueVariantImages: [...new Set(variants.map((variant) => variant.image).filter(Boolean))],
+          };
+          console.log('KENT_VARIANT_AUDIT_START');
+          console.log(JSON.stringify(audit, null, 2));
+          console.log('KENT_VARIANT_AUDIT_END');
+          NODE
