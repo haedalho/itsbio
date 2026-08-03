@@ -1,9 +1,9 @@
 name: Upload targeted Kent body images
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/kent-sanity-images-only
+      - agent/kent-preflight
     paths:
       - .github/workflows/upload-kent-targeted-body-images.yml
 
