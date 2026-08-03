@@ -1,0 +1,66 @@
+name: Upload targeted Kent body images
+
+on:
+  push:
+    branches:
+      - agent/kent-sanity-images-only
+    paths:
+      - .github/workflows/upload-kent-targeted-body-images.yml
+
+permissions:
+  contents: read
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Upload official SkinScanner body images to Sanity
+        env:
+          SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+          NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+          NEXT_PUBLIC_SANITY_DATASET: production
+          NEXT_PUBLIC_SANITY_API_VERSION: 2025-02-19
+        run: |
+          node --input-type=module <<'NODE'
+          import { createClient } from '@sanity/client';
+
+          if (!process.env.SANITY_WRITE_TOKEN) throw new Error('Missing SANITY_WRITE_TOKEN');
+          const client = createClient({
+            projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
+            dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
+            apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION,
+            token: process.env.SANITY_WRITE_TOKEN,
+            useCdn: false,
+          });
+
+          const sources = [
+            {
+              key: 'skinscanner-in-hand',
+              url: 'https://www.kentscientific.com/wp-content/uploads/elementor/thumbs/Dermus_SkinScanner_in_hand-rpy6emloc4nijgmcqqts6bh13so0jb1kjtubiwjl5c.png',
+              filename: 'kent-skinscanner-in-hand.png',
+            },
+            {
+              key: 'skinaid-interface',
+              url: 'https://www.kentscientific.com/wp-content/uploads/elementor/thumbs/Kent_Scientific_Dermus_SkinAid_image-scaled-rpy6emloc4nijgmcqqts6bh13so0jb1kjtubiwjl5c.png',
+              filename: 'kent-skinaid-interface.png',
+            },
+          ];
+
+          for (const source of sources) {
+            const response = await fetch(source.url, { headers: { 'user-agent': 'Mozilla/5.0 ITS-BIO reviewed Kent migration' } });
+            if (!response.ok) throw new Error(`${source.key}: HTTP ${response.status}`);
+            const buffer = Buffer.from(await response.arrayBuffer());
+            const asset = await client.assets.upload('image', buffer, {
+              filename: source.filename,
+              source: { id: source.url, name: 'Kent Scientific official product page' },
+            });
+            console.log(JSON.stringify({ key: source.key, sourceUrl: source.url, assetId: asset._id, url: asset.url }));
+          }
+          NODE
