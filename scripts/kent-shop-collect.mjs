@@ -7,6 +7,7 @@ import process from "node:process";
 const ROOT = process.cwd();
 const BASE = "https://www.kentscientific.com";
 const API = `${BASE}/wp-json/wp/v2`;
+const READER_BASE = "https://r.jina.ai/http://www.kentscientific.com";
 const argv = process.argv.slice(2);
 
 function readArg(flag, fallback = "") {
@@ -16,6 +17,7 @@ function readArg(flag, fallback = "") {
 
 const OUT = path.resolve(readArg("--out", path.join(ROOT, ".cache", "kent-shop-all.json")));
 const DELAY_MS = Number(readArg("--delay", "150")) || 150;
+const MAX_READER_PAGES = Number(readArg("--max-pages", "20")) || 20;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -76,30 +78,87 @@ function categoryPathFromLink(link) {
   }
 }
 
-async function fetchJson(url, attempt = 1) {
+function readerUrlFor(url) {
+  const parsed = new URL(url);
+  return `${READER_BASE}${parsed.pathname}${parsed.search}`;
+}
+
+function unwrapReaderJson(text, sourceUrl) {
+  const raw = String(text || "");
+  const marker = "Markdown Content:";
+  const markerIndex = raw.indexOf(marker);
+  const payload = (markerIndex >= 0 ? raw.slice(markerIndex + marker.length) : raw).trim();
+  try {
+    return JSON.parse(payload);
+  } catch (error) {
+    throw new Error(`Kent reader returned invalid JSON for ${sourceUrl}: ${error instanceof Error ? error.message : error}`);
+  }
+}
+
+async function fetchDirectJson(url) {
   const response = await fetch(url, {
     headers: {
       accept: "application/json",
       "accept-language": "en-US,en;q=0.9",
-      "user-agent": "ITSBIO Kent Shop migration/1.0",
+      "user-agent": "ITSBIO Kent Shop migration/1.1",
     },
     redirect: "follow",
     cache: "no-store",
   });
 
   if (!response.ok) {
-    if ([429, 500, 502, 503, 504].includes(response.status) && attempt < 4) {
-      await sleep(750 * attempt);
-      return fetchJson(url, attempt + 1);
-    }
-    throw new Error(`Kent API HTTP ${response.status}: ${url}`);
+    const error = new Error(`Kent API HTTP ${response.status}: ${url}`);
+    error.status = response.status;
+    throw error;
   }
 
   return {
     rows: await response.json(),
     total: Number(response.headers.get("x-wp-total") || 0),
-    totalPages: Number(response.headers.get("x-wp-totalpages") || 1),
+    totalPages: Number(response.headers.get("x-wp-totalpages") || 0),
+    source: "direct",
   };
+}
+
+async function fetchReaderJson(url) {
+  const readerUrl = readerUrlFor(url);
+  const response = await fetch(readerUrl, {
+    headers: {
+      accept: "text/plain,application/json;q=0.9,*/*;q=0.8",
+      "user-agent": "ITSBIO Kent Shop migration/1.1",
+    },
+    redirect: "follow",
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Kent reader HTTP ${response.status}: ${readerUrl}`);
+  }
+
+  return {
+    rows: unwrapReaderJson(await response.text(), url),
+    total: 0,
+    totalPages: 0,
+    source: "reader",
+  };
+}
+
+async function fetchJson(url, attempt = 1) {
+  try {
+    return await fetchDirectJson(url);
+  } catch (directError) {
+    try {
+      return await fetchReaderJson(url);
+    } catch (readerError) {
+      if (attempt < 4) {
+        await sleep(750 * attempt);
+        return fetchJson(url, attempt + 1);
+      }
+      throw new Error(
+        `Unable to read Kent API ${url}. Direct: ${directError instanceof Error ? directError.message : directError}. Reader: ${readerError instanceof Error ? readerError.message : readerError}`,
+      );
+    }
+  }
 }
 
 async function fetchAll(endpoint, query = {}) {
@@ -109,17 +168,51 @@ async function fetchAll(endpoint, query = {}) {
   Object.entries(query).forEach(([key, value]) => firstUrl.searchParams.set(key, String(value)));
 
   const first = await fetchJson(firstUrl);
-  const rows = [...first.rows];
-
-  for (let page = 2; page <= first.totalPages; page += 1) {
-    const pageUrl = new URL(firstUrl);
-    pageUrl.searchParams.set("page", String(page));
-    await sleep(DELAY_MS);
-    const result = await fetchJson(pageUrl);
-    rows.push(...result.rows);
+  if (!Array.isArray(first.rows)) {
+    throw new Error(`Kent API ${endpoint} returned a non-array payload.`);
   }
 
-  return { rows, total: first.total || rows.length, totalPages: first.totalPages };
+  const rows = [...first.rows];
+  let totalPages = first.totalPages;
+
+  if (totalPages > 0) {
+    for (let page = 2; page <= totalPages; page += 1) {
+      const pageUrl = new URL(firstUrl);
+      pageUrl.searchParams.set("page", String(page));
+      await sleep(DELAY_MS);
+      const result = await fetchJson(pageUrl);
+      if (!Array.isArray(result.rows)) throw new Error(`Kent API ${endpoint} page ${page} returned a non-array payload.`);
+      rows.push(...result.rows);
+    }
+  } else if (first.rows.length >= 100) {
+    totalPages = 1;
+    for (let page = 2; page <= MAX_READER_PAGES; page += 1) {
+      const pageUrl = new URL(firstUrl);
+      pageUrl.searchParams.set("page", String(page));
+      await sleep(DELAY_MS);
+      let result;
+      try {
+        result = await fetchJson(pageUrl);
+      } catch (error) {
+        const message = String(error instanceof Error ? error.message : error);
+        if (/400|404|rest_post_invalid_page_number/i.test(message)) break;
+        throw error;
+      }
+      if (!Array.isArray(result.rows) || !result.rows.length) break;
+      rows.push(...result.rows);
+      totalPages = page;
+      if (result.rows.length < 100) break;
+    }
+  } else {
+    totalPages = 1;
+  }
+
+  return {
+    rows,
+    total: first.total || rows.length,
+    totalPages,
+    source: first.source,
+  };
 }
 
 function embeddedFeaturedImage(product) {
@@ -230,6 +323,7 @@ async function main() {
   const payload = {
     generatedAt: new Date().toISOString(),
     source: `${API}/product`,
+    transport: productResult.source === "reader" || termResult.source === "reader" ? "reader-fallback" : "direct",
     shopUrl: `${BASE}/shop/`,
     apiReportedProductCount: productResult.total,
     publishedProductCount: products.length,
@@ -249,6 +343,7 @@ async function main() {
   save(payload);
   console.log(`[kent-shop] Products: ${payload.publishedProductCount}`);
   console.log(`[kent-shop] Categories: ${payload.categoryCount}`);
+  console.log(`[kent-shop] Transport: ${payload.transport}`);
   console.log(`[kent-shop] Saved: ${path.relative(ROOT, OUT)}`);
 }
 
