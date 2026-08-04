@@ -1,30 +1,20 @@
 import Link from "next/link";
 
+const LOGO_IMAGE =
+  "data:image/png;base64,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";
+
 export default function BrandLogo({ className = "" }: { className?: string }) {
   return (
     <Link
       href="/"
       aria-label="ITS BIO home"
-      className={`relative inline-flex h-12 w-[142px] items-end ${className}`}
+      className={`relative inline-flex h-12 w-[112px] items-center ${className}`}
     >
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 142 48"
-        className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
-      >
-        <path
-          d="M9 24 C28 23, 31 6, 56 6 C84 6, 91 17, 98 38"
-          fill="none"
-          stroke="#f97316"
-          strokeWidth="3.8"
-          strokeLinecap="round"
-        />
-        <circle cx="9" cy="24" r="3.8" fill="#f97316" />
-        <circle cx="99" cy="39" r="2.8" fill="#f97316" />
-      </svg>
-      <span className="relative z-10 pb-0.5 text-[27px] font-black leading-none tracking-[-0.055em] text-[#0752ad]">
-        ITSBIO
-      </span>
+      <img
+        src={LOGO_IMAGE}
+        alt="ITSBIO"
+        className="h-full w-full object-contain object-left"
+      />
     </Link>
   );
 }
