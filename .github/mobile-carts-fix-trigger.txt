@@ -1,5 +1,6 @@
-2026-08-04T17:54:00+09:00
+2026-08-04T18:02:00+09:00
 Force Mobile Carts to exactly match Kent Scientific:
 1. cylinder-bracket
 2. mobile-cart-for-laboratory-equipment-large
 3. mobile-cart-for-laboratory-equipment-small
+Second trigger after workflow registration.
