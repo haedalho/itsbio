@@ -1,0 +1,144 @@
+name: Standardize Kent product card heights
+
+on:
+  push:
+    branches:
+      - agent/kent-sanity-images-only
+    paths:
+      - .github/kent-card-height-trigger.txt
+
+permissions:
+  contents: write
+
+jobs:
+  standardize-cards:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout preview branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/kent-sanity-images-only
+          fetch-depth: 0
+
+      - name: Standardize common and Mobile Carts cards
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(text: str, old: str, new: str, label: str) -> str:
+              if old not in text:
+                  if new in text:
+                      return text
+                  raise SystemExit(f'{label} marker not found')
+              return text.replace(old, new, 1)
+
+          common_path = Path('app/products/kent/[[...path]]/page.tsx')
+          common = common_path.read_text(encoding='utf-8')
+          start = common.index('function KentProductGrid(')
+          end = common.index('function HeroBanner(', start)
+          segment = common[start:end]
+
+          segment = replace_once(
+              segment,
+              'className="group block"',
+              'className="group block h-full"',
+              'common product link',
+          )
+          segment = replace_once(
+              segment,
+              'className="border border-slate-200 bg-white transition hover:shadow-md"',
+              'className="flex h-full flex-col border border-slate-200 bg-white transition hover:shadow-md"',
+              'common article',
+          )
+          segment = replace_once(
+              segment,
+              'className="px-5 py-5"',
+              'className="flex flex-1 flex-col px-5 py-5"',
+              'common content',
+          )
+          segment = replace_once(
+              segment,
+              '''{categories.length ? (\n                    <div className="line-clamp-2 text-[12px] leading-5 text-slate-500">\n                      {categories.join(", ")}\n                    </div>\n                  ) : null}''',
+              '''{categories.length ? (\n                    <div className="min-h-10 line-clamp-2 text-[12px] leading-5 text-slate-500">\n                      {categories.join(", ")}\n                    </div>\n                  ) : (\n                    <div className="min-h-10" />\n                  )}''',
+              'common categories block',
+          )
+          segment = replace_once(
+              segment,
+              'className="mt-2 text-[22px] font-semibold leading-[1.35] tracking-tight text-slate-900 group-hover:text-blue-700"',
+              'className="mt-2 min-h-[89px] line-clamp-3 text-[22px] font-semibold leading-[1.35] tracking-tight text-slate-900 group-hover:text-blue-700"',
+              'common title',
+          )
+          segment = replace_once(
+              segment,
+              'className="mt-3 line-clamp-2 text-sm leading-6 text-slate-600"',
+              'className="mt-3 min-h-12 line-clamp-2 text-sm leading-6 text-slate-600"',
+              'common summary',
+          )
+          segment = replace_once(
+              segment,
+              'className="mt-5 flex items-center justify-between gap-3"',
+              'className="mt-auto flex items-center justify-between gap-3 pt-5"',
+              'common footer',
+          )
+
+          common = common[:start] + segment + common[end:]
+          common_path.write_text(common, encoding='utf-8')
+
+          mobile_path = Path('app/products/kent/mobile-carts/page.tsx')
+          mobile = mobile_path.read_text(encoding='utf-8')
+          mobile = replace_once(mobile, 'className="group block"', 'className="group block h-full"', 'mobile product link')
+          mobile = replace_once(
+              mobile,
+              'className="border border-slate-200 bg-white transition hover:shadow-md"',
+              'className="flex h-full flex-col border border-slate-200 bg-white transition hover:shadow-md"',
+              'mobile article',
+          )
+          mobile = replace_once(mobile, 'className="px-5 py-5"', 'className="flex flex-1 flex-col px-5 py-5"', 'mobile content')
+          mobile = replace_once(
+              mobile,
+              'className="text-[12px] leading-5 text-slate-500"',
+              'className="min-h-5 text-[12px] leading-5 text-slate-500"',
+              'mobile category',
+          )
+          mobile = replace_once(
+              mobile,
+              'className="mt-2 text-[22px] font-semibold leading-[1.35] tracking-tight text-slate-900 group-hover:text-blue-700"',
+              'className="mt-2 min-h-[89px] line-clamp-3 text-[22px] font-semibold leading-[1.35] tracking-tight text-slate-900 group-hover:text-blue-700"',
+              'mobile title',
+          )
+          mobile = replace_once(
+              mobile,
+              'className="mt-3 line-clamp-2 text-sm leading-6 text-slate-600"',
+              'className="mt-3 min-h-12 line-clamp-2 text-sm leading-6 text-slate-600"',
+              'mobile summary',
+          )
+          mobile = replace_once(
+              mobile,
+              'className="mt-5 flex items-center justify-between gap-3"',
+              'className="mt-auto flex items-center justify-between gap-3 pt-5"',
+              'mobile footer',
+          )
+          mobile_path.write_text(mobile, encoding='utf-8')
+          PY
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build
+        env:
+          NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+          NEXT_PUBLIC_SANITY_DATASET: production
+        run: npm run build
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add 'app/products/kent/[[...path]]/page.tsx' 'app/products/kent/mobile-carts/page.tsx'
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Standardize Kent product card heights"
+          git pull --rebase origin agent/kent-sanity-images-only
+          git push origin HEAD:agent/kent-sanity-images-only
