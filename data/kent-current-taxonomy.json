@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-04T13:40:45.729Z",
+  "generatedAt": "2026-08-04T16:21:18.844Z",
   "source": "https://www.kentscientific.com/wp-json/wp/v2",
   "transport": "r.jina.ai reader mirror",
   "publishedProductCount": 204,
@@ -2545,7 +2545,7 @@
       "slug": "animal-weighing-scale",
       "title": "Animal Weighing Scale",
       "sourceUrl": "https://www.kentscientific.com/products/animal-weighing-scale/",
-      "modifiedAt": "2026-02-21T00:01:36Z",
+      "modifiedAt": "2026-08-04T15:56:02Z",
       "categoryIds": [
         94,
         168
@@ -2838,7 +2838,7 @@
       "slug": "ear-tag-applicator-with-spring-1",
       "title": "Ear Tag Applicator for Laboratory Animals",
       "sourceUrl": "https://www.kentscientific.com/products/ear-tag-applicator-with-spring-1/",
-      "modifiedAt": "2026-05-13T13:34:35Z",
+      "modifiedAt": "2026-08-04T15:47:55Z",
       "categoryIds": [
         171,
         73
@@ -3192,7 +3192,7 @@
       "slug": "laser-etched-ear-tags-one-sided",
       "title": "Laser Etched Ear Tags, One Sided",
       "sourceUrl": "https://www.kentscientific.com/products/laser-etched-ear-tags-one-sided/",
-      "modifiedAt": "2026-02-21T00:03:15Z",
+      "modifiedAt": "2026-08-04T15:47:42Z",
       "categoryIds": [
         171,
         73
@@ -3203,7 +3203,7 @@
       "slug": "laser-etched-ear-tags-two-sided",
       "title": "Laser Etched Ear Tags, Two Sided",
       "sourceUrl": "https://www.kentscientific.com/products/laser-etched-ear-tags-two-sided/",
-      "modifiedAt": "2026-02-21T00:03:22Z",
+      "modifiedAt": "2026-08-04T15:47:47Z",
       "categoryIds": [
         171,
         73
@@ -4158,7 +4158,7 @@
       "slug": "stamped-ear-tags",
       "title": "Stamped Ear Tags",
       "sourceUrl": "https://www.kentscientific.com/products/stamped-ear-tags/",
-      "modifiedAt": "2026-02-21T00:04:24Z",
+      "modifiedAt": "2026-08-04T15:47:37Z",
       "categoryIds": [
         171,
         73
