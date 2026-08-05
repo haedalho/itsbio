@@ -6,16 +6,16 @@ export default function BrandLogo({ className = "" }: { className?: string }) {
     <Link
       href="/"
       aria-label="ITS BIO home"
-      className={`inline-flex h-12 w-[142px] items-center ${className}`}
+      className={`inline-flex h-14 w-[116px] items-center ${className}`}
     >
       <Image
-        src="/images/brand/itsbio-logo.svg"
+        src="/images/brand/itsbio-logo-original-en-v2.png"
         alt="ITSBIO"
-        width={505}
-        height={195}
+        width={136}
+        height={85}
         priority
         unoptimized
-        className="block h-auto w-[132px]"
+        className="block h-auto w-[108px] object-contain"
       />
     </Link>
   );
