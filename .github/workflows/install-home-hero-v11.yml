@@ -1,0 +1,87 @@
+name: Install homepage hero v11
+
+on:
+  push:
+    branches:
+      - agent/kent-sanity-images-only
+    paths:
+      - .github/workflows/install-home-hero-v11.yml
+      - .asset-parts/home-v11/**
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install image validation tooling
+        run: python -m pip install --disable-pip-version-check pillow
+
+      - name: Restore and install the approved hero image
+        run: |
+          python - <<'PY'
+          import base64
+          import hashlib
+          import re
+          from io import BytesIO
+          from pathlib import Path
+          from PIL import Image
+
+          parts_dir = Path('.asset-parts/home-v11')
+          parts = [parts_dir / 'part-00.b64', parts_dir / 'part-01.b64']
+          encoded = ''.join(''.join(path.read_text(encoding='utf-8').split()) for path in parts)
+          if len(encoded) != 30484:
+              raise SystemExit(f'Unexpected Base64 length: {len(encoded)}')
+
+          raw = base64.b64decode(encoded, validate=True)
+          digest = hashlib.sha256(raw).hexdigest()
+          expected = '1e3076aef54edecf73cb8d64a6606d34e9bd23e586a224fc9918da29e7061451'
+          if digest != expected:
+              raise SystemExit(f'Hero SHA mismatch: {digest}')
+
+          with Image.open(BytesIO(raw)) as image:
+              if image.format != 'WEBP' or image.size != (1672, 600):
+                  raise SystemExit(f'Unexpected hero image: format={image.format}, size={image.size}')
+
+          target = Path('public/images/home/itsbio-main-hero-v11.webp')
+          target.parent.mkdir(parents=True, exist_ok=True)
+          target.write_bytes(raw)
+
+          component = Path('components/site/home/HomeHeroOverride.tsx')
+          text = component.read_text(encoding='utf-8')
+          text, count = re.subn(
+              r"backgroundImage:\s*\"url\('/images/home/[^']+'\)\"",
+              "backgroundImage: \"url('/images/home/itsbio-main-hero-v11.webp')\"",
+              text,
+              count=1,
+          )
+          if count != 1:
+              raise SystemExit('Could not replace the homepage hero image path')
+
+          component.write_text(text, encoding='utf-8')
+          print(f'Installed {target} with sha256={digest}')
+          PY
+
+      - name: Commit the hero image and path change
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/images/home/itsbio-main-hero-v11.webp components/site/home/HomeHeroOverride.tsx
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Use approved generated image as homepage hero"
+          git pull --rebase origin agent/kent-sanity-images-only
+          git push origin HEAD:agent/kent-sanity-images-only
