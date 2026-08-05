@@ -16,19 +16,14 @@ export default function HomeHeroOverride() {
       `}</style>
 
       <section className="itsbio-home-hero-override relative isolate overflow-hidden bg-[#fbfaf8]">
-        <div className="absolute inset-y-0 right-0 w-full md:w-[62%]">
-          <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{
-              backgroundImage: "url('/images/home/itsbio-hero-clean-v6.webp')",
-              imageRendering: "auto",
-            }}
-          />
-          <div className="absolute inset-0 bg-white/20 md:bg-transparent" />
-        </div>
-
-        <div className="absolute inset-0 bg-gradient-to-r from-[#fbfaf8] via-[#fbfaf8]/96 to-[#fbfaf8]/20 md:via-[#fbfaf8]/90 md:to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-orange-50/90 to-transparent" />
+        <div
+          className="absolute inset-0 bg-cover bg-no-repeat"
+          style={{
+            backgroundImage: "url('/images/home/itsbio-hero-clean-v6.webp')",
+            backgroundPosition: "center 42%",
+            imageRendering: "auto",
+          }}
+        />
 
         <div className="relative mx-auto flex min-h-[600px] max-w-7xl items-center px-6 py-16 md:min-h-[680px] md:py-20">
           <div className="max-w-[920px]">
