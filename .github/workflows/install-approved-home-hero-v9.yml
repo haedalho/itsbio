@@ -42,15 +42,16 @@ jobs:
           def read(name: str) -> str:
               return ''.join((parts_dir / name).read_text(encoding='utf-8').split())
 
-          # These files are consecutive slices of the single original Base64 string.
-          # part-04.b64 contains the correct second 10,000 characters followed by
-          # duplicated data, so only its first 10,000 characters are used.
+          # Rebuild the exact single Base64 stream. The missing 10,000-character
+          # section is stored as part-04a + part-04a2; part-04 contributes only
+          # its first 10,000 valid characters because the remainder is duplicated.
           encoded = ''.join([
               read('part-00.b64'),
               read('part-01.b64'),
               read('part-02.b64'),
               read('part-03.b64'),
               read('part-04a.b64'),
+              read('part-04a2.b64'),
               read('part-04.b64')[:10000],
               read('part-05.b64'),
               read('part-06.b64'),
@@ -60,7 +61,6 @@ jobs:
           if len(encoded) != 124644:
               raise SystemExit(f'Unexpected combined Base64 length: {len(encoded)}')
 
-          encoded += '=' * (-len(encoded) % 4)
           raw = base64.b64decode(encoded, validate=True)
           digest = hashlib.sha256(raw).hexdigest()
           expected = '73e332ee46bce885318b030b93a2fcc874f8802d57e98546232f021497eff987'
