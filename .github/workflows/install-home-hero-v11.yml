@@ -39,8 +39,20 @@ jobs:
           from PIL import Image
 
           parts_dir = Path('.asset-parts/home-v11')
-          parts = [parts_dir / 'part-00.b64', parts_dir / 'part-01.b64']
-          encoded = ''.join(''.join(path.read_text(encoding='utf-8').split()) for path in parts)
+          expected_parts = {
+              'part-00.b64': '37d0b84252533a1e35d3c23524a86d5a61caa4400d48c9516220100b694286c2',
+              'part-01.b64': 'e03f3ed9d0111e81c7b2d3de01d6bbf3a340e017fcc48013b8e1295179eb7fd8',
+          }
+          values = []
+          for name, expected_part in expected_parts.items():
+              value = ''.join((parts_dir / name).read_text(encoding='utf-8').split())
+              actual_part = hashlib.sha256(value.encode()).hexdigest()
+              print(f'{name}: len={len(value)} sha256={actual_part}')
+              if actual_part != expected_part:
+                  raise SystemExit(f'{name} mismatch: expected {expected_part}, got {actual_part}')
+              values.append(value)
+
+          encoded = ''.join(values)
           if len(encoded) != 30484:
               raise SystemExit(f'Unexpected Base64 length: {len(encoded)}')
 
