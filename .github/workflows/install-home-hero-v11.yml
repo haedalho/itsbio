@@ -39,23 +39,41 @@ jobs:
           from PIL import Image
 
           parts_dir = Path('.asset-parts/home-v11')
-          expected_parts = {
-              'part-00.b64': '37d0b84252533a1e35d3c23524a86d5a61caa4400d48c9516220100b694286c2',
-              'part-01.b64': 'e03f3ed9d0111e81c7b2d3de01d6bbf3a340e017fcc48013b8e1295179eb7fd8',
-          }
-          values = []
-          for name, expected_part in expected_parts.items():
-              value = ''.join((parts_dir / name).read_text(encoding='utf-8').split())
-              actual_part = hashlib.sha256(value.encode()).hexdigest()
-              print(f'{name}: len={len(value)} sha256={actual_part}')
-              if actual_part != expected_part:
-                  raise SystemExit(f'{name} mismatch: expected {expected_part}, got {actual_part}')
-              values.append(value)
+          p0 = ''.join((parts_dir / 'part-00.b64').read_text(encoding='utf-8').split())
+          p1 = ''.join((parts_dir / 'part-01.b64').read_text(encoding='utf-8').split())
 
-          encoded = ''.join(values)
-          if len(encoded) != 30484:
-              raise SystemExit(f'Unexpected Base64 length: {len(encoded)}')
+          expected_segments = [
+              '4f279639943caad1949fbae00caf8c8bcf68cf76daf09edef5d1d9a2185a2f7e',
+              'c0e3e9a421837b5aad1138a95ad46a157aa8b233fa13d888620a28d5ced00b49',
+              '1f414927704733c8b64e8ef107102eb90d6a519e40cbd254d4a51a6e35bd02bd',
+              'a57560539ab5e484a6dc18f8e6cd6f5990c794f2b062317ab427b34895f25cbb',
+              '949a7180a8e3530c0aa29d868e661aa3fd3b415fdf2b265142e28ef3df476535',
+              'ba173a5bc81c36c8eab9ab1aba3b5a78f7b2279b73fa7e417ea757616fdde309',
+              '30a46af4bdf537799020c59d38da8661ecd628f953589e48dc0425339990fb53',
+              '83c1a9fe41b20d25e8302e35bed9f09012da2afae162d29bb36e3e5c16f25228',
+              'fdcd8503eee754c1f173addf9656301591e06309dc4f934cfd0fbfc2df7130a4',
+              '586ff099c583c5cad972e8827e56bebebdc756dac97df90b9c369a21030d1b65',
+              '0d908abf10120099f1cc70d273816f7dfc1cc1e761a80fc07f06c1f9d902770a',
+              'f4cd88a21f53c032fd8cff3ce78acab088e477c1a12d1de882dc0bc91dc02c8a',
+              '2fae7693f9e37b3f411f0bdcbe6e0545b3d9ff7bd3ced7ed2cfa787654928e0c',
+              '6b4430c9825afcfce828bf05147ecaf449b9e52961bd0dfbb2b1f98752ddb7dc',
+              'a0c5191b0a33aa735cd402feed4ada982f86304cd75f5d744855d64a1d4e266b',
+              'd6bc4c2231fd25a095cee6b6a433b38360cee30d7967de2c6c8562bb2225bf4f',
+          ]
+          bad = []
+          for index, expected_segment in enumerate(expected_segments):
+              segment = p0[index * 1000:(index + 1) * 1000]
+              actual = hashlib.sha256(segment.encode()).hexdigest()
+              print(f'part-00 segment {index:02}: {actual}')
+              if actual != expected_segment:
+                  bad.append(index)
+          print(f'part-01: len={len(p1)} sha256={hashlib.sha256(p1.encode()).hexdigest()}')
+          if bad:
+              raise SystemExit(f'Bad part-00 segments: {bad}')
+          if hashlib.sha256(p1.encode()).hexdigest() != 'e03f3ed9d0111e81c7b2d3de01d6bbf3a340e017fcc48013b8e1295179eb7fd8':
+              raise SystemExit('part-01 mismatch')
 
+          encoded = p0 + p1
           raw = base64.b64decode(encoded, validate=True)
           digest = hashlib.sha256(raw).hexdigest()
           expected = '1e3076aef54edecf73cb8d64a6606d34e9bd23e586a224fc9918da29e7061451'
@@ -80,7 +98,6 @@ jobs:
           )
           if count != 1:
               raise SystemExit('Could not replace the homepage hero image path')
-
           component.write_text(text, encoding='utf-8')
           print(f'Installed {target} with sha256={digest}')
           PY
