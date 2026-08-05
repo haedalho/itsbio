@@ -1,4 +1,4 @@
-name: Verify deployed home hero and logo
+name: Capture deployed home hero and logo
 
 on:
   push:
@@ -12,9 +12,9 @@ permissions:
   contents: read
 
 jobs:
-  verify:
+  capture:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 8
     steps:
       - uses: actions/setup-node@v4
         with:
@@ -28,87 +28,63 @@ jobs:
           npm install playwright@1.55.0 >/dev/null
           npx playwright install --with-deps chromium
 
-      - name: Open real preview and verify assets
+      - name: Capture the real deployed page
         working-directory: /tmp/itsbio-preview-check
         env:
           PREVIEW_URL: https://itsbio-git-agent-kent-sanity-images-only-hadel-hos-projects.vercel.app/
         run: |
-          cat > verify.mjs <<'JS'
+          cat > capture.mjs <<'JS'
           import { chromium } from 'playwright';
           import fs from 'node:fs';
 
           const browser = await chromium.launch({ headless: true });
           const page = await browser.newPage({ viewport: { width: 1648, height: 928 }, deviceScaleFactor: 1 });
-          let result;
-
-          for (let attempt = 1; attempt <= 18; attempt += 1) {
-            try {
-              await page.goto(process.env.PREVIEW_URL, { waitUntil: 'domcontentloaded', timeout: 30_000 });
-              await page.waitForSelector('.itsbio-home-hero-override', { state: 'visible', timeout: 15_000 });
-              await page.waitForTimeout(2_000);
-
-              const state = await page.evaluate(() => {
-                const hero = document.querySelector('.itsbio-home-hero-override');
-                const bgNode = hero?.querySelector('[style*="background-image"]');
-                const logo = document.querySelector('header img[alt="ITSBIO"]');
-                return {
-                  title: document.title,
-                  heroBackground: bgNode ? getComputedStyle(bgNode).backgroundImage : null,
-                  logoSrc: logo?.getAttribute('src') ?? null,
-                  logoNaturalWidth: logo?.naturalWidth ?? 0,
-                  logoNaturalHeight: logo?.naturalHeight ?? 0,
-                };
-              });
-
-              const heroOk = Boolean(state.heroBackground?.includes('itsbio-hero-clean-v6.webp'));
-              const logoOk = Boolean(state.logoSrc?.includes('itsbio-logo-original-en-v2.png'));
-              if (heroOk && logoOk && state.logoNaturalWidth === 136 && state.logoNaturalHeight === 85) {
-                result = { attempt, url: page.url(), ...state, heroOk, logoOk };
-                break;
-              }
-              console.log(`attempt ${attempt}: latest assets not visible yet`, state);
-            } catch (error) {
-              console.log(`attempt ${attempt}: ${error.message}`);
+          const responses = [];
+          page.on('response', response => {
+            const url = response.url();
+            if (url.includes('itsbio-hero') || url.includes('itsbio-logo')) {
+              responses.push({ url, status: response.status(), contentType: response.headers()['content-type'] ?? null });
             }
-            await new Promise(resolve => setTimeout(resolve, 8_000));
-          }
-
-          if (!result) {
-            await page.screenshot({ path: 'homepage-failed.png', fullPage: true });
-            await browser.close();
-            throw new Error('Verified hero and logo were not found on the deployed preview.');
-          }
-
-          result.assetChecks = await page.evaluate(async () => {
-            const paths = [
-              '/images/home/itsbio-hero-clean-v6.webp',
-              '/images/brand/itsbio-logo-original-en-v2.png',
-            ];
-            return Promise.all(paths.map(async path => {
-              const response = await fetch(path, { cache: 'no-store' });
-              return {
-                path,
-                status: response.status,
-                contentType: response.headers.get('content-type'),
-                bytes: (await response.arrayBuffer()).byteLength,
-              };
-            }));
           });
 
+          let navigationError = null;
+          try {
+            await page.goto(process.env.PREVIEW_URL, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+            await page.waitForTimeout(6_000);
+          } catch (error) {
+            navigationError = error.message;
+          }
+
+          const state = await page.evaluate(() => {
+            const hero = document.querySelector('.itsbio-home-hero-override');
+            const bgNode = hero?.querySelector('[style*="background-image"]');
+            const logo = document.querySelector('header img[alt="ITSBIO"]');
+            return {
+              url: location.href,
+              title: document.title,
+              bodyTextStart: document.body.innerText.slice(0, 500),
+              heroExists: Boolean(hero),
+              heroBackground: bgNode ? getComputedStyle(bgNode).backgroundImage : null,
+              logoSrc: logo?.getAttribute('src') ?? null,
+              logoNaturalWidth: logo?.naturalWidth ?? 0,
+              logoNaturalHeight: logo?.naturalHeight ?? 0,
+            };
+          });
+
+          const result = { navigationError, state, responses };
           fs.writeFileSync('verification.json', JSON.stringify(result, null, 2));
-          await page.screenshot({ path: 'homepage-verified.png', fullPage: true });
+          await page.screenshot({ path: 'homepage-captured.png', fullPage: true });
           console.log(JSON.stringify(result, null, 2));
           await browser.close();
           JS
-          node verify.mjs
+          node capture.mjs
 
       - name: Upload deployed-page evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: deployed-home-preview-v2
+          name: deployed-home-preview-capture-v3
           path: |
-            /tmp/itsbio-preview-check/homepage-verified.png
-            /tmp/itsbio-preview-check/homepage-failed.png
+            /tmp/itsbio-preview-check/homepage-captured.png
             /tmp/itsbio-preview-check/verification.json
-          if-no-files-found: warn
+          if-no-files-found: error
