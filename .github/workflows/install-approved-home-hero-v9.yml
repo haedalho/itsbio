@@ -43,8 +43,12 @@ jobs:
           if len(parts) != 9:
               raise SystemExit(f'Expected 9 image parts, found {len(parts)}')
 
-          encoded = ''.join(path.read_text(encoding='utf-8').strip() for path in parts)
-          raw = base64.b64decode(encoded, validate=True)
+          # Each part is an independently padded Base64 block.
+          # Decode the parts one by one, then join the binary bytes.
+          raw = b''.join(
+              base64.b64decode(path.read_text(encoding='utf-8').strip(), validate=True)
+              for path in parts
+          )
           digest = hashlib.sha256(raw).hexdigest()
           expected = '73e332ee46bce885318b030b93a2fcc874f8802d57e98546232f021497eff987'
           if digest != expected:
