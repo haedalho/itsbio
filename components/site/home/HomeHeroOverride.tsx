@@ -19,7 +19,7 @@ export default function HomeHeroOverride() {
         <div
           className="absolute inset-0 bg-cover bg-no-repeat"
           style={{
-            backgroundImage: "url('/images/home/itsbio-hero-clean-v6.webp')",
+            backgroundImage: "url('/images/home/itsbio-main-hero-v11.webp')",
             backgroundPosition: "center 42%",
             imageRendering: "auto",
           }}
