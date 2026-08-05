@@ -41,23 +41,28 @@ jobs:
           parts_dir = Path('.asset-parts/home-v9')
           def read(name: str) -> str:
               return ''.join((parts_dir / name).read_text(encoding='utf-8').split())
+          def report(label: str, value: str) -> None:
+              print(f'{label}: len={len(value)} sha256={hashlib.sha256(value.encode()).hexdigest()} start={value[:16]} end={value[-16:]}')
 
-          # Rebuild the exact single Base64 stream. The missing 10,000-character
-          # section is stored as part-04a + part-04a2; part-04 contributes only
-          # its first 10,000 valid characters because the remainder is duplicated.
-          encoded = ''.join([
-              read('part-00.b64'),
-              read('part-01.b64'),
-              read('part-02.b64'),
-              read('part-03.b64'),
-              read('part-04a.b64'),
-              read('part-04a2.b64'),
-              read('part-04.b64')[:10000],
-              read('part-05.b64'),
-              read('part-06.b64'),
-              read('part-07.b64'),
-              read('part-08.b64'),
-          ])
+          p00 = read('part-00.b64')
+          p01 = read('part-01.b64')
+          p02 = read('part-02.b64')
+          p03 = read('part-03.b64')
+          p04a = read('part-04a.b64') + read('part-04a2.b64')
+          p04b = read('part-04.b64')[:10000]
+          p05 = read('part-05.b64')
+          p06 = read('part-06.b64')
+          p07 = read('part-07.b64')
+          p08 = read('part-08.b64')
+
+          for label, value in [
+              ('part-00', p00), ('part-01', p01), ('part-02', p02), ('part-03', p03),
+              ('part-04a-full', p04a), ('part-04-second', p04b), ('part-05', p05),
+              ('part-06', p06), ('part-07', p07), ('part-08', p08),
+          ]:
+              report(label, value)
+
+          encoded = ''.join([p00, p01, p02, p03, p04a, p04b, p05, p06, p07, p08])
           if len(encoded) != 124644:
               raise SystemExit(f'Unexpected combined Base64 length: {len(encoded)}')
 
