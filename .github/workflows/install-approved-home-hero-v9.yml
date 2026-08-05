@@ -39,19 +39,29 @@ jobs:
           from PIL import Image
 
           parts_dir = Path('.asset-parts/home-v9')
-          parts = sorted(parts_dir.glob('part-*.b64'))
-          if len(parts) != 9:
-              raise SystemExit(f'Expected 9 image parts, found {len(parts)}')
+          def read(name: str) -> str:
+              return ''.join((parts_dir / name).read_text(encoding='utf-8').split())
 
-          decoded_parts = []
-          for path in parts:
-              encoded = ''.join(path.read_text(encoding='utf-8').split())
-              encoded += '=' * (-len(encoded) % 4)
-              decoded = base64.b64decode(encoded, validate=True)
-              decoded_parts.append(decoded)
-              print(f'{path.name}: encoded={len(encoded)}, decoded={len(decoded)}')
+          # These files are consecutive slices of the single original Base64 string.
+          # part-04.b64 contains the correct second 10,000 characters followed by
+          # duplicated data, so only its first 10,000 characters are used.
+          encoded = ''.join([
+              read('part-00.b64'),
+              read('part-01.b64'),
+              read('part-02.b64'),
+              read('part-03.b64'),
+              read('part-04a.b64'),
+              read('part-04.b64')[:10000],
+              read('part-05.b64'),
+              read('part-06.b64'),
+              read('part-07.b64'),
+              read('part-08.b64'),
+          ])
+          if len(encoded) != 124644:
+              raise SystemExit(f'Unexpected combined Base64 length: {len(encoded)}')
 
-          raw = b''.join(decoded_parts)
+          encoded += '=' * (-len(encoded) % 4)
+          raw = base64.b64decode(encoded, validate=True)
           digest = hashlib.sha256(raw).hexdigest()
           expected = '73e332ee46bce885318b030b93a2fcc874f8802d57e98546232f021497eff987'
           if digest != expected:
