@@ -1,0 +1,88 @@
+name: Promote reviewed Kent products to production
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/promote-kent-preview-products.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+environment: Production
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Back up and promote reviewed Kent Sanity documents
+        run: node scripts/promote-kent-preview-products.mjs
+
+      - name: Upload pre-promotion backup and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kent-sanity-production-promotion-${{ github.run_id }}
+          path: .cache/kent-sanity-promotion/
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Restore normal production Sanity client
+        shell: bash
+        run: |
+          cat > lib/sanity/sanity.client.ts <<'EOF'
+          import { createClient } from "next-sanity";
+
+          export const sanityClient = createClient({
+            projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
+            dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
+            apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION!,
+            useCdn: false,
+          });
+          EOF
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Commit production data-source cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/sanity/sanity.client.ts
+          if git diff --cached --quiet; then
+            echo "Sanity client already uses production documents"
+            exit 0
+          fi
+          git commit -m "Use promoted Kent production documents"
+          git pull --rebase origin main
+          git push origin HEAD:main
