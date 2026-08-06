@@ -160,7 +160,7 @@ function chooseProducts(rows: ProductRow[]) {
           : fallback?.categoryPathTitles || [],
       slug,
     } satisfies ProductRow;
-  }).filter((product): product is ProductRow => Boolean(product));
+  }).filter(Boolean) as ProductRow[];
 }
 
 function HeroBanner({ brandTitle }: { brandTitle: string }) {
