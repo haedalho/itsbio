@@ -1,0 +1,23 @@
+{
+  "completedAt": "2026-08-06T06:16:32Z",
+  "sanityProjectId": "9b5twpc8",
+  "dataset": "production",
+  "sourceType": "kentPreviewProduct",
+  "targetType": "product",
+  "reviewedDocumentCount": 204,
+  "promotedDocumentCount": 204,
+  "previousProductionDocumentCount": 194,
+  "duplicateSlugCount": 0,
+  "verificationProduct": "somnoflo-o2care",
+  "verification": {
+    "sourceIntroHtmlLength": 1240,
+    "kentSections": 7,
+    "images": 1,
+    "matchedPreview": true
+  },
+  "backupArtifact": {
+    "workflowRunId": 31076626757,
+    "artifactId": 8957794246,
+    "retentionDays": 30
+  }
+}
