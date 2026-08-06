@@ -74,3 +74,87 @@ animation: partners-marquee 22s linear infinite;
 .scrollbar-hidden::-webkit-scrollbar {
   display: none;
 }
+
+/* Kent product source HTML is intentionally preserved. These selectors give the
+   original headings, lists and tables a stable Kent-like presentation without
+   depending on the optional Tailwind typography plugin. */
+.kent-rich {
+  color: #565d63;
+  font-size: 15.5px;
+  line-height: 1.72;
+}
+
+.kent-rich h2,
+.kent-rich h3,
+.kent-rich h4 {
+  margin: 1.65em 0 0.55em;
+  color: #0b4f9c;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.kent-rich h2:first-child,
+.kent-rich h3:first-child,
+.kent-rich h4:first-child {
+  margin-top: 0;
+}
+
+.kent-rich h2 { font-size: 27px; }
+.kent-rich h3 { font-size: 21px; }
+.kent-rich h4 { font-size: 17px; }
+
+.kent-rich p { margin: 0 0 1em; }
+.kent-rich p:last-child { margin-bottom: 0; }
+
+.kent-rich ul,
+.kent-rich ol {
+  margin: 1em 0;
+  padding-left: 1.35rem;
+}
+
+.kent-rich ul { list-style: disc; }
+.kent-rich ol { list-style: decimal; }
+.kent-rich li { margin: 0.45em 0; padding-left: 0.2rem; }
+.kent-rich li::marker { color: #0b5baa; }
+
+.kent-rich a {
+  color: #0b5baa;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.kent-rich table {
+  width: 100%;
+  margin: 1.2rem 0 2rem;
+  border-collapse: collapse;
+  border-top: 2px solid #0b5baa;
+  background: #fff;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.kent-rich thead th {
+  color: #0b4f9c;
+  font-weight: 700;
+  background: #f4f6f8;
+}
+
+.kent-rich th,
+.kent-rich td {
+  min-width: 130px;
+  padding: 13px 16px;
+  border-bottom: 1px solid #dce2e7;
+  text-align: left;
+  vertical-align: top;
+}
+
+.kent-rich tbody tr:nth-child(even) { background: #f8f9fa; }
+.kent-rich table + table { margin-top: 2rem; }
+
+@media (max-width: 767px) {
+  .kent-rich { overflow-wrap: anywhere; }
+  .kent-rich > div { max-width: 100%; }
+  .kent-rich table { display: block; overflow-x: auto; white-space: normal; }
+}

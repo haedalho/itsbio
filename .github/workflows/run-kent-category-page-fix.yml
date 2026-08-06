@@ -1,0 +1,42 @@
+name: Run Kent category page repair
+
+on:
+  pull_request:
+    branches:
+      - agent/kent-preflight
+    paths:
+      - .github/scripts/fix-kent-category-pages.py
+      - .github/workflows/run-kent-category-page-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-02-19
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Apply category page repair
+        run: python .github/scripts/fix-kent-category-pages.py
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build
+        run: npm run build
+
+      - name: Commit repair
+        run: |
+          git config user.name "OpenAI"
+          git config user.email "openai@users.noreply.github.com"
+          git add app/products/kent/'[[...path]]'/page.tsx
+          git commit -m "Fix Kent category images and broken routes"
+          git push origin HEAD:${{ github.head_ref }}

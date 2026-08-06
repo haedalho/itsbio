@@ -18,9 +18,14 @@ const readArg = (flag, fallback = "") => {
 };
 
 const DRY_RUN = !has("--apply");
+const DEACTIVATE_MISSING = has("--deactivate-missing");
+const PREVIEW_MODE = has("--preview");
+const PRODUCT_DOC_TYPE = PREVIEW_MODE ? "kentPreviewProduct" : "product";
+const PRODUCT_ID_PREFIX = PREVIEW_MODE ? "preview_prod" : "prod";
+const DISPLAY_PRICE_RE = /(?:[$€£¥₩]\s*\d[\d,.]*(?:\s*[–-]\s*[$€£¥₩]?\s*\d[\d,.]*)?|(?:USD|EUR|GBP|JPY|KRW)\s*\d[\d,.]*|\d[\d,.]*\s*(?:USD|EUR|GBP|JPY|KRW|원))/gi;
 const LIMIT = Number(readArg("--limit", "0")) || 0;
 const INPUT = path.resolve(
-  readArg("--input", path.join(process.cwd(), ".cache", "kent-products-from-listing.json"))
+  readArg("--input", path.join(process.cwd(), ".cache", "kent-shop-profiles.json"))
 );
 const BRAND_KEY = readArg("--brandKey", "kent");
 const BRAND_TITLE = readArg("--brandTitle", "Kent Scientific");
@@ -34,7 +39,8 @@ function env(name, fallback = "") {
 const projectId =
   env("NEXT_PUBLIC_SANITY_PROJECT_ID") ||
   env("SANITY_STUDIO_PROJECT_ID") ||
-  env("SANITY_PROJECT_ID");
+  env("SANITY_PROJECT_ID") ||
+  "9b5twpc8";
 
 const dataset =
   env("NEXT_PUBLIC_SANITY_DATASET") ||
@@ -53,8 +59,8 @@ if (!projectId) {
 if (!dataset) {
   throw new Error("Missing Sanity dataset env.");
 }
-if (!token) {
-  throw new Error("Missing Sanity write token env.");
+if (!token && !DRY_RUN) {
+  throw new Error("Missing Sanity write token env. Apply mode requires SANITY_WRITE_TOKEN.");
 }
 if (!fs.existsSync(INPUT)) {
   throw new Error(`Input JSON not found: ${INPUT}`);
@@ -109,6 +115,58 @@ function normalizeTrailingSlashUrl(u) {
 
 function dedupeStrings(arr) {
   return [...new Set((arr || []).filter(Boolean))];
+}
+
+const FORBIDDEN_PROMO_RE = /(?:buy on amazon|get your accessories|don'?t miss|not sure which modules are right for you|our team can help you with product details, configurations, and quotes)/i;
+
+function validateInputProducts(products) {
+  const seenSources = new Set();
+  const seenSlugs = new Set();
+  const errors = [];
+
+  for (const product of products) {
+    const title = textClean(product?.title || "") || "Untitled product";
+    const sourceUrl = normalizeTrailingSlashUrl(product?.sourceUrl || "");
+    const slug = safeSlug(product?.slug || title);
+    const gallery = dedupeStrings([
+      normalizeUrl(product?.heroImageUrl || ""),
+      ...(Array.isArray(product?.imageUrls) ? product.imageUrls.map(normalizeUrl) : []),
+    ]).filter(Boolean).slice(0, 8);
+    const sections = Array.isArray(product?.kentSections)
+      ? product.kentSections
+      : Array.isArray(product?.sections)
+        ? product.sections
+        : [];
+    const searchable = [
+      product?.sourceIntroHtml,
+      product?.overviewHtml,
+      ...sections.flatMap((section) => [section?.title, section?.html, section?.text]),
+    ].map((value) => String(value || "")).join(" ");
+
+    if (!sourceUrl) errors.push(`${title}: missing source URL`);
+    if (!gallery.length) errors.push(`${title}: missing reviewed gallery image`);
+    if (sourceUrl && seenSources.has(sourceUrl)) errors.push(`${title}: duplicate source URL`);
+    if (slug && seenSlugs.has(slug)) errors.push(`${title}: duplicate slug ${slug}`);
+    if (FORBIDDEN_PROMO_RE.test(searchable)) errors.push(`${title}: forbidden Kent commerce/support promotion`);
+
+    for (const section of sections) {
+      const sectionTitle = textClean(section?.title || "");
+      const sectionBody = String(section?.html || section?.text || "");
+      if (/^accessories$/i.test(sectionTitle) && /(?:laboratory animal anesthesia|publication date|author\s*:)/i.test(sectionBody)) {
+        errors.push(`${title}: publication content incorrectly grouped as Accessories`);
+      }
+    }
+
+    if (sourceUrl) seenSources.add(sourceUrl);
+    if (slug) seenSlugs.add(slug);
+  }
+
+  if (PREVIEW_MODE && products.length !== 204) {
+    errors.push(`preview snapshot must contain exactly 204 products (found ${products.length})`);
+  }
+  if (errors.length) {
+    throw new Error(`Kent input validation failed:\n- ${errors.slice(0, 30).join("\n- ")}`);
+  }
 }
 
 function stableKey(input, len = 12) {
@@ -567,6 +625,155 @@ function buildContentBlocks(product, docs, variants, categoryTitles) {
   return blocks;
 }
 
+const OFFICIAL_FIRST_FEATURE_TITLE_BY_SLUG = {
+  "aeroneb-lab-control-module": "Maintain molecular integrity",
+  "coda-high-throughput-system": "Multifunctional monitoring capability",
+  "coda-monitor": "MRI compatible",
+  "far-infrared-warming-pads-with-controller": "Far infrared warming",
+  "mousestat-jr": "Fits in the palm of your hand",
+  "physiosuite": "Include up to 3 modules in one unit",
+  "righttemp-jr": "Far infrared warming",
+  "righttemp": "Far infrared warming",
+  "rovent-jr": "Fully automatic with touchscreen control",
+  "rovent": "RightTemp® homeothermic warming",
+  "somnoflo": "Extreme precision & accuracy, flow rates as low as 100mL/min",
+  "somnosuite": "Flow Rates from 25 mL to 1 L",
+  "surgisuite": "Comply with regulatory guidelines",
+  "vaporizer-with-vetflo-single-channel-anesthesia-stand": "Brand new vaporizer canisters",
+  "vetflo-four-channel-anesthesia-stand": "Superior design",
+  "vetflo-single-channel-anesthesia-stand": "Superior design",
+  "vetflo-six-channel-anesthesia-stand": "Superior design",
+  "vetflo-two-channel-anesthesia-stand": "Superior design",
+};
+
+const VERIFIED_RELATED_PRODUCTS_BY_SLUG = {
+  // Source-evidence fallbacks for the archived preview snapshot. A future live
+  // collection replaces these whenever Kent returns structured related cards.
+  somnosuite: [
+    ["SurgiSuite – For Rats", "surgisuite"],
+    ["SurgiSuite – For Mice", "surgisuite"],
+    ["Anesthesia Masks Breathing Circuits for SomnoSuite®", "anesthesia-masks-breathing-circuits-for-somnosuite"],
+  ],
+  "mousestat-jr": [
+    ["Pulse Oximeter Paw Sensors MRI Compatible – MRI Sensor for Rats", "pulse-oximeter-paw-sensors-mri-compatible"],
+    ["Pulse Oximeter Paw Sensors MRI Compatible – MRI Sensor for Mice", "pulse-oximeter-paw-sensors-mri-compatible"],
+    ["RightTemp® Jr.", "righttemp-jr"],
+    ["PhysioSuite®", "physiosuite"],
+  ],
+  physiosuite: [
+    ["RightTemp® Jr.", "righttemp-jr"],
+    ["Pulse Oximeter Whole Body Sensors MRI Compatible", "pulse-oximeter-whole-body-sensors-mri-compatible"],
+    ["Pulse Oximeter Paw Sensors MRI Compatible", "pulse-oximeter-paw-sensors-mri-compatible"],
+  ],
+  "rovent-jr": [
+    ["RightTemp® Jr.", "righttemp-jr"],
+    ["Endotracheal Tubes for Rodent Intubation", "endotracheal-tubes"],
+    ["Endotracheal Intubation Kits for Mouse and Rat Anesthesia", "endotracheal-intubation-kits"],
+  ],
+  rovent: [
+    ["Intubation Stands", "intubation-stands"],
+    ["Endotracheal Tubes for Rodent Intubation", "endotracheal-tubes"],
+    ["Endotracheal Intubation Kits for Mouse and Rat Anesthesia", "endotracheal-intubation-kits"],
+  ],
+  somnoflo: [
+    ["Far Infrared Warming Pads with Controller for Small Animal Recovery", "far-infrared-warming-pads-with-controller"],
+    ["RightTemp® Jr.", "righttemp-jr"],
+    ["PhysioSuite®", "physiosuite"],
+  ],
+  surgisuite: [
+    ["Replacement Surgical Field Covers", "replacement-surgical-field-covers"],
+    ["Mouse Retractor Set", "mouse-retractor-set"],
+    ["PhysioSuite®", "physiosuite"],
+  ],
+  "vaporizer-with-vetflo-single-channel-anesthesia-stand": [
+    ["SomnoFlo®", "somnoflo"],
+    ["RightTemp® Jr.", "righttemp-jr"],
+    ["Anesthesia Masks Breathing Circuits for Traditional Vaporizers", "anesthesia-masks-breathing-circuits-for-traditional-vaporizers"],
+  ],
+  "righttemp-jr": [
+    ["RightTemp® Sensor for Animal or Warming Pad", "righttemp-sensor-for-animal-or-warming-pad"],
+    ["Far Infrared Warming Pad for Small Animal Recovery", "far-infrared-warming-pad"],
+    ["Disposable Sleeve Protectors for DCT-15 and DCT-20 Far Infrared Warming Pads", "disposable-sleeve-protectors-for-dct-15-and-dct-20-far-infrared-warming-pads"],
+  ],
+  "coda-high-throughput-system": [
+    ["CODA® High Throughput VPR Cuffs", "coda-high-throughput-vpr-cuffs"],
+    ["CODA® High Throughput Cuff Kits", "coda-high-throughput-cuff-kits"],
+    ["CODA® Animal Holders", "coda-animal-holders"],
+  ],
+  "coda-monitor": [
+    ["CODA® Monitor Occlusion Cuff Kits", "coda-monitor-occlusion-cuff-kits"],
+    ["CODA® Monitor VPR Cuff Kits", "coda-monitor-vpr-cuff-kits"],
+    ["CODA® Monitor Animal Holders", "nose-cone-animal-holders-with-stand"],
+  ],
+};
+
+function restoreFirstFeatureHeading(product, section) {
+  const type = String(section?.type || section?.kind || "").toLowerCase();
+  const title = OFFICIAL_FIRST_FEATURE_TITLE_BY_SLUG[String(product?.slug || "")];
+  const html = String(section?.html || "");
+  if (!title || !/feature|benefit|what-you-get/.test(type) || !html || /<h[2-4]\b/i.test(html.slice(0, 220))) return section;
+  return { ...section, html: `<h3>${title}</h3>${html}` };
+}
+
+function isSyntheticDocumentsSection(section) {
+  const key = textClean(section?._key || "").toLowerCase();
+  const title = textClean(section?.title || "").toLowerCase().replace(/\s*&\s*/g, " & ");
+  return key === "kent-source-documents" || title === "documents & resources";
+}
+
+function officialSections(product) {
+  const sourceSections = Array.isArray(product?.kentSections)
+    ? product.kentSections
+        .filter((section) => section && typeof section === "object" && !isSyntheticDocumentsSection(section))
+        .map((rawSection, sectionIndex) => {
+          const section = restoreFirstFeatureHeading(product, rawSection);
+          return ({
+          ...section,
+          _key: section._key || stableKey(`kent-section:${section.title || sectionIndex}`),
+          _type: "kentSourceSection",
+          items: Array.isArray(section.items)
+            ? section.items
+                .filter((item) => item && typeof item === "object")
+                .map((item, itemIndex) => ({
+                  ...item,
+                  _key: item._key || stableKey(`kent-section-item:${section.title || sectionIndex}:${item.title || itemIndex}`),
+                  _type: "kentSourceSectionItem",
+                }))
+            : undefined,
+          });
+        })
+    : [];
+
+  const storedRelated = Array.isArray(product?.relatedProducts) && product.relatedProducts.length
+    ? product.relatedProducts
+    : (VERIFIED_RELATED_PRODUCTS_BY_SLUG[String(product?.slug || "")] || []).map(([label, slug]) => ({
+        label,
+        href: `https://www.kentscientific.com/products/${slug}/`,
+      }));
+
+  const relatedItems = storedRelated
+    .flatMap((item, itemIndex) => {
+      const href = normalizeTrailingSlashUrl(item?.href || item?.url || "");
+      const title = textClean(item?.label || item?.title || "").replace(DISPLAY_PRICE_RE, "").replace(/\s+/g, " ").trim();
+      if (!href || !title) return [];
+      return [{
+        _key: stableKey(`kent-related-item:${href}:${itemIndex}`),
+        _type: "kentSourceSectionItem",
+        title,
+        href,
+      }];
+    });
+
+  if (!relatedItems.length) return sourceSections;
+  return [...sourceSections, {
+    _key: stableKey(`kent-related:${product?.sourceUrl || product?.slug || "product"}`),
+    _type: "kentSourceSection",
+    type: "related-products",
+    title: "Customers who viewed this item also viewed",
+    items: relatedItems,
+  }];
+}
+
 function buildListingPaths(sourceCategories) {
   return dedupeStrings(
     (sourceCategories || [])
@@ -675,17 +882,95 @@ async function loadKentCategories() {
   };
 }
 
-async function loadExistingProducts() {
+function loadShopManifest(inputJson) {
+  const candidates = [
+    inputJson?.listingFile,
+    path.join(process.cwd(), ".cache", "kent-shop-all.json"),
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    const resolved = path.resolve(String(candidate));
+    if (!fs.existsSync(resolved)) continue;
+    const parsed = JSON.parse(fs.readFileSync(resolved, "utf8"));
+    if (Array.isArray(parsed?.categories)) return parsed;
+  }
+  return null;
+}
+
+async function ensureShopCategories(inputJson, brand) {
+  if (PREVIEW_MODE) {
+    log("preview mode: production category documents are read-only");
+    return;
+  }
+
+  const manifest = loadShopManifest(inputJson);
+  if (!manifest) {
+    warn("Kent Shop manifest not found; existing Sanity categories will be used.");
+    return;
+  }
+
+  const existingRows = await client.fetch(
+    `*[_type=="category" && (
+      brand->themeKey==$brandKey || brand->slug.current==$brandKey || themeKey==$brandKey
+    ) && defined(path)]{ _id, path }`,
+    { brandKey: BRAND_KEY },
+  );
+  const existingByPath = new Map(
+    (existingRows || []).map((row) => [(row.path || []).join("/"), row._id]),
+  );
+  const resolvedIdByPath = new Map();
+  const categories = [...manifest.categories]
+    .filter((category) => Array.isArray(category?.categoryPath) && category.categoryPath.length)
+    .sort((a, b) => a.categoryPath.length - b.categoryPath.length || a.categoryPath.join("/").localeCompare(b.categoryPath.join("/")));
+
+  for (let index = 0; index < categories.length; index += 1) {
+    const category = categories[index];
+    const pathArr = category.categoryPath;
+    const pathKey = pathArr.join("/");
+    const parentKey = pathArr.slice(0, -1).join("/");
+    const id = existingByPath.get(pathKey) || `cat_${BRAND_KEY}__${pathArr.join("__")}`;
+    const parentId = parentKey ? resolvedIdByPath.get(parentKey) || existingByPath.get(parentKey) : "";
+    resolvedIdByPath.set(pathKey, id);
+
+    const doc = {
+      _id: id,
+      _type: "category",
+      brand: { _type: "reference", _ref: brand._id },
+      themeKey: BRAND_KEY,
+      isActive: true,
+      title: textClean(category.title || pathArr.at(-1)),
+      path: pathArr,
+      sourceUrl: normalizeTrailingSlashUrl(category.sourceUrl || category.rootUrl || "") || undefined,
+      parent: parentId ? { _type: "reference", _ref: parentId } : undefined,
+      order: index + 1,
+    };
+
+    if (DRY_RUN) continue;
+    const tx = client.transaction();
+    tx.createIfNotExists({ _id: id, _type: "category" });
+    tx.patch(id, { set: doc, ...(parentId ? {} : { unset: ["parent"] }) });
+    await tx.commit({ autoGenerateArrayKeys: true });
+  }
+
+  log(`shop categories: ${categories.length}${DRY_RUN ? " (dry)" : ""}`);
+}
+
+async function loadExistingProducts(productType = PRODUCT_DOC_TYPE) {
   const rows = await client.fetch(
-    `*[_type=="product" && (
+    `*[_type==$productType && (
       brand->themeKey==$brandKey
       || brand->slug.current==$brandKey
     )]{
       _id,
       sourceUrl,
-      "slug": slug.current
+      "slug": slug.current,
+      images[]{
+        _key,
+        sourceUrl,
+        asset->{ _id, url }
+      }
     }`,
-    { brandKey: BRAND_KEY }
+    { brandKey: BRAND_KEY, productType }
   );
 
   const bySourceUrl = new Map();
@@ -709,6 +994,10 @@ function buildProductDoc(inputProduct, ctx) {
     ctx.existing.bySourceUrl.get(sourceUrl) ||
     ctx.existing.bySlug.get(slugCurrent) ||
     null;
+  const sourceExisting =
+    ctx.sourceExisting.bySourceUrl.get(sourceUrl) ||
+    ctx.sourceExisting.bySlug.get(slugCurrent) ||
+    null;
 
   const resolvedCategory = choosePrimaryCategoryDoc(inputProduct, ctx.categories.index);
   const primaryCategoryDoc = resolvedCategory.doc;
@@ -725,19 +1014,15 @@ function buildProductDoc(inputProduct, ctx) {
     null;
 
   const summary =
-    firstSummary(stripHtmlTags(inputProduct?.overviewHtml || "")) ||
+    textClean(inputProduct?.summary || "") ||
     firstSummary(inputProduct?.bodyTextPreview || "");
-  const extraHtml = inputProduct?.overviewHtml || paragraphsToHtml(inputProduct?.bodyTextPreview || "");
-  const documentsHtml = inputProduct?.documentsHtml || buildDocumentsHtml(docs);
-  const resolvedSpecsHtml = inputProduct?.specsHtml || (variants.length ? buildVariantTableHtml(variants) : "");
-  const imageUrls = dedupeStrings((inputProduct?.imageUrls || []).map((u) => normalizeUrl(u))).slice(0, 40);
-  const contentBlocks = buildContentBlocks(inputProduct, docs, variants, categoryTitles);
+  const sections = officialSections(inputProduct);
 
-  const docId = existing?._id || `product-${BRAND_KEY}-${stableKey(sourceUrl || slugCurrent, 16)}`;
+  const docId = existing?._id || `${PRODUCT_ID_PREFIX}_${BRAND_KEY}__${slugCurrent.replaceAll("/", "__")}`;
 
   const doc = {
     _id: docId,
-    _type: "product",
+    _type: PRODUCT_DOC_TYPE,
     isActive: true,
     brand: { _type: "reference", _ref: ctx.brand._id },
     title,
@@ -752,16 +1037,20 @@ function buildProductDoc(inputProduct, ctx) {
     categoryPathTitles: categoryTitles.length ? categoryTitles : undefined,
     order: ctx.orderMap.get(sourceUrl) ?? 0,
     sourceUrl: sourceUrl || undefined,
-    legacyHtml: undefined,
-    extraHtml: extraHtml || undefined,
-    specsHtml: resolvedSpecsHtml || undefined,
-    datasheetHtml: undefined,
-    documentsHtml: documentsHtml || undefined,
-    faqsHtml: undefined,
-    referencesHtml: undefined,
-    reviewsHtml: undefined,
-    imageUrls: imageUrls.length ? imageUrls : undefined,
+    sourceIntroHtml: String(inputProduct?.sourceIntroHtml || inputProduct?.overviewHtml || "").trim(),
+    overviewHtml: "",
+    legacyHtml: "",
+    extraHtml: "",
+    specsHtml: "",
+    datasheetHtml: "",
+    documentsHtml: "",
+    faqsHtml: "",
+    referencesHtml: "",
+    reviewsHtml: "",
     docs: docs.length ? docs : undefined,
+    kentSections: sections,
+    sourceProductId: Number(inputProduct?.wpProductId || 0) || undefined,
+    sourceModifiedAt: inputProduct?.sourceModifiedAt || undefined,
     productType: variants.length || optionGroups.length ? "variant" : "simple",
     defaultVariantId: defaultVariant?.variantId || undefined,
     optionGroups: optionGroups.length ? optionGroups : undefined,
@@ -769,7 +1058,7 @@ function buildProductDoc(inputProduct, ctx) {
       ? variants.map(({ __priceText, __displayPrice, __displayRegularPrice, ...rest }) => rest)
       : undefined,
     enrichedAt: new Date().toISOString(),
-    contentBlocks: contentBlocks.length ? contentBlocks : undefined,
+    contentBlocks: [],
   };
 
   return {
@@ -782,6 +1071,12 @@ function buildProductDoc(inputProduct, ctx) {
     listingPaths,
     variantsCount: variants.length,
     optionGroupCount: optionGroups.length,
+    galleryImageUrls: dedupeStrings([
+      normalizeUrl(inputProduct?.heroImageUrl || ""),
+      ...(Array.isArray(inputProduct?.imageUrls) ? inputProduct.imageUrls.map(normalizeUrl) : []),
+    ]).filter(Boolean).slice(0, 8),
+    existing,
+    sourceExisting,
   };
 }
 
@@ -801,18 +1096,115 @@ function buildOrderMap(inputJson) {
   return map;
 }
 
+async function fetchImage(url) {
+  const response = await fetch(url, {
+    headers: {
+      accept: "image/*,*/*;q=0.8",
+      referer: "https://www.kentscientific.com/",
+      "user-agent": "ITSBIO Kent Shop migration/1.0",
+    },
+    redirect: "follow",
+  });
+  if (!response.ok) throw new Error(`Hero image HTTP ${response.status}: ${url}`);
+  return {
+    buffer: Buffer.from(await response.arrayBuffer()),
+    contentType: response.headers.get("content-type") || undefined,
+  };
+}
+
+function existingImage(existing, sourceUrl) {
+  return (existing?.images || []).find(
+    (image) => normalizeUrl(image?.sourceUrl || "") === normalizeUrl(sourceUrl) && image?.asset?._id && image?.asset?.url,
+  );
+}
+
+async function resolveGalleryMedia(built) {
+  const sourceUrls = Array.isArray(built.galleryImageUrls) ? built.galleryImageUrls : [];
+  if (!sourceUrls.length) return { images: [], kentOfficialGallery: [], status: "UNVERIFIED" };
+
+  const resolved = [];
+  for (const [index, sourceUrl] of sourceUrls.entries()) {
+    let assetId = "";
+    let assetUrl = "";
+    const reusable = existingImage(built.existing, sourceUrl) || existingImage(built.sourceExisting, sourceUrl);
+
+    if (reusable) {
+      assetId = reusable.asset._id;
+      assetUrl = reusable.asset.url;
+    } else {
+      const image = await fetchImage(sourceUrl);
+      const contentType = String(image.contentType || "").toLowerCase();
+      const extension = contentType.includes("png")
+        ? "png"
+        : contentType.includes("webp")
+          ? "webp"
+          : contentType.includes("svg")
+            ? "svg"
+            : "jpg";
+      const asset = await client.assets.upload("image", image.buffer, {
+        filename: `kent-${built.slugCurrent}-${stableKey(sourceUrl, 10)}.${extension}`,
+        contentType: image.contentType,
+      });
+      assetId = asset._id;
+      assetUrl = asset.url;
+    }
+
+    resolved.push({ sourceUrl, assetId, assetUrl, index });
+  }
+
+  return {
+    images: resolved.map(({ sourceUrl, assetId }) => ({
+      _key: stableKey(`gallery:${sourceUrl}`),
+      _type: "image",
+      asset: { _type: "reference", _ref: assetId },
+      caption: built.title,
+      sourceUrl,
+    })),
+    kentOfficialGallery: resolved.map(({ sourceUrl, assetUrl, index }) => ({
+      _key: stableKey(`official-gallery:${sourceUrl}`),
+      _type: "kentOfficialGalleryItem",
+      sourceUrl: assetUrl,
+      alt: built.title,
+      order: index,
+    })),
+    status: "APPROVED",
+  };
+}
+
 async function upsertProduct(doc) {
   const tx = client.transaction();
-  tx.createIfNotExists({ _id: doc._id, _type: "product" });
+  tx.createIfNotExists({ _id: doc._id, _type: PRODUCT_DOC_TYPE });
   tx.patch(doc._id, {
     set: doc,
+    unset: ["imageUrls", "galleryImageUrls", "imageFiles"],
   });
   return tx.commit({ autoGenerateArrayKeys: true });
+}
+
+async function reconcileInactiveProducts(existing, sourceProducts) {
+  const sourceUrls = new Set(
+    sourceProducts.map((product) => normalizeTrailingSlashUrl(product?.sourceUrl || "")).filter(Boolean),
+  );
+  const sourceSlugs = new Set(sourceProducts.map((product) => safeSlug(product?.slug || product?.title || "")).filter(Boolean));
+  const stale = existing.rows.filter((product) => {
+    const sourceUrl = normalizeTrailingSlashUrl(product?.sourceUrl || "");
+    const slug = textClean(product?.slug || "");
+    return !(sourceUrl && sourceUrls.has(sourceUrl)) && !(slug && sourceSlugs.has(slug));
+  });
+
+  log(`Sanity-only products outside current Shop: ${stale.length}`);
+  for (const product of stale) log(`  preserve${DEACTIVATE_MISSING ? " + deactivate" : ""}: ${product.slug || product._id}`);
+
+  if (DRY_RUN || !DEACTIVATE_MISSING || !stale.length) return;
+  for (const product of stale) {
+    await client.patch(product._id).set({ isActive: false }).commit();
+  }
 }
 
 async function main() {
   log(`input: ${INPUT}`);
   log(`mode: ${DRY_RUN ? "DRY_RUN" : "APPLY"}`);
+  log(`document type: ${PRODUCT_DOC_TYPE}${PREVIEW_MODE ? " (preview-only)" : ""}`);
 
   const inputJson = JSON.parse(fs.readFileSync(INPUT, "utf8"));
   const allResults = Array.isArray(inputJson?.results) ? inputJson.results : [];
@@ -821,10 +1213,13 @@ async function main() {
   if (!products.length) {
     throw new Error("No products in input JSON.");
   }
+  validateInputProducts(products);
 
   const brand = await ensureBrand();
+  await ensureShopCategories(inputJson, brand);
   const categories = await loadKentCategories();
   const existing = await loadExistingProducts();
+  const sourceExisting = PREVIEW_MODE ? await loadExistingProducts("product") : existing;
   const orderMap = buildOrderMap(inputJson);
 
   log(`brand: ${brand._id}`);
@@ -832,7 +1227,7 @@ async function main() {
   log(`existing products: ${existing.rows.length}`);
   log(`targets: ${products.length}`);
 
-  const ctx = { brand, categories, existing, orderMap };
+  const ctx = { brand, categories, existing, sourceExisting, orderMap };
 
   let ok = 0;
   let skip = 0;
@@ -868,6 +1263,12 @@ async function main() {
         continue;
       }
 
+      const media = await resolveGalleryMedia(built);
+      built.doc.images = media.images;
+      built.doc.kentOfficialGallery = media.kentOfficialGallery;
+      built.doc.kentOfficialGalleryStatus = media.status;
+      built.doc.kentOfficialSourceUrl = built.sourceUrl;
+      built.doc.kentOfficialGalleryVerifiedAt = new Date().toISOString();
       await upsertProduct(built.doc);
       ok += 1;
       process.stdout.write(
@@ -881,7 +1282,14 @@ async function main() {
   }
 
   process.stdout.write("\n");
+  await reconcileInactiveProducts(existing, allResults);
   log(`[DONE] ok=${ok} skip=${skip} fail=${fail} mode=${DRY_RUN ? "DRY_RUN" : "APPLY"}`);
+
+  if (fail > 0 || skip > 0 || ok !== products.length) {
+    throw new Error(
+      `Incomplete Kent Shop migration: expected=${products.length} ok=${ok} skip=${skip} fail=${fail}`,
+    );
+  }
 }
 
 main().catch((err) => {

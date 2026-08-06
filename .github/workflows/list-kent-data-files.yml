@@ -1,0 +1,19 @@
+name: List Kent data files
+
+on:
+  pull_request:
+    branches:
+      - agent/kent-preflight
+    paths:
+      - .github/workflows/list-kent-data-files.yml
+
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - name: List Kent-related files
+        run: |
+          find . -type f \( -iname '*kent*' -o -iname '*snapshot*' -o -iname '*catalog*' \) | sort

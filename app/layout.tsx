@@ -4,6 +4,7 @@ import "./globals.css";
 
 import Header from "@/components/site/Header";
 import HidePricesClient from "@/components/site/HidePricesClient";
+import HomeHeroOverride from "@/components/site/home/HomeHeroOverride";
 import NeedAssistance from "@/components/site/NeedAssistance";
 
 const pretendard = localFont({
@@ -21,12 +22,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body
-        className={`${pretendard.variable} antialiased text-[17px] leading-relaxed`}
-      >
+      <body className={`${pretendard.variable} antialiased text-[17px] leading-relaxed`}>
         <HidePricesClient />
-        <div style={{ ["--header-h" as any]: "56px" }}>
+        <div style={{ ["--header-h" as any]: "76px" }}>
           <Header />
+          <HomeHeroOverride />
           {children}
           <div className="mt-16 md:mt-24">
             <NeedAssistance />

@@ -1,0 +1,231 @@
+name: Complete Kent category count repair
+
+on:
+  pull_request:
+    branches:
+      - agent/kent-preflight
+    paths:
+      - .github/scripts/apply-kent-exact-category-counts.py
+      - .github/scripts/apply-kent-category-aliases.py
+      - .github/scripts/apply-kent-exact-page-types.py
+      - .github/workflows/run-kent-exact-category-counts-v2.yml
+      - data/kent-current-taxonomy.json
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kent-complete-category-counts-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-02-19
+      VERCEL_ENV: preview
+      VERCEL_GIT_COMMIT_REF: agent/kent-sanity-images-only
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Apply exact category rendering
+        run: |
+          python .github/scripts/apply-kent-exact-category-counts.py
+          python .github/scripts/apply-kent-category-aliases.py
+          python .github/scripts/apply-kent-exact-page-types.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Validate exact official taxonomy
+        run: |
+          node <<'NODE'
+          import fs from 'node:fs';
+
+          const taxonomy = JSON.parse(fs.readFileSync('data/kent-current-taxonomy.json', 'utf8'));
+          if (taxonomy.publishedProductCount !== 204) throw new Error(`Expected 204 official products, got ${taxonomy.publishedProductCount}`);
+          if (taxonomy.categoryCount !== 69) throw new Error(`Expected 69 official categories, got ${taxonomy.categoryCount}`);
+          if (taxonomy.countMismatchCount !== 0) throw new Error(`Official taxonomy has ${taxonomy.countMismatchCount} count mismatches`);
+
+          const query = `{
+            "products": *[_type=="kentPreviewProduct" && (!defined(isActive) || isActive==true)]{"slug":slug.current},
+            "categories": *[_type=="category" && (!defined(isActive) || isActive==true) && (brand->themeKey=="kent" || brand->slug.current=="kent" || themeKey=="kent" || brandSlug=="kent") && defined(path)]{_id,title,path,sourceUrl,pageType,_updatedAt}
+          }`;
+          const url = new URL('https://9b5twpc8.api.sanity.io/v2025-02-19/data/query/production');
+          url.searchParams.set('query', query);
+          const response = await fetch(url);
+          if (!response.ok) throw new Error(`Sanity ${response.status}`);
+          const data = (await response.json()).result || {};
+
+          const normalizeUrl = (value) => {
+            try {
+              const parsed = new URL(String(value || ''), 'https://www.kentscientific.com');
+              parsed.hash = '';
+              parsed.search = '';
+              if (parsed.hostname === 'kentscientific.com') parsed.hostname = 'www.kentscientific.com';
+              if (!/\.[a-z0-9]{2,8}$/i.test(parsed.pathname)) parsed.pathname = parsed.pathname.replace(/\/+$/, '') + '/';
+              return parsed.toString().toLowerCase();
+            } catch { return ''; }
+          };
+          const pathKey = (value) => Array.isArray(value) ? value.map(String).filter(Boolean).join('/') : '';
+          const titleKey = (value) => String(value || '').toLowerCase().replace(/[®™]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+
+          const sanityProductSlugs = new Set((data.products || []).map((row) => String(row.slug || '').toLowerCase()).filter(Boolean));
+          const officialProductSlugs = new Set((taxonomy.products || []).map((row) => String(row.slug || '').toLowerCase()).filter(Boolean));
+          const missingProducts = [...officialProductSlugs].filter((slug) => !sanityProductSlugs.has(slug));
+          const unexpectedProducts = [...sanityProductSlugs].filter((slug) => !officialProductSlugs.has(slug));
+          if (missingProducts.length || unexpectedProducts.length) {
+            throw new Error(`Sanity products differ from official Kent: missing=${JSON.stringify(missingProducts)} unexpected=${JSON.stringify(unexpectedProducts)}`);
+          }
+
+          const sanityCategories = [...(data.categories || [])]
+            .sort((a, b) => String(b._updatedAt || '').localeCompare(String(a._updatedAt || '')));
+          const uniqueSanityPaths = new Map();
+          for (const category of sanityCategories) {
+            const key = pathKey(category.path);
+            if (key && !uniqueSanityPaths.has(key)) uniqueSanityPaths.set(key, category);
+          }
+          const uniqueCategories = [...uniqueSanityPaths.values()];
+          const byPath = new Map(uniqueCategories.map((row) => [pathKey(row.path), row]));
+          const bySource = new Map(uniqueCategories.map((row) => [normalizeUrl(row.sourceUrl), row]).filter(([key]) => key));
+          const byLeaf = new Map();
+          const byTitle = new Map();
+          for (const category of uniqueCategories) {
+            const leaf = Array.isArray(category.path) ? category.path.at(-1) : '';
+            if (leaf) {
+              if (!byLeaf.has(leaf)) byLeaf.set(leaf, []);
+              byLeaf.get(leaf).push(category);
+            }
+            const title = titleKey(category.title);
+            if (title) {
+              if (!byTitle.has(title)) byTitle.set(title, []);
+              byTitle.get(title).push(category);
+            }
+          }
+
+          const routeAliases = new Map([
+            ['animal-handling/animal-holders', 'laboratory-animal-handling/animal-holders'],
+          ]);
+          const mappings = [];
+
+          for (const official of taxonomy.categories || []) {
+            if (official.count <= 0) continue;
+            if (!Array.isArray(official.productSlugs) || official.productSlugs.length !== official.count) {
+              throw new Error(`Official count/list mismatch for ${pathKey(official.categoryPath)}`);
+            }
+            const missingCategoryProducts = official.productSlugs.filter((slug) => !sanityProductSlugs.has(String(slug).toLowerCase()));
+            if (missingCategoryProducts.length) {
+              throw new Error(`Missing products for ${pathKey(official.categoryPath)}: ${JSON.stringify(missingCategoryProducts)}`);
+            }
+
+            const officialPath = pathKey(official.categoryPath);
+            const explicitRoute = routeAliases.get(officialPath) || '';
+            const exact = byPath.get(officialPath);
+            const source = bySource.get(normalizeUrl(official.sourceUrl));
+            const leafMatches = byLeaf.get(official.categoryPath.at(-1)) || [];
+            const titleMatches = byTitle.get(titleKey(official.title)) || [];
+            const mapped = (explicitRoute ? byPath.get(explicitRoute) : null)
+              || exact
+              || source
+              || (leafMatches.length === 1 ? leafMatches[0] : null)
+              || (titleMatches.length === 1 ? titleMatches[0] : null)
+              || null;
+            const routePath = explicitRoute || (mapped ? pathKey(mapped.path) : officialPath);
+            mappings.push({
+              routePath,
+              officialPath,
+              count: official.count,
+              productSlugs: official.productSlugs,
+              mappedPageType: mapped?.pageType || '',
+              virtual: !mapped,
+            });
+          }
+
+          const mappingPaths = new Set(mappings.map((row) => row.routePath));
+          for (const row of mappings) {
+            const prefix = `${row.routePath}/`;
+            row.hasDirectChildren = [...mappingPaths].some((candidate) =>
+              candidate.startsWith(prefix) && candidate.slice(prefix.length).split('/').filter(Boolean).length === 1,
+            );
+          }
+
+          console.log(JSON.stringify({
+            officialProducts: officialProductSlugs.size,
+            sanityProducts: sanityProductSlugs.size,
+            officialCategories: taxonomy.categories.length,
+            activeOfficialCategories: mappings.length,
+            virtualCategoryRoutes: mappings.filter((row) => row.virtual).map((row) => row.routePath),
+          }, null, 2));
+          fs.writeFileSync('/tmp/kent-exact-route-map.json', JSON.stringify(mappings, null, 2));
+          NODE
+
+      - name: Build
+        run: npm run build
+
+      - name: Start app
+        run: |
+          npm start -- --hostname 127.0.0.1 --port 3000 > /tmp/itsbio-next.log 2>&1 &
+          echo $! > /tmp/itsbio-next.pid
+          for attempt in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:3000/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/itsbio-next.log
+          exit 1
+
+      - name: Smoke all exact Kent categories
+        run: |
+          node <<'NODE'
+          import fs from 'node:fs';
+          const mappings = JSON.parse(fs.readFileSync('/tmp/kent-exact-route-map.json', 'utf8'));
+          const failures = [];
+          const checkedRoutes = new Set();
+
+          for (const row of mappings) {
+            if (!row.routePath || checkedRoutes.has(row.routePath)) continue;
+            checkedRoutes.add(row.routePath);
+            const response = await fetch(`http://127.0.0.1:3000/products/kent/${row.routePath}`, { redirect: 'follow' });
+            const html = await response.text();
+            if (!response.ok || !html.includes('Kent Scientific')) {
+              failures.push({ routePath: row.routePath, status: response.status, reason: 'page failed' });
+              continue;
+            }
+
+            if (!row.hasDirectChildren) {
+              if (!html.includes(`${row.count} product`)) {
+                failures.push({ routePath: row.routePath, count: row.count, reason: 'official count missing' });
+                continue;
+              }
+              const missingProductLinks = row.productSlugs.filter((slug) => !html.includes(`/products/kent/item/${slug}`));
+              if (missingProductLinks.length) {
+                failures.push({ routePath: row.routePath, reason: 'official product links missing', missingProductLinks });
+              }
+            }
+          }
+
+          console.log(JSON.stringify({ checkedRoutes: checkedRoutes.size, failures }, null, 2));
+          if (failures.length) throw new Error(`${failures.length} Kent category pages do not match official counts`);
+          NODE
+
+      - name: Commit exact Kent categories
+        run: |
+          git config user.name "OpenAI"
+          git config user.email "openai@users.noreply.github.com"
+          git add app/products/kent/'[[...path]]'/page.tsx
+          git commit -m "Match Kent category counts and products exactly"
+          git push origin HEAD:${{ github.head_ref }}
+
+      - name: Show server log on failure
+        if: failure()
+        run: cat /tmp/itsbio-next.log || true

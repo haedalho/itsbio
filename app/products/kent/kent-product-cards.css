@@ -1,0 +1,33 @@
+.kent-product-scope main .grid > a[href^="/products/kent/item/"] {
+  display: block;
+  height: 100%;
+}
+
+.kent-product-scope main .grid > a[href^="/products/kent/item/"] > article {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+
+.kent-product-scope main .grid > a[href^="/products/kent/item/"] > article > div:last-child {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.kent-product-scope main .grid > a[href^="/products/kent/item/"] > article > div:last-child > div[class*="text-[22px]"] {
+  display: -webkit-box;
+  min-height: 5.5625rem;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.kent-product-scope main .grid > a[href^="/products/kent/item/"] > article > div:last-child > p[class*="line-clamp-2"] {
+  min-height: 3rem;
+}
+
+.kent-product-scope main .grid > a[href^="/products/kent/item/"] > article > div:last-child > div:last-child {
+  margin-top: auto;
+  padding-top: 1.25rem;
+}

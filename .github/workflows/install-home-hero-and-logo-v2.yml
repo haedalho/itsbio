@@ -1,0 +1,89 @@
+name: Install verified home hero and original logo
+
+on:
+  push:
+    branches:
+      - agent/kent-sanity-images-only
+    paths:
+      - .github/workflows/install-home-hero-and-logo-v2.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/kent-sanity-images-only
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install image verifier
+        run: python -m pip install --disable-pip-version-check pillow
+
+      - name: Decode exact binary assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/images/home public/images/brand
+          cat .github/hero-upload-v2/part-00.txt \
+              .github/hero-upload-v2/part-01.txt \
+              .github/hero-upload-v2/part-02.txt \
+              .github/hero-upload-v2/part-03.txt \
+            | tr -d '\n\r ' \
+            | base64 --decode \
+            > public/images/home/itsbio-hero-clean-v6.webp
+
+          tr -d '\n\r ' < .github/logo-upload-v2/logo.txt \
+            | base64 --decode \
+            > public/images/brand/itsbio-logo-original-en-v2.png
+
+      - name: Verify exact checksums and dimensions
+        run: |
+          set -euo pipefail
+          echo '359e8a55f0a737364984d5badb2b0eab7e74b25a222cb662c7d5ecd3de481368  public/images/home/itsbio-hero-clean-v6.webp' | sha256sum --check --strict
+          echo '09af768185f91fd060b210af9653981e30f85b18b5dbde76b2e7dbf56c25c9c4  public/images/brand/itsbio-logo-original-en-v2.png' | sha256sum --check --strict
+          python - <<'PY'
+          from PIL import Image
+          checks = {
+              'public/images/home/itsbio-hero-clean-v6.webp': ((1792, 1008), 'RGB'),
+              'public/images/brand/itsbio-logo-original-en-v2.png': ((136, 85), 'RGBA'),
+          }
+          for path, expected in checks.items():
+              with Image.open(path) as image:
+                  actual = (image.size, image.mode)
+                  print(path, actual)
+                  if actual != expected:
+                      raise SystemExit(f'{path}: expected {expected}, got {actual}')
+          PY
+
+      - name: Upload exact assets for visual verification
+        uses: actions/upload-artifact@v4
+        with:
+          name: verified-home-assets-v2
+          path: |
+            public/images/home/itsbio-hero-clean-v6.webp
+            public/images/brand/itsbio-logo-original-en-v2.png
+          if-no-files-found: error
+
+      - name: Commit exact assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/images/home/itsbio-hero-clean-v6.webp public/images/brand/itsbio-logo-original-en-v2.png
+          if git diff --cached --quiet; then
+            echo 'Exact assets already committed.'
+            exit 0
+          fi
+          git commit -m 'Add verified clean home hero and original English logo [skip ci]'
+          git pull --rebase origin agent/kent-sanity-images-only
+          git push origin HEAD:agent/kent-sanity-images-only

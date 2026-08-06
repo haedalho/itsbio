@@ -11,6 +11,16 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "www.kentscientific.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "kentscientific.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "www.abmgood.com",
         pathname: "/**",
       },
@@ -20,6 +30,27 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ],
+  },
+  async redirects() {
+    const systems = ["somnoflo", "somnosuite", "vetflo"];
+
+    return systems.flatMap((system) => {
+      const leaf = `anesthesia-accessories-for-${system}`;
+      const existingCategory = `/products/kent/anesthesia/${leaf}`;
+
+      return [
+        {
+          source: `/products/kent/anesthesia/anesthesia-accessories/${leaf}`,
+          destination: existingCategory,
+          permanent: false,
+        },
+        {
+          source: `/products/kent/${leaf}`,
+          destination: existingCategory,
+          permanent: false,
+        },
+      ];
+    });
   },
 };
 

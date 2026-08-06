@@ -17,7 +17,7 @@ export type DerivedKentSourceContent = {
 };
 
 const PRICE_COLUMN_RE = /^(?:price|pricing|unit price|list price|retail price|sale price|dealer price|your price|online price|web price|net price|msrp|cost|amount)$/i;
-const COMMERCE_TEXT_RE = /^(?:(?:login|sign in)\s+(?:to|for)\s+(?:see\s+)?prices?|add to cart|choose an option|clear|quantity|(?:call|contact us)\s+for\s+pric(?:e|ing)|price on request)$/i;
+const COMMERCE_TEXT_RE = /^(?:(?:login|sign in)\s+(?:to|for)\s+(?:see\s+)?prices?|add to cart|choose an option|clear|quantity|(?:call|contact us)\s+for\s+pric(?:e|ing)|price on request|buy on amazon|get your accessories|don'?t miss)$/i;
 const PRICE_TEXT_RE = /^(?:starting\s+(?:at|from)|from\s+[$€£¥₩]|(?:price|pricing|cost|amount|msrp)\s*[:\-])/i;
 const MONEY_RE = /(?:[$€£¥₩]\s*\d[\d,.]*(?:\s*(?:USD|EUR|GBP|JPY|KRW))?|(?:USD|EUR|GBP|JPY|KRW)\s*\d[\d,.]*|\d[\d,.]*\s*(?:USD|EUR|GBP|JPY|KRW|원))/i;
 const NO_CHARGE_RE = /^(?:no charge|free|included at no charge)$/i;
@@ -100,13 +100,13 @@ function removePriceColumns($: cheerio.CheerioAPI, root: any) {
 function removeCommerceNoise($: cheerio.CheerioAPI, root: any) {
   root
     .find(
-      "script,style,noscript,iframe,form,input,button,select,option,.price,.pricing,.product-price,.product_price,.price-box,.price-wrapper,.regular-price,.sale-price,.list-price,.retail-price,.unit-price,.msrp,.woocommerce-Price-amount,.woocommerce-price-suffix,.woocommerce-variation-price,.single_variation_wrap,[itemprop='price']",
+      "script,style,noscript,iframe,form,input,select,option,.price,.pricing,.product-price,.product_price,.price-box,.price-wrapper,.regular-price,.sale-price,.list-price,.retail-price,.unit-price,.msrp,.woocommerce-Price-amount,.woocommerce-price-suffix,.woocommerce-variation-price,.single_variation_wrap,[itemprop='price']",
     )
     .remove();
 
   removePriceColumns($, root);
 
-  root.find("p,li,td,th,span,strong,small").each((_index: number, node: any) => {
+  root.find("p,li,td,th,span,strong,small,button,a").each((_index: number, node: any) => {
     const element = $(node);
     const text = cleanText(element.text());
     if (!text) return;
@@ -119,6 +119,26 @@ function removeCommerceNoise($: cheerio.CheerioAPI, root: any) {
     if (/^Get early access to info, updates, and discounts$/i.test(text)) element.remove();
     if (/^Our product specialists are here to help with additional information/i.test(text)) element.remove();
   });
+}
+
+function internalKentHref(input: unknown) {
+  const raw = String(input || "").trim();
+  if (!raw) return "";
+  try {
+    const parsed = new URL(raw, "https://www.kentscientific.com");
+    const hostname = parsed.hostname.toLowerCase();
+    if (hostname !== "kentscientific.com" && hostname !== "www.kentscientific.com") return raw;
+
+    const productMatch = parsed.pathname.match(/^\/products\/([^/]+)\/?$/i);
+    if (productMatch?.[1]) return `/products/kent/item/${productMatch[1]}`;
+
+    const categoryMatch = parsed.pathname.match(/^\/product\/(.+?)\/?$/i);
+    if (categoryMatch?.[1]) return `/products/kent/${categoryMatch[1]}`;
+
+    return "/products/kent";
+  } catch {
+    return raw.startsWith("/") ? raw : "";
+  }
 }
 
 function dedupeRepeatedBlocks($: cheerio.CheerioAPI, root: any) {
@@ -154,7 +174,7 @@ export function sanitizeKentSourceHtml(input: unknown) {
 
   const cleaned = sanitizeHtml(root.html() || "", {
     allowedTags: [
-      "p", "br", "strong", "b", "em", "i", "u", "sup", "sub", "h2", "h3", "h4", "h5",
+      "p", "br", "strong", "b", "em", "i", "u", "sup", "sub", "h2", "h3", "h4", "h5", "button",
       "ul", "ol", "li", "blockquote", "a", "img", "figure", "figcaption", "table", "thead", "tbody",
       "tfoot", "tr", "th", "td", "div", "span", "hr",
     ],
@@ -163,16 +183,23 @@ export function sanitizeKentSourceHtml(input: unknown) {
       img: ["src", "alt", "width", "height", "loading"],
       th: ["colspan", "rowspan", "scope"],
       td: ["colspan", "rowspan"],
+      button: ["type"],
     },
     allowedSchemes: ["http", "https", "mailto"],
     transformTags: {
-      a: (_tagName, attribs) => ({
-        tagName: "a",
-        attribs: {
-          ...attribs,
-          ...(String(attribs.href || "").startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {}),
-        },
-      }),
+      a: (_tagName, attribs) => {
+        const href = internalKentHref(attribs.href);
+        const external = /^https?:\/\//i.test(href);
+        const { target: _target, rel: _rel, ...safeAttribs } = attribs;
+        return {
+          tagName: "a",
+          attribs: {
+            ...safeAttribs,
+            href,
+            ...(external ? { target: "_blank", rel: "noreferrer" } : {}),
+          },
+        };
+      },
       img: (_tagName, attribs) => ({ tagName: "img", attribs: { ...attribs, loading: "lazy" } }),
     },
   });
@@ -317,6 +344,7 @@ export function sanitizeKentSections(input: unknown) {
     const bodyText = cleanText(
       [section.html, section.contentHtml, section.bodyHtml, section.description, JSON.stringify(section.rows || []), JSON.stringify(section.items || [])].join(" "),
     );
+    if (/our team can help you with product details, configurations, and quotes/i.test(bodyText) && /contact us/i.test(bodyText)) continue;
     const type = cleanText(section.type || section.kind || section._type).toLowerCase();
     if ((/spec|technical|table/.test(type) || /specification/i.test(title)) && isWarrantyLikeContent(bodyText)) continue;
 

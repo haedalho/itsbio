@@ -5,7 +5,6 @@ import Breadcrumb from "@/components/site/Breadcrumb";
 import { getKentOfficialProductOverride } from "@/lib/kent/official-product-overrides";
 import {
   deriveKentSourceContent,
-  pickKentSubtitle,
   sanitizeKentSections,
   sanitizeKentSourceHtml,
 } from "@/lib/kent/source-content";
@@ -14,6 +13,10 @@ import { sanityClient } from "@/lib/sanity/sanity.client";
 export const revalidate = 300;
 
 const BRAND_KEY = "kent";
+const PRODUCT_DOC_TYPE =
+  process.env.VERCEL_ENV === "preview" && String(process.env.VERCEL_GIT_COMMIT_REF || "").startsWith("agent/kent")
+    ? "kentPreviewProduct"
+    : "product";
 
 const ITEM_PAGE_QUERY = `
 {
@@ -28,7 +31,7 @@ const ITEM_PAGE_QUERY = `
   },
 
   "product": *[
-    _type == "product"
+    _type == $productType
     && slug.current == $slug
     && (
       brand->slug.current == $brandKey
@@ -41,6 +44,7 @@ const ITEM_PAGE_QUERY = `
     summary,
     "slug": slug.current,
     sku,
+    sourceProductId,
     sourceUrl,
     categoryPath,
     categoryPathTitles,
@@ -82,7 +86,7 @@ const ITEM_PAGE_QUERY = `
     galleryImageUrls,
     imageUrls,
     imageFiles,
-    images[]{ _key, asset->{ url } },
+    images[]{ _key, sourceUrl, asset->{ url } },
     kentOfficialGalleryStatus,
     kentOfficialGallery[]{
       _key,
@@ -96,6 +100,21 @@ const ITEM_PAGE_QUERY = `
     kentOfficialSourceUrl,
     kentOfficialGalleryVerifiedAt,
     kentOfficialGalleryFingerprint
+  },
+
+  "relatedProductPool": *[
+    _type == $productType
+    && (!defined(isActive) || isActive == true)
+    && (
+      brand->slug.current == $brandKey
+      || brand->themeKey == $brandKey
+      || brandSlug == $brandKey
+    )
+  ]{
+    title,
+    summary,
+    "slug": slug.current,
+    "imageUrl": images[0].asset->url
   }
 }
 `;
@@ -134,6 +153,46 @@ function signature(input?: unknown) {
     .replace(/[^a-z0-9가-힣]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function kentProductSlugFromUrl(input?: unknown) {
+  const raw = String(input || "").trim();
+  if (!raw) return "";
+  try {
+    const pathname = new URL(raw, "https://www.kentscientific.com").pathname;
+    return pathname.match(/\/products\/([^/]+)/i)?.[1] || "";
+  } catch {
+    return "";
+  }
+}
+
+function hydrateRelatedProductSections(sections: Section[], pool: any[]) {
+  const bySlug = new Map(
+    (Array.isArray(pool) ? pool : [])
+      .filter((product) => product?.slug)
+      .map((product) => [String(product.slug).toLowerCase(), product]),
+  );
+
+  return sections.map((section) => {
+    const type = String(section?.type || section?.kind || section?._type || "").toLowerCase();
+    if (!/related-product|customers-who-viewed|you-may-also/.test(type)) return section;
+    return {
+      ...section,
+      items: (Array.isArray(section.items) ? section.items : []).flatMap((item: any) => {
+        const slug = kentProductSlugFromUrl(item?.href || item?.url).toLowerCase();
+        const product = bySlug.get(slug);
+        if (!slug || !product?.imageUrl || !isManagedKentImageUrl(product.imageUrl)) return [];
+        return [{
+          ...item,
+          title: cleanText(item?.title || item?.label) || cleanText(product.title),
+          description: cleanText(product.summary),
+          slug,
+          href: `/products/kent/item/${slug}`,
+          imageUrl: String(product.imageUrl),
+        }];
+      }),
+    };
+  });
 }
 
 function decodeHtmlEntities(input?: string | null) {
@@ -203,25 +262,27 @@ function isManagedKentImageUrl(input?: unknown) {
 }
 
 function normalizeImages(product: any, title: string) {
-  // Active product galleries may only use files uploaded to Sanity. Legacy
-  // imageUrls/galleryImageUrls remain source metadata and never render.
+  // Preserve Kent's original image URL beside the Sanity asset. Variant data
+  // still identifies images by the Kent URL, so sourceUrl is the join key.
   const source = Array.isArray(product?.images)
     ? product.images
-        .map((image: any) => image?.asset?.url)
-        .filter((url: any) => isManagedKentImageUrl(url))
+        .map((image: any) => ({
+          url: String(image?.asset?.url || "").trim(),
+          sourceUrl: String(image?.sourceUrl || "").trim(),
+          alt: title,
+        }))
+        .filter((image: any) => isManagedKentImageUrl(image.url))
     : [];
   const seen = new Set<string>();
   return source
-    .map((url: unknown) => String(url).trim())
-    .filter((url: string) => url && !isGalleryNoiseUrl(url))
-    .filter((url: string) => {
-      const key = imageMasterKey(url);
+    .filter((image: any) => image.url && !isGalleryNoiseUrl(image.url) && !isGalleryNoiseUrl(image.sourceUrl))
+    .filter((image: any) => {
+      const key = imageMasterKey(image.url);
       if (!key || seen.has(key)) return false;
       seen.add(key);
       return true;
     })
-    .slice(0, 8)
-    .map((url: string) => ({ url, alt: title }));
+    .slice(0, 8);
 }
 
 function sectionBody(section: Section) {
@@ -293,7 +354,6 @@ function supplementalSections(product: any, title: string) {
   const specs = htmlValue(product?.specsHtml);
   if (specs && !isContaminatedSpecsHtml(specs)) add("spec-table", "Specifications", specs);
   add("datasheet", "Datasheet", product?.datasheetHtml);
-  add("documents", "Documents & Resources", product?.documentsHtml, Array.isArray(product?.docs) ? product.docs : []);
   add("faqs", "FAQs", product?.faqsHtml);
   add("publications", "Scientific publications", product?.referencesHtml);
   add("reviews", "Reviews", product?.reviewsHtml);
@@ -331,12 +391,16 @@ export default async function KentProductDetailPage({
   if (!slug) notFound();
 
   const client = (sanityClient as any).withConfig?.({ useCdn: true }) ?? sanityClient;
-  const bundle = await client.fetch(ITEM_PAGE_QUERY, { brandKey: BRAND_KEY, slug });
+  const bundle = await client.fetch(ITEM_PAGE_QUERY, {
+    brandKey: BRAND_KEY,
+    productType: PRODUCT_DOC_TYPE,
+    slug,
+  });
   const brand = bundle?.brand;
   const product = bundle?.product;
   if (!brand?._id || !product?._id) notFound();
 
-  const official = getKentOfficialProductOverride(slug);
+  const official = product?.sourceProductId ? null : getKentOfficialProductOverride(slug);
   const title = official?.title || stripBrandSuffix(product?.title || "");
   const categoryPath: string[] = Array.isArray(product?.categoryPath) ? product.categoryPath : [];
   const categoryPathTitles: string[] = Array.isArray(product?.categoryPathTitles) ? product.categoryPathTitles : [];
@@ -355,13 +419,31 @@ export default async function KentProductDetailPage({
 
   const universal = universalProductContent(product, title);
   const leadHtml = official?.leadHtml || universal.leadHtml;
-  const kentSections = sanitizeKentSections(official?.sections || universal.sections);
+  const kentSections = hydrateRelatedProductSections(
+    sanitizeKentSections(official?.sections || universal.sections) as Section[],
+    bundle?.relatedProductPool,
+  );
+  const sourceUrlByAssetUrl = new Map<string, string>(
+    (Array.isArray(product?.images) ? product.images : [])
+      .filter((image: any) => isManagedKentImageUrl(image?.asset?.url))
+      .map((image: any) => [
+        String(image.asset.url).trim(),
+        String(image?.sourceUrl || "").trim(),
+      ]),
+  );
   const galleryStatus = String(product?.kentOfficialGalleryStatus || "");
   const stagedOfficialImages = ["STAGING", "APPROVED"].includes(galleryStatus)
     ? (Array.isArray(product?.kentOfficialGallery) ? product.kentOfficialGallery : [])
         .filter((image: any) => isManagedKentImageUrl(image?.sourceUrl))
         .sort((a: any, b: any) => Number(a?.order || 0) - Number(b?.order || 0))
-        .map((image: any) => ({ url: String(image.sourceUrl).trim(), alt: cleanText(image.alt) || title }))
+        .map((image: any) => {
+        const url = String(image.sourceUrl).trim();
+        return {
+          url,
+          sourceUrl: sourceUrlByAssetUrl.get(url) || "",
+          alt: cleanText(image.alt) || title,
+        };
+      })
     : [];
   const overrideOfficialImages = Array.isArray(official?.fallbackImages)
     ? official.fallbackImages.filter((image) => isManagedKentImageUrl(image?.url))
@@ -380,7 +462,7 @@ export default async function KentProductDetailPage({
 
   return (
     <main className="pb-16">
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-[1410px] px-6">
         <div className="py-7">
           <Breadcrumb items={breadcrumbItems} />
         </div>
@@ -388,7 +470,7 @@ export default async function KentProductDetailPage({
         <KentProductDetailClient
           slug={product.slug}
           title={title}
-          summary={official ? official.summary : pickKentSubtitle(product?.summary, leadHtml)}
+          summary={official ? official.summary : cleanText(product?.summary)}
           sku={official ? official.sku : product?.sku || ""}
           badge={official?.badge}
           leadHtml={leadHtml}

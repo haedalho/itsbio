@@ -68,12 +68,6 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
   badge: "NEW",
   leadHtml:
     "<p>Recent research has suggested that pure oxygen can cause unintended off-target effects during veterinary anesthesia, but 21% oxygen isn’t always enough to prevent hypoxia. Custom gas blends are cumbersome and external gas mixers can be cumbersome, expensive, or difficult to use.</p><p>SomnoFlo® O2Care solves these problems by blending ambient air and 100% compressed oxygen to deliver the ideal anesthetic carrier gas composition for your animals. Now you can get the oxygen supplementation that they need, without any external gas mixers or custom gas blends!</p><p>SomnoFlo O2Care allows you to connect a pure oxygen source and easily adjust the carrier gas composition to 21%, 35%, 50%, 70%, or 100% oxygen. Perfect for long procedures where supplemental O2 is required, for recovery phases, emergencies, or anyone looking to refine their anesthetic protocols.</p><p><strong>(SomnoFlo O2Care operates using an internal air pump with ambient air or with compressed gas. If your regulator exceeds 15psi, the SOMNO-7305 Preset Pressure Reducer is required to regulate the pressure)</strong></p>",
-  fallbackImages: [
-    {
-      url: "https://www.kentscientific.com/wp-content/uploads/2025/09/SF_01_CONTROLLER_3QTRR_Silo_copy-1.png",
-      alt: "SomnoFlo O2Care digital anesthesia system",
-    },
-  ],
   sections: [
     {
       _key: "somnoflo-o2care-related-products",
@@ -156,16 +150,12 @@ const SOMNOFLO_O2CARE: KentOfficialProductOverride = {
       _key: "somnoflo-o2care-overview",
       type: "rich-text",
       title: "About SomnoFlo O2Care",
-      imageUrl: "https://www.kentscientific.com/wp-content/uploads/2025/08/oxygen.jpg",
-      imageAlt: "SomnoFlo O2Care oxygen control",
       html: "<h3>Overview</h3><p>SomnoFlo O2Care is designed for laboratories that need adjustable oxygen delivery without a custom gas blend or a separate mixer. Its compact low-flow platform lets the user match oxygen delivery to the animal and procedure while maintaining a straightforward setup.</p><ul><li>Connect the system to an approved oxygen source.</li><li>Set the required O₂ level.</li><li>Start precise vaporization.</li><li>Use a repeatable carrier-gas setting for the procedure.</li></ul><h3>Smart oxygen control, simplified</h3><p>The internal air pump and compressed-oxygen connection provide flexible carrier-gas control for routine anesthesia, long procedures, recovery and emergency support.</p>",
     },
     {
       _key: "somnoflo-o2care-efficiency",
       type: "rich-text",
       title: "Lower anesthetic use, bigger cost savings",
-      imageUrl: "https://www.kentscientific.com/wp-content/uploads/2025/08/Operational.png",
-      imageAlt: "SomnoFlo O2Care operational efficiency",
       html: "<h3>Estimated yearly operational savings</h3><p>Kent compares SomnoFlo O2Care operating at 0.2 L/min with a traditional vaporizer operating at 2 L/min. At the same 2% anesthetic concentration, the lower flow can reduce anesthetic consumption, charcoal-filter loading, waste anesthetic gas and compressed-gas use.</p><h3>Calculation basis</h3><ul><li>SomnoFlo O2Care flow rate: 0.2 L/min.</li><li>Traditional vaporizer comparison flow rate: 2 L/min.</li><li>Comparison anesthetic concentration: 2%.</li><li>Actual results depend on annual use, local protocols and carrier-gas configuration.</li></ul>",
     },
     {
@@ -218,5 +208,6 @@ const OFFICIAL_OVERRIDES: Record<string, KentOfficialProductOverride> = {
 };
 
 export function getKentOfficialProductOverride(slug: string) {
-  return OFFICIAL_OVERRIDES[String(slug || "").trim().toLowerCase()] || null;
+  const override = OFFICIAL_OVERRIDES[String(slug || "").trim().toLowerCase()] || null;
+  return override?.verification?.status === "VERIFIED" ? override : null;
 }

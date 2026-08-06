@@ -161,10 +161,158 @@ function HtmlBlock({ html }: { html?: string }) {
   if (!cleanText(managedHtml)) return null;
   return (
     <div
-      className="prose prose-slate max-w-none prose-a:font-semibold prose-a:text-[#0755a6] prose-a:no-underline hover:prose-a:underline prose-headings:text-[#0a4d96] prose-h2:text-[29px] prose-h3:text-[22px] prose-p:text-[16px] prose-p:leading-8 prose-li:text-[16px] prose-li:leading-7 prose-img:h-auto prose-img:max-w-full prose-table:w-full prose-table:border-collapse prose-th:border-b prose-th:border-slate-300 prose-th:bg-white prose-th:px-4 prose-th:py-3 prose-th:text-[#0a4d96] prose-td:border-b prose-td:border-slate-200 prose-td:px-4 prose-td:py-3"
+      className="kent-rich max-w-none"
       dangerouslySetInnerHTML={{ __html: managedHtml }}
     />
   );
+}
+
+function orderedFeatureItemsFromHtml(html: string): KentSectionItem[] {
+  const entries: KentSectionItem[] = [];
+  const tokens = Array.from(html.matchAll(/<(h[2-4]|p)\b[^>]*>([\s\S]*?)<\/\1>/gi));
+  for (const token of tokens) {
+    const tag = String(token[1] || "").toLowerCase();
+    const value = cleanText(token[2]);
+    if (!value) continue;
+    if (tag === "p" && entries.length && !entries[entries.length - 1]?.description) {
+      entries[entries.length - 1].description = value;
+    } else {
+      entries.push({ title: value });
+    }
+  }
+  const seen = new Set<string>();
+  return entries.filter((entry) => {
+    const key = `${cleanText(entry.title)}|${cleanText(entry.description)}`;
+    if (!cleanText(entry.title) || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function reviewItemsFromHtml(html: string): KentSectionItem[] {
+  const values = Array.from(html.matchAll(/<div\b[^>]*>\s*([^<>]*\S[^<>]*)\s*<\/div>/gi))
+    .map((match) => cleanText(match[1]))
+    .filter(Boolean);
+  const output: KentSectionItem[] = [];
+  const seen = new Set<string>();
+  values.forEach((value, index) => {
+    if (!/^[“\"]/.test(value) || index < 2) return;
+    const person = values[index - 2];
+    const organization = values[index - 1];
+    const key = `${person}|${organization}|${value}`;
+    if (!person || !organization || seen.has(key)) return;
+    seen.add(key);
+    output.push({
+      _key: `review-html-${output.length}`,
+      title: `${person} — ${organization}`,
+      description: value,
+    });
+  });
+  return output;
+}
+
+function embeddedResourceTitle(html: string) {
+  const headings = Array.from(html.matchAll(/<h[2-4]\b[^>]*>([\s\S]*?)<\/h[2-4]>/gi));
+  return headings.map((match) => cleanText(match[1])).find((title) => /resources?|webinars?|videos?/i.test(title)) || "";
+}
+
+function videoItemsFromHtml(html: string): KentSectionItem[] {
+  const matches = Array.from(html.matchAll(/<button\b[^>]*>([\s\S]*?)<\/button>/gi));
+  const seen = new Set<string>();
+  return matches.flatMap((match, index) => {
+    const title = cleanText(match[1]);
+    if (!title || seen.has(title)) return [];
+    seen.add(title);
+    const tail = html.slice((match.index || 0) + match[0].length, (match.index || 0) + match[0].length + 180);
+    const duration = cleanText(tail.match(/<span\b[^>]*>([\d:]+)<\/span>/i)?.[1]);
+    return [{ _key: `video-html-${index}`, title, value: duration }];
+  });
+}
+
+function linkedItemsFromHtml(html: string): KentSectionItem[] {
+  const seen = new Set<string>();
+  const output: KentSectionItem[] = [];
+
+  Array.from(html.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)).forEach((match, index) => {
+    const block = match[1] || "";
+    const anchor = block.match(/<a\b([^>]*)>([\s\S]*?)<\/a>/i);
+    if (!anchor) return;
+    const href = anchor[1]?.match(/\bhref=["']([^"']+)["']/i)?.[1] || "";
+    const anchorText = cleanText(anchor[2]);
+    const fullText = cleanText(block);
+    const title = fullText
+      .replace(/^\d+\.\)\s*/, "")
+      .replace(new RegExp(`\\s*:?\\s*${anchorText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`, "i"), "")
+      .trim() || anchorText;
+    const key = `${href}|${title}`;
+    if (!href || !title || seen.has(key)) return;
+    seen.add(key);
+    output.push({ _key: `link-list-html-${index}`, href, title });
+  });
+
+  const matches = Array.from(html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi));
+  matches.forEach((match, index) => {
+    const attributes = match[1] || "";
+    const href = attributes.match(/\bhref=["']([^"']+)["']/i)?.[1] || "";
+    const title = cleanText(match[2]);
+    if (!href || !title || /^continue reading$/i.test(title)) return;
+    const key = `${href}|${title}`;
+    if (seen.has(key) || output.some((item) => String(item.href || item.url) === href)) return;
+    seen.add(key);
+    output.push({ _key: `link-html-${index}`, href, title });
+  });
+  return output;
+}
+
+function isVideoUrl(value?: unknown) {
+  return /youtu(?:\.be|be\.com)|vimeo\.com/i.test(String(value || ""));
+}
+
+function videoMatchWords(input?: unknown) {
+  return cleanText(input)
+    .toLowerCase()
+    .replace(/[®™©]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .split(/\s+/)
+    .filter((word) => word.length >= 4 && !["video", "with", "from", "this", "that", "mouse", "anesthesia", "protocol"].includes(word))
+    .map((word) => word.slice(0, 5));
+}
+
+function attachVideoUrls(items: KentSectionItem[], candidates: KentSectionItem[]) {
+  const unused = new Set(candidates.map((_, index) => index));
+  return items.map((item) => {
+    if (isVideoUrl(item.url || item.href)) return item;
+    const words = new Set(videoMatchWords(item.title || item.label));
+    let bestIndex = -1;
+    let bestScore = 0;
+    candidates.forEach((candidate, index) => {
+      if (!unused.has(index)) return;
+      const candidateWords = videoMatchWords(candidate.title || candidate.label || candidate.text);
+      const score = candidateWords.reduce((total, word) => total + (words.has(word) ? 1 : 0), 0);
+      if (score > bestScore) {
+        bestScore = score;
+        bestIndex = index;
+      }
+    });
+    if (bestIndex < 0 || bestScore < 1) return item;
+    unused.delete(bestIndex);
+    const match = candidates[bestIndex];
+    return { ...item, url: String(match.url || match.href || "") };
+  });
+}
+
+function listItemsFromHtml(html: string): KentSectionItem[] {
+  const seen = new Set<string>();
+  return Array.from(html.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)).flatMap((match, index) => {
+    const title = cleanText(match[1]);
+    if (!title || seen.has(title)) return [];
+    seen.add(title);
+    return [{ _key: `list-html-${index}`, title }];
+  });
+}
+
+function tablesFromHtml(html: string) {
+  return Array.from(html.matchAll(/<table\b[^>]*>[\s\S]*?<\/table>/gi)).map((match) => match[0]);
 }
 
 function MediaImage({ src, alt, className = "" }: { src?: string; alt: string; className?: string }) {
@@ -186,18 +334,20 @@ function MediaImage({ src, alt, className = "" }: { src?: string; alt: string; c
 
 function FeatureGrid({ items }: { items: KentSectionItem[] }) {
   return (
-    <div className="grid border-y border-slate-200 sm:grid-cols-2 lg:grid-cols-5">
+    <div className="columns-1 gap-x-12 sm:columns-2 lg:columns-3 lg:gap-x-16">
       {items.map((item, index) => {
         const title = String(item.title || item.label || item.text || `Feature ${index + 1}`);
         const description = String(item.description || item.value || "");
         return (
           <article
             key={item._key || `${title}-${index}`}
-            className="px-5 py-7 text-center sm:border-l sm:border-slate-200 sm:first:border-l-0 lg:min-h-[150px]"
+            className="mb-7 inline-flex w-full break-inside-avoid items-start gap-3 pr-2"
           >
-            <span className="mx-auto mb-5 block h-[3px] w-11 bg-[#0b5baa]" aria-hidden />
-            <h3 className="text-[16px] font-semibold leading-6 text-[#0a4d96]">{title}</h3>
-            {description ? <p className="mt-3 text-sm leading-6 text-slate-600">{description}</p> : null}
+            <span className="mt-[3px] flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border-[1.5px] border-[#0752ad] text-[15px] leading-none text-[#0752ad]" aria-hidden>→</span>
+            <div className="min-w-0">
+              <h3 className="text-[20px] font-normal leading-[1.25] tracking-[-0.015em] text-[#064aa5]">{title}</h3>
+              {description ? <p className="mt-1.5 text-[14px] leading-[1.45] text-[#77716c]">{description}</p> : null}
+            </div>
           </article>
         );
       })}
@@ -210,99 +360,103 @@ function splitReviewTitle(input: string) {
   return { person: person?.trim() || input, organization: rest.join(" — ").trim() };
 }
 
-function ReviewRail({ items }: { items: KentSectionItem[] }) {
+function useCarouselPageSize() {
+  const [pageSize, setPageSize] = React.useState(1);
+  React.useEffect(() => {
+    const media = window.matchMedia("(min-width: 768px)");
+    const update = () => setPageSize(media.matches ? 2 : 1);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  return pageSize;
+}
+
+function ReviewCarousel({ items }: { items: KentSectionItem[] }) {
+  const pageSize = useCarouselPageSize();
+  const maxIndex = Math.max(0, items.length - pageSize);
+  const [activeIndex, setActiveIndex] = React.useState(0);
+  React.useEffect(() => setActiveIndex((current) => Math.min(current, maxIndex)), [maxIndex]);
+  const visibleItems = items.slice(activeIndex, activeIndex + pageSize);
+
+  const move = (direction: -1 | 1) => {
+    setActiveIndex((current) => {
+      if (direction < 0) return current <= 0 ? maxIndex : current - 1;
+      return current >= maxIndex ? 0 : current + 1;
+    });
+  };
+
   return (
-    <div className="scrollbar-hidden flex snap-x gap-10 overflow-x-auto pb-4">
-      {items.map((item, index) => {
+    <div>
+      <div className="relative">
+        {items.length > pageSize ? (
+          <>
+            <button type="button" onClick={() => move(-1)} aria-label="Previous testimonial" className="absolute -left-3 top-1/2 z-10 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#d7dde3] bg-white text-[25px] text-[#0b4f9c] shadow-sm transition hover:border-[#0b4f9c] hover:bg-[#0b4f9c] hover:text-white">‹</button>
+            <button type="button" onClick={() => move(1)} aria-label="Next testimonial" className="absolute -right-3 top-1/2 z-10 flex h-11 w-11 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#d7dde3] bg-white text-[25px] text-[#0b4f9c] shadow-sm transition hover:border-[#0b4f9c] hover:bg-[#0b4f9c] hover:text-white">›</button>
+          </>
+        ) : null}
+        <div className="grid gap-5 md:grid-cols-2">
+      {visibleItems.map((item, offset) => {
+        const index = activeIndex + offset;
         const rawTitle = String(item.title || item.label || item.text || `Review ${index + 1}`);
         const { person, organization } = splitReviewTitle(rawTitle);
         const description = String(item.description || item.value || "");
         return (
           <article
             key={item._key || `${rawTitle}-${index}`}
-            className="min-w-[86%] snap-start border-t-4 border-[#0b5baa] pt-6 sm:min-w-[70%] lg:min-w-[47%]"
+            className="min-h-[292px] bg-[#f6f7fa] px-9 py-9 md:px-11 md:py-10"
           >
-            {description ? <blockquote className="text-[16px] leading-8 text-slate-700">“{description}”</blockquote> : null}
-            <div className="mt-6 text-[16px] font-semibold text-[#0a4d96]">{person}</div>
-            {organization ? <div className="mt-1 text-sm leading-6 text-slate-500">{organization}</div> : null}
+            <div className="text-[17px] font-normal leading-6 text-[#0752ad]">{person}</div>
+            {organization ? <div className="mt-1 text-[18px] leading-6 text-[#171717]">{organization}</div> : null}
+            {description ? <blockquote className="mt-5 text-[15px] leading-[1.55] text-[#77716c]">{description}</blockquote> : null}
           </article>
         );
       })}
+        </div>
+      </div>
+      {items.length > pageSize ? (
+        <div className="mt-4 flex justify-center gap-2" aria-label="Testimonial pages">
+          {Array.from({ length: maxIndex + 1 }, (_, index) => (
+            <button key={`review-dot-${index}`} type="button" onClick={() => setActiveIndex(index)} aria-label={`Show testimonial page ${index + 1}`} aria-current={index === activeIndex ? "true" : undefined} className={`h-2.5 w-2.5 rounded-full transition ${index === activeIndex ? "bg-[#0b4f9c]" : "bg-[#c9cdd1] hover:bg-[#7f8a94]"}`} />
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
 
-function productSlugFromHref(href?: string) {
-  const raw = String(href || "").trim();
-  const match = raw.match(/\/products\/kent\/item\/([^/?#]+)/i);
-  return match?.[1] ? decodeURIComponent(match[1]).toLowerCase() : "";
+function productSlugFromHref(input?: unknown) {
+  const raw = String(input || "").trim();
+  if (!raw) return "";
+  try {
+    const pathname = new URL(raw, "https://www.kentscientific.com").pathname;
+    return pathname.match(/\/products\/([^/]+)/i)?.[1] || "";
+  } catch {
+    return "";
+  }
 }
 
-function RelatedProducts({ items }: { items: KentSectionItem[] }) {
-  const [resolvedImages, setResolvedImages] = React.useState<Record<string, string>>({});
-
-  React.useEffect(() => {
-    const targets = items
-      .map((item, index) => {
-        if (isManagedKentImageUrl(item.imageUrl)) return null;
-        const href = String(item.href || item.url || "");
-        const slug = productSlugFromHref(href);
-        return slug ? { key: `related:${slug}:${index}`, type: "product", value: slug, slug } : null;
-      })
-      .filter(Boolean) as Array<{ key: string; type: "product"; value: string; slug: string }>;
-
-    if (!targets.length) return;
-    let cancelled = false;
-    fetch("/api/kent/product-images", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ targets: targets.map(({ key, type, value }) => ({ key, type, value })) }),
-    })
-      .then((response) => (response.ok ? response.json() : { images: {} }))
-      .then((payload) => {
-        if (cancelled) return;
-        const next: Record<string, string> = {};
-        for (const target of targets) {
-          const images = payload?.images?.[target.key];
-          if (Array.isArray(images) && images[0]) next[target.slug] = images[0];
-        }
-        setResolvedImages(next);
-      })
-      .catch(() => undefined);
-
-    return () => {
-      cancelled = true;
-    };
-  }, [items]);
-
+function RelatedProductGrid({ items }: { items: KentSectionItem[]; productTitle: string }) {
+  const internalItems = items.flatMap((item) => {
+    const slug = String(item.slug || productSlugFromHref(item.href || item.url)).trim();
+    return slug ? [{ item, slug }] : [];
+  });
   return (
-    <div className="grid gap-8 md:grid-cols-3">
-      {items.map((item, index) => {
-        const href = String(item.href || item.url || "").trim();
-        const title = String(item.title || item.label || item.text || `Related product ${index + 1}`);
-        const description = String(item.description || item.value || "");
-        const slug = productSlugFromHref(href);
-        const explicitImage = isManagedKentImageUrl(item.imageUrl) ? String(item.imageUrl) : "";
-        const resolvedImage = isManagedKentImageUrl(resolvedImages[slug]) ? String(resolvedImages[slug]) : "";
-        const imageUrl = explicitImage || resolvedImage;
-        const content = (
-          <>
-            <div className="flex aspect-[4/3] items-center justify-center border border-slate-200 bg-white p-5">
-              {imageUrl ? <MediaImage src={imageUrl} alt={title} className="max-h-52" /> : <div className="text-sm text-slate-400">Product image</div>}
-            </div>
-            <div className="pt-4">
-              {description ? <div className="mb-1 text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">{description}</div> : null}
-              <h3 className="text-[17px] font-semibold leading-6 text-[#0a4d96]">{title}</h3>
-            </div>
-          </>
-        );
-        return href ? (
-          <a key={item._key || `${title}-${index}`} href={href} className="group block">{content}</a>
-        ) : (
-          <article key={item._key || `${title}-${index}`}>{content}</article>
-        );
-      })}
-    </div>
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {internalItems.slice(0, 3).map(({ item, slug }, index) => {
+          const title = String(item.title || item.label || item.text || `Related product ${index + 1}`);
+          const href = `/products/kent/item/${slug}`;
+          return (
+            <a key={item._key || `${title}-${index}`} href={href} className="group block min-w-0">
+              <div className="flex aspect-square items-center justify-center border border-[#e7e9ec] bg-white p-7 transition group-hover:border-[#0b4f9c]">
+                <MediaImage src={String(item.imageUrl || "")} alt={title} className="max-h-full transition duration-300 group-hover:scale-[1.025]" />
+              </div>
+              <h3 className="mt-4 line-clamp-2 text-[16px] font-normal leading-6 text-[#0752ad] group-hover:underline">{title}</h3>
+              {item.description ? <p className="mt-1 line-clamp-2 text-[14px] leading-5 text-[#767b80]">{String(item.description)}</p> : null}
+            </a>
+          );
+        })}
+      </div>
   );
 }
 
@@ -352,15 +506,26 @@ function ResourceList({ items }: { items: KentSectionItem[] }) {
   );
 }
 
-function youtubeId(url?: string) {
+function videoEmbedUrl(url?: string) {
   const raw = String(url || "").trim();
   if (!raw) return "";
   try {
     const parsed = new URL(raw);
-    if (parsed.hostname === "youtu.be") return parsed.pathname.replace(/^\//, "").split("/")[0];
+    if (parsed.hostname === "youtu.be") {
+      const id = parsed.pathname.replace(/^\//, "").split("/")[0];
+      return id ? `https://www.youtube-nocookie.com/embed/${id}?rel=0` : "";
+    }
     if (parsed.hostname.includes("youtube.com")) {
-      if (parsed.pathname.startsWith("/shorts/")) return parsed.pathname.split("/")[2] || "";
-      return parsed.searchParams.get("v") || "";
+      const id = parsed.pathname.startsWith("/embed/")
+        ? parsed.pathname.split("/")[2]
+        : parsed.pathname.startsWith("/shorts/")
+          ? parsed.pathname.split("/")[2]
+          : parsed.searchParams.get("v");
+      return id ? `https://www.youtube-nocookie.com/embed/${id}?rel=0` : "";
+    }
+    if (parsed.hostname.includes("vimeo.com")) {
+      const id = parsed.pathname.split("/").filter(Boolean).find((part) => /^\d+$/.test(part));
+      return id ? `https://player.vimeo.com/video/${id}` : "";
     }
   } catch {
     return "";
@@ -368,23 +533,80 @@ function youtubeId(url?: string) {
   return "";
 }
 
-function VideoCards({ items }: { items: KentSectionItem[] }) {
+function VideoPlaylist({ items }: { items: KentSectionItem[] }) {
+  const [activeIndex, setActiveIndex] = React.useState(0);
+  React.useEffect(() => setActiveIndex(0), [items]);
+  const active = items[activeIndex] || items[0];
+  const activeUrl = String(active?.url || active?.href || "").trim();
+  const embedUrl = videoEmbedUrl(activeUrl);
+  const activeTitle = String(active?.title || active?.label || `Video ${activeIndex + 1}`);
+
   return (
-    <div className="grid gap-8 md:grid-cols-2">
-      {items.map((item, index) => {
-        const href = String(item.url || item.href || "").trim();
-        const label = String(item.label || item.title || `Video ${index + 1}`);
-        const id = youtubeId(href);
-        return (
-          <a key={item._key || `${href}-${index}`} href={href || undefined} target={href ? "_blank" : undefined} rel={href ? "noreferrer" : undefined} className="group block">
-            <div className="relative aspect-video overflow-hidden bg-slate-100">
-              {id ? <img src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`} alt={label} loading="lazy" className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]" /> : null}
-              <span className="absolute inset-0 flex items-center justify-center"><span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/95 text-xl text-[#0b5baa] shadow">▶</span></span>
+    <div className="grid overflow-hidden border border-[#d8dee4] bg-white lg:grid-cols-[minmax(0,1.55fr)_minmax(290px,0.65fr)]">
+      <div className="bg-[#071e35]">
+        <div className="relative aspect-video w-full">
+          {embedUrl ? (
+            <iframe
+              key={embedUrl}
+              src={embedUrl}
+              title={activeTitle}
+              loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+              className="absolute inset-0 h-full w-full border-0"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center px-8 text-center text-white">
+              <div>
+                <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-xl text-[#0b5baa]">▶</span>
+                <p className="mt-5 text-[17px] font-semibold">{activeTitle}</p>
+              </div>
             </div>
-            <h3 className="mt-4 text-[18px] font-semibold leading-6 text-[#0a4d96]">{label}</h3>
-          </a>
-        );
-      })}
+          )}
+        </div>
+      </div>
+
+      <div className="flex min-h-0 flex-col bg-[#f5f6f7]">
+        <div className="border-b border-[#d8dee4] px-5 py-4">
+          <div className="text-[12px] font-bold uppercase tracking-[0.13em] text-[#0b5baa]">Playlist</div>
+          <div className="mt-1 text-sm text-[#666d73]">{items.length} {items.length === 1 ? "Video" : "Videos"}</div>
+        </div>
+        <div className="max-h-[360px] overflow-y-auto">
+          {items.map((item, index) => {
+            const label = String(item.label || item.title || `Video ${index + 1}`);
+            const duration = String(item.description || item.value || "").trim();
+            const selected = index === activeIndex;
+            return (
+              <button
+                key={item._key || `${label}-${index}`}
+                type="button"
+                onClick={() => setActiveIndex(index)}
+                className={`flex w-full items-center gap-4 border-b border-[#dde2e6] px-5 py-4 text-left transition ${selected ? "bg-white" : "hover:bg-white/75"}`}
+              >
+                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs ${selected ? "bg-[#0b5baa] text-white" : "border border-[#b9c3cc] bg-white text-[#0b5baa]"}`}>▶</span>
+                <span className="min-w-0 flex-1">
+                  <span className={`block text-[14px] font-semibold leading-5 ${selected ? "text-[#0b4f9c]" : "text-[#3f474e]"}`}>{label}</span>
+                  {duration ? <span className="mt-1 block text-xs text-[#7a8187]">{duration}</span> : null}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {activeUrl ? <a href={activeUrl} target="_blank" rel="noreferrer" className="mt-auto border-t border-[#d8dee4] px-5 py-3 text-xs font-semibold text-[#0b5baa] hover:underline">Open video in a new window ↗</a> : null}
+      </div>
+    </div>
+  );
+}
+
+function SpecificationGrid({ html }: { html: string }) {
+  const tables = tablesFromHtml(stripUnmanagedImages(html));
+  if (!tables.length) return <HtmlBlock html={html} />;
+  return (
+    <div className="grid gap-6 md:grid-cols-2">
+      {tables.map((table, index) => (
+        <div key={`spec-table-${index}`} className="kent-rich overflow-x-auto border border-[#dce2e7] bg-white px-1" dangerouslySetInnerHTML={{ __html: table }} />
+      ))}
     </div>
   );
 }
@@ -490,12 +712,19 @@ function DataTable({ rows }: { rows: Array<Record<string, unknown>> }) {
   );
 }
 
-function ProductSection({ section, index }: { section: SectionWithKey; index: number }) {
+function ProductSection({ section, index, videoCandidates, productTitle }: { section: SectionWithKey; index: number; videoCandidates: KentSectionItem[]; productTitle: string }) {
   const bucket = typeBucket(section);
   const title = String(section.title || (bucket === "overview" ? "Product overview" : bucket.replaceAll("-", " ")));
   const html = sectionHtml(section);
   const items = sectionItems(section);
   const rows = Array.isArray(section.rows) ? section.rows : [];
+  const parsedFeatures = bucket === "features" ? orderedFeatureItemsFromHtml(html) : [];
+  const parsedReviews = bucket === "reviews" ? reviewItemsFromHtml(html) : [];
+  const reviewLinks = bucket === "reviews" ? linkedItemsFromHtml(html) : [];
+  const reviewResourceTitle = bucket === "reviews" ? embeddedResourceTitle(html) : "";
+  const parsedVideos = bucket === "videos" ? videoItemsFromHtml(html) : [];
+  const parsedLinks = ["documents", "datasheet", "references"].includes(bucket) ? linkedItemsFromHtml(html) : [];
+  const parsedListItems = bucket === "included" || bucket === "addons" ? listItemsFromHtml(html) : [];
   const media = section.imageUrl ? <MediaImage src={String(section.imageUrl)} alt={String(section.imageAlt || title)} className="max-h-[500px]" /> : null;
 
   if (bucket === "faqs") {
@@ -510,19 +739,42 @@ function ProductSection({ section, index }: { section: SectionWithKey; index: nu
   }
 
   const body = (() => {
-    if (bucket === "related-products") return items.length ? <RelatedProducts items={items} /> : <HtmlBlock html={html} />;
-    if (bucket === "features") return items.length ? <FeatureGrid items={items} /> : <HtmlBlock html={html} />;
-    if (bucket === "reviews") return items.length ? <ReviewRail items={items} /> : <HtmlBlock html={html} />;
-    if (bucket === "included" || bucket === "addons") return items.length ? <ItemList items={items} /> : <HtmlBlock html={html} />;
+    if (bucket === "related-products") return items.length ? <RelatedProductGrid items={items} productTitle={productTitle} /> : null;
+    if (bucket === "features") return (items.length || parsedFeatures.length) ? <FeatureGrid items={items.length ? items : parsedFeatures} /> : <HtmlBlock html={html} />;
+    if (bucket === "reviews") {
+      const reviews = items.length ? items : parsedReviews;
+      if (!reviews.length) return <HtmlBlock html={html} />;
+      return (
+        <>
+          <div className={`grid gap-10 ${reviewLinks.length ? "lg:grid-cols-[minmax(0,1.9fr)_minmax(300px,0.9fr)] lg:gap-16" : ""}`}>
+            <ReviewCarousel items={reviews} />
+            {reviewLinks.length ? (
+              <aside>
+                <h3 className="mb-5 text-[28px] font-normal tracking-[-0.02em] text-[#0b4f9c]">{reviewResourceTitle || `${productTitle} resources`}</h3>
+                <ResourceList items={reviewLinks} />
+              </aside>
+            ) : null}
+          </div>
+        </>
+      );
+    }
+    if (bucket === "included" || bucket === "addons") {
+      const listItems = items.length ? items : parsedListItems;
+      return listItems.length ? <ItemList items={listItems} /> : <HtmlBlock html={html} />;
+    }
     if (bucket === "videos") {
-      return <>{items.length ? <VideoCards items={items} /> : null}{html ? <div className={items.length ? "mt-8" : ""}><HtmlBlock html={html} /></div> : null}</>;
+      const videos = items.length ? items : parsedVideos;
+      const playableVideos = attachVideoUrls(videos, videoCandidates);
+      return playableVideos.length ? <VideoPlaylist items={playableVideos} /> : <HtmlBlock html={html} />;
     }
     if (["documents", "datasheet", "references"].includes(bucket)) {
-      return <>{items.length ? <ResourceList items={items} /> : null}{html ? <div className={items.length ? "mt-8" : ""}><HtmlBlock html={html} /></div> : null}</>;
+      const resources = items.length ? items : parsedLinks;
+      return resources.length ? <ResourceList items={resources} /> : <HtmlBlock html={html} />;
     }
     if (rows.length) {
       return <><DataTable rows={rows} />{html ? <div className="mt-8"><HtmlBlock html={html} /></div> : null}</>;
     }
+    if (bucket === "specs") return <SpecificationGrid html={html} />;
 
     const content = (
       <>
@@ -539,9 +791,9 @@ function ProductSection({ section, index }: { section: SectionWithKey; index: nu
   return (
     <section
       id={`kent-section-${index}`}
-      className={["scroll-mt-24 py-12 md:py-16", index > 0 ? "border-t border-slate-200" : "", notice ? "bg-amber-50 px-6 md:px-8" : ""].join(" ")}
+      className={["scroll-mt-24 py-12 md:py-[66px]", index > 0 ? "border-t border-[#dfe4e8]" : "", bucket === "features" ? "border-b-[4px] border-b-[#0b4f9c]" : "", bucket === "videos" ? "-mx-6 bg-[#f3f7fb] px-6 md:-mx-10 md:px-10 lg:-mx-12 lg:px-12" : "", notice ? "-mx-6 bg-[#fff8e8] px-6 md:-mx-10 md:px-10" : ""].join(" ")}
     >
-      <h2 className={`mb-7 text-[28px] font-semibold tracking-[-0.02em] md:text-[33px] ${notice ? "text-amber-900" : "text-[#0a4d96]"}`}>{title}</h2>
+      <h2 className={`mb-8 text-[28px] font-semibold leading-tight tracking-[-0.025em] md:text-[34px] ${notice ? "text-amber-900" : "text-[#0b4f9c]"}`}>{title}</h2>
       {body}
     </section>
   );
@@ -576,7 +828,6 @@ function fallbackSections({
     { fallbackKey: "overview", type: "rich-text", title: `About ${title}`, html: descriptionHtml },
     { fallbackKey: "specs", type: "spec-table", title: "Specifications", html: specsHtml },
     { fallbackKey: "datasheet", type: "datasheet", title: "Datasheet", html: datasheetHtml },
-    { fallbackKey: "documents", type: "resources", title: "Documents & Resources", html: documentsHtml, items: docs },
     { fallbackKey: "faqs", type: "faqs", title: "FAQs", html: faqsHtml },
     { fallbackKey: "references", type: "publications", title: "References & Publications", html: referencesHtml },
     { fallbackKey: "reviews", type: "reviews", title: "Reviews", html: reviewsHtml },
@@ -611,5 +862,12 @@ export default function KentProductSectionRendererV2({
   const legacy = fallbackSections({ title, descriptionHtml, specsHtml, datasheetHtml, documentsHtml, faqsHtml, referencesHtml, reviewsHtml, documents });
   const merged = [...explicit, ...legacy.filter((section) => !represented.has(section.fallbackKey || typeBucket(section)))];
   if (!merged.length) return null;
-  return <div className="mt-6">{merged.map((section, index) => <ProductSection key={section._key || `${normalizeType(section)}-${index}`} section={section} index={index} />)}</div>;
+  const videoCandidates = merged
+    .flatMap((section) => [...sectionItems(section), ...linkedItemsFromHtml(sectionHtml(section))])
+    .filter((item) => isVideoUrl(item.url || item.href));
+  return (
+    <div className="mt-2">
+      {merged.map((section, index) => <ProductSection key={section._key || `${normalizeType(section)}-${index}`} section={section} index={index} videoCandidates={videoCandidates} productTitle={title} />)}
+    </div>
+  );
 }

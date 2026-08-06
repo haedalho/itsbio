@@ -185,11 +185,11 @@ function PartnersCarousel() {
   const PARTNERS = [
     { name: "Partner 1", src: "/partners/abm-logo-1.png", href: "https://www.abmgood.com/" },
     { name: "Partner 2", src: "/partners/aims-logo.png", href: "https://animalid.com/" },
-    { name: "Partner 3", src: "/partners/bioplastics-logo.png", href: "https://www.kentscientific.com/?srsltid=AfmBOoo8v6ctNcJYeHtOiyLOZHXntbUEi8iDnRUiHCbc-sxHTZSSe-_f" },
+    { name: "Partner 3", src: "/partners/bioplastics-logo.png", href: "/products/kent" },
     { name: "Partner 4", src: "/partners/cellfreesciences-logo.png", href: "https://www.cfsciences.com/" },
     { name: "Partner 5", src: "/partners/Cleaverscientific-logo.png", href: "https://www.thistlescientific.co.uk/" },
     { name: "Partner 6", src: "/partners/itschem-logo.png", href: "#" },
-    { name: "Partner 7", src: "/partners/KentScientific-logo.png", href: "https://www.kentscientific.com/" },
+    { name: "Partner 7", src: "/partners/KentScientific-logo.png", href: "/products/kent" },
     { name: "Partner 8", src: "/partners/plaslabs-logo.png", href: "https://plas-labs.com/" },
     { name: "Partner 9", src: "/partners/Seedburo-logo.png", href: "https://seedburo.com/" },
   ];

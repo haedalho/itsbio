@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1792 1008" role="img" aria-labelledby="title desc">
+  <title id="title">Abstract orange biological cell</title>
+  <desc id="desc">A clean high-resolution biotechnology illustration with translucent cells and an orange nucleus.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fffdfb"/>
+      <stop offset=".48" stop-color="#f8f4f1"/>
+      <stop offset="1" stop-color="#e6edf2"/>
+    </linearGradient>
+    <radialGradient id="membrane" cx=".38" cy=".32" r=".72">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".96"/>
+      <stop offset=".48" stop-color="#fff7f0" stop-opacity=".56"/>
+      <stop offset=".78" stop-color="#dce8ef" stop-opacity=".34"/>
+      <stop offset=".94" stop-color="#ffffff" stop-opacity=".82"/>
+      <stop offset="1" stop-color="#c8d8e3" stop-opacity=".64"/>
+    </radialGradient>
+    <radialGradient id="nucleus" cx=".42" cy=".35" r=".72">
+      <stop offset="0" stop-color="#ffb078"/>
+      <stop offset=".34" stop-color="#ff8442"/>
+      <stop offset=".7" stop-color="#ef5b16"/>
+      <stop offset="1" stop-color="#be3708"/>
+    </radialGradient>
+    <radialGradient id="nucleusGlow" cx=".5" cy=".46" r=".56">
+      <stop offset="0" stop-color="#fff4e9" stop-opacity=".85"/>
+      <stop offset=".5" stop-color="#ff9b59" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#ff6b1f" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bubble" cx=".35" cy=".3" r=".7">
+      <stop offset="0" stop-color="#fff" stop-opacity=".98"/>
+      <stop offset=".55" stop-color="#fff8f3" stop-opacity=".62"/>
+      <stop offset=".82" stop-color="#dbe8ef" stop-opacity=".32"/>
+      <stop offset="1" stop-color="#fff" stop-opacity=".72"/>
+    </radialGradient>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="22"/>
+    </filter>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="30" stdDeviation="38" flood-color="#a64918" flood-opacity=".16"/>
+    </filter>
+    <filter id="organic" x="-25%" y="-25%" width="150%" height="150%">
+      <feTurbulence type="fractalNoise" baseFrequency=".012 .02" numOctaves="3" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="22" xChannelSelector="R" yChannelSelector="B"/>
+    </filter>
+    <filter id="grain" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency=".5" numOctaves="2" seed="4" result="n"/>
+      <feComposite in="n" in2="SourceGraphic" operator="in" result="texture"/>
+      <feBlend in="SourceGraphic" in2="texture" mode="soft-light"/>
+    </filter>
+    <clipPath id="cellClip">
+      <circle cx="1085" cy="555" r="388"/>
+    </clipPath>
+  </defs>
+
+  <rect width="1792" height="1008" fill="url(#bg)"/>
+  <ellipse cx="315" cy="355" rx="255" ry="220" fill="#ff9855" opacity=".13" filter="url(#soft)"/>
+  <ellipse cx="1510" cy="230" rx="215" ry="180" fill="#f87a2d" opacity=".09" filter="url(#soft)"/>
+  <ellipse cx="1400" cy="850" rx="340" ry="220" fill="#d8e5ec" opacity=".5" filter="url(#soft)"/>
+
+  <g opacity=".78">
+    <g transform="translate(1500 90) scale(.58)"><circle cx="0" cy="0" r="205" fill="url(#bubble)" stroke="#fff" stroke-width="14"/><circle cx="0" cy="8" r="105" fill="url(#nucleus)" opacity=".76"/><ellipse cx="-62" cy="-70" rx="70" ry="42" fill="#fff" opacity=".52"/></g>
+    <g transform="translate(1625 480) scale(.36)"><circle cx="0" cy="0" r="205" fill="url(#bubble)" stroke="#fff" stroke-width="14"/><circle cx="0" cy="8" r="105" fill="url(#nucleus)" opacity=".72"/></g>
+    <g transform="translate(1455 735) scale(.47)"><circle cx="0" cy="0" r="205" fill="url(#bubble)" stroke="#fff" stroke-width="14"/><circle cx="0" cy="8" r="105" fill="url(#nucleus)" opacity=".7"/></g>
+    <g transform="translate(780 110) scale(.3)"><circle cx="0" cy="0" r="205" fill="url(#bubble)" stroke="#fff" stroke-width="14"/><circle cx="0" cy="8" r="105" fill="url(#nucleus)" opacity=".62"/></g>
+    <g transform="translate(690 825) scale(.25)"><circle cx="0" cy="0" r="205" fill="url(#bubble)" stroke="#fff" stroke-width="14"/><circle cx="0" cy="8" r="105" fill="url(#nucleus)" opacity=".58"/></g>
+  </g>
+
+  <g filter="url(#shadow)">
+    <circle cx="1085" cy="555" r="395" fill="#fff" opacity=".68"/>
+    <circle cx="1085" cy="555" r="388" fill="url(#membrane)" stroke="#fefefe" stroke-width="18"/>
+    <circle cx="1085" cy="555" r="360" fill="none" stroke="#c9d9e3" stroke-opacity=".48" stroke-width="8"/>
+    <circle cx="1085" cy="555" r="330" fill="none" stroke="#fff" stroke-opacity=".66" stroke-width="4"/>
+  </g>
+
+  <g clip-path="url(#cellClip)">
+    <ellipse cx="940" cy="410" rx="250" ry="138" fill="#fff" opacity=".34" transform="rotate(-23 940 410)"/>
+    <ellipse cx="1210" cy="735" rx="250" ry="120" fill="#d4e3ec" opacity=".24" transform="rotate(18 1210 735)"/>
+    <circle cx="1050" cy="585" r="232" fill="url(#nucleus)" filter="url(#organic)"/>
+    <circle cx="1050" cy="585" r="217" fill="url(#nucleus)" opacity=".95" filter="url(#grain)"/>
+    <circle cx="1050" cy="585" r="212" fill="url(#nucleusGlow)"/>
+    <g fill="#ffbf8f" opacity=".7">
+      <circle cx="886" cy="463" r="10"/><circle cx="914" cy="430" r="7"/><circle cx="938" cy="455" r="6"/><circle cx="1221" cy="468" r="9"/><circle cx="1255" cy="506" r="7"/><circle cx="1204" cy="420" r="5"/><circle cx="870" cy="680" r="8"/><circle cx="910" cy="735" r="6"/><circle cx="1208" cy="706" r="9"/><circle cx="1242" cy="665" r="5"/><circle cx="1160" cy="795" r="7"/>
+    </g>
+    <g fill="#fff" opacity=".78"><circle cx="860" cy="365" r="18"/><circle cx="910" cy="325" r="8"/><circle cx="1238" cy="340" r="13"/><circle cx="1305" cy="540" r="9"/><circle cx="835" cy="595" r="11"/></g>
+  </g>
+
+  <path d="M785 280 C925 150 1215 112 1398 258" fill="none" stroke="#fff" stroke-opacity=".62" stroke-width="20" stroke-linecap="round"/>
+  <path d="M807 306 C930 195 1180 158 1355 271" fill="none" stroke="#c9dce8" stroke-opacity=".32" stroke-width="8" stroke-linecap="round"/>
+  <g fill="#ef6b25"><circle cx="820" cy="470" r="8" opacity=".72"/><circle cx="789" cy="520" r="5" opacity=".52"/><circle cx="1315" cy="440" r="7" opacity=".58"/><circle cx="1362" cy="570" r="6" opacity=".5"/><circle cx="1248" cy="835" r="8" opacity=".46"/></g>
+  <g opacity=".5"><circle cx="1572" cy="895" r="44" fill="url(#bubble)" stroke="#fff" stroke-width="5"/><circle cx="1572" cy="895" r="14" fill="#ef6b25" opacity=".55"/><circle cx="520" cy="190" r="30" fill="url(#bubble)" stroke="#fff" stroke-width="4"/><circle cx="520" cy="190" r="10" fill="#ef6b25" opacity=".45"/></g>
+</svg>
