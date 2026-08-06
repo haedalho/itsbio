@@ -115,6 +115,20 @@ export default defineType({
     }),
 
     defineField({
+      name: "sourceProductId",
+      title: "Source Product ID",
+      type: "number",
+      readOnly: true,
+    }),
+
+    defineField({
+      name: "sourceModifiedAt",
+      title: "Source Modified At",
+      type: "datetime",
+      readOnly: true,
+    }),
+
+    defineField({
       name: "sku",
       title: "SKU / Cat.No",
       type: "string",
@@ -167,6 +181,62 @@ export default defineType({
       title: "Extra / Overview HTML",
       type: "text",
       rows: 16,
+    }),
+    defineField({
+      name: "sourceIntroHtml",
+      title: "Kent Source Intro HTML",
+      type: "text",
+      rows: 16,
+      description: "Kent Shop product body copied from the official source. Prices and commerce controls are excluded at render time.",
+    }),
+    defineField({
+      name: "overviewHtml",
+      title: "Kent Overview HTML",
+      type: "text",
+      rows: 16,
+    }),
+    defineField({
+      name: "kentSections",
+      title: "Kent Source Sections",
+      type: "array",
+      of: [
+        defineField({
+          name: "kentSourceSection",
+          title: "Kent Source Section",
+          type: "object",
+          fields: [
+            defineField({ name: "type", title: "Type", type: "string" }),
+            defineField({ name: "title", title: "Title", type: "string" }),
+            defineField({ name: "html", title: "HTML", type: "text", rows: 16 }),
+            defineField({ name: "description", title: "Description", type: "text", rows: 6 }),
+            defineField({ name: "imageUrl", title: "Image URL", type: "url" }),
+            defineField({
+              name: "items",
+              title: "Items",
+              type: "array",
+              of: [
+                defineField({
+                  name: "kentSourceSectionItem",
+                  title: "Section Item",
+                  type: "object",
+                  fields: [
+                    defineField({ name: "title", title: "Title", type: "string" }),
+                    defineField({ name: "label", title: "Label", type: "string" }),
+                    defineField({ name: "text", title: "Text", type: "text", rows: 4 }),
+                    defineField({ name: "description", title: "Description", type: "text", rows: 6 }),
+                    defineField({ name: "html", title: "HTML", type: "text", rows: 8 }),
+                    defineField({ name: "url", title: "URL", type: "url" }),
+                    defineField({ name: "href", title: "Href", type: "url" }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+          preview: {
+            select: { title: "title", subtitle: "type" },
+          },
+        }),
+      ],
     }),
     defineField({
       name: "specsHtml",

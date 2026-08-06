@@ -1,0 +1,46 @@
+name: Export Kent baseline
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout working branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/kent-preflight
+          fetch-depth: 0
+
+      - name: Generate Kent baseline
+        run: node scripts/kent-product-baseline-export.mjs
+
+      - name: Commit baseline files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/kent-product-baseline.json data/kent-product-baseline.csv data/kent-product-baseline.md
+          if git diff --cached --quiet; then
+            echo "No baseline changes"
+            exit 0
+          fi
+          git commit -m "Add Kent full product baseline"
+          git fetch origin agent/kent-preflight
+          git rebase origin/agent/kent-preflight
+          git push origin HEAD:agent/kent-preflight
+
+      - name: Upload baseline artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kent-product-baseline
+          path: |
+            data/kent-product-baseline.json
+            data/kent-product-baseline.csv
+            data/kent-product-baseline.md
+          if-no-files-found: error

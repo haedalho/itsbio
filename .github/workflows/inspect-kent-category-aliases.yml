@@ -1,0 +1,27 @@
+name: Inspect Kent category aliases
+
+on:
+  pull_request:
+    branches:
+      - agent/kent-preflight
+    paths:
+      - .github/workflows/inspect-kent-category-aliases.yml
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query possible Kent category aliases
+        run: |
+          node <<'NODE'
+          const query = `*[_type=="category" && (!defined(isActive) || isActive==true) && (brand->themeKey=="kent" || brand->slug.current=="kent" || themeKey=="kent" || brandSlug=="kent") && defined(path)]{_id,title,path,sourceUrl,pageType,_updatedAt}`;
+          const url = new URL('https://9b5twpc8.api.sanity.io/v2025-02-19/data/query/production');
+          url.searchParams.set('query', query);
+          const response = await fetch(url);
+          const rows = (await response.json()).result || [];
+          const selected = rows.filter((row) => {
+            const joined = `${row.title || ''} ${(row.path || []).join('/')} ${row.sourceUrl || ''}`.toLowerCase();
+            return joined.includes('animal-holder') || joined.includes('animal holder') || joined.includes('imaging');
+          });
+          console.log(JSON.stringify(selected, null, 2));
+          NODE

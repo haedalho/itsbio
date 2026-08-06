@@ -1,0 +1,21 @@
+name: Debug Kent card build
+
+on:
+  push:
+    branches:
+      - agent/kent-sanity-images-only
+    paths:
+      - .github/kent-card-build-debug-trigger.txt
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/kent-sanity-images-only
+      - run: npm install --no-audit --no-fund
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+          NEXT_PUBLIC_SANITY_DATASET: production

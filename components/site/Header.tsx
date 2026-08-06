@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import BrandLogo from "./BrandLogo";
 import ProductsMegaMenu from "./ProductsMegaMenu";
 import SearchBox from "./SearchBox";
 
@@ -42,9 +43,8 @@ export default function Header() {
   }, [mobileOpen]);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 md:px-6">
-        {/* Mobile: hamburger */}
+    <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur">
+      <div className="mx-auto flex h-[76px] max-w-7xl items-center gap-4 px-4 md:px-6">
         <button
           type="button"
           className="inline-flex h-10 w-10 items-center justify-center rounded-lg border bg-white md:hidden"
@@ -59,45 +59,27 @@ export default function Header() {
           </div>
         </button>
 
-        {/* Logo */}
-        <div className="font-bold text-xl md:text-2xl">
-          <Link href="/" className="hover:text-slate-900">
-            Itsbio
-          </Link>
-        </div>
+        <BrandLogo className="shrink-0" />
 
-        {/* Desktop nav */}
-        <nav className="hidden items-center gap-6 text-base text-slate-600 md:flex">
-          {/* ✅ Products: hover=mega, click=/product (로직은 ProductsMegaMenu 안에서 처리) */}
+        <nav className="hidden items-center gap-7 text-[15px] font-medium text-slate-700 md:flex">
           <ProductsMegaMenu />
-
-          <Link href="/promotions" className="hover:text-slate-900">
-            Promotions
-          </Link>
-          <Link href="/notice" className="hover:text-slate-900">
-            Notice
-          </Link>
-          <Link href="/about" className="hover:text-slate-900">
-            About
-          </Link>
-          <Link href="/contact" className="hover:text-slate-900">
-            Contact
-          </Link>
+          <Link href="/promotions" className="transition hover:text-orange-600">Promotions</Link>
+          <Link href="/notice" className="transition hover:text-orange-600">Notice</Link>
+          <Link href="/about" className="transition hover:text-orange-600">About</Link>
+          <Link href="/contact" className="transition hover:text-orange-600">Contact</Link>
         </nav>
 
-        {/* Right */}
         <div className="ml-auto flex items-center gap-3">
           <SearchBox className="hidden w-80 md:block" />
           <Link
             href="/quote"
-            className="rounded-full bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-700 md:px-5"
+            className="rounded-full bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-700 md:px-6"
           >
             Request a Quote
           </Link>
         </div>
       </div>
 
-      {/* Mobile drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-[60] md:hidden">
           <div
@@ -113,8 +95,8 @@ export default function Header() {
             aria-modal="true"
             aria-label="Mobile menu"
           >
-            <div className="flex h-16 items-center justify-between border-b px-4">
-              <div className="font-bold text-lg">Menu</div>
+            <div className="flex h-[76px] items-center justify-between border-b px-4">
+              <BrandLogo />
               <button
                 type="button"
                 className="inline-flex h-10 w-10 items-center justify-center rounded-lg border bg-white"
@@ -128,7 +110,6 @@ export default function Header() {
             <div className="p-4">
               <SearchBox
                 className="w-full"
-                // 모바일은 radius만 살짝 다르게
                 placeholder="Search by Product Name, Catalog No..."
                 onSubmitted={() => setMobileOpen(false)}
               />
@@ -141,42 +122,11 @@ export default function Header() {
                 >
                   Products
                 </Link>
-
-                <Link
-                  href="/promotions"
-                  className="block rounded-xl px-3 py-3 text-base text-slate-700 hover:bg-slate-50"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Promotions
-                </Link>
-                <Link
-                  href="/resources"
-                  className="block rounded-xl px-3 py-3 text-base text-slate-700 hover:bg-slate-50"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Resources
-                </Link>
-                <Link
-                  href="/notice"
-                  className="block rounded-xl px-3 py-3 text-base text-slate-700 hover:bg-slate-50"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Notice
-                </Link>
-                <Link
-                  href="/about"
-                  className="block rounded-xl px-3 py-3 text-base text-slate-700 hover:bg-slate-50"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  About
-                </Link>
-                <Link
-                  href="/contact"
-                  className="block rounded-xl px-3 py-3 text-base text-slate-700 hover:bg-slate-50"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Contact
-                </Link>
+                <Link href="/promotions" className="block rounded-xl px-3 py-3 text-base text-slate-700 hover:bg-slate-50" onClick={() => setMobileOpen(false)}>Promotions</Link>
+                <Link href="/resources" className="block rounded-xl px-3 py-3 text-base text-slate-700 hover:bg-slate-50" onClick={() => setMobileOpen(false)}>Resources</Link>
+                <Link href="/notice" className="block rounded-xl px-3 py-3 text-base text-slate-700 hover:bg-slate-50" onClick={() => setMobileOpen(false)}>Notice</Link>
+                <Link href="/about" className="block rounded-xl px-3 py-3 text-base text-slate-700 hover:bg-slate-50" onClick={() => setMobileOpen(false)}>About</Link>
+                <Link href="/contact" className="block rounded-xl px-3 py-3 text-base text-slate-700 hover:bg-slate-50" onClick={() => setMobileOpen(false)}>Contact</Link>
               </nav>
 
               <div className="mt-4 border-t pt-4">

@@ -1,0 +1,70 @@
+name: Sync Kent Shop to Sanity
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: Write the verified 204-product catalog to Sanity production
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kent-shop-full-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-02-19
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Collect current Kent Shop catalog
+        run: npm run kent:shop:collect
+
+      - name: Build exact product profiles
+        run: npm run kent:shop:profiles
+
+      - name: Verify migration without writes
+        run: npm run kent:shop:dry
+
+      - name: Require the production write secret
+        if: ${{ inputs.apply }}
+        env:
+          SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+        run: test -n "$SANITY_WRITE_TOKEN"
+
+      - name: Apply catalog to Sanity production
+        if: ${{ inputs.apply }}
+        env:
+          SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+        run: npm run kent:shop:apply
+
+      - name: Upload migration evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kent-shop-sync-${{ github.run_id }}
+          path: |
+            .cache/kent-shop-all.json
+            .cache/kent-shop-profiles.json
+          if-no-files-found: warn
+          retention-days: 14

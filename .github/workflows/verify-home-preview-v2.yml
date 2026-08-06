@@ -1,0 +1,90 @@
+name: Capture deployed home hero and logo
+
+on:
+  push:
+    branches:
+      - agent/kent-sanity-images-only
+    paths:
+      - .github/workflows/verify-home-preview-v2.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Playwright
+        run: |
+          mkdir -p /tmp/itsbio-preview-check
+          cd /tmp/itsbio-preview-check
+          npm init -y >/dev/null
+          npm install playwright@1.55.0 >/dev/null
+          npx playwright install --with-deps chromium
+
+      - name: Capture the real deployed page
+        working-directory: /tmp/itsbio-preview-check
+        env:
+          PREVIEW_URL: https://itsbio-git-agent-kent-sanity-images-only-hadel-hos-projects.vercel.app/
+        run: |
+          cat > capture.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+
+          const browser = await chromium.launch({ headless: true });
+          const page = await browser.newPage({ viewport: { width: 1648, height: 928 }, deviceScaleFactor: 1 });
+          const responses = [];
+          page.on('response', response => {
+            const url = response.url();
+            if (url.includes('itsbio-hero') || url.includes('itsbio-logo')) {
+              responses.push({ url, status: response.status(), contentType: response.headers()['content-type'] ?? null });
+            }
+          });
+
+          let navigationError = null;
+          try {
+            await page.goto(process.env.PREVIEW_URL, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+            await page.waitForTimeout(6_000);
+          } catch (error) {
+            navigationError = error.message;
+          }
+
+          const state = await page.evaluate(() => {
+            const hero = document.querySelector('.itsbio-home-hero-override');
+            const bgNode = hero?.querySelector('[style*="background-image"]');
+            const logo = document.querySelector('header img[alt="ITSBIO"]');
+            return {
+              url: location.href,
+              title: document.title,
+              bodyTextStart: document.body.innerText.slice(0, 500),
+              heroExists: Boolean(hero),
+              heroBackground: bgNode ? getComputedStyle(bgNode).backgroundImage : null,
+              logoSrc: logo?.getAttribute('src') ?? null,
+              logoNaturalWidth: logo?.naturalWidth ?? 0,
+              logoNaturalHeight: logo?.naturalHeight ?? 0,
+            };
+          });
+
+          const result = { navigationError, state, responses };
+          fs.writeFileSync('verification.json', JSON.stringify(result, null, 2));
+          await page.screenshot({ path: 'homepage-captured.png', fullPage: true });
+          console.log(JSON.stringify(result, null, 2));
+          await browser.close();
+          JS
+          node capture.mjs
+
+      - name: Upload deployed-page evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployed-home-preview-capture-v3
+          path: |
+            /tmp/itsbio-preview-check/homepage-captured.png
+            /tmp/itsbio-preview-check/verification.json
+          if-no-files-found: error

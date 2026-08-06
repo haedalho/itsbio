@@ -1,0 +1,78 @@
+name: Inspect current Kent Shop taxonomy
+
+on:
+  pull_request:
+    branches:
+      - agent/kent-preflight
+    paths:
+      - .github/workflows/inspect-current-kent-shop.yml
+      - scripts/kent-current-taxonomy-collect.mjs
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Collect current Kent taxonomy in report mode
+        run: |
+          sed -i 's/payload.categoryCount < 70/payload.categoryCount < 60/' scripts/kent-current-taxonomy-collect.mjs
+          sed -i 's/if (categoryCountMismatches.length) {/if (false) {/' scripts/kent-current-taxonomy-collect.mjs
+          node scripts/kent-current-taxonomy-collect.mjs --out .cache/kent-current-taxonomy.json
+      - name: Compare current and reviewed catalog
+        run: |
+          tar -xzf data/kent-shop-preview-snapshot.tgz
+          node <<'NODE'
+          const fs = require('fs');
+          const current = JSON.parse(fs.readFileSync('.cache/kent-current-taxonomy.json', 'utf8'));
+          const reviewed = JSON.parse(fs.readFileSync('.cache/kent-shop-all.json', 'utf8'));
+          const cur = new Set(current.products.map((p) => p.slug));
+          const old = new Set(reviewed.products.map((p) => p.slug));
+          const added = [...cur].filter((slug) => !old.has(slug));
+          const removed = [...old].filter((slug) => !cur.has(slug));
+          const oldById = new Map(reviewed.categories.map((c) => [Number(c.id), c]));
+          const countChanges = [];
+          const membershipChanges = [];
+          for (const category of current.categories) {
+            const previous = oldById.get(Number(category.id));
+            const oldSlugs = new Set((previous?.productUrls || []).map((url) => String(url).split('/').filter(Boolean).at(-1)));
+            const newSlugs = new Set(category.productSlugs || []);
+            const addedProducts = [...newSlugs].filter((slug) => !oldSlugs.has(slug));
+            const removedProducts = [...oldSlugs].filter((slug) => !newSlugs.has(slug));
+            if ((previous?.count ?? null) !== category.count || oldSlugs.size !== newSlugs.size) {
+              countChanges.push({
+                id: category.id,
+                path: category.categoryPath.join('/'),
+                title: category.title,
+                oldTermCount: previous?.count ?? null,
+                newTermCount: category.count,
+                oldProductCount: oldSlugs.size,
+                newProductCount: newSlugs.size,
+              });
+            }
+            if (addedProducts.length || removedProducts.length) {
+              membershipChanges.push({ path: category.categoryPath.join('/'), addedProducts, removedProducts });
+            }
+          }
+          console.log(JSON.stringify({
+            transport: current.transport,
+            currentProducts: current.publishedProductCount,
+            reviewedProducts: reviewed.publishedProductCount,
+            currentCategories: current.categoryCount,
+            reviewedCategories: reviewed.categoryCount,
+            categoryCountMismatches: current.categoryCountMismatches,
+            added,
+            removed,
+            categoryCountChanges: countChanges.length,
+            countChanges,
+            membershipChanges: membershipChanges.length,
+            membershipChangeDetails: membershipChanges,
+          }, null, 2));
+          NODE

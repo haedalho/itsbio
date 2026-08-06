@@ -1,0 +1,67 @@
+name: Inspect targeted Kent products
+
+on:
+  pull_request:
+    branches:
+      - agent/kent-preflight
+    paths:
+      - .github/workflows/inspect-kent-targeted-products.yml
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Inspect reviewed source profiles and preview documents
+        env:
+          NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+          NEXT_PUBLIC_SANITY_DATASET: production
+          NEXT_PUBLIC_SANITY_API_VERSION: 2025-02-19
+        run: |
+          tar -xzf data/kent-shop-preview-snapshot.tgz
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import {createClient} from '@sanity/client';
+
+          const slugs = [
+            'prism-bio-box-in-vivo-imaging-system',
+            'prism-in-vivo-imaging-system-visible-nir-i',
+            'prism-swir-in-vivo-imaging-system',
+            'cylinder-bracket',
+            'mobile-cart-for-laboratory-equipment-large',
+            'mobile-cart-for-laboratory-equipment-small',
+            'skinscanner-1',
+          ];
+          const all = JSON.parse(fs.readFileSync('.cache/kent-shop-all.json', 'utf8'));
+          const profiles = JSON.parse(fs.readFileSync('.cache/kent-shop-profiles.json', 'utf8'));
+          const profileRows = (profiles.results || profiles.products || profiles || []).filter((row) => slugs.includes(row.slug));
+          const productRows = (all.products || []).filter((row) => slugs.includes(row.slug));
+          console.log('=== REVIEWED_PRODUCTS ===');
+          console.log(JSON.stringify(productRows, null, 2));
+          console.log('=== REVIEWED_PROFILES ===');
+          console.log(JSON.stringify(profileRows, null, 2));
+
+          const client = createClient({
+            projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
+            dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
+            apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION,
+            useCdn: false,
+          });
+          const docs = await client.fetch(`*[_type == "kentPreviewProduct" && slug.current in $slugs]{
+            _id,title,summary,"slug":slug.current,sku,sourceUrl,categoryPath,categoryPathTitles,listingPaths,
+            sourceIntroHtml,overviewHtml,specsHtml,extraHtml,legacyHtml,datasheetHtml,documentsHtml,
+            faqsHtml,referencesHtml,reviewsHtml,kentSections,productType,defaultVariantId,optionGroups,variants,
+            images[]{_key,sourceUrl,"assetUrl":asset->url},kentOfficialGalleryStatus,kentOfficialGallery
+          } | order(slug asc)`, {slugs});
+          console.log('=== SANITY_PREVIEW_DOCS ===');
+          console.log(JSON.stringify(docs, null, 2));
+          NODE

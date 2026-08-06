@@ -1,0 +1,68 @@
+name: Fix Mobile Carts exact products
+
+on:
+  push:
+    branches:
+      - agent/kent-sanity-images-only
+    paths:
+      - .github/mobile-carts-fix-trigger.txt
+
+permissions:
+  contents: write
+
+jobs:
+  fix-mobile-carts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout preview branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/kent-sanity-images-only
+          fetch-depth: 0
+
+      - name: Apply exact Mobile Carts mapping
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('app/products/kent/[[...path]]/page.tsx')
+          text = path.read_text(encoding='utf-8')
+
+          taxonomy_marker = 'const CURRENT_KENT_TAXONOMY = kentCurrentTaxonomy as KentCurrentTaxonomy;\n'
+          exact_mapping = '''const CURRENT_KENT_TAXONOMY = kentCurrentTaxonomy as KentCurrentTaxonomy;\n\nconst KENT_EXACT_CATEGORY_PRODUCT_SLUGS: Record<string, string[]> = {\n  "mobile-carts": [\n    "cylinder-bracket",\n    "mobile-cart-for-laboratory-equipment-large",\n    "mobile-cart-for-laboratory-equipment-small",\n  ],\n};\n'''
+          if 'const KENT_EXACT_CATEGORY_PRODUCT_SLUGS' not in text:
+              if taxonomy_marker not in text:
+                  raise SystemExit('taxonomy marker not found')
+              text = text.replace(taxonomy_marker, exact_mapping, 1)
+
+          old = '''function resolveListingProducts(pathArr: string[], category: CategoryDoc | null, allProducts: ProductLite[]) {\n  const currentCategory = resolveCurrentKentCategory(pathArr, category?.sourceUrl, category?.title);\n  if (currentCategory) {\n    return dedupeProducts(productsForCurrentKentCategory(currentCategory, allProducts));\n  }\n'''
+          new = '''function resolveListingProducts(pathArr: string[], category: CategoryDoc | null, allProducts: ProductLite[]) {\n  const pathKey = currentTaxonomyPathKey(pathArr);\n  const exactSlugs = KENT_EXACT_CATEGORY_PRODUCT_SLUGS[pathKey];\n\n  if (exactSlugs?.length) {\n    const bySlug = new Map(\n      allProducts\n        .map((product) => [String(product.slug || "").trim().toLowerCase(), product] as const)\n        .filter(([slug]) => Boolean(slug)),\n    );\n\n    return exactSlugs\n      .map((slug) => bySlug.get(slug))\n      .filter((product): product is ProductLite => Boolean(product));\n  }\n\n  const currentCategory = resolveCurrentKentCategory(pathArr, category?.sourceUrl, category?.title);\n  if (currentCategory) {\n    return dedupeProducts(productsForCurrentKentCategory(currentCategory, allProducts));\n  }\n'''
+          if old in text:
+              text = text.replace(old, new, 1)
+          elif 'const exactSlugs = KENT_EXACT_CATEGORY_PRODUCT_SLUGS[pathKey];' not in text:
+              raise SystemExit('resolveListingProducts marker not found')
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build
+        env:
+          NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+          NEXT_PUBLIC_SANITY_DATASET: production
+        run: npm run build
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add 'app/products/kent/[[...path]]/page.tsx'
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Fix Mobile Carts exact product listing"
+          git pull --rebase origin agent/kent-sanity-images-only
+          git push origin HEAD:agent/kent-sanity-images-only

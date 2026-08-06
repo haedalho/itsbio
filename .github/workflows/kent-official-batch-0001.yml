@@ -1,0 +1,158 @@
+name: Verify Kent official batch 0001
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout working branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/kent-preflight
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Refresh read-only baseline
+        run: node scripts/kent-product-baseline-export.mjs
+
+      - name: Select first 20 unverified products
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const baseline = JSON.parse(fs.readFileSync('data/kent-product-baseline.json', 'utf8'));
+          const rows = baseline.products
+            .filter((row) => row.recordType === 'PRODUCT' && row.verificationStatus === 'UNVERIFIED')
+            .slice(0, 20);
+          fs.writeFileSync('/tmp/kent-batch-slugs.txt', rows.map((row) => row.slug).join('\n') + '\n');
+          console.log(`Selected ${rows.length} products`);
+          for (const row of rows) console.log(`${row.index}. ${row.slug}`);
+          NODE
+
+      - name: Verify products sequentially
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data/kent-official-batches/batch-0001/raw
+          rm -f data/kent-official-batches/batch-0001/raw/*.json
+          count=0
+          blocked=0
+          while IFS= read -r slug; do
+            [ -n "$slug" ] || continue
+            count=$((count + 1))
+            echo "[${count}] Checking ${slug}"
+            node scripts/kent-official-single-run.mjs --slug="$slug" --refresh --delay=4000
+            cp .cache/kent-official-fidelity/latest.json "data/kent-official-batches/batch-0001/raw/$(printf '%02d' "$count")-${slug}.json"
+            fetch_status=$(node -e 'const fs=require("fs");const x=JSON.parse(fs.readFileSync(".cache/kent-official-fidelity/latest.json","utf8"));console.log(x.products?.[0]?.fetchStatus||0)')
+            if [ "$fetch_status" = "403" ] || [ "$fetch_status" = "429" ]; then
+              echo "Kent returned ${fetch_status}; stopping the batch immediately."
+              blocked=1
+              break
+            fi
+            sleep 4
+          done < /tmp/kent-batch-slugs.txt
+          echo "$blocked" > data/kent-official-batches/batch-0001/blocked.txt
+
+      - name: Aggregate report and update baseline review fields
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const dir = 'data/kent-official-batches/batch-0001';
+          const rawDir = path.join(dir, 'raw');
+          const files = fs.readdirSync(rawDir).filter((name) => name.endsWith('.json')).sort();
+          const rows = files.flatMap((name) => {
+            const report = JSON.parse(fs.readFileSync(path.join(rawDir, name), 'utf8'));
+            return Array.isArray(report.products) ? report.products : [];
+          });
+          const generatedAt = new Date().toISOString();
+          const blocked = fs.readFileSync(path.join(dir, 'blocked.txt'), 'utf8').trim() === '1';
+          const counts = Object.fromEntries(['VERIFIED','NEEDS_FIX','UNRESOLVED','EXCLUDE'].map((status) => [status, rows.filter((row) => row.status === status).length]));
+          const batch = {
+            batch: '0001',
+            generatedAt,
+            requestDelayMs: 4000,
+            requestedMaximum: 20,
+            checked: rows.length,
+            stoppedFor403Or429: blocked,
+            counts,
+            products: rows,
+          };
+          fs.writeFileSync(path.join(dir, 'report.json'), JSON.stringify(batch, null, 2) + '\n');
+          const md = [
+            '# Kent official preflight batch 0001',
+            '',
+            `Generated: ${generatedAt}`,
+            `Checked: ${rows.length} / 20`,
+            `Stopped for 403/429: ${blocked}`,
+            `Source comparison VERIFIED: ${counts.VERIFIED}`,
+            `Source comparison NEEDS_FIX: ${counts.NEEDS_FIX}`,
+            `UNRESOLVED: ${counts.UNRESOLVED}`,
+            `EXCLUDE: ${counts.EXCLUDE}`,
+            '',
+            '| Product | Slug | HTTP | Source comparison | Official Item # | Images | Headings | Flags |',
+            '|---|---|---:|---|---|---:|---:|---|',
+            ...rows.map((row) => `| ${String(row.title || '').replace(/\|/g, '\\|')} | ${row.slug || ''} | ${row.fetchStatus || 0} | ${row.status} | ${row.officialSku || ''} | ${row.officialImageCount || 0} | ${row.officialHeadingCount || 0} | ${(row.flags || []).join(', ')} |`),
+            '',
+            '> A source-comparison VERIFIED result is not final visual verification. Products remain NEEDS_FIX until official staging content and design are reviewed.',
+            '',
+          ].join('\n');
+          fs.writeFileSync(path.join(dir, 'report.md'), md);
+
+          const baselinePath = 'data/kent-product-baseline.json';
+          const baseline = JSON.parse(fs.readFileSync(baselinePath, 'utf8'));
+          const bySlug = new Map(rows.map((row) => [row.slug, row]));
+          for (const item of baseline.products) {
+            const row = bySlug.get(item.slug);
+            if (!row) continue;
+            item.officialTitle = row.officialTitle || '';
+            item.officialSubtitle = row.officialSubtitle || '';
+            item.officialSku = row.officialSku || '';
+            item.officialSourceUrl = row.finalUrl || row.sourceUrl || '';
+            item.officialGalleryCount = Number(row.officialImageCount || 0);
+            item.officialSectionCount = Number(row.officialHeadingCount || 0);
+            item.verifiedAt = generatedAt;
+            item.notes = [`preflight=${row.status}`, ...(row.flags || [])].join('; ');
+            item.verificationStatus = row.status === 'EXCLUDE' ? 'EXCLUDE' : row.status === 'UNRESOLVED' ? 'UNRESOLVED' : 'NEEDS_FIX';
+          }
+          fs.writeFileSync(baselinePath, JSON.stringify(baseline, null, 2) + '\n');
+          NODE
+          node scripts/kent-product-baseline-export.mjs
+
+      - name: Upload batch artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kent-official-batch-0001
+          path: data/kent-official-batches/batch-0001
+          if-no-files-found: error
+
+      - name: Commit batch report and updated baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/kent-product-baseline.json data/kent-product-baseline.csv data/kent-product-baseline.md data/kent-official-batches/batch-0001
+          if git diff --cached --quiet; then
+            echo "No batch changes"
+            exit 0
+          fi
+          git commit -m "Add Kent official preflight batch 0001"
+          git fetch origin agent/kent-preflight
+          git rebase origin/agent/kent-preflight
+          git push origin HEAD:agent/kent-preflight

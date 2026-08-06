@@ -366,12 +366,10 @@ export default async function KentLegacyProxyPage({
         <div className="mt-6 flex items-center justify-between gap-3">
           <Breadcrumb items={crumbItems} />
           <a
-            href={uRaw}
-            target="_blank"
-            rel="noreferrer"
+            href="/products/kent"
             className="inline-flex h-10 items-center justify-center rounded-xl border border-orange-200 bg-orange-50 px-4 text-sm font-semibold text-orange-700"
           >
-            Open Original
+            Back to Kent Products
           </a>
         </div>
 

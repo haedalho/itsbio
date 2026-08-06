@@ -1,0 +1,72 @@
+name: Build Kent Shop preview data
+
+on:
+  push:
+    branches:
+      - agent/kent-sanity-images-only
+    paths:
+      - .github/workflows/kent-shop-preview-sync.yml
+      - scripts/kent-product-from-listing.mjs
+      - scripts/kent-product-migrate.mjs
+      - scripts/kent-shop-collect.mjs
+      - data/kent-shop-preview-snapshot.tgz
+      - package.json
+      - package-lock.json
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kent-shop-preview-data
+  cancel-in-progress: false
+
+jobs:
+  build-preview:
+    if: ${{ !contains(github.event.head_commit.message, '[skip kent data]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-02-19
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+    steps:
+      - name: Checkout preview branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Require Sanity preview write access
+        run: test -n "$SANITY_WRITE_TOKEN"
+
+      - name: Require reviewed 204-product Kent snapshot
+        run: |
+          echo "3544268e4d684711091f335eaa985279a1681a0ceb683b76bcdbfb64853d3bec  data/kent-shop-preview-snapshot.tgz" | sha256sum --check --strict
+          tar -xzf data/kent-shop-preview-snapshot.tgz
+          test -f .cache/kent-shop-all.json
+          test -f .cache/kent-shop-profiles.json
+          node -e "const a=require('./.cache/kent-shop-all.json'); const p=require('./.cache/kent-shop-profiles.json'); if(a.publishedProductCount!==204 || p.results.length!==204) process.exit(1)"
+
+      - name: Verify all profiles without writes
+        run: npm run kent:shop:dry
+
+      - name: Write preview-only documents and managed hero images
+        run: npm run kent:shop:preview:apply
+
+      - name: Upload preview evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kent-shop-preview-${{ github.run_id }}
+          path: |
+            .cache/kent-shop-all.json
+            .cache/kent-shop-profiles.json
+          if-no-files-found: warn
+          retention-days: 14

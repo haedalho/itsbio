@@ -3,11 +3,12 @@
 import * as React from "react";
 
 import KentProductGalleryClient from "@/components/products/KentProductGalleryClient";
-import KentProductTabs from "@/components/products/KentProductTabs";
+import KentProductSectionRendererV2, {
+  type KentSection,
+} from "@/components/products/KentProductSectionRendererV2";
 
-type Img = { url?: string; alt?: string };
+type Img = { url?: string; alt?: string; sourceUrl?: string };
 type Doc = { url?: string; label?: string; title?: string };
-
 type OptionValue = { value?: string; label?: string };
 type OptionGroup = {
   key?: string;
@@ -16,9 +17,7 @@ type OptionGroup = {
   displayType?: string;
   options?: OptionValue[];
 };
-
 type VariantPair = { key?: string; label?: string; value?: string };
-
 type Variant = {
   variantId?: string;
   title?: string;
@@ -31,6 +30,8 @@ type Variant = {
   sourceVariationId?: string;
 };
 
+const VETFLO_VAPORIZER_SLUG = "vaporizer-with-vetflo-single-channel-anesthesia-stand";
+
 function slugifyLoose(input: string) {
   return String(input || "")
     .toLowerCase()
@@ -42,12 +43,11 @@ function slugifyLoose(input: string) {
 }
 
 function normalizeKey(input: string) {
-  const withoutPrefixes = String(input || "")
+  const raw = String(input || "")
     .replace(/^attribute[-_]/i, "")
     .replace(/^pa[-_]/i, "")
     .trim();
-
-  return slugifyLoose(withoutPrefixes) || withoutPrefixes.toLowerCase();
+  return slugifyLoose(raw) || raw.toLowerCase();
 }
 
 function normalizeValue(input: string) {
@@ -55,13 +55,21 @@ function normalizeValue(input: string) {
   return slugifyLoose(raw) || raw.toLowerCase();
 }
 
-function safeExternalUrl(url?: string) {
+function safeVariantImageUrl(url?: string) {
   const raw = String(url || "").trim();
   if (!raw) return "";
-  if (/^https?:\/\//i.test(raw)) return raw;
-  if (raw.startsWith("//")) return `https:${raw}`;
-  if (raw.startsWith("/")) return `https://www.kentscientific.com${raw}`;
-  return raw;
+  if (raw.startsWith("/")) return raw.startsWith("//") ? "" : raw;
+  try {
+    const parsed = new URL(raw);
+    const hostname = parsed.hostname.toLowerCase();
+    const allowedHost =
+      hostname === "cdn.sanity.io" ||
+      hostname === "www.kentscientific.com" ||
+      hostname === "kentscientific.com";
+    return parsed.protocol === "https:" && allowedHost ? raw : "";
+  } catch {
+    return "";
+  }
 }
 
 function dedupeImages(images: Img[]) {
@@ -71,55 +79,61 @@ function dedupeImages(images: Img[]) {
     if (!key || seen.has(key)) return false;
     seen.add(key);
     return true;
-  }) as { url: string; alt?: string }[];
+  }) as { url: string; alt?: string; sourceUrl?: string }[];
 }
 
 function pairArrayToMap(input: Record<string, string> | VariantPair[] | undefined) {
   if (!input) return {} as Record<string, string>;
-
   if (Array.isArray(input)) {
     const out: Record<string, string> = {};
     for (const row of input) {
-      const k = normalizeKey(String(row?.key || row?.label || ""));
-      const v = normalizeValue(String(row?.value || ""));
-      if (k && v) out[k] = v;
+      const key = normalizeKey(String(row?.key || row?.label || ""));
+      const value = normalizeValue(String(row?.value || ""));
+      if (key && value) out[key] = value;
     }
     return out;
   }
-
   const out: Record<string, string> = {};
   for (const [rawKey, rawValue] of Object.entries(input)) {
-    const k = normalizeKey(rawKey);
-    const v = normalizeValue(String(rawValue || ""));
-    if (k && v) out[k] = v;
+    const key = normalizeKey(rawKey);
+    const value = normalizeValue(String(rawValue || ""));
+    if (key && value) out[key] = value;
   }
   return out;
 }
 
 function buildVariantLookup(variant: Variant) {
-  return {
-    ...pairArrayToMap(variant?.attributes),
-    ...pairArrayToMap(variant?.optionValues),
-  };
+  return { ...pairArrayToMap(variant?.attributes), ...pairArrayToMap(variant?.optionValues) };
+}
+
+function selectionEntries(selections: Record<string, string>) {
+  return Object.entries(selections).filter(([key, value]) => Boolean(key && value));
+}
+
+function variantMatchesSelections(variant: Variant, selections: Record<string, string>) {
+  const entries = selectionEntries(selections);
+  if (!entries.length) return true;
+
+  const lookup = buildVariantLookup(variant);
+  if (entries.every(([key, value]) => lookup[key] === value)) return true;
+
+  const lookupValues = new Set(Object.values(lookup).filter(Boolean));
+  return entries.every(([, value]) => lookupValues.has(value));
 }
 
 function findMatchingVariant(variants: Variant[], selections: Record<string, string>) {
+  const entries = selectionEntries(selections);
   if (!variants.length) return null;
+  if (!entries.length) return variants[0] || null;
 
-  const activeSelections = Object.entries(selections).filter(([key, value]) => key && value);
-  if (!activeSelections.length) return variants[0] || null;
-
-  const exactMatch = variants.find((variant) => {
+  const exact = variants.find((variant) => {
     const lookup = buildVariantLookup(variant);
-    return activeSelections.every(([key, value]) => lookup[key] === value);
+    return entries.every(([key, value]) => lookup[key] === value);
   });
-  if (exactMatch) return exactMatch;
+  if (exact) return exact;
 
-  const valueMatch = variants.find((variant) => {
-    const lookupValues = new Set(Object.values(buildVariantLookup(variant)).filter(Boolean));
-    return activeSelections.every(([, value]) => lookupValues.has(value));
-  });
-  if (valueMatch) return valueMatch;
+  const byValues = variants.find((variant) => variantMatchesSelections(variant, selections));
+  if (byValues) return byValues;
 
   return (
     variants.find((variant) => {
@@ -128,76 +142,178 @@ function findMatchingVariant(variants: Variant[], selections: Record<string, str
           .filter(Boolean)
           .join(" "),
       );
-      return activeSelections.every(([, value]) => searchable.includes(value));
+      return entries.every(([, value]) => searchable.includes(value));
     }) || null
   );
 }
 
-function buildInitialSelections(
-  optionGroups: OptionGroup[],
-  variants: Variant[],
-  defaultVariantId?: string,
-) {
-  const seed =
-    (defaultVariantId ? variants.find((row) => row.variantId === defaultVariantId) : null) ||
-    variants[0] ||
-    null;
-
+function buildInitialSelections(optionGroups: OptionGroup[], variants: Variant[], defaultVariantId?: string) {
+  const seed = (defaultVariantId ? variants.find((row) => row.variantId === defaultVariantId) : null) || variants[0] || null;
   const seedLookup = seed ? buildVariantLookup(seed) : {};
-
+  const seedValues = new Set(Object.values(seedLookup).filter(Boolean));
   const out: Record<string, string> = {};
+
   for (const group of optionGroups) {
-    const key = normalizeKey(group.key || group.name || "option");
-    const first = (group.options || []).find((row) => row?.label || row?.value);
+    const key = normalizeKey(group.key || group.name || group.label || "option");
+    const options = group.options || [];
+    const matchingSeedOption = options.find((row) => {
+      const value = normalizeValue(String(row?.value || row?.label || ""));
+      return value && seedValues.has(value);
+    });
+    const first = matchingSeedOption || options.find((row) => row?.label || row?.value);
     out[key] = seedLookup[key] || normalizeValue(first?.value || first?.label || "");
   }
   return out;
 }
 
 function pickOptionLabel(group: OptionGroup, selectedValue: string) {
-  const matched = (group.options || []).find(
-    (row) => normalizeValue(String(row?.value || row?.label || "")) === selectedValue,
-  );
+  const matched = (group.options || []).find((row) => normalizeValue(String(row?.value || row?.label || "")) === selectedValue);
   return matched?.label || matched?.value || selectedValue;
 }
 
 function normalizeDocs(documents?: Doc[]) {
   return Array.isArray(documents)
-    ? documents
-        .filter((row) => row?.url)
-        .map((row) => ({
-          url: String(row.url),
-          label: String(row.label || row.title || row.url),
-        }))
+    ? documents.filter((row) => row?.url).map((row) => ({ url: String(row.url), label: String(row.label || row.title || row.url) }))
     : [];
 }
 
-function getQuickLinks(sourceUrl?: string, docs?: { url: string; label: string }[]) {
-  const links: Array<{ href: string; label: string }> = [];
-
-  if (sourceUrl) {
-    links.push({ href: sourceUrl, label: "Original Page" });
-  }
-
-  for (const doc of docs || []) {
-    links.push({ href: doc.url, label: doc.label });
-  }
-
-  const seen = new Set<string>();
-  return links.filter((link) => {
-    const key = `${link.href}__${link.label}`;
-    if (!link.href || seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+function shouldUseSelect(group: OptionGroup) {
+  const type = String(group.displayType || "").toLowerCase();
+  return type === "select" || type === "dropdown" || (group.options || []).length > 6;
 }
 
-export default function KentProductDetailClient({
+function variantSearchText(variant: Variant | null) {
+  if (!variant) return "";
+  return normalizeValue(
+    [
+      variant.optionSummary,
+      variant.title,
+      ...Object.values(buildVariantLookup(variant)),
+    ]
+      .filter(Boolean)
+      .join(" "),
+  );
+}
+
+function imageSourceKey(input?: string) {
+  const raw = String(input || "").trim();
+  if (!raw) return "";
+  try {
+    const url = new URL(raw, "https://www.kentscientific.com");
+    const decoded = decodeURIComponent(url.pathname).toLowerCase();
+    return decoded.replace(/-\d{2,5}x\d{2,5}(?=\.[a-z0-9]+$)/i, "");
+  } catch {
+    return raw.split("?")[0].toLowerCase().replace(/-\d{2,5}x\d{2,5}(?=\.[a-z0-9]+$)/i, "");
+  }
+}
+
+const IMAGE_TOKEN_STOP_WORDS = new Set([
+  "image", "img", "product", "copy", "final", "new", "v2", "left", "right",
+  "front", "back", "side", "view", "single", "channel", "system", "with", "for",
+  "the", "and", "jpg", "jpeg", "png", "webp", "kent", "scientific",
+]);
+
+function sourceTokens(input?: string) {
+  const key = imageSourceKey(input)
+    .replace(/^.*\//, "")
+    .replace(/\.[a-z0-9]+$/i, "")
+    .replace(/[^a-z0-9]+/g, " ");
+  return new Set(
+    key.split(/\s+/)
+      .filter((token) => token.length >= 2)
+      .filter((token) => !IMAGE_TOKEN_STOP_WORDS.has(token)),
+  );
+}
+
+function findKeywordImage(
+  selectedVariant: Variant | null,
+  images: Array<{ url: string; alt?: string; sourceUrl?: string }>,
+) {
+  const variantTokens = new Set(
+    variantSearchText(selectedVariant)
+      .split("-")
+      .filter((token) => token.length >= 2)
+      .filter((token) => !IMAGE_TOKEN_STOP_WORDS.has(token)),
+  );
+  if (!variantTokens.size) return null;
+
+  const ranked = images
+    .map((image) => {
+      const tokens = sourceTokens(image.sourceUrl || image.url);
+      let score = 0;
+      for (const token of tokens) if (variantTokens.has(token)) score += 1;
+      return { image, score };
+    })
+    .sort((a, b) => b.score - a.score);
+
+  if (!ranked[0] || ranked[0].score < 1) return null;
+  if (ranked[1] && ranked[1].score === ranked[0].score) return null;
+  return ranked[0].image;
+}
+
+function resolveSelectedGalleryImage({
+  slug,
+  selectedVariant,
+  variants,
+  images,
+}: {
+  slug: string;
+  selectedVariant: Variant | null;
+  variants: Variant[];
+  images: { url: string; alt?: string; sourceUrl?: string }[];
+}) {
+  if (!images.length) return null;
+
+  const selectedVariantImage = safeVariantImageUrl(selectedVariant?.imageUrl);
+  const selectedSourceKey = imageSourceKey(selectedVariantImage);
+  const managedVariantImage = selectedSourceKey
+    ? images.find((image) => imageSourceKey(image.sourceUrl) === selectedSourceKey)
+    : null;
+
+  // Use the Sanity-managed copy of the exact Kent variant image first.
+  if (managedVariantImage) return managedVariantImage;
+
+  // Kent supplies one shared variant image for all VetFlo vaporizer options.
+  // Its gallery still contains distinct tabletop and pole-mounted system views.
+  if (slug === VETFLO_VAPORIZER_SLUG && images.length >= 4) {
+    const isPoleMounted = variantSearchText(selectedVariant).includes("pole-mounted");
+    return isPoleMounted ? images[3] : images[0];
+  }
+
+  const distinctVariantImages = new Set(
+    variants
+      .map((variant) => imageSourceKey(safeVariantImageUrl(variant.imageUrl)))
+      .filter(Boolean),
+  );
+
+  if (selectedVariantImage && distinctVariantImages.size > 1) {
+    return { url: selectedVariantImage, alt: selectedVariant?.title, sourceUrl: selectedVariantImage };
+  }
+
+  const selectedIndex = selectedVariant
+    ? variants.findIndex((variant) => variant.variantId === selectedVariant.variantId)
+    : -1;
+
+  // Exact one-to-one galleries retain the source ordering of their variants.
+  if (selectedIndex >= 0 && variants.length === images.length) {
+    return images[selectedIndex] || images[0];
+  }
+
+  // Only accept filename matching when one image is the unique best match.
+  return findKeywordImage(selectedVariant, images) || images[0];
+}
+
+export default function KentProductDetailClientV2({
+  slug,
   title,
   summary,
   sku,
-  sourceUrl,
+  badge,
+  leadHtml,
+  categoryLabel,
   images,
+  verifiedGallery,
+  kentSections,
   descriptionHtml,
   specsHtml,
   datasheetHtml,
@@ -211,11 +327,16 @@ export default function KentProductDetailClient({
   optionGroups,
   variants,
 }: {
+  slug: string;
   title: string;
   summary?: string;
   sku?: string;
-  sourceUrl?: string;
+  badge?: string;
+  leadHtml?: string;
+  categoryLabel?: string;
   images: Img[];
+  verifiedGallery?: boolean;
+  kentSections?: KentSection[];
   descriptionHtml?: string;
   specsHtml?: string;
   datasheetHtml?: string;
@@ -233,118 +354,117 @@ export default function KentProductDetailClient({
     () => (Array.isArray(optionGroups) ? optionGroups.filter((row) => (row.options || []).length > 0) : []),
     [optionGroups],
   );
-
   const safeVariants = React.useMemo(
-    () =>
-      Array.isArray(variants)
-        ? variants.filter((row) => row?.variantId || row?.sku || row?.catNo || row?.optionSummary)
-        : [],
+    () => (Array.isArray(variants) ? variants.filter((row) => row?.variantId || row?.sku || row?.catNo || row?.optionSummary) : []),
     [variants],
   );
-
-  const [selections, setSelections] = React.useState<Record<string, string>>(() =>
-    buildInitialSelections(safeGroups, safeVariants, defaultVariantId),
-  );
+  const [selections, setSelections] = React.useState<Record<string, string>>(() => buildInitialSelections(safeGroups, safeVariants, defaultVariantId));
 
   React.useEffect(() => {
     setSelections(buildInitialSelections(safeGroups, safeVariants, defaultVariantId));
   }, [safeGroups, safeVariants, defaultVariantId]);
 
+  const hasVariantControls = (productType === "variant" || safeVariants.length > 0 || safeGroups.length > 0) && safeGroups.length > 0;
   const selectedVariant = React.useMemo(
-    () => findMatchingVariant(safeVariants, selections) || safeVariants[0] || null,
+    () => (hasVariantControls ? findMatchingVariant(safeVariants, selections) : safeVariants[0] || null),
+    [hasVariantControls, safeVariants, selections],
+  );
+  const isOptionAvailable = React.useCallback(
+    (groupKey: string, value: string) => {
+      if (!safeVariants.length) return true;
+      return safeVariants.some((variant) => variantMatchesSelections(variant, { ...selections, [groupKey]: value }));
+    },
     [safeVariants, selections],
   );
 
-  const itemNo = selectedVariant?.catNo || selectedVariant?.sku || sku || "";
+  const itemNo = selectedVariant?.catNo || selectedVariant?.sku || (!hasVariantControls ? sku : "") || "";
   const selectedSummary = selectedVariant?.optionSummary || "";
-  const hasVariantButtons = (productType === "variant" || safeVariants.length > 0) && safeGroups.length > 0;
-
+  const invalidCombination = hasVariantControls && safeVariants.length > 0 && !selectedVariant;
   const galleryImages = React.useMemo(() => {
-    const variantImage = safeExternalUrl(selectedVariant?.imageUrl);
-    const head = variantImage
-      ? [{ url: variantImage, alt: selectedVariant?.title || title }]
+    const baseImages = dedupeImages(images || []);
+    const selectedImage = resolveSelectedGalleryImage({
+      slug,
+      selectedVariant,
+      variants: safeVariants,
+      images: baseImages,
+    });
+    const head = selectedImage
+      ? [{ url: selectedImage.url, alt: selectedImage.alt || selectedVariant?.title || title }]
       : [];
-    return dedupeImages([...(head as Img[]), ...(images || [])]);
-  }, [images, selectedVariant?.imageUrl, selectedVariant?.title, title]);
-
+    return dedupeImages([...(head as Img[]), ...baseImages]);
+  }, [images, safeVariants, selectedVariant, slug, title]);
   const safeDocs = React.useMemo(() => normalizeDocs(documents), [documents]);
-  const quickLinks = React.useMemo(() => getQuickLinks(sourceUrl, safeDocs), [sourceUrl, safeDocs]);
+  const quoteHref = "/contact";
 
   return (
-    <div className="pb-12">
-      <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm lg:p-8">
-        <div className="grid gap-10 xl:grid-cols-[minmax(0,1.05fr)_420px]">
-          <div>
-            <KentProductGalleryClient
-              key={`${selectedVariant?.variantId || "base"}-${galleryImages[0]?.url || ""}`}
-              images={galleryImages}
-              title={title}
-            />
-          </div>
+    <div className="pb-8">
+      <section className="pb-12 pt-1 md:pb-16 md:pt-3">
+        <div className="grid items-start gap-9 lg:grid-cols-2 lg:gap-14 xl:gap-[68px]">
+          <KentProductGalleryClient
+            key={`${selectedVariant?.variantId || "base"}-${galleryImages[0]?.url || ""}`}
+            productSlug={slug}
+            images={galleryImages}
+            title={title}
+            verifiedGallery={verifiedGallery}
+          />
 
-          <div className="min-w-0">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-blue-700">
-              Kent Scientific
-            </div>
-
-            <h1 className="mt-3 text-[30px] font-semibold tracking-[-0.03em] text-[#0b4fb3] lg:text-[40px]">
-              {title}
-            </h1>
-
-            {summary ? (
-              <p className="mt-3 text-[15px] leading-7 text-slate-600">
-                {summary}
-              </p>
+          <div className="min-w-0 rounded-3xl border border-[#e2e9f0] bg-white px-6 py-7 shadow-[0_18px_55px_rgba(17,53,87,0.07)] sm:px-8 sm:py-9 lg:mt-1">
+            {badge ? (
+              <div className="inline-flex rounded-full bg-[#fff0c9] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[#8a5b00]">{badge}</div>
             ) : null}
 
-            <div className="mt-6 rounded-md bg-[#0b4fb3] px-7 py-4 text-center text-[17px] font-semibold text-white">
-              Login to see prices
+            <h1 className={`${badge ? "mt-4" : "mt-0"} text-[36px] font-semibold leading-[1.1] tracking-[-0.04em] text-[#084b94] md:text-[42px]`}>{title}</h1>
+            {summary ? <p className="mt-4 text-[18px] font-semibold leading-7 text-[#3d4852]">{summary}</p> : null}
+
+            <a href={quoteHref} className="mt-7 inline-flex min-h-[52px] min-w-[210px] items-center justify-center gap-2 rounded-xl bg-[#0b5baa] px-7 py-3 text-[15px] font-bold text-white shadow-[0_10px_24px_rgba(11,91,170,0.22)] transition hover:-translate-y-0.5 hover:bg-[#08467f] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0b5baa] focus-visible:ring-offset-2">
+              Request Quote <span aria-hidden>→</span>
+            </a>
+
+            <div className="mt-6 flex flex-wrap items-center gap-2 border-b border-[#e0e7ed] pb-5 text-[13px] text-[#55616b]">
+              <div className="rounded-full bg-[#f1f6fa] px-3.5 py-2"><span className="font-semibold text-[#263542]">Item # </span>{invalidCombination ? "Select an available combination" : itemNo || "Contact for details"}</div>
+              {categoryLabel ? <div className="rounded-full bg-[#f1f6fa] px-3.5 py-2"><span className="font-semibold text-[#263542]">Category: </span>{categoryLabel}</div> : null}
             </div>
 
-            <div className="mt-5 text-sm text-slate-700">
-              <span className="font-semibold text-slate-900">Item # </span>
-              {itemNo || "Contact for details"}
-            </div>
-
-            {selectedSummary ? (
-              <div className="mt-3 text-sm text-slate-600">{selectedSummary}</div>
+            {leadHtml ? (
+              <div
+                className="kent-product-intro mt-6 text-[15.5px] leading-[1.78] text-[#55616b] [&_a]:font-semibold [&_a]:text-[#0b5baa] [&_a]:underline [&_a]:underline-offset-2 [&_p]:mb-4 [&_p:last-child]:mb-0 [&_strong]:text-[#30363b]"
+                dangerouslySetInnerHTML={{ __html: leadHtml }}
+              />
             ) : null}
+            {selectedSummary ? <div className="mt-4 text-sm leading-6 text-slate-600">{selectedSummary}</div> : null}
 
-            {hasVariantButtons ? (
-              <div className="mt-7 space-y-5">
+            {hasVariantControls ? (
+              <div className="mt-7 space-y-5 border-t border-slate-200 pt-6">
                 {safeGroups.map((group) => {
-                  const key = normalizeKey(group.key || group.name || "option");
+                  const key = normalizeKey(group.key || group.name || group.label || "option");
                   const selected = selections[key] || "";
-
+                  const options = group.options || [];
                   return (
                     <div key={key}>
-                      <div className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-900">
-                        {group.label || group.name || "Option"}
-                      </div>
-
-                      <div className="flex flex-wrap gap-2">
-                        {(group.options || []).map((row, idx) => {
-                          const value = normalizeValue(String(row?.value || row?.label || `option-${idx}`));
-                          const active = value === selected;
-                          const label = row?.label || row?.value || `Option ${idx + 1}`;
-
-                          return (
-                            <button
-                              key={`${key}-${value}-${idx}`}
-                              type="button"
-                              onClick={() => setSelections((prev) => ({ ...prev, [key]: value }))}
-                              className={[
-                                "inline-flex min-h-[40px] items-center justify-center border px-4 py-2 text-sm transition",
-                                active
-                                  ? "border-[#0b4fb3] bg-[#0b4fb3] text-white"
-                                  : "border-slate-300 bg-white text-slate-800 hover:border-slate-400 hover:bg-slate-50",
-                              ].join(" ")}
-                            >
-                              {label}
-                            </button>
-                          );
-                        })}
-                      </div>
+                      <label className="mb-2 block text-sm font-semibold uppercase tracking-wide text-slate-900">{group.label || group.name || "Option"}</label>
+                      {shouldUseSelect(group) ? (
+                        <select value={selected} onChange={(event) => setSelections((prev) => ({ ...prev, [key]: event.target.value }))} className="min-h-[46px] w-full border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-[#0b5baa]">
+                          {options.map((row, index) => {
+                            const value = normalizeValue(String(row?.value || row?.label || `option-${index}`));
+                            const label = row?.label || row?.value || `Option ${index + 1}`;
+                            return <option key={`${key}-${value}-${index}`} value={value} disabled={!isOptionAvailable(key, value)}>{label}</option>;
+                          })}
+                        </select>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {options.map((row, index) => {
+                            const value = normalizeValue(String(row?.value || row?.label || `option-${index}`));
+                            const active = value === selected;
+                            const available = isOptionAvailable(key, value);
+                            const label = row?.label || row?.value || `Option ${index + 1}`;
+                            return (
+                              <button key={`${key}-${value}-${index}`} type="button" disabled={!available} onClick={() => setSelections((prev) => ({ ...prev, [key]: value }))} className={`inline-flex min-h-[42px] items-center justify-center border px-4 py-2 text-sm transition ${active ? "border-[#0b5baa] bg-[#0b5baa] text-white" : available ? "border-slate-300 bg-white text-slate-800 hover:border-[#0b5baa]" : "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"}`}>
+                                {label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -352,69 +472,20 @@ export default function KentProductDetailClient({
             ) : null}
 
             {safeGroups.length ? (
-              <div className="mt-6 space-y-1 text-sm text-slate-600">
+              <div className="mt-5 space-y-1 text-sm text-slate-600">
                 {safeGroups.map((group) => {
-                  const key = normalizeKey(group.key || group.name || "option");
-                  return (
-                    <div key={`selected-${key}`} className="flex gap-2">
-                      <span className="font-semibold uppercase text-slate-900">
-                        {group.label || group.name || "Option"}:
-                      </span>
-                      <span>{pickOptionLabel(group, selections[key] || "")}</span>
-                    </div>
-                  );
+                  const key = normalizeKey(group.key || group.name || group.label || "option");
+                  return <div key={`selected-${key}`} className="flex gap-2"><span className="font-semibold uppercase text-slate-900">{group.label || group.name || "Option"}:</span><span>{pickOptionLabel(group, selections[key] || "")}</span></div>;
                 })}
               </div>
             ) : null}
-
-            {quickLinks.length ? (
-              <div className="mt-7 border-t border-slate-200 pt-6">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                  Resources
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {quickLinks.slice(0, 8).map((link, idx) => (
-                    <a
-                      key={`${link.href}-${idx}`}
-                      href={link.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
-                    >
-                      {link.label}
-                    </a>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            <div className="mt-8 rounded-[18px] border border-slate-200 bg-slate-50 p-5">
-              <div className="text-sm font-semibold text-slate-900">ITS BIO support</div>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                Contact ITS BIO for pricing, compatibility questions, and availability for this Kent Scientific item.
-              </p>
-
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <a
-                  href="mailto:info@itsbio.co.kr"
-                  className="inline-flex items-center justify-center bg-[#0b4fb3] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#093f8e]"
-                >
-                  Request Quote
-                </a>
-                <a
-                  href="tel:02-3462-8658"
-                  className="inline-flex items-center justify-center border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
-                >
-                  Call ITS BIO
-                </a>
-              </div>
-            </div>
           </div>
         </div>
       </section>
 
-      <KentProductTabs
+      <KentProductSectionRendererV2
         title={title}
+        sections={kentSections}
         descriptionHtml={descriptionHtml}
         specsHtml={specsHtml}
         datasheetHtml={datasheetHtml}

@@ -1,0 +1,57 @@
+name: Run Kent variant gallery repair
+
+on:
+  pull_request:
+    branches:
+      - agent/kent-preflight
+    paths:
+      - .github/scripts/fix-kent-variant-gallery.py
+      - .github/workflows/run-kent-variant-gallery-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-02-19
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Apply repair
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          path = Path('.github/scripts/fix-kent-variant-gallery.py')
+          text = path.read_text()
+          text = text.replace(
+              "    new_normalize + '\\n\\nfunction sectionBody',",
+              "    lambda _: new_normalize + '\\n\\nfunction sectionBody',",
+          )
+          text = text.replace(
+              "    new_resolution + '\\n\\nexport default function',",
+              "    lambda _: new_resolution + '\\n\\nexport default function',",
+          )
+          path.write_text(text)
+          PY
+          python .github/scripts/fix-kent-variant-gallery.py
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build
+        run: npm run build
+
+      - name: Commit repair
+        run: |
+          git config user.name "OpenAI"
+          git config user.email "openai@users.noreply.github.com"
+          git add app/products/kent/item/'[...slug]'/page.tsx components/products/KentProductDetailClient.tsx components/products/KentProductGalleryClient.tsx
+          git commit -m "Fix Kent variant images across product galleries"
+          git push origin HEAD:${{ github.head_ref }}
