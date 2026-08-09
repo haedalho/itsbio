@@ -2,8 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 
 import { sanityClient } from "@/lib/sanity/sanity.client";
-import { sanityWriteClient } from "@/lib/sanity/sanity.write";
-import { abmSearchUrl, looksLikeCatNo, parseAbmSearch, parseAbmProductDetail } from "@/lib/abm/abm";
+import { abmSearchUrl, looksLikeCatNo, parseAbmSearch } from "@/lib/abm/abm";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -80,8 +79,8 @@ export default async function SearchPage({
     redirect(`${href}?open=${encodeURIComponent(doc.slug)}`);
   }
 
-  // 2) Sanity에 없으면
-  // 2-A) Cat.No이면 resolve → 단일이면 최소 생성 + (카테고리 추출) 후 카테고리로 이동
+  // 2) Sanity에 없으면 공식 ABM 검색으로 연결한다.
+  // Preview 요청에서 Sanity Product를 자동 생성·수정하지 않는다.
   if (looksLikeCatNo(q)) {
     const searchUrl = abmSearchUrl(q);
     const html = await fetchHtml(searchUrl).catch(() => "");
@@ -93,72 +92,7 @@ export default async function SearchPage({
     if (resolved.type === "single") {
       const productUrl = resolved.productUrl;
 
-      // 상세에서 breadcrumb로 categoryPath 확보
-      let detail;
-      try {
-        const detailHtml = await fetchHtml(productUrl);
-        detail = parseAbmProductDetail(detailHtml, productUrl);
-      } catch {
-        detail = undefined;
-      }
-
-      // write token 없으면 ABM으로 이동
-      if (!process.env.SANITY_WRITE_TOKEN) {
-        redirect(productUrl);
-      }
-
-      const slug = productUrl
-        .split("?")[0]
-        .split("#")[0]
-        .split("/")
-        .pop()!
-        .replace(/\.html$/i, "")
-        .trim();
-
-      const title = detail?.title || resolved.candidates?.[0]?.title || q;
-      const categoryPath = detail?.categoryPathSlugs || [];
-      const categoryPathTitles = detail?.categoryPathTitles || [];
-
-      // 최소 인덱스 doc upsert (sku=Cat.No 기준)
-      // 이미 다른 doc이 있으면 sku로 찾은 뒤 patch
-      const existing = await sanityWriteClient.fetch(
-        `*[_type=="product" && (brand->slug.current==$brandKey || brand->themeKey==$brandKey) && sku==$sku][0]{_id}`, 
-        { brandKey: BRAND_KEY, sku: q }
-      );
-
-      if (existing?._id) {
-        await sanityWriteClient
-          .patch(existing._id)
-          .set({
-            title,
-            sku: q,
-            sourceUrl: productUrl,
-            categoryPath,
-            categoryPathTitles,
-            ...(slug ? { slug: { _type: "slug", current: slug } } : {}),
-          })
-          .commit();
-      } else {
-        await sanityWriteClient.create({
-          _type: "product",
-          isActive: true,
-          title,
-          sku: q,
-          sourceUrl: productUrl,
-          categoryPath,
-          categoryPathTitles,
-          slug: { _type: "slug", current: slug },
-          // brand reference는 기존 brand 문서를 써야 하므로, slug로 lookup
-          brand: await sanityWriteClient
-            .fetch(`*[_type=="brand" && (slug.current==$brandKey || themeKey==$brandKey)][0]{_id}`, {
-              brandKey: BRAND_KEY,
-            })
-            .then((b: any) => ({ _type: "reference", _ref: b?._id })),
-        });
-      }
-
-      const href = categoryHref(categoryPath);
-      redirect(`${href}?open=${encodeURIComponent(slug)}`);
+      redirect(productUrl);
     }
 
     // 단일이 아니면 ABM 검색결과로

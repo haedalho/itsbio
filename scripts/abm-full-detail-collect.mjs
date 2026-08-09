@@ -2,7 +2,7 @@
 /**
  * Full ABM rebuild detail collector — READ ONLY.
  *
- * 1. Rebuilds the authoritative normal Product + Service inventory from /search.
+ * 1. Reads a frozen authoritative normal Product + Service inventory.
  * 2. Fetches each unique official Product page once.
  * 3. Groups Service offerings by URL and fetches each unique Service page once.
  * 4. Parses full current detail (Specifications included; price/cart removed).
@@ -26,6 +26,7 @@ const GAP_MS = Math.max(50, Number(readArg("--gap-ms", "140")) || 140);
 const LIMIT_PRODUCTS = Math.max(0, Number(readArg("--limit-products", "0")) || 0);
 const LIMIT_SERVICES = Math.max(0, Number(readArg("--limit-services", "0")) || 0);
 const RESUME = argv.includes("--resume");
+const INVENTORY_FILE = process.env.ABM_INVENTORY_FILE ? path.resolve(process.env.ABM_INVENTORY_FILE) : "";
 
 const INCLUDE = [
   "General Materials",
@@ -262,15 +263,23 @@ async function pool(items, workers, fn) {
   return out;
 }
 
+import crypto from "node:crypto";
+
+function cacheKey(key) {
+  return crypto.createHash("sha256").update(String(key)).digest("hex");
+}
 function loadCached(dir, key) {
   if (!RESUME) return null;
-  const file = path.join(dir, `${safeName(key)}.json`);
+  const file = path.join(dir, `${cacheKey(key)}.json`);
   if (!fs.existsSync(file)) return null;
-  try { return JSON.parse(fs.readFileSync(file, "utf8")); } catch { return null; }
+  try {
+    const value = JSON.parse(fs.readFileSync(file, "utf8"));
+    return value?.status === "ok" ? value : null;
+  } catch { return null; }
 }
 function saveCached(dir, key, value) {
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, `${safeName(key)}.json`), JSON.stringify(value));
+  fs.writeFileSync(path.join(dir, `${cacheKey(key)}.json`), JSON.stringify(value));
 }
 
 function hasPriceLeak(result) {
@@ -284,7 +293,7 @@ function hasPriceLeak(result) {
     result.reviewsHtml,
     result.serviceDetailsHtml,
   ].filter(Boolean).join("\n");
-  return /(?:\$\s*\d|\b(?:USD|CAD)\s*\d|>\s*(?:Price|Cost|Amount)\s*</i.test(htmls);
+  return /(?:\$\s*\d|\b(?:USD|CAD)\s*\d|>\s*(?:Price|Cost|Amount)\s*<)/i.test(htmls);
 }
 
 async function collectProductDetails(products) {
@@ -417,8 +426,16 @@ function makeSummary(inventory, productResults, serviceData) {
 
 async function main() {
   fs.mkdirSync(OUT, { recursive: true });
-  console.log("[ABM full detail] rebuilding authoritative inventory...");
-  const inventory = await authoritativeInventory();
+  if (!INVENTORY_FILE) throw new Error("ABM_INVENTORY_FILE is required; refusing live census fallback");
+  if (!fs.existsSync(INVENTORY_FILE)) throw new Error(`Frozen inventory file not found: ${INVENTORY_FILE}`);
+  console.log(`[ABM full detail] reading frozen inventory: ${INVENTORY_FILE}`);
+  const inventory = JSON.parse(fs.readFileSync(INVENTORY_FILE, "utf8"));
+  if (!Array.isArray(inventory.products) || !Array.isArray(inventory.services)) {
+    throw new Error("Frozen inventory must contain products[] and services[]");
+  }
+  inventory.excluded ||= [];
+  inventory.productRuns ||= [{ complete: true }];
+  inventory.serviceRuns ||= [{ complete: true }];
   if (!inventory.productRuns.every((x) => x.complete) || !inventory.serviceRuns.every((x) => x.complete)) {
     throw new Error("Authoritative search inventory is incomplete; refusing detail collection");
   }
