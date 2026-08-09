@@ -1,0 +1,39 @@
+name: QA ABM full detail collector
+
+on:
+  push:
+    branches:
+      - agent/abm-full-rebuild
+    paths:
+      - scripts/abm-full-detail-collect.mjs
+      - lib/abm/rebuild-parser-v2.mjs
+      - .github/workflows/qa-abm-full-detail-collector.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Collect representative ABM detail corpus
+        run: node scripts/abm-full-detail-collect.mjs --workers 2 --gap-ms 180 --limit-products 30 --limit-services 30
+      - name: Print summary
+        if: always()
+        run: test -f .cache/abm-full-detail-collect/summary.md && cat .cache/abm-full-detail-collect/summary.md || true
+      - name: Upload smoke corpus
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: abm-full-detail-smoke-${{ github.run_id }}
+          path: .cache/abm-full-detail-collect/
+          retention-days: 14
+          if-no-files-found: warn
