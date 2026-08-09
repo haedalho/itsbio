@@ -1,0 +1,62 @@
+{
+  "generatedAt": "2026-08-09T12:12:28.744Z",
+  "source": {
+    "site": "https://www.abmgood.com",
+    "inventoryEndpoint": "https://www.abmgood.com/search",
+    "workflowRunId": 31312455498,
+    "artifactId": 9037822950,
+    "method": "official search filters with rate-limited pagination and SKU/URL dedupe",
+    "sanityWrites": 0
+  },
+  "scope": {
+    "normalProducts": "include",
+    "services": "include",
+    "largeGeneratedLibraries": "exclude"
+  },
+  "products": {
+    "officialNormalProducts": 5144,
+    "currentSanityProducts": 1582,
+    "matchedToCurrentSanity": 1163,
+    "missingFromCurrentSanity": 3981,
+    "incompleteFilters": 0,
+    "includedFilters": {
+      "General Materials": 3846,
+      "Cellular Materials > 3D and Organoid": 1,
+      "Cellular Materials > Microbial Contamination": 11,
+      "Cellular Materials > Cell Immortalization Reagents": 41,
+      "Cellular Materials > Media & Supplements": 360,
+      "Cellular Materials > Growth Factors and Cytokines": 700,
+      "Cellular Materials > Culture Consumables": 47,
+      "Cellular Materials > Cell Assay Products": 2,
+      "Genetic Materials > CRISPR > Cas9 Vectors & Virus": 30,
+      "Genetic Materials > CRISPR > Cas Proteins & CRISPR Screening": 22,
+      "Genetic Materials > Expression Systems": 41,
+      "Genetic Materials > Specialized Vectors": 19,
+      "Genetic Materials > Kits for Viral Vectors": 24
+    }
+  },
+  "excludedLargeCatalogs": {
+    "totalSearchResultsExcluded": 676888,
+    "filters": {
+      "Cellular Materials > Cell Library Collections": 23605,
+      "Genetic Materials > Expression-Ready Libraries": 427955,
+      "Genetic Materials > CRISPR > CRISPR KO Vectors & Virus": 168995,
+      "Genetic Materials > CRISPR > CRISPR Activation Vectors": 56333
+    }
+  },
+  "services": {
+    "rawSearchResults": 258,
+    "uniqueAfterDedupe": 251,
+    "incompleteFilters": 0,
+    "rootFilters": {
+      "Cell & Antibody Services": 114,
+      "DNA & Cloning Services": 87,
+      "Recombinant Virus Packaging": 57
+    }
+  },
+  "acceptance": {
+    "normalProductInventoryMissing": 0,
+    "serviceFilterCollectionMissing": 0,
+    "largeLibraryBranchesIncluded": 0
+  }
+}
