@@ -34,7 +34,10 @@ jobs:
             "categories": count(*[_type=="category"]),
             "kentProducts": count(*[_type=="product" && (brandSlug=="kent" || brand->slug.current=="kent" || brand->themeKey=="kent")]),
             "abmProducts": count(*[_type=="product" && (brandSlug=="abm" || brand->slug.current=="abm" || brand->themeKey=="abm")]),
-            "other": count(*[!(_type in ["product","category"])])
+            "imageAssets": count(*[_type=="sanity.imageAsset"]),
+            "fileAssets": count(*[_type=="sanity.fileAsset"]),
+            "assets": count(*[_type in ["sanity.imageAsset","sanity.fileAsset"]]),
+            "nonAssetOther": count(*[!(_type in ["product","category","sanity.imageAsset","sanity.fileAsset"])])
           }`;
           const url = new URL(`https://${project}.api.sanity.io/v${version}/data/query/${dataset}`);
           url.searchParams.set('query', query);
