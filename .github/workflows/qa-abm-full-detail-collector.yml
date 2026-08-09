@@ -13,11 +13,14 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      ABM_INVENTORY_FILE: .cache/abm-authoritative-inventory.json
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,6 +28,42 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm install --no-audit --no-fund
+
+      - name: Download frozen authoritative ABM census
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .cache/abm-v5
+          curl --fail --silent --show-error --location \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/9037822950/zip" \
+            -o .cache/abm-v5.zip
+          unzip -q .cache/abm-v5.zip -d .cache/abm-v5
+          node <<'NODE'
+          const fs = require('fs');
+          const products = JSON.parse(fs.readFileSync('.cache/abm-v5/products.json', 'utf8'));
+          const services = JSON.parse(fs.readFileSync('.cache/abm-v5/services.json', 'utf8'));
+          const inventory = {
+            generatedAt: '2026-08-09T12:12:28.744Z',
+            products,
+            services,
+            excluded: [
+              { title: 'Cell Library Collections', count: 23605 },
+              { title: 'Expression-Ready Libraries', count: 427955 },
+              { title: 'CRISPR KO Vectors & Virus', count: 168995 },
+              { title: 'CRISPR Activation Vectors', count: 56333 }
+            ],
+            productRuns: [{ title: 'official-search-census-v5', complete: products.length === 5144 }],
+            serviceRuns: [{ title: 'official-search-census-v5', complete: services.length === 251 }]
+          };
+          if (products.length !== 5144 || services.length !== 251) {
+            throw new Error(`Frozen census count mismatch: products=${products.length}, services=${services.length}`);
+          }
+          fs.writeFileSync(process.env.ABM_INVENTORY_FILE, JSON.stringify(inventory));
+          console.log(`Frozen inventory ready: ${products.length} products, ${services.length} services`);
+          NODE
+
       - name: Collect representative ABM detail corpus
         run: node scripts/abm-full-detail-collect-runner.mjs --workers 2 --gap-ms 180 --limit-products 30 --limit-services 30
       - name: Print summary
