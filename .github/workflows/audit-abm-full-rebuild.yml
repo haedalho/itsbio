@@ -6,6 +6,7 @@ on:
       - agent/abm-full-rebuild
     paths:
       - scripts/abm-full-census-v2.mjs
+      - scripts/abm-search-probe.mjs
       - .github/workflows/audit-abm-full-rebuild.yml
   workflow_dispatch:
 
@@ -34,6 +35,9 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
+      - name: Probe current ABM search filters
+        run: node scripts/abm-search-probe.mjs
+
       - name: Census official ABM products and services
         run: node scripts/abm-full-census-v2.mjs --concurrency 4 --gap-ms 100 --max-pages-per-seed 1200 --max-total-fetches 20000
 
@@ -49,6 +53,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: abm-full-rebuild-census-${{ github.run_id }}
-          path: .cache/abm-full-census/
+          path: |
+            .cache/abm-full-census/
+            .cache/abm-search-probe/
           if-no-files-found: warn
           retention-days: 30
