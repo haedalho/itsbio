@@ -6,6 +6,7 @@ on:
       - agent/abm-full-rebuild
     paths:
       - scripts/abm-full-detail-collect.mjs
+      - scripts/abm-full-detail-collect-runner.mjs
       - lib/abm/rebuild-parser-v2.mjs
       - .github/workflows/qa-abm-full-detail-collector.yml
   workflow_dispatch:
@@ -25,7 +26,7 @@ jobs:
           cache: npm
       - run: npm install --no-audit --no-fund
       - name: Collect representative ABM detail corpus
-        run: node scripts/abm-full-detail-collect.mjs --workers 2 --gap-ms 180 --limit-products 30 --limit-services 30
+        run: node scripts/abm-full-detail-collect-runner.mjs --workers 2 --gap-ms 180 --limit-products 30 --limit-services 30
       - name: Print summary
         if: always()
         run: test -f .cache/abm-full-detail-collect/summary.md && cat .cache/abm-full-detail-collect/summary.md || true
