@@ -7,6 +7,8 @@ on:
     paths:
       - scripts/abm-full-census-v2.mjs
       - scripts/abm-search-probe.mjs
+      - scripts/abm-search-census-v3.mjs
+      - scripts/abm-validate-current-products.mjs
       - .github/workflows/audit-abm-full-rebuild.yml
   workflow_dispatch:
 
@@ -38,22 +40,37 @@ jobs:
       - name: Probe current ABM search filters
         run: node scripts/abm-search-probe.mjs
 
-      - name: Census official ABM products and services
+      - name: Census official ABM search index
+        run: node scripts/abm-search-census-v3.mjs --gap-ms 70 --max-pages 1000
+
+      - name: Validate all current Sanity ABM products live
+        run: node scripts/abm-validate-current-products.mjs --concurrency 6 --gap-ms 40
+
+      - name: Keep category-page census as secondary cross-check
         run: node scripts/abm-full-census-v2.mjs --concurrency 4 --gap-ms 100 --max-pages-per-seed 1200 --max-total-fetches 20000
 
-      - name: Print census summary
+      - name: Print summaries
         if: always()
         run: |
-          if [ -f .cache/abm-full-census/summary.md ]; then
-            cat .cache/abm-full-census/summary.md
-          fi
+          for file in \
+            .cache/abm-search-census-v3/summary.md \
+            .cache/abm-current-validation/summary.md \
+            .cache/abm-full-census/summary.md; do
+            if [ -f "$file" ]; then
+              echo ""
+              echo "===== $file ====="
+              cat "$file"
+            fi
+          done
 
-      - name: Upload ABM census report
+      - name: Upload ABM audit reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: abm-full-rebuild-census-${{ github.run_id }}
           path: |
+            .cache/abm-search-census-v3/
+            .cache/abm-current-validation/
             .cache/abm-full-census/
             .cache/abm-search-probe/
           if-no-files-found: warn
