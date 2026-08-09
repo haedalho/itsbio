@@ -1,0 +1,42 @@
+name: Fast ABM official search census
+
+on:
+  push:
+    branches:
+      - agent/abm-full-rebuild
+    paths:
+      - scripts/abm-search-census-v4.mjs
+      - .github/workflows/audit-abm-search-v4.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  census:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Run bounded-parallel ABM search census
+        run: node scripts/abm-search-census-v4.mjs
+      - name: Print summary
+        if: always()
+        run: test -f .cache/abm-search-census-v4/summary.md && cat .cache/abm-search-census-v4/summary.md || true
+      - name: Upload census
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: abm-search-census-v4-${{ github.run_id }}
+          path: .cache/abm-search-census-v4/
+          retention-days: 30
+          if-no-files-found: warn
