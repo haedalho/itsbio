@@ -713,6 +713,24 @@ export default function ProductsMegaMenu() {
                   )}
 
                   <div className="mt-6 flex flex-wrap gap-3 border-t pt-4">
+                    {normalizeBrandKey(activeBrand.label) === "abm" ? (
+                      <>
+                        <Link
+                          href="/products/abm/products"
+                          className={["text-sm font-semibold text-slate-700", theme.accentTextHover, "hover:underline"].join(" ")}
+                          onClick={() => setOpen(false)}
+                        >
+                          All Products →
+                        </Link>
+                        <Link
+                          href="/products/abm/services"
+                          className={["text-sm font-semibold text-slate-700", theme.accentTextHover, "hover:underline"].join(" ")}
+                          onClick={() => setOpen(false)}
+                        >
+                          Services →
+                        </Link>
+                      </>
+                    ) : null}
                     <Link
                       href="/quote"
                       className={["text-sm font-semibold text-slate-700", theme.accentTextHover, "hover:underline"].join(" ")}

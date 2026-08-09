@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
-import { getAbmStagedRecord } from "@/lib/abm/rebuild-staging";
+import { getAbmStagedDetail } from "@/lib/abm/rebuild-staging";
+import HtmlContent from "@/components/site/HtmlContent";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -14,11 +15,21 @@ export default async function AbmStagedDetailPage({
 }) {
   const { kind, key } = await params;
   if (kind !== "product" && kind !== "service") notFound();
-  const record = await getAbmStagedRecord(kind, decodeURIComponent(key));
+  const record = await getAbmStagedDetail(kind, decodeURIComponent(key));
   if (!record) notFound();
 
   const listingPath = kind === "product" ? "/products/abm/products" : "/products/abm/services";
   const title = record.title || record.sku || "ABM item";
+
+  const htmlSections = [
+    ["Specifications", record.specificationsHtml],
+    [kind === "service" ? "Service Details" : "Overview", record.serviceDetailsHtml || record.overview || record.description],
+    ["Documents", record.documentsHtml],
+    ["FAQs", record.faqsHtml],
+    ["References", record.referencesHtml],
+    ["Reviews", record.reviewsHtml],
+  ] as Array<[string, unknown]>;
+  const gallery = Array.isArray(record.images) ? record.images.filter(Boolean) : [];
 
   return (
     <div>
@@ -32,10 +43,19 @@ export default async function AbmStagedDetailPage({
         <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Products", href: "/products" }, { label: "ABM", href: "/products/abm" }, { label: kind === "product" ? "Products" : "Services", href: listingPath }, { label: title, href: `/products/abm/staged/${kind}/${encodeURIComponent(key)}` }]} />
         <main className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
           <section className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-neutral-900">Overview</h2>
-            <p className="mt-4 whitespace-pre-line leading-7 text-neutral-700">
-              {kind === "product" ? "Product details are being prepared from the official ABM source." : "Service details are being prepared from the official ABM source."}
-            </p>
+            {gallery.length ? (
+              <div className="mb-8 grid gap-4 sm:grid-cols-2">
+                {gallery.map((src, index) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={`${src}-${index}`} src={src} alt={`${title} image ${index + 1}`} className="max-h-[420px] w-full rounded-xl border border-neutral-100 object-contain p-4" />
+                ))}
+              </div>
+            ) : null}
+            {htmlSections.map(([heading, value]) => {
+              if (typeof value !== "string" || !value.trim()) return null;
+              return <section key={heading} className="mt-8 first:mt-0"><h2 className="text-xl font-semibold text-neutral-900">{heading}</h2><HtmlContent html={value} /></section>;
+            })}
+            {!htmlSections.some(([, value]) => typeof value === "string" && value.trim()) ? <p className="mt-4 leading-7 text-neutral-700">Official detail content is unavailable for this item.</p> : null}
             {record.filterPath?.length ? <p className="mt-6 text-sm text-neutral-500">Category: {record.filterPath.join(" / ")}</p> : null}
           </section>
           <aside className="h-fit rounded-2xl border border-orange-200 bg-orange-50 p-6">
