@@ -45,7 +45,7 @@ const samples = [
     title: "pShuttle(+) Vector",
     sku: "A002",
     url: "https://www.abmgood.com/pshuttle-vector-a002.html",
-    require: ["sku", "specifications", "images"],
+    require: ["sku", "specifications"],
   },
   {
     id: "service-cloning",
