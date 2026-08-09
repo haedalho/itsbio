@@ -5,7 +5,7 @@ on:
     branches:
       - agent/abm-full-rebuild
     paths:
-      - scripts/abm-full-census.mjs
+      - scripts/abm-full-census-v2.mjs
       - .github/workflows/audit-abm-full-rebuild.yml
   workflow_dispatch:
 
@@ -35,7 +35,7 @@ jobs:
         run: npm install --no-audit --no-fund
 
       - name: Census official ABM products and services
-        run: node scripts/abm-full-census.mjs --concurrency 5 --gap-ms 100 --max-product-validations 15000
+        run: node scripts/abm-full-census-v2.mjs --concurrency 4 --gap-ms 100 --max-pages-per-seed 1200 --max-total-fetches 20000
 
       - name: Print census summary
         if: always()
