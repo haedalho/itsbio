@@ -1,0 +1,54 @@
+name: Audit ABM full rebuild scope
+
+on:
+  push:
+    branches:
+      - agent/abm-full-rebuild
+    paths:
+      - scripts/abm-full-census.mjs
+      - .github/workflows/audit-abm-full-rebuild.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  census:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+
+    steps:
+      - name: Checkout ABM rebuild branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Census official ABM products and services
+        run: node scripts/abm-full-census.mjs --concurrency 5 --gap-ms 100 --max-product-validations 15000
+
+      - name: Print census summary
+        if: always()
+        run: |
+          if [ -f .cache/abm-full-census/summary.md ]; then
+            cat .cache/abm-full-census/summary.md
+          fi
+
+      - name: Upload ABM census report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: abm-full-rebuild-census-${{ github.run_id }}
+          path: .cache/abm-full-census/
+          if-no-files-found: warn
+          retention-days: 30
