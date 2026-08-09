@@ -6,6 +6,8 @@ import { notFound } from "next/navigation";
 import Breadcrumb from "@/components/site/Breadcrumb";
 import { sanityClient } from "@/lib/sanity/sanity.client";
 import HtmlContent from "@/components/site/HtmlContent";
+import AbmStagedCatalog from "@/components/products/AbmStagedCatalog";
+import { getAbmStagedRecords } from "@/lib/abm/rebuild-staging";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -891,12 +893,14 @@ export default async function AbmProductsPathPage({
   searchParams,
 }: {
   params: Promise<{ path?: string[] }> | { path?: string[] };
-  searchParams?: Promise<{ open?: string }> | { open?: string };
+  searchParams?: Promise<{ open?: string; q?: string; page?: string }> | { open?: string; q?: string; page?: string };
 }) {
   const resolved = await Promise.resolve(params as any);
   const sp = await Promise.resolve(searchParams as any);
 
   const openSlug = (sp?.open ?? "").toString().trim();
+  const stagedQuery = (sp?.q ?? "").toString().trim();
+  const stagedPage = Math.max(1, Number.parseInt((sp?.page ?? "1").toString(), 10) || 1);
   const brandKey: string = "abm";
   const theme = getTheme(brandKey);
   const isKent = brandKey === "kent";
@@ -941,7 +945,46 @@ export default async function AbmProductsPathPage({
     activeRootTree = buildTreeFromDescendants([activeRoot], descendants);
   }
 
+  const stagedKind = path[0] === "products" ? "product" : path[0] === "services" ? "service" : null;
+  if (stagedKind) {
+    const stagedRecords = await getAbmStagedRecords(stagedKind);
+    const breadcrumbItems = [
+      { label: "Home", href: "/" },
+      { label: "Products", href: "/products" },
+      { label: brand.title, href: "/products/abm" },
+      { label: stagedKind === "product" ? "Products" : "Services", href: `/products/abm/${path[0]}` },
+    ];
+
+    return (
+      <div>
+        <HeroBanner brandTitle={brand.title} />
+        <div className={PAGE_SHELL}>
+          <div className="mt-6 flex justify-end"><Breadcrumb items={breadcrumbItems} /></div>
+          <main className="mx-auto max-w-5xl py-10">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">ABM catalog</p>
+                <h1 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-900 md:text-4xl">
+                  {stagedKind === "product" ? "Products" : "Services"}
+                </h1>
+                <p className="mt-3 max-w-2xl leading-7 text-neutral-600">
+                  Browse the official ABM inventory prepared for ITS BIO. Select an item to view its internal detail page and request a quote.
+                </p>
+              </div>
+              <Link href="/products/abm" className="text-sm font-semibold text-orange-700 underline underline-offset-4">ABM overview</Link>
+            </div>
+            <AbmStagedCatalog kind={stagedKind} records={stagedRecords} query={stagedQuery} page={stagedPage} />
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   if (!path.length) {
+    const [stagedProducts, stagedServices] = await Promise.all([
+      getAbmStagedRecords("product"),
+      getAbmStagedRecords("service"),
+    ]);
     const breadcrumbItems = [
       { label: "Home", href: "/" },
       { label: "Products", href: "/products" },
@@ -970,8 +1013,24 @@ export default async function AbmProductsPathPage({
             </aside>
 
             <main className="min-w-0">
-              <h2 className="text-2xl font-semibold tracking-tight text-neutral-900">Select a category</h2>
-              <p className="mt-3 text-neutral-700 leading-7">Please choose a category from the left menu.</p>
+              <h2 className="text-2xl font-semibold tracking-tight text-neutral-900">ABM catalog</h2>
+              <p className="mt-3 max-w-2xl leading-7 text-neutral-700">Browse ABM Products and Services collected from the official catalog.</p>
+              <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                <Link href="/products/abm/products" className="rounded-2xl border border-orange-200 bg-orange-50 p-6 transition hover:-translate-y-0.5 hover:shadow-md">
+                  <div className="text-sm font-semibold uppercase tracking-wide text-orange-700">Products</div>
+                  <div className="mt-2 text-3xl font-semibold text-neutral-900">{stagedProducts.length.toLocaleString()}</div>
+                  <div className="mt-2 text-sm text-neutral-600">Browse ABM products →</div>
+                </Link>
+                <Link href="/products/abm/services" className="rounded-2xl border border-orange-200 bg-white p-6 transition hover:-translate-y-0.5 hover:shadow-md">
+                  <div className="text-sm font-semibold uppercase tracking-wide text-orange-700">Services</div>
+                  <div className="mt-2 text-3xl font-semibold text-neutral-900">{stagedServices.length.toLocaleString()}</div>
+                  <div className="mt-2 text-sm text-neutral-600">Browse ABM services →</div>
+                </Link>
+              </div>
+              <div className="mt-10 border-t border-neutral-200 pt-8">
+                <h3 className="text-lg font-semibold text-neutral-900">Product categories</h3>
+                <p className="mt-2 text-sm text-neutral-600">Or choose a category from the left menu.</p>
+              </div>
             </main>
           </div>
         </div>
