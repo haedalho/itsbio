@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
-import { parseAbmRebuildDetail } from "../lib/abm/rebuild-parser.mjs";
+import { parseAbmRebuildDetailV2 } from "../lib/abm/rebuild-parser-v2.mjs";
 
 const OUT = path.resolve(".cache/abm-rebuild-parser-qa");
 fs.mkdirSync(OUT, { recursive: true });
@@ -16,11 +16,11 @@ const samples = [
     require: ["sku", "specifications", "description", "documents", "images", "faqs"],
   },
   {
-    id: "product-e026",
+    id: "product-g596",
     kind: "product",
-    title: "Exonuclease III",
-    sku: "E026",
-    url: "https://www.abmgood.com/exonuclease-iii-e026.html",
+    title: "BlasTaq™ Probe One-Step RT-qPCR",
+    sku: "G596",
+    url: "https://www.abmgood.com/blastaq-probe-one-step-rt-qpcr.html",
     require: ["sku", "specifications", "images"],
   },
   {
@@ -86,7 +86,7 @@ async function fetchHtml(url) {
         redirect: "follow",
         signal: controller.signal,
         headers: {
-          "user-agent": "Mozilla/5.0 (compatible; ITSBIO-ABM-ParserQA/1.0; +https://itsbio.vercel.app)",
+          "user-agent": "Mozilla/5.0 (compatible; ITSBIO-ABM-ParserQA/2.0; +https://itsbio.vercel.app)",
           accept: "text/html,application/xhtml+xml",
         },
       });
@@ -127,7 +127,7 @@ for (let i = 0; i < samples.length; i++) {
   console.log(`[QA ${i + 1}/${samples.length}] ${sample.id} ${sample.sku}`);
   try {
     const html = await fetchHtml(sample.url);
-    const parsed = parseAbmRebuildDetail(html, sample.url, sample);
+    const parsed = parseAbmRebuildDetailV2(html, sample.url, sample);
     const qa = check(sample, parsed);
     results.push({ sample, qa, parsed });
     console.log(JSON.stringify({
