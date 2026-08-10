@@ -12,6 +12,7 @@ import path from "node:path";
 import { createClient } from "next-sanity";
 import * as cheerio from "cheerio";
 import { sanitizeAbmStoredHtml } from "../lib/abm/rebuild-parser.mjs";
+import { createAbmImageRehoster } from "./lib/abm-sanity-image-assets.mjs";
 
 const argv = process.argv.slice(2);
 const readArg = (name, fallback = "") => {
@@ -238,6 +239,37 @@ const loaded = loadRecords();
 if (!ALLOW_PARTIAL && (loaded.products.length !== 5144 || loaded.services.length !== 251 || loaded.inputErrors)) {
   throw new Error(`Full corpus required: products=${loaded.products.length}/5144 services=${loaded.services.length}/251 errors=${loaded.inputErrors}`);
 }
+
+function assertUniqueDetailKeys(records, kind) {
+  const keys = records.map((record) => clean(record.key));
+  const unique = new Set(keys);
+  if (keys.some((key) => !key.startsWith(`${kind}:`))) throw new Error(`${kind}: invalid staged detail key`);
+  if (unique.size !== records.length) throw new Error(`${kind}: duplicate staged detail keys (${records.length - unique.size})`);
+}
+
+assertUniqueDetailKeys(loaded.products, "product");
+assertUniqueDetailKeys(loaded.services, "service");
+
+const client = !DRY ? createClient({ projectId, dataset, apiVersion, token, useCdn: false }) : null;
+const imageRehoster = createAbmImageRehoster({ client, dryRun: DRY });
+
+async function rehostRecords(records, label) {
+  const output = new Array(records.length);
+  let cursor = 0;
+  const workers = Math.min(4, Math.max(1, records.length));
+  await Promise.all(Array.from({ length: workers }, async () => {
+    while (true) {
+      const index = cursor++;
+      if (index >= records.length) return;
+      output[index] = await imageRehoster.rehostDetailRecord(records[index]);
+      if (index % 250 === 0) console.log(`[stage detail assets] ${label} ${index}/${records.length}`);
+    }
+  }));
+  return output;
+}
+
+loaded.products = await rehostRecords(loaded.products, "products");
+loaded.services = await rehostRecords(loaded.services, "services");
 const docs = [...makeChunks(loaded.products, "product"), ...makeChunks(loaded.services, "service")];
 const expectedIds = new Set(docs.map((doc) => doc._id));
 
@@ -253,11 +285,11 @@ const report = {
   maxBytesPerChunk: MAX_BYTES,
   productionProductWrites: 0,
   productionCategoryWrites: 0,
-  sanityAssetWrites: 0,
+  sanityAssetWrites: imageRehoster.stats.uploadedAssets,
+  imageMigration: imageRehoster.stats,
 };
 
 if (!DRY) {
-  const client = createClient({ projectId, dataset, apiVersion, token, useCdn: false });
   for (let index = 0; index < docs.length; index += 25) {
     let transaction = client.transaction();
     for (const doc of docs.slice(index, index + 25)) transaction = transaction.createOrReplace(doc);

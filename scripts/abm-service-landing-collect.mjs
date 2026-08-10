@@ -151,9 +151,16 @@ function extractLanding(html, sourceUrl, expectedTitle, internalRoutes) {
   const routed = cheerio.load(`<div id="__landing">${htmlOut}</div>`, { decodeEntities: false });
   routed("#__landing a[href]").each((_, anchor) => {
     const node = routed(anchor);
+    const rawHref = String(node.attr("href") || "").trim();
+    // Preserve source-page section navigation. Rewriting these to the current
+    // route used to discard #workflow/#project-inquiry and made the CTA buttons inert.
+    if (/^#[A-Za-z][A-Za-z0-9_:-]*$/.test(rawHref)) {
+      node.attr("href", rawHref).removeAttr("target").removeAttr("rel");
+      return;
+    }
     let absolute = "";
     try {
-      const url = new URL(String(node.attr("href") || ""), sourceUrl);
+      const url = new URL(rawHref, sourceUrl);
       if (["http:", "https:"].includes(url.protocol)) absolute = url.toString();
     } catch { /* invalid link is removed below */ }
     if (!absolute) {

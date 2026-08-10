@@ -7,6 +7,7 @@ type Props = {
   className?: string;
   /** legacy 등에서 상대경로(href="/", src="/")를 절대경로로 바꾸기 위한 base */
   baseUrl?: string;
+  mode?: "default" | "abm-service";
 };
 
 const TABLE_WRAP_CLASS = "overflow-x-auto rounded-2xl border border-orange-200 bg-white shadow-sm";
@@ -364,7 +365,16 @@ function fixMediaAndLinks(doc: Document, baseUrl: string) {
   });
 }
 
-function sanitizeAndStyle(rawHtml: string, baseUrl?: string) {
+function isManagedAbmImage(src: string) {
+  try {
+    const url = new URL(src, window.location.origin);
+    return url.hostname === "cdn.sanity.io" && url.pathname.startsWith("/images/9b5twpc8/");
+  } catch {
+    return false;
+  }
+}
+
+function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"] = "default") {
   if (!rawHtml) return "";
 
   // ✅ 0) 문자열 레벨 전처리
@@ -390,8 +400,9 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string) {
     .querySelectorAll("script, style, iframe, form, input, textarea, button, select")
     .forEach((el) => removeNode(el));
 
-  // 3) nav/header/footer/aside 제거 + ABM footer 제거
-  doc.querySelectorAll("nav, header, footer, aside").forEach((el) => removeNode(el));
+  // 3) nav/header/footer 제거 + ABM footer 제거. Service editorial content의
+  // aside는 source page의 실제 정보 패널이므로 보존한다.
+  doc.querySelectorAll(mode === "abm-service" ? "nav, header, footer" : "nav, header, footer, aside").forEach((el) => removeNode(el));
   doc.querySelectorAll("#footer, .footer, .footer-top, .footer-bottom").forEach((el) => removeNode(el));
 
   // ✅ 규칙: Request Free Sample 버튼/링크 제거
@@ -445,7 +456,20 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string) {
     if (isDefinitelyBrandOrFlag(img as HTMLImageElement)) removeNode(img);
   });
 
-  // 6) 테이블 Price 컬럼 제거 + 스타일 적용
+  // ABM Service staging은 외부 이미지를 절대 렌더링하지 않는다. 수집 workflow가
+  // 모든 공식 이미지를 Sanity asset으로 바꾸며, 이 검사는 잘못된 staging의 방어선이다.
+  if (mode === "abm-service") {
+    doc.querySelectorAll<HTMLImageElement>("img").forEach((img) => {
+      if (!isManagedAbmImage((img.getAttribute("src") || "").trim())) removeNode(img);
+      else {
+        img.removeAttribute("srcset");
+        img.removeAttribute("data-srcset");
+        img.removeAttribute("data-src");
+      }
+    });
+  }
+
+  // 6) 테이블 Price 컬럼 제거 + 기본 스타일 적용
   doc.querySelectorAll("table").forEach((table) => {
     const headerCells = Array.from(table.querySelectorAll("tr:first-child th, tr:first-child td"));
     const priceIdx = headerCells.findIndex((c) => lower(c.textContent).includes("price"));
@@ -464,27 +488,31 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string) {
       if (/\$\s?\d/.test(t)) removeNode(cell);
     });
 
-    table.setAttribute("class", TABLE_CLASS);
-    table.querySelectorAll("th").forEach((th) => th.setAttribute("class", TH_CLASS));
-    table.querySelectorAll("td").forEach((td) => td.setAttribute("class", TD_CLASS));
+    if (mode !== "abm-service") {
+      table.setAttribute("class", TABLE_CLASS);
+      table.querySelectorAll("th").forEach((th) => th.setAttribute("class", TH_CLASS));
+      table.querySelectorAll("td").forEach((td) => td.setAttribute("class", TD_CLASS));
+    }
 
     const rows = Array.from(table.querySelectorAll("tr"));
     rows.forEach((tr, idx) => {
       if (idx > 0 && idx % 2 === 0) tr.setAttribute("class", STRIPED_ROW_CLASS);
     });
 
-    const wrap = doc.createElement("div");
-    wrap.setAttribute("class", TABLE_WRAP_CLASS);
+    if (mode !== "abm-service") {
+      const wrap = doc.createElement("div");
+      wrap.setAttribute("class", TABLE_WRAP_CLASS);
 
-    const parent = table.parentNode;
-    if (parent) {
-      parent.insertBefore(wrap, table);
-      wrap.appendChild(table);
+      const parent = table.parentNode;
+      if (parent) {
+        parent.insertBefore(wrap, table);
+        wrap.appendChild(table);
+      }
     }
   });
 
   // ✅ 7) 가독성 개선(문단 래핑)
-  improveReadability(doc);
+  if (mode !== "abm-service") improveReadability(doc);
 
   // 8) 빈 요소 정리
   doc.querySelectorAll("p, div, section, span, li").forEach((el) => {
@@ -496,7 +524,7 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string) {
   return doc.body.innerHTML.trim();
 }
 
-export default function HtmlContent({ html, className, baseUrl }: Props) {
+export default function HtmlContent({ html, className, baseUrl, mode = "default" }: Props) {
   const [renderHtml, setRenderHtml] = useState<string>("");
 
   const input = useMemo(() => (html || "").trim(), [html]);
@@ -504,13 +532,13 @@ export default function HtmlContent({ html, className, baseUrl }: Props) {
 
   useEffect(() => {
     try {
-      setRenderHtml(sanitizeAndStyle(input, base));
+      setRenderHtml(sanitizeAndStyle(input, base, mode));
     } catch {
       // fallback: 최소한 mailto / p링크만
       const fallback = rewriteProductPLinksToItem(normalizeMailto(input));
       setRenderHtml(fallback);
     }
-  }, [input, base]);
+  }, [input, base, mode]);
 
   if (!renderHtml) return null;
 
@@ -520,9 +548,9 @@ export default function HtmlContent({ html, className, baseUrl }: Props) {
       <div
         className={[
           "itsbio-html",
-          "prose prose-neutral max-w-none",
-          "prose-a:text-orange-600 prose-a:underline prose-a:underline-offset-4",
-          "prose-table:my-6",
+          mode === "abm-service" ? "max-w-none" : "prose prose-neutral max-w-none",
+          mode === "abm-service" ? "" : "prose-a:text-orange-600 prose-a:underline prose-a:underline-offset-4",
+          mode === "abm-service" ? "" : "prose-table:my-6",
           className || "",
         ].join(" ")}
         dangerouslySetInnerHTML={{ __html: renderHtml }}

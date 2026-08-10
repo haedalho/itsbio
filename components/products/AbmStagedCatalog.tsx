@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import type { AbmStagedRecord } from "@/lib/abm/rebuild-staging";
-import { stagedRecordKey, stagedRecordPath } from "@/lib/abm/rebuild-staging";
+import { isManagedAbmImageUrl, stagedRecordKey, stagedRecordPath } from "@/lib/abm/rebuild-staging";
 
 const PAGE_SIZE = 48;
 
@@ -67,8 +67,7 @@ export default function AbmStagedCatalog({
             const content = (
               <>
                 <div className="relative -mx-5 -mt-5 mb-5 h-40 overflow-hidden rounded-t-2xl bg-neutral-50">
-                  {row.previewImage ? (
-                    // Official ABM images are kept as read-only source URLs in Preview staging.
+                  {isManagedAbmImageUrl(row.previewImage) ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={row.previewImage} alt="" className="h-full w-full object-contain p-4" loading="lazy" />
                   ) : (

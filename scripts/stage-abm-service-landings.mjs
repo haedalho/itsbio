@@ -3,6 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createClient } from "next-sanity";
+import { createAbmImageRehoster, isManagedAbmImageUrl } from "./lib/abm-sanity-image-assets.mjs";
 
 const argv = process.argv.slice(2);
 const readArg = (name, fallback = "") => {
@@ -32,6 +33,8 @@ if (!fs.existsSync(INPUT)) throw new Error(`Service landing input not found: ${I
 if (!DRY && !token) throw new Error("No Sanity write token available");
 const rows = JSON.parse(fs.readFileSync(INPUT, "utf8"));
 if (!Array.isArray(rows) || rows.length < 20) throw new Error(`Expected the complete Service landing tree, got ${rows?.length || 0}`);
+const client = !DRY ? createClient({ projectId, dataset, apiVersion, token, useCdn: false }) : null;
+const imageRehoster = createAbmImageRehoster({ client, dryRun: DRY });
 
 const clean = (value) => String(value || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
 const safeUrl = (value) => {
@@ -44,31 +47,45 @@ const safeUrl = (value) => {
 };
 const hasCommerce = (value) => /(?:\$\s*\d|\b(?:USD|CAD)\s+\d)|(?:add\s+to\s+cart|>\s*quantity\s*<)|"(?:price|cost|amount|currency|cart|quantity)"\s*:/i.test(String(value || ""));
 
-const records = rows.map((row, index) => {
+const records = [];
+for (let index = 0; index < rows.length; index++) {
+  const row = rows[index];
   const pathValue = Array.isArray(row.path) ? row.path.map(clean).filter(Boolean) : [];
   const pathKey = pathValue.join("/");
+  const sourceUrl = safeUrl(row.sourceUrl);
+  const html = await imageRehoster.rewriteHtml(String(row.html || "").trim(), sourceUrl);
+  const images = await imageRehoster.rehostUrls(Array.isArray(row.images) ? [...new Set(row.images.map(safeUrl).filter(Boolean))] : [], sourceUrl);
+  const children = await Promise.all(Array.isArray(row.children) ? row.children.map(async (child, childIndex) => {
+    const childSourceUrl = safeUrl(child.sourceUrl);
+    const childImage = safeUrl(child.image);
+    return {
+      _key: `child-${childIndex}-${clean(child.title).replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 60)}`,
+      title: clean(child.title),
+      path: Array.isArray(child.path) ? child.path.map(clean).filter(Boolean) : [],
+      sourceUrl: childSourceUrl,
+      image: childImage ? await imageRehoster.rehostUrl(childImage, childSourceUrl || sourceUrl) : "",
+    };
+  }) : []);
   const record = {
     _key: `service-landing-${pathKey.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 80) || index}`,
     kind: "service",
     pathKey,
     path: pathValue,
     title: clean(row.title),
-    sourceUrl: safeUrl(row.sourceUrl),
-    html: String(row.html || "").trim(),
-    images: Array.isArray(row.images) ? [...new Set(row.images.map(safeUrl).filter(Boolean))] : [],
-    children: Array.isArray(row.children) ? row.children.map((child, childIndex) => ({
-      _key: `child-${childIndex}-${clean(child.title).replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 60)}`,
-      title: clean(child.title),
-      path: Array.isArray(child.path) ? child.path.map(clean).filter(Boolean) : [],
-      sourceUrl: safeUrl(child.sourceUrl),
-      image: safeUrl(child.image),
-    })) : [],
+    sourceUrl,
+    html,
+    images,
+    children,
     collectedAt: clean(row.collectedAt),
   };
   if (!record.pathKey || !record.title || !record.sourceUrl || !record.html) throw new Error(`Invalid Service landing record at index ${index}`);
   if (hasCommerce(JSON.stringify(record))) throw new Error(`${record.pathKey}: commerce data remains in Service landing`);
-  return record;
-});
+  if (!DRY && (
+    record.images.some((url) => !isManagedAbmImageUrl(url))
+    || record.children.some((child) => child.image && !isManagedAbmImageUrl(child.image))
+  )) throw new Error(`${record.pathKey}: unmanaged landing image remains`);
+  records.push(record);
+}
 
 const chunks = [];
 let current = [];
@@ -104,11 +121,11 @@ const report = {
   chunks: docs.length,
   productionProductWrites: 0,
   productionCategoryWrites: 0,
-  sanityAssetWrites: 0,
+  sanityAssetWrites: imageRehoster.stats.uploadedAssets,
+  imageMigration: imageRehoster.stats,
 };
 
 if (!DRY) {
-  const client = createClient({ projectId, dataset, apiVersion, token, useCdn: false });
   let transaction = client.transaction();
   for (const doc of docs) transaction = transaction.createOrReplace(doc);
   await transaction.commit({ autoGenerateArrayKeys: true });

@@ -118,6 +118,9 @@ jobs:
           --replace
           --version 2026-08-09-search-v5
 
+      - name: Audit all internal ABM detail links and managed images
+        run: node scripts/audit-abm-staged-links.mjs --version 2026-08-09-search-v5
+
       - name: Upload QA and staging reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -132,5 +135,6 @@ jobs:
             .cache/abm-service-landings/navigation.json
             .cache/abm-service-landings/report.json
             .cache/abm-service-landing-staging/report.json
+            .cache/abm-staged-link-audit/report.json
           retention-days: 30
           if-no-files-found: warn

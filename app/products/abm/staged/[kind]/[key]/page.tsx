@@ -7,7 +7,7 @@ import AbmCatalogSideNav from "@/components/products/AbmCatalogSideNav";
 import ProductGalleryClient from "@/components/products/ProductGalleryClient";
 import ProductTabsClient from "@/components/products/ProductTabs";
 import { ABM_PRODUCT_GROUPS, findAbmServicePathForLabels } from "@/lib/abm/catalog-taxonomy";
-import { getAbmStagedDetail } from "@/lib/abm/rebuild-staging";
+import { getAbmStagedDetail, isManagedAbmImageUrl } from "@/lib/abm/rebuild-staging";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -42,7 +42,7 @@ export default async function AbmStagedDetailPage({
 
   const listingPath = kind === "product" ? "/products/abm/products" : "/products/abm/services";
   const title = record.title || record.sku || "ABM item";
-  const gallery = (record.images || []).map((url) => ({ url, alt: title }));
+  const gallery = (record.images || []).filter(isManagedAbmImageUrl).map((url) => ({ url, alt: title }));
   const paths = Array.isArray(record.listingPaths) && record.listingPaths.length
     ? record.listingPaths
     : record.listingFilters?.map((item) => item.path).filter((path): path is string[] => Array.isArray(path) && path.length > 0)
@@ -130,9 +130,13 @@ export default async function AbmStagedDetailPage({
               />
             </div>
 
-            {!overviewHtml && !record.specificationsHtml && !record.serviceDetailsHtml ? (
+            {!record.hasDetail ? (
               <div className="mt-8 border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">
-                This item is in the authoritative inventory, but its reviewed detail has not been staged yet.
+                This item is in the authoritative ABM inventory. Its reviewed detail is being migrated and will appear here after the complete staging corpus passes validation.
+              </div>
+            ) : !overviewHtml && !record.specificationsHtml && !record.serviceDetailsHtml ? (
+              <div className="mt-8 border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">
+                The reviewed record is available, but the official source does not provide additional detail sections for this item.
               </div>
             ) : null}
           </section>

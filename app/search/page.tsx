@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 
 import { sanityClient } from "@/lib/sanity/sanity.client";
-import { abmSearchUrl, looksLikeCatNo, parseAbmSearch } from "@/lib/abm/abm";
+import { looksLikeCatNo } from "@/lib/abm/abm";
+import { getAbmStagedRecord, stagedRecordPath } from "@/lib/abm/rebuild-staging";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -30,26 +30,6 @@ const FIND_BY_SKU_OR_TITLE = `
   enrichedAt
 }
 `;
-
-async function fetchHtml(url: string) {
-  const controller = new AbortController();
-  const t = setTimeout(() => controller.abort(), 20000);
-  const res = await fetch(url, {
-    method: "GET",
-    redirect: "follow",
-    cache: "no-store",
-    signal: controller.signal,
-    headers: {
-      "user-agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
-      accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "accept-language": "en-US,en;q=0.9,ko-KR;q=0.8,ko;q=0.7",
-    },
-  });
-  clearTimeout(t);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return await res.text();
-}
 
 function categoryHref(categoryPath: string[]) {
   if (!categoryPath?.length) return `/products/${BRAND_KEY}`;
@@ -79,39 +59,17 @@ export default async function SearchPage({
     redirect(`${href}?open=${encodeURIComponent(doc.slug)}`);
   }
 
-  // 2) Sanity에 없으면 공식 ABM 검색으로 연결한다.
-  // Preview 요청에서 Sanity Product를 자동 생성·수정하지 않는다.
+  // 2) Production Product에 없으면 완전 적재된 ABM staging inventory에서 찾는다.
+  // Preview runtime에서는 ABM 원본 사이트를 호출하거나 Product 문서를 생성하지 않는다.
   if (looksLikeCatNo(q)) {
-    const searchUrl = abmSearchUrl(q);
-    const html = await fetchHtml(searchUrl).catch(() => "");
-    if (!html) {
-      redirect(searchUrl);
-    }
-    const resolved = parseAbmSearch(html, q);
-
-    if (resolved.type === "single") {
-      const productUrl = resolved.productUrl;
-
-      redirect(productUrl);
-    }
-
-    // 단일이 아니면 ABM 검색결과로
-    redirect(searchUrl);
+    const [product, service] = await Promise.all([
+      getAbmStagedRecord("product", q),
+      getAbmStagedRecord("service", q),
+    ]);
+    if (product) redirect(stagedRecordPath("product", product));
+    if (service) redirect(stagedRecordPath("service", service));
   }
 
-  // 2-B) 키워드/제목 입력: 자동 이관 금지 → ABM 검색 결과로
-  redirect(abmSearchUrl(q));
-
-  // fallback (never)
-  return (
-    <div className="mx-auto max-w-4xl px-6 py-10">
-      <h1 className="text-xl font-semibold">Search</h1>
-      <p className="mt-2 text-slate-600">No result for: {q}</p>
-      <div className="mt-4">
-        <Link className="text-orange-600 underline" href={abmSearchUrl(q)}>
-          Open ABM search
-        </Link>
-      </div>
-    </div>
-  );
+  // 2-B) 제목/키워드는 자체 catalog filter로 이어진다.
+  redirect(`/products/${BRAND_KEY}/products?q=${encodeURIComponent(q)}`);
 }

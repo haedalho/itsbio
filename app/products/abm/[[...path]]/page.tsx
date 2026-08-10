@@ -9,6 +9,7 @@ import HtmlContent from "@/components/site/HtmlContent";
 import AbmStagedCatalog from "@/components/products/AbmStagedCatalog";
 import AbmHeroBanner from "@/components/products/AbmHeroBanner";
 import AbmCatalogSideNav from "@/components/products/AbmCatalogSideNav";
+import AbmServiceLanding from "@/components/products/AbmServiceLanding";
 import {
   ABM_PRODUCT_GROUPS,
   ABM_SERVICE_GROUPS,
@@ -1037,27 +1038,25 @@ export default async function AbmProductsPathPage({
             </aside>
 
             <main className="min-w-0">
-              <div className="flex flex-wrap items-end justify-between gap-4">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">ABM {stagedKind}</p>
-                  <h1 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-900 md:text-4xl">
-                    {selectedTitle || (stagedKind === "product" ? "Product Categories" : "Service Categories")}
-                  </h1>
-                  {!serviceLanding?.html ? (
+              {!serviceLanding?.html ? (
+                <div className="flex flex-wrap items-end justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">ABM {stagedKind}</p>
+                    <h1 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-900 md:text-4xl">
+                      {selectedTitle || (stagedKind === "product" ? "Product Categories" : "Service Categories")}
+                    </h1>
                     <p className="mt-3 max-w-3xl leading-7 text-neutral-600">
                       {selectedDescription || (stagedKind === "product"
                         ? "Choose one of the three official ABM Product roots. Each root opens the preserved category landing and its hierarchy."
                         : "Choose one of the three official ABM Service roots. Each root opens its complete landing hierarchy and reviewed service offerings.")}
                     </p>
-                  ) : null}
+                  </div>
+                  <Link href="/products/abm" className="text-sm font-semibold text-orange-700 underline underline-offset-4">ABM overview</Link>
                 </div>
-                <Link href="/products/abm" className="text-sm font-semibold text-orange-700 underline underline-offset-4">ABM overview</Link>
-              </div>
+              ) : null}
 
               {serviceLanding?.html ? (
-                <section className="mt-8 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-                  <HtmlContent html={serviceLanding.html} />
-                </section>
+                <AbmServiceLanding html={serviceLanding.html} />
               ) : null}
 
               {selectedServiceNode?.children?.length ? (

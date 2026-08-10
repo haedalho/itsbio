@@ -59,6 +59,16 @@ export type AbmStagedDetail = AbmStagedRecord & {
   verification?: Record<string, unknown>;
 };
 
+export function isManagedAbmImageUrl(value?: string) {
+  if (!value) return false;
+  try {
+    const url = new URL(value);
+    return url.hostname === "cdn.sanity.io" && url.pathname.startsWith("/images/9b5twpc8/");
+  } catch {
+    return false;
+  }
+}
+
 const STAGED_QUERY = `{
   "records": *[_type == "abmRebuildChunk" && version == $version && kind == $kind].records[],
   "details": *[_type == "abmRebuildDetailChunk" && version == $version && kind == $kind].records[]{
@@ -91,7 +101,7 @@ export async function getAbmStagedRecords(kind: AbmStagedRecord["kind"]): Promis
     return {
       ...record,
       hasDetail: Boolean(detail),
-      previewImage: detail?.previewImage,
+      previewImage: isManagedAbmImageUrl(detail?.previewImage) ? detail?.previewImage : undefined,
       previewSummary: detail?.previewSummary,
       listingPaths: detail?.listingPaths,
       breadcrumbs: detail?.breadcrumbs,
@@ -174,11 +184,19 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
     kind,
     key: detailKey,
   });
-  if (!staged) return undefined;
+  if (!staged) {
+    return {
+      ...record,
+      sourceUrl: String(record.url || "").trim(),
+      hasDetail: false,
+      images: [],
+    } as AbmStagedDetail;
+  }
   const sourceUrl = String(staged.sourceUrl || record.url || "").trim();
 
   const detail = mergeNonEmpty({ ...record, sourceUrl }, staged) as AbmStagedDetail;
   detail.kind = kind;
-  detail.images = Array.isArray(detail.images) ? detail.images.filter(Boolean) : [];
+  detail.hasDetail = true;
+  detail.images = Array.isArray(detail.images) ? detail.images.filter(isManagedAbmImageUrl) : [];
   return detail;
 }
