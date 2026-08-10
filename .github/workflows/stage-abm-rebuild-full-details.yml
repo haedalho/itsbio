@@ -1,6 +1,11 @@
 name: Stage full ABM rebuild details
 
 on:
+  push:
+    branches:
+      - agent/abm-full-rebuild
+    paths:
+      - .github/abm-full-migration-trigger
   workflow_dispatch:
     inputs:
       workers:
@@ -17,6 +22,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: abm-full-detail-staging
@@ -36,6 +42,7 @@ jobs:
       SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
       SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
       SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+      ABM_INVENTORY_FILE: .cache/abm-authoritative-inventory.json
 
     steps:
       - uses: actions/checkout@v4
@@ -45,6 +52,41 @@ jobs:
           cache: npm
       - run: npm install --no-audit --no-fund
 
+      - name: Download frozen authoritative ABM inventory
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .cache/abm-v5
+          curl --fail --silent --show-error --location \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/9037822950/zip" \
+            -o .cache/abm-v5.zip
+          unzip -q .cache/abm-v5.zip -d .cache/abm-v5
+          node <<'NODE'
+          const fs = require('fs');
+          const products = JSON.parse(fs.readFileSync('.cache/abm-v5/products.json', 'utf8'));
+          const services = JSON.parse(fs.readFileSync('.cache/abm-v5/services.json', 'utf8'));
+          if (products.length !== 5144 || services.length !== 251) {
+            throw new Error(`Frozen census count mismatch: products=${products.length}, services=${services.length}`);
+          }
+          const inventory = {
+            generatedAt: '2026-08-09T12:12:28.744Z',
+            products,
+            services,
+            excluded: [
+              { title: 'Cell Library Collections', count: 23605 },
+              { title: 'Expression-Ready Libraries', count: 427955 },
+              { title: 'CRISPR KO Vectors & Virus', count: 168995 },
+              { title: 'CRISPR Activation Vectors', count: 56333 }
+            ],
+            productRuns: [{ title: 'official-search-census-v5', complete: true }],
+            serviceRuns: [{ title: 'official-search-census-v5', complete: true }]
+          };
+          fs.writeFileSync(process.env.ABM_INVENTORY_FILE, JSON.stringify(inventory));
+          console.log(`Frozen inventory ready: ${products.length} products, ${services.length} services`);
+          NODE
+
       - name: Restore resumable read-only collector cache
         uses: actions/cache@v4
         with:
@@ -53,18 +95,11 @@ jobs:
           restore-keys: |
             abm-full-details-${{ github.ref_name }}-
 
-      - name: Collect complete official Product and Service details
-        run: >-
-          node scripts/abm-full-detail-collect-runner.mjs
-          --workers ${{ inputs.workers }}
-          --gap-ms ${{ inputs.gap_ms }}
-          --resume
-
       - name: Collect complete official Service landing hierarchy
         run: >-
           node scripts/abm-service-landing-collect.mjs
-          --workers ${{ inputs.workers }}
-          --gap-ms ${{ inputs.gap_ms }}
+          --workers ${{ inputs.workers || '4' }}
+          --gap-ms ${{ inputs.gap_ms || '180' }}
 
       - name: Stage reviewed Service landing hierarchy
         run: >-
@@ -72,6 +107,13 @@ jobs:
           --input .cache/abm-service-landings/landings.json
           --replace
           --version 2026-08-09-search-v5
+
+      - name: Collect complete official Product and Service details
+        run: >-
+          node scripts/abm-full-detail-collect-runner.mjs
+          --workers ${{ inputs.workers || '4' }}
+          --gap-ms ${{ inputs.gap_ms || '180' }}
+          --resume
 
       - name: Stage complete reviewed detail corpus
         run: >-
