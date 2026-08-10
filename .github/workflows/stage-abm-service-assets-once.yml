@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci --no-audit --no-fund
+      - run: npm install --no-audit --no-fund
       - name: Collect official Service landing hierarchy
         run: node scripts/abm-service-landing-collect.mjs --workers 4 --gap-ms 180
       - name: Upload images and restage Service landings
