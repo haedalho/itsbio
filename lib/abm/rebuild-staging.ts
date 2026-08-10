@@ -12,6 +12,9 @@ export type AbmStagedRecord = {
   filterTitle?: string;
   filterPath?: string[];
   listingFilters?: Array<{ id: string; title: string; path: string[] }>;
+  hasDetail?: boolean;
+  previewImage?: string;
+  previewSummary?: string;
 };
 
 export type AbmStagedDetail = AbmStagedRecord & {
@@ -43,14 +46,34 @@ export type AbmStagedDetail = AbmStagedRecord & {
   verification?: Record<string, unknown>;
 };
 
-const STAGED_QUERY = `*[_type == "abmRebuildChunk" && version == $version && kind == $kind].records[]`;
+const STAGED_QUERY = `{
+  "records": *[_type == "abmRebuildChunk" && version == $version && kind == $kind].records[],
+  "details": *[_type == "abmRebuildDetailChunk" && version == $version && kind == $kind].records[]{
+    key,
+    "previewImage": images[0],
+    "previewSummary": coalesce(description, overview)
+  }
+}`;
 
 export async function getAbmStagedRecords(kind: AbmStagedRecord["kind"]): Promise<AbmStagedRecord[]> {
-  const rows = await sanityClient.fetch<AbmStagedRecord[]>(STAGED_QUERY, {
+  const result = await sanityClient.fetch<{
+    records?: AbmStagedRecord[];
+    details?: Array<{ key?: string; previewImage?: string; previewSummary?: string }>;
+  }>(STAGED_QUERY, {
     version: ABM_REBUILD_VERSION,
     kind,
   });
-  return Array.isArray(rows) ? rows : [];
+  const details = new Map((result?.details || []).map((detail) => [String(detail.key || "").toLowerCase(), detail]));
+  return (Array.isArray(result?.records) ? result.records : []).map((record) => {
+    const key = `${kind}:${String(record.sku || record.url).trim().toLowerCase()}`;
+    const detail = details.get(key);
+    return {
+      ...record,
+      hasDetail: Boolean(detail),
+      previewImage: detail?.previewImage,
+      previewSummary: detail?.previewSummary,
+    };
+  });
 }
 
 const STAGED_RECORD_QUERY = `*[
@@ -103,9 +126,10 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
     kind,
     key: detailKey,
   });
-  const sourceUrl = String(staged?.sourceUrl || record.url || "").trim();
+  if (!staged) return undefined;
+  const sourceUrl = String(staged.sourceUrl || record.url || "").trim();
 
-  const detail = mergeNonEmpty({ ...record, sourceUrl }, staged || {}) as AbmStagedDetail;
+  const detail = mergeNonEmpty({ ...record, sourceUrl }, staged) as AbmStagedDetail;
   detail.kind = kind;
   detail.images = Array.isArray(detail.images) ? detail.images.filter(Boolean) : [];
   return detail;

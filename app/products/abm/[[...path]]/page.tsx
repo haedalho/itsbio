@@ -7,6 +7,14 @@ import Breadcrumb from "@/components/site/Breadcrumb";
 import { sanityClient } from "@/lib/sanity/sanity.client";
 import HtmlContent from "@/components/site/HtmlContent";
 import AbmStagedCatalog from "@/components/products/AbmStagedCatalog";
+import AbmHeroBanner from "@/components/products/AbmHeroBanner";
+import {
+  ABM_PRODUCT_GROUPS,
+  ABM_SERVICE_GROUPS,
+  abmRecordBelongsToGroup,
+  findAbmCatalogGroup,
+  type AbmCatalogGroup,
+} from "@/lib/abm/catalog-taxonomy";
 import { getAbmStagedRecords } from "@/lib/abm/rebuild-staging";
 
 export const dynamic = "force-dynamic";
@@ -452,22 +460,30 @@ function safeHtmlForRender(html: string, brandKey: string) {
 /** -------------------- UI -------------------- */
 
 function HeroBanner({ brandTitle }: { brandTitle: string }) {
+  return <AbmHeroBanner title={`${brandTitle} Products & Services`} />;
+}
+
+function CatalogGroupGrid({ groups, counts }: { groups: AbmCatalogGroup[]; counts?: Map<string, number> }) {
   return (
-    <section className="relative">
-      <div className="relative h-[220px] w-full overflow-hidden md:h-[280px]">
-        <Image src="/hero.png" alt="Products hero" fill priority className="object-cover" />
-        <div className="absolute inset-0 bg-black/35" />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/45 via-transparent to-transparent" />
-        <div className="absolute inset-0">
-          <div className={`${PAGE_SHELL} flex h-full items-center`}>
-            <div>
-              <div className="text-xs font-semibold tracking-wide text-white/80">ITS BIO</div>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">{brandTitle} Product</h1>
-            </div>
+    <div className="mt-5 grid gap-4 md:grid-cols-3">
+      {groups.map((group) => (
+        <Link
+          key={`${group.kind}-${group.slug}`}
+          href={group.href}
+          className="group flex min-h-52 flex-col rounded-2xl border border-neutral-200 bg-white p-6 transition hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md"
+        >
+          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-orange-600">
+            {group.kind === "product" ? "Product category" : "Service category"}
+          </span>
+          <h3 className="mt-3 text-xl font-semibold leading-7 text-neutral-900 group-hover:text-orange-700">{group.title}</h3>
+          <p className="mt-3 flex-1 text-sm leading-6 text-neutral-600">{group.description}</p>
+          <div className="mt-5 flex items-center justify-between gap-3 text-sm font-semibold text-orange-700">
+            <span>{group.kind === "product" ? "Open category landing" : "Browse services"} →</span>
+            {counts?.has(group.slug) ? <span className="text-xs text-neutral-500">{counts.get(group.slug)?.toLocaleString()}</span> : null}
           </div>
-        </div>
-      </div>
-    </section>
+        </Link>
+      ))}
+    </div>
   );
 }
 
@@ -948,11 +964,22 @@ export default async function AbmProductsPathPage({
   const stagedKind = path[0] === "products" ? "product" : path[0] === "services" ? "service" : null;
   if (stagedKind) {
     const stagedRecords = await getAbmStagedRecords(stagedKind);
+    const groups = stagedKind === "product" ? ABM_PRODUCT_GROUPS : ABM_SERVICE_GROUPS;
+    const selectedGroup = findAbmCatalogGroup(stagedKind, path[1]);
+    if (path.length > 1 && !selectedGroup) notFound();
+    const visibleRecords = selectedGroup
+      ? stagedRecords.filter((record) => abmRecordBelongsToGroup(record, selectedGroup))
+      : [];
+    const groupCounts = new Map(groups.map((group) => [
+      group.slug,
+      stagedRecords.filter((record) => abmRecordBelongsToGroup(record, group)).length,
+    ]));
     const breadcrumbItems = [
       { label: "Home", href: "/" },
       { label: "Products", href: "/products" },
       { label: brand.title, href: "/products/abm" },
       { label: stagedKind === "product" ? "Products" : "Services", href: `/products/abm/${path[0]}` },
+      ...(selectedGroup ? [{ label: selectedGroup.title, href: selectedGroup.href }] : []),
     ];
 
     return (
@@ -965,15 +992,30 @@ export default async function AbmProductsPathPage({
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">ABM catalog</p>
                 <h1 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-900 md:text-4xl">
-                  {stagedKind === "product" ? "Products" : "Services"}
+                  {selectedGroup?.title || (stagedKind === "product" ? "Product Categories" : "Service Categories")}
                 </h1>
                 <p className="mt-3 max-w-2xl leading-7 text-neutral-600">
-                  Browse the official ABM inventory prepared for ITS BIO. Select an item to view its internal detail page and request a quote.
+                  {selectedGroup
+                    ? selectedGroup.description
+                    : stagedKind === "product"
+                      ? "Choose one of the three official ABM Product roots. Each root opens the preserved category landing and its hierarchy."
+                      : "Choose one of the three official ABM Service roots, then browse the offerings collected for ITS BIO."}
                 </p>
               </div>
               <Link href="/products/abm" className="text-sm font-semibold text-orange-700 underline underline-offset-4">ABM overview</Link>
             </div>
-            <AbmStagedCatalog kind={stagedKind} records={stagedRecords} query={stagedQuery} page={stagedPage} />
+            {selectedGroup ? (
+              <>
+                <div className="mt-8">
+                  <Link href={`/products/abm/${path[0]}`} className="text-sm font-semibold text-orange-700 underline underline-offset-4">
+                    ← All {stagedKind === "product" ? "Product" : "Service"} categories
+                  </Link>
+                </div>
+                <AbmStagedCatalog kind={stagedKind} records={visibleRecords} query={stagedQuery} page={stagedPage} />
+              </>
+            ) : (
+              <CatalogGroupGrid groups={groups} counts={groupCounts} />
+            )}
           </main>
         </div>
       </div>
@@ -1013,24 +1055,36 @@ export default async function AbmProductsPathPage({
             </aside>
 
             <main className="min-w-0">
-              <h2 className="text-2xl font-semibold tracking-tight text-neutral-900">ABM catalog</h2>
-              <p className="mt-3 max-w-2xl leading-7 text-neutral-700">Browse ABM Products and Services collected from the official catalog.</p>
-              <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                <Link href="/products/abm/products" className="rounded-2xl border border-orange-200 bg-orange-50 p-6 transition hover:-translate-y-0.5 hover:shadow-md">
-                  <div className="text-sm font-semibold uppercase tracking-wide text-orange-700">Products</div>
-                  <div className="mt-2 text-3xl font-semibold text-neutral-900">{stagedProducts.length.toLocaleString()}</div>
-                  <div className="mt-2 text-sm text-neutral-600">Browse ABM products →</div>
-                </Link>
-                <Link href="/products/abm/services" className="rounded-2xl border border-orange-200 bg-white p-6 transition hover:-translate-y-0.5 hover:shadow-md">
-                  <div className="text-sm font-semibold uppercase tracking-wide text-orange-700">Services</div>
-                  <div className="mt-2 text-3xl font-semibold text-neutral-900">{stagedServices.length.toLocaleString()}</div>
-                  <div className="mt-2 text-sm text-neutral-600">Browse ABM services →</div>
-                </Link>
-              </div>
-              <div className="mt-10 border-t border-neutral-200 pt-8">
-                <h3 className="text-lg font-semibold text-neutral-900">Product categories</h3>
-                <p className="mt-2 text-sm text-neutral-600">Or choose a category from the left menu.</p>
-              </div>
+              <h2 className="text-3xl font-semibold tracking-tight text-neutral-900">ABM catalog</h2>
+              <p className="mt-3 max-w-3xl leading-7 text-neutral-700">
+                Browse the official hierarchy for ABM Products and Services. Category landing content, resources, images, and reviewed detail pages remain inside ITS BIO.
+              </p>
+
+              <section className="mt-10" aria-labelledby="abm-product-categories">
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-[0.16em] text-orange-600">Products</p>
+                    <h3 id="abm-product-categories" className="mt-1 text-2xl font-semibold text-neutral-900">Product Categories</h3>
+                  </div>
+                  <Link href="/products/abm/products" className="text-sm font-semibold text-orange-700 underline underline-offset-4">
+                    {stagedProducts.length.toLocaleString()} catalog records
+                  </Link>
+                </div>
+                <CatalogGroupGrid groups={ABM_PRODUCT_GROUPS} />
+              </section>
+
+              <section className="mt-12 border-t border-neutral-200 pt-10" aria-labelledby="abm-service-categories">
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-[0.16em] text-orange-600">Services</p>
+                    <h3 id="abm-service-categories" className="mt-1 text-2xl font-semibold text-neutral-900">Service Categories</h3>
+                  </div>
+                  <Link href="/products/abm/services" className="text-sm font-semibold text-orange-700 underline underline-offset-4">
+                    {stagedServices.length.toLocaleString()} service offerings
+                  </Link>
+                </div>
+                <CatalogGroupGrid groups={ABM_SERVICE_GROUPS} />
+              </section>
             </main>
           </div>
         </div>

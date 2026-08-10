@@ -61,27 +61,57 @@ export default function AbmStagedCatalog({
 
       {visible.length ? (
         <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {visible.map((row) => (
-            <Link
-              key={`${row.kind}-${stagedRecordKey(row)}`}
-              href={stagedRecordPath(kind, row)}
-              className="group rounded-2xl border border-neutral-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <span className="rounded-full bg-orange-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-orange-700">
-                  {kind === "product" ? "Product" : "Service"}
+          {visible.map((row) => {
+            const content = (
+              <>
+                <div className="relative -mx-5 -mt-5 mb-5 h-40 overflow-hidden rounded-t-2xl bg-neutral-50">
+                  {row.previewImage ? (
+                    // Official ABM images are kept as read-only source URLs in Preview staging.
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={row.previewImage} alt="" className="h-full w-full object-contain p-4" loading="lazy" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center px-5 text-center text-xs font-medium uppercase tracking-wide text-neutral-400">
+                      Detail image pending
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="rounded-full bg-orange-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-orange-700">
+                    {kind === "product" ? "Product" : "Service"}
+                  </span>
+                  {row.sku ? <span className="text-xs text-neutral-500">{row.sku}</span> : null}
+                </div>
+                <h3 className="mt-4 line-clamp-3 text-base font-semibold leading-6 text-neutral-900 group-hover:text-orange-700">
+                  {cleanTitle(row.title)}
+                </h3>
+                {row.previewSummary ? (
+                  <p className="mt-3 line-clamp-2 text-sm leading-6 text-neutral-600">{row.previewSummary}</p>
+                ) : (row.filterTitle || row.searchCategory) ? (
+                  <p className="mt-3 line-clamp-2 text-sm text-neutral-500">{row.filterTitle || row.searchCategory}</p>
+                ) : null}
+                <span className={`mt-5 inline-flex text-sm font-semibold ${row.hasDetail ? "text-orange-700" : "text-neutral-500"}`}>
+                  {row.hasDetail ? "View details →" : "Detail collection in progress"}
                 </span>
-                {row.sku ? <span className="text-xs text-neutral-500">{row.sku}</span> : null}
-              </div>
-              <h3 className="mt-4 line-clamp-3 text-base font-semibold leading-6 text-neutral-900 group-hover:text-orange-700">
-                {cleanTitle(row.title)}
-              </h3>
-              {(row.filterTitle || row.searchCategory) && (
-                <p className="mt-3 line-clamp-2 text-sm text-neutral-500">{row.filterTitle || row.searchCategory}</p>
-              )}
-              <span className="mt-5 inline-flex text-sm font-semibold text-orange-700">View details →</span>
-            </Link>
-          ))}
+              </>
+            );
+
+            return row.hasDetail ? (
+              <Link
+                key={`${row.kind}-${stagedRecordKey(row)}`}
+                href={stagedRecordPath(kind, row)}
+                className="group overflow-hidden rounded-2xl border border-neutral-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md"
+              >
+                {content}
+              </Link>
+            ) : (
+              <article
+                key={`${row.kind}-${stagedRecordKey(row)}`}
+                className="group overflow-hidden rounded-2xl border border-neutral-200 bg-white p-5"
+              >
+                {content}
+              </article>
+            );
+          })}
         </div>
       ) : (
         <div className="mt-5 rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 p-10 text-center text-neutral-600">

@@ -157,6 +157,15 @@ const MENU: MenuItem[] = [
           },
         ],
       },
+      {
+        label: "Services",
+        href: "https://www.abmgood.com/services.html",
+        children: [
+          { label: "Cell & Antibody Services", href: "https://www.abmgood.com/cell-antibody-services.html" },
+          { label: "DNA & Cloning Services", href: "https://www.abmgood.com/dna-cloning-services.html" },
+          { label: "Recombinant Virus Packaging", href: "https://www.abmgood.com/recombinant-virus-packaging.html" },
+        ],
+      },
     ],
   },
 

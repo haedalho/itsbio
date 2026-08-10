@@ -2,15 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
+import AbmHeroBanner from "@/components/products/AbmHeroBanner";
 import ProductGalleryClient from "@/components/products/ProductGalleryClient";
 import ProductTabsClient from "@/components/products/ProductTabs";
+import { ABM_PRODUCT_GROUPS, ABM_SERVICE_GROUPS } from "@/lib/abm/catalog-taxonomy";
 import { getAbmStagedDetail } from "@/lib/abm/rebuild-staging";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-const PRODUCT_ROOTS = ["General Materials", "Cellular Materials", "Genetic Materials"];
-const SERVICE_ROOTS = ["Cell & Antibody Services", "DNA & Cloning Services", "Recombinant Virus Packaging"];
 
 function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (character) => ({
@@ -31,7 +30,7 @@ function usableIntroHtml(introHtml?: string, description?: string) {
 }
 
 function CategoryNavigation({ kind, paths }: { kind: "product" | "service"; paths: string[][] }) {
-  const roots = kind === "product" ? PRODUCT_ROOTS : SERVICE_ROOTS;
+  const roots = kind === "product" ? ABM_PRODUCT_GROUPS : ABM_SERVICE_GROUPS;
   const active = paths[0]?.[0] || "";
   return (
     <nav className="overflow-hidden border border-neutral-200 bg-white" aria-label={`ABM ${kind} categories`}>
@@ -41,11 +40,11 @@ function CategoryNavigation({ kind, paths }: { kind: "product" | "service"; path
       <div className="divide-y divide-neutral-100">
         {roots.map((root) => (
           <Link
-            key={root}
-            href={kind === "product" ? "/products/abm/products" : "/products/abm/services"}
-            className={`flex items-center justify-between px-5 py-3 text-sm font-medium ${active === root ? "bg-orange-50 text-orange-700" : "text-neutral-700 hover:bg-neutral-50"}`}
+            key={root.slug}
+            href={root.href}
+            className={`flex items-center justify-between px-5 py-3 text-sm font-medium ${active === root.title ? "bg-orange-50 text-orange-700" : "text-neutral-700 hover:bg-neutral-50"}`}
           >
-            <span>{root}</span><span aria-hidden>›</span>
+            <span>{root.title}</span><span aria-hidden>›</span>
           </Link>
         ))}
       </div>
@@ -93,6 +92,7 @@ export default async function AbmStagedDetailPage({
 
   return (
     <div className="bg-white">
+      <AbmHeroBanner title={title} eyebrow={`ABM ${kind}`} />
       <div className="border-b border-neutral-200 bg-neutral-50">
         <div className="mx-auto max-w-7xl px-6 py-5">
           <Breadcrumb items={[
