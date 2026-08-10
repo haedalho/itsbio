@@ -1,6 +1,9 @@
 name: Stage full ABM rebuild details
 
 on:
+  push:
+    branches: [agent/abm-full-rebuild]
+    paths: [.github/workflows/stage-abm-rebuild-full-details.yml]
   workflow_dispatch:
     inputs:
       workers:
