@@ -1,0 +1,106 @@
+name: Stage priority ABM details once
+
+on:
+  push:
+    branches:
+      - agent/abm-full-rebuild
+    paths:
+      - .github/workflows/stage-abm-priority-details-once.yml
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  collect-and-stage-priority:
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 180
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+      ABM_INVENTORY_FILE: .cache/abm-priority-inventory.json
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+
+      - name: Download frozen authoritative ABM inventory
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .cache/abm-v5
+          curl --fail --silent --show-error --location \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/9037822950/zip" \
+            -o .cache/abm-v5.zip
+          unzip -q .cache/abm-v5.zip -d .cache/abm-v5
+
+      - name: Build balanced priority inventory
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const products = JSON.parse(fs.readFileSync('.cache/abm-v5/products.json', 'utf8'));
+          const services = JSON.parse(fs.readFileSync('.cache/abm-v5/services.json', 'utf8'));
+          if (products.length !== 5144 || services.length !== 251) {
+            throw new Error(`Frozen census count mismatch: products=${products.length}, services=${services.length}`);
+          }
+          const belongsTo = (row, title) => (row.listingFilters || []).some((filter) =>
+            filter.title === title || (filter.path || []).includes(title),
+          ) || row.filterTitle === title || (row.filterPath || []).includes(title);
+          const selected = [
+            ...products.filter((row) => belongsTo(row, 'General Materials')).slice(0, 200),
+            ...products.filter((row) => belongsTo(row, 'Cellular Materials')).slice(0, 200),
+            ...products.filter((row) => belongsTo(row, 'Genetic Materials')),
+          ];
+          const g094 = products.find((row) => row.sku === 'G094-1mg');
+          if (g094 && !selected.some((row) => row.sku === g094.sku)) selected.unshift(g094);
+          const uniqueProducts = [...new Map(selected.map((row) => [row.sku || row.url, row])).values()];
+          const inventory = {
+            generatedAt: '2026-08-09T12:12:28.744Z',
+            products: uniqueProducts,
+            services,
+            excluded: [],
+            productRuns: [{ title: 'priority-balanced-subset', complete: true }],
+            serviceRuns: [{ title: 'all-service-offerings', complete: true }],
+          };
+          fs.writeFileSync(process.env.ABM_INVENTORY_FILE, JSON.stringify(inventory));
+          console.log(`Priority inventory: ${uniqueProducts.length} products, ${services.length} services`);
+          NODE
+
+      - name: Collect priority Product and all Service details
+        continue-on-error: true
+        run: node scripts/abm-full-detail-collect-runner.mjs --workers 2 --gap-ms 300
+
+      - name: Stage successful priority details and managed images
+        run: >-
+          node scripts/stage-abm-rebuild-details.mjs
+          --products .cache/abm-full-detail-collect/products.json
+          --services .cache/abm-full-detail-collect/services.json
+          --allow-partial
+          --version 2026-08-09-search-v5
+
+      - name: Upload priority reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: abm-priority-details-${{ github.run_id }}
+          path: |
+            .cache/abm-full-detail-collect/summary.json
+            .cache/abm-full-detail-collect/summary.md
+            .cache/abm-full-detail-collect/product-review.json
+            .cache/abm-full-detail-collect/service-review.json
+            .cache/abm-rebuild-detail-staging/report.json
+          retention-days: 14
+          if-no-files-found: warn
