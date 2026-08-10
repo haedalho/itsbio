@@ -15,6 +15,19 @@ export type AbmStagedRecord = {
   hasDetail?: boolean;
   previewImage?: string;
   previewSummary?: string;
+  listingPaths?: string[][];
+  breadcrumbs?: string[];
+};
+
+export type AbmStagedLanding = {
+  kind: "service";
+  path: string[];
+  title: string;
+  sourceUrl: string;
+  html: string;
+  images?: string[];
+  children?: Array<{ title: string; path: string[]; sourceUrl?: string; image?: string }>;
+  collectedAt?: string;
 };
 
 export type AbmStagedDetail = AbmStagedRecord & {
@@ -51,14 +64,22 @@ const STAGED_QUERY = `{
   "details": *[_type == "abmRebuildDetailChunk" && version == $version && kind == $kind].records[]{
     key,
     "previewImage": images[0],
-    "previewSummary": coalesce(description, overview)
+    "previewSummary": coalesce(description, overview),
+    listingPaths,
+    breadcrumbs
   }
 }`;
 
 export async function getAbmStagedRecords(kind: AbmStagedRecord["kind"]): Promise<AbmStagedRecord[]> {
   const result = await sanityClient.fetch<{
     records?: AbmStagedRecord[];
-    details?: Array<{ key?: string; previewImage?: string; previewSummary?: string }>;
+    details?: Array<{
+      key?: string;
+      previewImage?: string;
+      previewSummary?: string;
+      listingPaths?: string[][];
+      breadcrumbs?: string[];
+    }>;
   }>(STAGED_QUERY, {
     version: ABM_REBUILD_VERSION,
     kind,
@@ -72,8 +93,35 @@ export async function getAbmStagedRecords(kind: AbmStagedRecord["kind"]): Promis
       hasDetail: Boolean(detail),
       previewImage: detail?.previewImage,
       previewSummary: detail?.previewSummary,
+      listingPaths: detail?.listingPaths,
+      breadcrumbs: detail?.breadcrumbs,
     };
   });
+}
+
+const STAGED_LANDING_QUERY = `*[
+  _type == "abmRebuildLandingChunk"
+  && version == $version
+  && kind == "service"
+  && $path in records[].pathKey
+][0].records[pathKey == $path][0]{
+  kind,
+  path,
+  title,
+  sourceUrl,
+  html,
+  images,
+  children,
+  collectedAt
+}`;
+
+export async function getAbmStagedServiceLanding(path: string[]): Promise<AbmStagedLanding | undefined> {
+  if (!path.length) return undefined;
+  const result = await sanityClient.fetch<AbmStagedLanding | null>(STAGED_LANDING_QUERY, {
+    version: ABM_REBUILD_VERSION,
+    path: path.join("/"),
+  });
+  return result || undefined;
 }
 
 const STAGED_RECORD_QUERY = `*[

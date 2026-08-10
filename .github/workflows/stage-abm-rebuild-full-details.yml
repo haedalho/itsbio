@@ -60,6 +60,19 @@ jobs:
           --gap-ms ${{ inputs.gap_ms }}
           --resume
 
+      - name: Collect complete official Service landing hierarchy
+        run: >-
+          node scripts/abm-service-landing-collect.mjs
+          --workers ${{ inputs.workers }}
+          --gap-ms ${{ inputs.gap_ms }}
+
+      - name: Stage reviewed Service landing hierarchy
+        run: >-
+          node scripts/stage-abm-service-landings.mjs
+          --input .cache/abm-service-landings/landings.json
+          --replace
+          --version 2026-08-09-search-v5
+
       - name: Stage complete reviewed detail corpus
         run: >-
           node scripts/stage-abm-rebuild-details.mjs
@@ -79,5 +92,8 @@ jobs:
             .cache/abm-full-detail-collect/product-review.json
             .cache/abm-full-detail-collect/service-review.json
             .cache/abm-rebuild-detail-staging/report.json
+            .cache/abm-service-landings/navigation.json
+            .cache/abm-service-landings/report.json
+            .cache/abm-service-landing-staging/report.json
           retention-days: 30
           if-no-files-found: warn

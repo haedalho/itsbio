@@ -8,14 +8,18 @@ import { sanityClient } from "@/lib/sanity/sanity.client";
 import HtmlContent from "@/components/site/HtmlContent";
 import AbmStagedCatalog from "@/components/products/AbmStagedCatalog";
 import AbmHeroBanner from "@/components/products/AbmHeroBanner";
+import AbmCatalogSideNav from "@/components/products/AbmCatalogSideNav";
 import {
   ABM_PRODUCT_GROUPS,
   ABM_SERVICE_GROUPS,
   abmRecordBelongsToGroup,
+  abmRecordBelongsToServicePath,
+  abmServiceCategoryHref,
   findAbmCatalogGroup,
+  findAbmServiceCategory,
   type AbmCatalogGroup,
 } from "@/lib/abm/catalog-taxonomy";
-import { getAbmStagedRecords } from "@/lib/abm/rebuild-staging";
+import { getAbmStagedRecords, getAbmStagedServiceLanding } from "@/lib/abm/rebuild-staging";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -680,6 +684,26 @@ function SideNavTree({
             <div className="px-3 py-2 text-sm text-neutral-500">하위 카테고리가 없습니다.</div>
           )}
         </div>
+
+        {!isKentMode ? (
+          <>
+            <div className="my-3 border-t border-neutral-200" />
+            <div className="px-3 pb-2 text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">Services</div>
+            <div className="space-y-1">
+              {ABM_SERVICE_GROUPS.map((group) => (
+                <Link
+                  key={group.slug}
+                  href={group.href}
+                  prefetch={false}
+                  className="flex items-center justify-between rounded-xl px-3 py-2 text-sm text-neutral-800 hover:bg-neutral-50"
+                >
+                  <span className="min-w-0 truncate">{group.title}</span>
+                  <span className="text-neutral-300" aria-hidden>›</span>
+                </Link>
+              ))}
+            </div>
+          </>
+        ) : null}
       </div>
     </div>
   );
@@ -966,20 +990,37 @@ export default async function AbmProductsPathPage({
     const stagedRecords = await getAbmStagedRecords(stagedKind);
     const groups = stagedKind === "product" ? ABM_PRODUCT_GROUPS : ABM_SERVICE_GROUPS;
     const selectedGroup = findAbmCatalogGroup(stagedKind, path[1]);
+    const servicePath = stagedKind === "service" ? path.slice(1) : [];
+    const selectedServiceNode = stagedKind === "service" ? findAbmServiceCategory(servicePath) : undefined;
     if (path.length > 1 && !selectedGroup) notFound();
-    const visibleRecords = selectedGroup
-      ? stagedRecords.filter((record) => abmRecordBelongsToGroup(record, selectedGroup))
-      : [];
+    if (stagedKind === "service" && path.length > 1 && !selectedServiceNode) notFound();
+    if (stagedKind === "product" && path.length > 2) notFound();
+    const visibleRecords = stagedKind === "service" && servicePath.length
+      ? stagedRecords.filter((record) => abmRecordBelongsToServicePath(record, servicePath))
+      : selectedGroup
+        ? stagedRecords.filter((record) => abmRecordBelongsToGroup(record, selectedGroup))
+        : [];
+    const serviceLanding = selectedServiceNode ? await getAbmStagedServiceLanding(servicePath) : undefined;
     const groupCounts = new Map(groups.map((group) => [
       group.slug,
       stagedRecords.filter((record) => abmRecordBelongsToGroup(record, group)).length,
     ]));
+    const selectedTitle = selectedServiceNode?.title || selectedGroup?.title;
+    const selectedDescription = selectedServiceNode && "description" in selectedServiceNode && typeof selectedServiceNode.description === "string"
+      ? selectedServiceNode.description
+      : selectedGroup?.description;
     const breadcrumbItems = [
       { label: "Home", href: "/" },
       { label: "Products", href: "/products" },
       { label: brand.title, href: "/products/abm" },
       { label: stagedKind === "product" ? "Products" : "Services", href: `/products/abm/${path[0]}` },
-      ...(selectedGroup ? [{ label: selectedGroup.title, href: selectedGroup.href }] : []),
+      ...(stagedKind === "service" && servicePath.length
+        ? servicePath.map((_, index) => {
+            const nodePath = servicePath.slice(0, index + 1);
+            const node = findAbmServiceCategory(nodePath);
+            return { label: node?.title || humanizeSegment(nodePath.at(-1) || ""), href: abmServiceCategoryHref(nodePath) };
+          })
+        : selectedGroup ? [{ label: selectedGroup.title, href: selectedGroup.href }] : []),
     ];
 
     return (
@@ -987,36 +1028,80 @@ export default async function AbmProductsPathPage({
         <HeroBanner brandTitle={brand.title} />
         <div className={PAGE_SHELL}>
           <div className="mt-6 flex justify-end"><Breadcrumb items={breadcrumbItems} /></div>
-          <main className="mx-auto max-w-5xl py-10">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">ABM catalog</p>
-                <h1 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-900 md:text-4xl">
-                  {selectedGroup?.title || (stagedKind === "product" ? "Product Categories" : "Service Categories")}
-                </h1>
-                <p className="mt-3 max-w-2xl leading-7 text-neutral-600">
-                  {selectedGroup
-                    ? selectedGroup.description
-                    : stagedKind === "product"
-                      ? "Choose one of the three official ABM Product roots. Each root opens the preserved category landing and its hierarchy."
-                      : "Choose one of the three official ABM Service roots, then browse the offerings collected for ITS BIO."}
-                </p>
-              </div>
-              <Link href="/products/abm" className="text-sm font-semibold text-orange-700 underline underline-offset-4">ABM overview</Link>
-            </div>
-            {selectedGroup ? (
-              <>
-                <div className="mt-8">
-                  <Link href={`/products/abm/${path[0]}`} className="text-sm font-semibold text-orange-700 underline underline-offset-4">
-                    ← All {stagedKind === "product" ? "Product" : "Service"} categories
-                  </Link>
+          <div className={`mt-10 pb-14 ${CONTENT_LAYOUT}`}>
+            <aside className="self-start lg:sticky lg:top-24">
+              <AbmCatalogSideNav
+                activeProductRoot={stagedKind === "product" ? selectedGroup?.slug : ""}
+                activeServicePath={servicePath}
+              />
+            </aside>
+
+            <main className="min-w-0">
+              <div className="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">ABM {stagedKind}</p>
+                  <h1 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-900 md:text-4xl">
+                    {selectedTitle || (stagedKind === "product" ? "Product Categories" : "Service Categories")}
+                  </h1>
+                  {!serviceLanding?.html ? (
+                    <p className="mt-3 max-w-3xl leading-7 text-neutral-600">
+                      {selectedDescription || (stagedKind === "product"
+                        ? "Choose one of the three official ABM Product roots. Each root opens the preserved category landing and its hierarchy."
+                        : "Choose one of the three official ABM Service roots. Each root opens its complete landing hierarchy and reviewed service offerings.")}
+                    </p>
+                  ) : null}
                 </div>
-                <AbmStagedCatalog kind={stagedKind} records={visibleRecords} query={stagedQuery} page={stagedPage} />
-              </>
-            ) : (
-              <CatalogGroupGrid groups={groups} counts={groupCounts} />
-            )}
-          </main>
+                <Link href="/products/abm" className="text-sm font-semibold text-orange-700 underline underline-offset-4">ABM overview</Link>
+              </div>
+
+              {serviceLanding?.html ? (
+                <section className="mt-8 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+                  <HtmlContent html={serviceLanding.html} />
+                </section>
+              ) : null}
+
+              {selectedServiceNode?.children?.length ? (
+                <section className="mt-10" aria-labelledby="service-subcategories">
+                  <h2 id="service-subcategories" className="text-2xl font-semibold text-neutral-900">Service Categories</h2>
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    {selectedServiceNode.children.map((child) => {
+                      const childPath = [...servicePath, child.slug];
+                      return (
+                        <Link
+                          key={childPath.join("/")}
+                          href={abmServiceCategoryHref(childPath)}
+                          className="group rounded-2xl border border-neutral-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md"
+                        >
+                          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-orange-600">Service category</p>
+                          <h3 className="mt-2 text-lg font-semibold leading-6 text-neutral-900 group-hover:text-orange-700">{child.title}</h3>
+                          <span className="mt-5 inline-flex text-sm font-semibold text-orange-700">Open landing →</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </section>
+              ) : null}
+
+              {selectedGroup || selectedServiceNode ? (
+                <>
+                  <div className="mt-10 border-t border-neutral-200 pt-8">
+                    <Link href={`/products/abm/${path[0]}`} className="text-sm font-semibold text-orange-700 underline underline-offset-4">
+                      ← All {stagedKind === "product" ? "Product" : "Service"} categories
+                    </Link>
+                  </div>
+                  <AbmStagedCatalog
+                    kind={stagedKind}
+                    records={visibleRecords}
+                    query={stagedQuery}
+                    page={stagedPage}
+                    basePath={`/products/abm/${path.join("/")}`}
+                  />
+                </>
+              ) : (
+                <CatalogGroupGrid groups={groups} counts={groupCounts} />
+              )}
+            </main>
+          </div>
         </div>
       </div>
     );

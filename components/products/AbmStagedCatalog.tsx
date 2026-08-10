@@ -14,11 +14,13 @@ export default function AbmStagedCatalog({
   records,
   query,
   page,
+  basePath,
 }: {
   kind: AbmStagedRecord["kind"];
   records: AbmStagedRecord[];
   query: string;
   page: number;
+  basePath?: string;
 }) {
   const normalizedQuery = query.trim().toLowerCase();
   const filtered = normalizedQuery
@@ -33,7 +35,7 @@ export default function AbmStagedCatalog({
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(Math.max(page, 1), totalPages);
   const visible = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
-  const base = `/products/abm/${kind === "product" ? "products" : "services"}`;
+  const base = basePath || `/products/abm/${kind === "product" ? "products" : "services"}`;
   const pageHref = (nextPage: number) =>
     `${base}?page=${nextPage}${normalizedQuery ? `&q=${encodeURIComponent(query)}` : ""}`;
 

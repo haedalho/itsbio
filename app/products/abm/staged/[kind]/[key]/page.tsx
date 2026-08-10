@@ -3,9 +3,10 @@ import { notFound } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
 import AbmHeroBanner from "@/components/products/AbmHeroBanner";
+import AbmCatalogSideNav from "@/components/products/AbmCatalogSideNav";
 import ProductGalleryClient from "@/components/products/ProductGalleryClient";
 import ProductTabsClient from "@/components/products/ProductTabs";
-import { ABM_PRODUCT_GROUPS, ABM_SERVICE_GROUPS } from "@/lib/abm/catalog-taxonomy";
+import { ABM_PRODUCT_GROUPS, findAbmServicePathForLabels } from "@/lib/abm/catalog-taxonomy";
 import { getAbmStagedDetail } from "@/lib/abm/rebuild-staging";
 
 export const dynamic = "force-dynamic";
@@ -29,37 +30,6 @@ function usableIntroHtml(introHtml?: string, description?: string) {
   return description ? `<p>${escapeHtml(description)}</p>` : "";
 }
 
-function CategoryNavigation({ kind, paths }: { kind: "product" | "service"; paths: string[][] }) {
-  const roots = kind === "product" ? ABM_PRODUCT_GROUPS : ABM_SERVICE_GROUPS;
-  const active = paths[0]?.[0] || "";
-  return (
-    <nav className="overflow-hidden border border-neutral-200 bg-white" aria-label={`ABM ${kind} categories`}>
-      <div className="border-b border-neutral-200 bg-neutral-900 px-5 py-4 text-sm font-semibold uppercase tracking-[0.12em] text-white">
-        {kind === "product" ? "All Products" : "All Services"}
-      </div>
-      <div className="divide-y divide-neutral-100">
-        {roots.map((root) => (
-          <Link
-            key={root.slug}
-            href={root.href}
-            className={`flex items-center justify-between px-5 py-3 text-sm font-medium ${active === root.title ? "bg-orange-50 text-orange-700" : "text-neutral-700 hover:bg-neutral-50"}`}
-          >
-            <span>{root.title}</span><span aria-hidden>›</span>
-          </Link>
-        ))}
-      </div>
-      {paths.length ? (
-        <div className="border-t border-neutral-200 bg-neutral-50 px-5 py-4">
-          <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Listed in</div>
-          <ul className="mt-3 space-y-2 text-sm leading-5 text-neutral-700">
-            {paths.map((path) => <li key={path.join("/")}>{path.join(" / ")}</li>)}
-          </ul>
-        </div>
-      ) : null}
-    </nav>
-  );
-}
-
 export default async function AbmStagedDetailPage({
   params,
 }: {
@@ -77,6 +47,12 @@ export default async function AbmStagedDetailPage({
     ? record.listingPaths
     : record.listingFilters?.map((item) => item.path).filter((path): path is string[] => Array.isArray(path) && path.length > 0)
       || (record.filterPath?.length ? [record.filterPath] : []);
+  const activeProductRoot = kind === "product"
+    ? ABM_PRODUCT_GROUPS.find((group) => paths.some((path) => path.includes(group.title)))?.slug || ""
+    : "";
+  const activeServicePath = kind === "service"
+    ? findAbmServicePathForLabels([...paths.flat(), ...(record.breadcrumbs || [])])
+    : [];
   const overviewHtml = usableIntroHtml(record.introHtml, record.description || record.overview);
   const documents = (record.documents || []).map((item) => ({
     url: item.url || item.href || "",
@@ -108,7 +84,7 @@ export default async function AbmStagedDetailPage({
       <main className="mx-auto max-w-7xl px-6 py-10">
         <div className="grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)]">
           <aside className="self-start lg:sticky lg:top-24">
-            <CategoryNavigation kind={kind} paths={paths} />
+            <AbmCatalogSideNav activeProductRoot={activeProductRoot} activeServicePath={activeServicePath} />
           </aside>
 
           <section className="min-w-0">
