@@ -197,7 +197,9 @@ function FaqAccordion({ html }: { html: string }) {
 }
 
 export default function ProductTabsClient({
+  overviewHtml,
   specsHtml,
+  serviceDetailsHtml,
   datasheetHtml,
   documentsHtml,
   documents,
@@ -205,7 +207,9 @@ export default function ProductTabsClient({
   referencesHtml,
   reviewsHtml,
 }: {
+  overviewHtml?: string;
   specsHtml?: string;
+  serviceDetailsHtml?: string;
   datasheetHtml?: string;
   documentsHtml?: string;
   documents?: Doc[];
@@ -215,7 +219,9 @@ export default function ProductTabsClient({
 }) {
   const tabs = React.useMemo(() => {
     return [
+      { key: "overview", label: "Overview", enabled: hasUsableHtml(overviewHtml) },
       { key: "specs", label: "Specifications", enabled: hasUsableHtml(specsHtml) },
+      { key: "service", label: "Service Details", enabled: hasUsableHtml(serviceDetailsHtml) },
       { key: "datasheet", label: "Datasheet", enabled: hasUsableHtml(datasheetHtml) },
       {
         key: "documents",
@@ -226,7 +232,7 @@ export default function ProductTabsClient({
       { key: "references", label: "References", enabled: hasUsableHtml(referencesHtml) },
       { key: "reviews", label: "Reviews", enabled: hasUsableHtml(reviewsHtml) },
     ];
-  }, [specsHtml, datasheetHtml, documentsHtml, documents, faqsHtml, referencesHtml, reviewsHtml]);
+  }, [overviewHtml, specsHtml, serviceDetailsHtml, datasheetHtml, documentsHtml, documents, faqsHtml, referencesHtml, reviewsHtml]);
 
   const firstEnabled = tabs.find((x) => x.enabled)?.key || "specs";
   const [active, setActive] = React.useState<string>(firstEnabled);
@@ -239,9 +245,9 @@ export default function ProductTabsClient({
 
   return (
     <section className="mt-8">
-      <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
-        <div className="border-b border-neutral-200 bg-white px-4 py-3">
-          <div className="flex flex-wrap gap-2">
+      <div className="overflow-hidden border border-neutral-200 bg-white shadow-sm">
+        <div className="border-b border-neutral-200 bg-neutral-50 px-3 pt-3">
+          <div className="flex flex-wrap gap-1">
             {tabs.map((t) => {
               const isActive = active === t.key;
               const disabled = !t.enabled;
@@ -252,12 +258,12 @@ export default function ProductTabsClient({
                   type="button"
                   onClick={() => !disabled && setActive(t.key)}
                   className={[
-                    "inline-flex h-9 items-center justify-center rounded-full px-4 text-sm font-semibold transition",
+                    "inline-flex h-10 items-center justify-center border border-b-0 px-4 text-sm font-semibold transition",
                     disabled
-                      ? "bg-neutral-100 text-neutral-400 cursor-not-allowed"
+                      ? "border-transparent bg-transparent text-neutral-400 cursor-not-allowed"
                       : isActive
-                      ? "bg-orange-600 text-white"
-                      : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200",
+                      ? "relative top-px border-neutral-200 bg-white text-orange-700"
+                      : "border-transparent bg-transparent text-neutral-700 hover:bg-white",
                   ].join(" ")}
                 >
                   {t.label}
@@ -268,7 +274,11 @@ export default function ProductTabsClient({
         </div>
 
         <div className="px-6 py-6">
-          {active === "documents" ? (
+          {active === "overview" && hasUsableHtml(overviewHtml) ? (
+            <HtmlContent html={overviewHtml as string} />
+          ) : active === "service" && hasUsableHtml(serviceDetailsHtml) ? (
+            <HtmlContent html={serviceDetailsHtml as string} />
+          ) : active === "documents" ? (
             <div className="space-y-6">
               {(documents?.length || 0) > 0 ? (
                 <div>

@@ -25,6 +25,8 @@
     "kent:gallery:stage": "node scripts/kent-official-gallery-stage.mjs",
     "kent:gallery:promote": "node scripts/kent-official-gallery-promote.mjs",
     "abm:product:audit": "node scripts/product-quality-audit.mjs --brand=abm",
+    "abm:rebuild:parser:qa": "node scripts/abm-rebuild-parser-qa.mjs",
+    "abm:rebuild:details:stage:dry": "node scripts/stage-abm-rebuild-details.mjs --dry",
     "kent:product:census": "node scripts/kent-product-census-v2.mjs",
     "kent:product:census:refresh": "node -e \"console.error('Disabled: Kent live refresh is blocked by security checks and is not an approved source.'); process.exit(1)\"",
     "kent:product:census:fast": "node scripts/kent-product-census-v2.mjs --skip-product-pages",

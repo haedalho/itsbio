@@ -1,5 +1,4 @@
 import { sanityClient } from "@/lib/sanity/sanity.client";
-import { parseAbmRebuildDetailV2 } from "@/lib/abm/rebuild-parser-v2.mjs";
 
 export const ABM_REBUILD_VERSION = "2026-08-09-search-v5";
 
@@ -16,19 +15,32 @@ export type AbmStagedRecord = {
 };
 
 export type AbmStagedDetail = AbmStagedRecord & {
+  category?: string;
+  listingPaths?: string[][];
+  introHtml?: string;
   description?: string;
   overview?: string;
   storage?: string;
   materialCitation?: string;
   specificationsHtml?: string;
+  datasheetHtml?: string;
   documentsHtml?: string;
   faqsHtml?: string;
   referencesHtml?: string;
   reviewsHtml?: string;
   serviceDetailsHtml?: string;
+  serviceOffer?: {
+    sku?: string;
+    title?: string;
+    unit?: string;
+    fields?: Record<string, string>;
+  };
+  breadcrumbs?: string[];
   images?: string[];
-  documents?: Array<{ title?: string; href?: string; section?: string }>;
+  documents?: Array<{ title?: string; url?: string; href?: string; section?: string }>;
   sourceUrl?: string;
+  collectedAt?: string;
+  verification?: Record<string, unknown>;
 };
 
 const STAGED_QUERY = `*[_type == "abmRebuildChunk" && version == $version && kind == $kind].records[]`;
@@ -41,11 +53,19 @@ export async function getAbmStagedRecords(kind: AbmStagedRecord["kind"]): Promis
   return Array.isArray(rows) ? rows : [];
 }
 
+const STAGED_RECORD_QUERY = `*[
+  _type == "abmRebuildChunk"
+  && version == $version
+  && kind == $kind
+  && ($key in records[].sku || $key in records[].url)
+][0].records[sku == $key || url == $key][0]`;
+
 export async function getAbmStagedRecord(kind: AbmStagedRecord["kind"], key: string) {
-  const rows = await getAbmStagedRecords(kind);
-  return rows.find((row) => {
-    const value = row.sku || row.url;
-    return value === key || encodeURIComponent(value) === key;
+  const decodedKey = decodeURIComponent(key);
+  return sanityClient.fetch<AbmStagedRecord | null>(STAGED_RECORD_QUERY, {
+    version: ABM_REBUILD_VERSION,
+    kind,
+    key: decodedKey,
   });
 }
 
@@ -57,11 +77,12 @@ export function stagedRecordPath(kind: AbmStagedRecord["kind"], row: AbmStagedRe
   return `/products/abm/staged/${kind}/${encodeURIComponent(stagedRecordKey(row))}`;
 }
 
-const EXISTING_DETAIL_QUERY = `*[_type == "product" && sku == $sku && (brandSlug == "abm" || brand->slug.current == "abm" || brand->themeKey == "abm")][0]{
-  title, sku, sourceUrl, description, overview, storage, materialCitation,
-  specificationsHtml, documentsHtml, faqsHtml, referencesHtml, reviewsHtml,
-  serviceDetailsHtml, imageUrls, documents
-}`;
+const STAGED_DETAIL_QUERY = `*[
+  _type == "abmRebuildDetailChunk"
+  && version == $version
+  && kind == $kind
+  && $key in records[].key
+][0].records[key == $key][0]`;
 
 function mergeNonEmpty<T extends Record<string, unknown>>(base: T, extra: Record<string, unknown>) {
   const out = { ...base } as T & Record<string, unknown>;
@@ -71,37 +92,21 @@ function mergeNonEmpty<T extends Record<string, unknown>>(base: T, extra: Record
   return out;
 }
 
-/** Resolve a staged inventory row to full official detail for the preview. */
+/** Resolve preview data from ABM rebuild staging only. Production Product is never a fallback. */
 export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: string): Promise<AbmStagedDetail | undefined> {
   const record = await getAbmStagedRecord(kind, key);
   if (!record) return undefined;
 
-  const existing = record.sku
-    ? await sanityClient.fetch<Record<string, unknown> | null>(EXISTING_DETAIL_QUERY, { sku: record.sku })
-    : null;
-  const sourceUrl = String(record.url || existing?.sourceUrl || "").trim();
-  let parsed: Record<string, unknown> = {};
+  const detailKey = `${kind}:${String(record.sku || record.url).trim().toLowerCase()}`;
+  const staged = await sanityClient.fetch<Record<string, unknown> | null>(STAGED_DETAIL_QUERY, {
+    version: ABM_REBUILD_VERSION,
+    kind,
+    key: detailKey,
+  });
+  const sourceUrl = String(staged?.sourceUrl || record.url || "").trim();
 
-  if (sourceUrl) {
-    try {
-      const response = await fetch(sourceUrl, {
-        cache: "no-store",
-        headers: { accept: "text/html", "user-agent": "ITS-BIO-ABM-Preview/1.0" },
-        signal: AbortSignal.timeout(12000),
-      });
-      if (response.ok) {
-        parsed = parseAbmRebuildDetailV2(await response.text(), sourceUrl, { ...record, kind });
-      }
-    } catch {
-      // Existing Sanity detail remains a valid offline fallback for this preview page.
-    }
-  }
-
-  const detail = mergeNonEmpty(
-    mergeNonEmpty({ ...record, sourceUrl }, existing || {}),
-    parsed,
-  ) as AbmStagedDetail;
+  const detail = mergeNonEmpty({ ...record, sourceUrl }, staged || {}) as AbmStagedDetail;
   detail.kind = kind;
-  detail.images = Array.isArray(detail.images) ? detail.images : Array.isArray((existing as any)?.imageUrls) ? (existing as any).imageUrls : [];
+  detail.images = Array.isArray(detail.images) ? detail.images.filter(Boolean) : [];
   return detail;
 }

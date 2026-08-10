@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
+import * as cheerio from "cheerio";
 import { parseAbmRebuildDetailV2 } from "../lib/abm/rebuild-parser-v2.mjs";
+import { cleanText } from "../lib/abm/rebuild-parser.mjs";
 
 const OUT = path.resolve(".cache/abm-rebuild-parser-qa");
 fs.mkdirSync(OUT, { recursive: true });
@@ -106,6 +108,37 @@ async function fetchHtml(url) {
 }
 
 function check(sample, result) {
+  const storedProjection = {
+    introHtml: result.introHtml,
+    specificationsHtml: result.specificationsHtml,
+    datasheetHtml: result.datasheetHtml,
+    documentsHtml: result.documentsHtml,
+    faqsHtml: result.faqsHtml,
+    referencesHtml: result.referencesHtml,
+    reviewsHtml: result.reviewsHtml,
+    serviceDetailsHtml: result.serviceDetailsHtml,
+    serviceOffer: result.serviceOffer,
+  };
+  const serialized = JSON.stringify(storedProjection);
+  const priceFree = !/(?:\b(?:USD|CAD)\b\s*:?)?\s*\$\s*\d|\b(?:USD|CAD)\s+\d[\d,.]*|"(?:price|cost|amount|currency|cart|quantity)"\s*:/i.test(serialized);
+
+  let serviceRowsExact = true;
+  if (sample.kind === "service") {
+    const $ = cheerio.load(`<div id="__root">${result.serviceDetailsHtml || ""}</div>`, { decodeEntities: false });
+    let catalogTables = 0;
+    $("#__root table").each((_, table) => {
+      const rows = $(table).find("tr");
+      const headers = rows.first().children("th,td").toArray().map((cell) => cleanText($(cell).text()).toLowerCase().replace(/[\s:]+$/g, ""));
+      if (!headers.some((header) => /^(?:cat\.?\s*no\.?|catalog(?:ue)?(?:\s+number)?)$/.test(header))) return;
+      catalogTables++;
+      const dataRows = rows.filter((__, row) => !$(row).children("th").length);
+      if (!dataRows.length || dataRows.toArray().some((row) =>
+        !$(row).children("td").toArray().some((cell) => cleanText($(cell).text()).toLowerCase() === sample.sku.toLowerCase()),
+      )) serviceRowsExact = false;
+    });
+    serviceRowsExact = serviceRowsExact && catalogTables > 0;
+  }
+
   const checks = {
     sku: result.verification?.skuMatches === true,
     specifications: result.verification?.hasSpecifications === true,
@@ -115,8 +148,11 @@ function check(sample, result) {
     faqs: Boolean(result.faqsHtml?.trim()),
     serviceOffer: result.verification?.serviceOfferMatched === true,
     serviceDetails: Boolean(result.serviceDetailsHtml?.trim()),
+    serviceRowsExact,
+    priceFree,
   };
-  const required = Object.fromEntries(sample.require.map((name) => [name, Boolean(checks[name])]));
+  const requiredNames = [...sample.require, "priceFree", ...(sample.kind === "service" ? ["serviceRowsExact"] : [])];
+  const required = Object.fromEntries(requiredNames.map((name) => [name, Boolean(checks[name])]));
   const passed = Object.values(required).every(Boolean);
   return { passed, required, all: checks };
 }
