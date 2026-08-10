@@ -33,7 +33,7 @@ export type AbmStagedDetail = AbmStagedRecord & {
     sku?: string;
     title?: string;
     unit?: string;
-    fields?: Record<string, string>;
+    fields?: Array<{ _key?: string; label?: string; value?: string }> | Record<string, string>;
   };
   breadcrumbs?: string[];
   images?: string[];

@@ -83,7 +83,10 @@ export default async function AbmStagedDetailPage({
     url: item.url || item.href || "",
     label: item.title || "Document",
   })).filter((item) => item.url);
-  const serviceFields = Object.entries(record.serviceOffer?.fields || {}).filter(([label, value]) => {
+  const rawServiceFields = record.serviceOffer?.fields;
+  const serviceFields = (Array.isArray(rawServiceFields)
+    ? rawServiceFields.map((field) => [field.label || "", field.value || ""] as const)
+    : Object.entries(rawServiceFields || {})).filter(([label, value]) => {
     const normalized = label.toLowerCase();
     return value && !/price|cost|amount|currency|cart|quantity|^cat\.?\s*no\.?$|^unit$|^service(?:\s+name)?$/.test(normalized);
   });

@@ -61,11 +61,18 @@ function safeUrl(value) {
 
 function safeServiceOffer(offer, expectedSku) {
   if (!offer || typeof offer !== "object") return undefined;
-  const fields = {};
+  const fields = [];
   for (const [key, value] of Object.entries(offer.fields || {})) {
     if (isCommerceKey(key) || hasCurrency(value)) continue;
+    const label = clean(key);
     const text = clean(value);
-    if (text) fields[clean(key)] = text;
+    if (label && text) {
+      fields.push({
+        _key: label.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 90) || `field_${fields.length}`,
+        label,
+        value: text,
+      });
+    }
   }
   return {
     sku: clean(offer.sku || expectedSku),
@@ -73,6 +80,20 @@ function safeServiceOffer(offer, expectedSku) {
     unit: clean(offer.unit),
     fields,
   };
+}
+
+function assertSanityAttributeNames(value, path = "record") {
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => assertSanityAttributeNames(item, `${path}[${index}]`));
+    return;
+  }
+  if (!value || typeof value !== "object") return;
+  for (const [key, child] of Object.entries(value)) {
+    if (!/^\$?[A-Za-z0-9_-]+$/.test(key)) {
+      throw new Error(`${path}: invalid Sanity attribute name ${JSON.stringify(key)}`);
+    }
+    assertSanityAttributeNames(child, `${path}.${key}`);
+  }
 }
 
 function isolateStoredServiceHtml(rawHtml, expectedSku, sourceUrl) {
@@ -152,6 +173,7 @@ function sanitizeDetail(kind, inventory, detail, collectedAt) {
   if (hasCurrency(serialized) || /"(?:price|cost|amount|currency|cart|quantity)"\s*:/i.test(serialized)) {
     throw new Error(`${kind} ${sku || sourceUrl}: price/commerce leak remains after sanitization`);
   }
+  assertSanityAttributeNames(record, `${kind} ${sku || sourceUrl}`);
   return record;
 }
 
