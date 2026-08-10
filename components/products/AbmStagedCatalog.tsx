@@ -96,7 +96,7 @@ export default function AbmStagedCatalog({
               </>
             );
 
-            return row.hasDetail ? (
+            return (
               <Link
                 key={`${row.kind}-${stagedRecordKey(row)}`}
                 href={stagedRecordPath(kind, row)}
@@ -104,13 +104,6 @@ export default function AbmStagedCatalog({
               >
                 {content}
               </Link>
-            ) : (
-              <article
-                key={`${row.kind}-${stagedRecordKey(row)}`}
-                className="group overflow-hidden rounded-2xl border border-neutral-200 bg-white p-5"
-              >
-                {content}
-              </article>
             );
           })}
         </div>

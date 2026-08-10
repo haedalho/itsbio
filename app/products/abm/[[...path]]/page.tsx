@@ -14,6 +14,7 @@ import {
   ABM_PRODUCT_GROUPS,
   ABM_SERVICE_GROUPS,
   abmRecordBelongsToGroup,
+  abmRecordBelongsToProductPath,
   abmRecordBelongsToServicePath,
   abmServiceCategoryHref,
   findAbmCatalogGroup,
@@ -978,6 +979,11 @@ export default async function AbmProductsPathPage({
     slug: string;
     thumb?: string;
   }> = Array.isArray(data?.products) ? data.products : [];
+  const stagedProductsInCategory = path.length && ABM_ROOTS.includes(path[0] as (typeof ABM_ROOTS)[number])
+    ? (await getAbmStagedRecords("product")).filter((record) =>
+        abmRecordBelongsToProductPath(record, path, category?.title || humanizeSegment(path.at(-1) || "")),
+      )
+    : [];
 
   let activeRootTree: TreeNode[] = [];
   if (isKent) {
@@ -1229,7 +1235,7 @@ export default async function AbmProductsPathPage({
           <main className="min-w-0">
             <h2 className="text-3xl font-semibold tracking-tight text-neutral-900 md:text-4xl">{pageTitle}</h2>
 
-            {productsInCategory.length ? (
+            {isKent && productsInCategory.length ? (
               <div className="mt-6">
                 <div className="text-sm font-semibold text-neutral-900">Products</div>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -1304,6 +1310,19 @@ export default async function AbmProductsPathPage({
                 ) : null}
               </div>
             )}
+
+            {stagedProductsInCategory.length ? (
+              <section className="mt-12 border-t border-neutral-200 pt-10" aria-labelledby="staged-abm-products">
+                <h2 id="staged-abm-products" className="text-2xl font-semibold text-neutral-900">Products</h2>
+                <AbmStagedCatalog
+                  kind="product"
+                  records={stagedProductsInCategory}
+                  query={stagedQuery}
+                  page={stagedPage}
+                  basePath={`/products/abm/${path.join("/")}`}
+                />
+              </section>
+            ) : null}
           </main>
         </div>
       </div>

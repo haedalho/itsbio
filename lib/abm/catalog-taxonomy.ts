@@ -210,6 +210,34 @@ export function abmRecordBelongsToGroup(
   return values.some((value) => normalized(value) === target);
 }
 
+export function abmRecordBelongsToProductPath(
+  record: {
+    searchCategory?: string;
+    filterTitle?: string;
+    filterPath?: string[];
+    listingFilters?: Array<{ title?: string; path?: string[] }>;
+  },
+  path: string[],
+  pageTitle?: string,
+) {
+  if (!path.length) return false;
+  const root = ABM_PRODUCT_GROUPS.find((group) => group.slug === path[0]);
+  if (!root || !abmRecordBelongsToGroup(record, root)) return false;
+  if (path.length === 1) return true;
+
+  const wanted = new Set([
+    normalized(pageTitle || ""),
+    normalized(path.at(-1) || ""),
+  ].filter(Boolean));
+  const values = [
+    record.searchCategory,
+    record.filterTitle,
+    ...(record.filterPath || []),
+    ...(record.listingFilters || []).flatMap((filter) => [filter.title, ...(filter.path || [])]),
+  ].filter((value): value is string => typeof value === "string" && value.trim().length > 0);
+  return values.some((value) => wanted.has(normalized(value)));
+}
+
 export function abmRecordBelongsToServicePath(
   record: {
     filterTitle?: string;
