@@ -47,11 +47,20 @@ const cleanKey = (row) => String(row?.key || "").trim().toLowerCase();
 function unmanagedImages(record) {
   return (Array.isArray(record?.images) ? record.images : []).filter((url) => !managed(url));
 }
+function invalidVerification(kind, record) {
+  return !String(record?.title || "").trim()
+    || !String(record?.sourceUrl || "").trim()
+    || record?.verification?.skuMatches !== true
+    || record?.verification?.priceLeak !== false
+    || (kind === "service" && record?.verification?.serviceOfferMatched !== true);
+}
 
 const data = await client.fetch(`{
   "inventoryProducts": *[_type == "abmRebuildChunk" && version == $version && kind == "product"].records[]{sku,url},
   "inventoryServices": *[_type == "abmRebuildChunk" && version == $version && kind == "service"].records[]{sku,url},
-  "chunks": *[_type == "abmRebuildDetailChunk" && version == $version]{_id,kind,"records":records[]{key,images}}
+  "chunks": *[_type == "abmRebuildDetailChunk" && version == $version]{
+    _id,kind,"records":records[]{key,title,sourceUrl,images,verification}
+  }
 }`, { version: VERSION });
 
 const canonicalBatchPattern = (kind) => new RegExp(`^abm-rebuild-detail-${kind}-batch-${kind === "product" ? "p" : "s"}\\d{3}-chunk-`);
@@ -67,8 +76,10 @@ const validateKind = (kind, inventory, expected) => {
   const extra = detailKeys.filter((key) => !inventorySet.has(key));
   const duplicates = detailKeys.filter((key, index) => detailKeys.indexOf(key) !== index);
   const unmanaged = records.flatMap((record) => unmanagedImages(record).map((url) => ({ key: record.key, url })));
+  const invalid = records.filter((record) => invalidVerification(kind, record)).map((record) => record.key);
   const passed = inventory.length === expected && inventorySet.size === expected && records.length === expected
-    && detailSet.size === expected && !missing.length && !extra.length && !duplicates.length && !unmanaged.length;
+    && detailSet.size === expected && !missing.length && !extra.length && !duplicates.length && !unmanaged.length
+    && !invalid.length;
   return {
     kind,
     expected,
@@ -81,6 +92,7 @@ const validateKind = (kind, inventory, expected) => {
     extra,
     duplicates: [...new Set(duplicates)],
     unmanagedImages: unmanaged,
+    invalidVerification: invalid,
     passed,
   };
 };
@@ -101,8 +113,18 @@ if (!report.passed) {
   fs.writeFileSync(path.join(OUT, "report.json"), JSON.stringify(report, null, 2));
   console.log(JSON.stringify({
     passed: false,
-    products: { records: products.records, missing: products.missing.length, duplicates: products.duplicates.length },
-    services: { records: services.records, missing: services.missing.length, duplicates: services.duplicates.length },
+    products: {
+      records: products.records,
+      missing: products.missing.length,
+      duplicates: products.duplicates.length,
+      invalidVerification: products.invalidVerification.length,
+    },
+    services: {
+      records: services.records,
+      missing: services.missing.length,
+      duplicates: services.duplicates.length,
+      invalidVerification: services.invalidVerification.length,
+    },
   }, null, 2));
   throw new Error("ABM detail batches are incomplete; obsolete chunks were not removed");
 }

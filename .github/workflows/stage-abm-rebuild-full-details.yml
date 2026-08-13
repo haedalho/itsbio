@@ -146,16 +146,35 @@ jobs:
             apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION,
             useCdn: false,
           });
-          const docs = await client.fetch('*[_type == "abmRebuildDetailChunk" && version == $version && kind == $kind]{_id,"keys":records[].key}', {
+          const docs = await client.fetch(`*[_type == "abmRebuildDetailChunk" && version == $version && kind == $kind]{
+            _id,
+            "records": records[]{key,title,sourceUrl,images,verification}
+          }`, {
             version: '2026-08-09-search-v5',
             kind,
           });
           const prefix = `abm-rebuild-detail-${kind}-batch-${process.env.ABM_BATCH_KEY}-chunk-`;
-          const keys = docs.filter((doc) => String(doc._id || '').startsWith(prefix)).flatMap((doc) => doc.keys || []);
+          const records = docs.filter((doc) => String(doc._id || '').startsWith(prefix)).flatMap((doc) => doc.records || []);
+          const keys = records.map((record) => record.key);
           const actual = new Set(keys.map((key) => String(key || '').trim().toLowerCase()));
-          const complete = keys.length === expected.size && actual.size === expected.size && [...expected].every((key) => actual.has(key));
+          const managed = (value) => {
+            try {
+              const url = new URL(String(value || ''));
+              return url.hostname === 'cdn.sanity.io' && url.pathname.startsWith(`/images/${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}/`);
+            } catch { return false; }
+          };
+          const valid = records.filter((record) =>
+            String(record.title || '').trim()
+            && String(record.sourceUrl || '').trim()
+            && record.verification?.skuMatches === true
+            && record.verification?.priceLeak === false
+            && (kind !== 'service' || record.verification?.serviceOfferMatched === true)
+            && (record.images || []).every(managed)
+          );
+          const complete = keys.length === expected.size && actual.size === expected.size
+            && valid.length === expected.size && [...expected].every((key) => actual.has(key));
           fs.appendFileSync(process.env.GITHUB_OUTPUT, `complete=${complete}\n`);
-          console.log(`${process.env.ABM_BATCH_KEY}: staged=${actual.size}/${expected.size}, complete=${complete}`);
+          console.log(`${process.env.ABM_BATCH_KEY}: staged=${actual.size}/${expected.size}, valid=${valid.length}, complete=${complete}`);
           NODE
 
       - id: collect

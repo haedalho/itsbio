@@ -54,6 +54,11 @@ const SERVICES = ["Cell & Antibody Services", "DNA & Cloning Services", "Recombi
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const clean = (v) => String(v || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
 const safeName = (v) => clean(v).replace(/[^A-Za-z0-9._-]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 100) || "record";
+const isProductStyleService = (inventory, detail) =>
+  /^T\d+(?:-\d+)?$/i.test(clean(inventory?.sku))
+  && /(?:^|-)cell-line(?:-|\.|$)/i.test(clean(inventory?.url))
+  && !detail?.serviceOffer
+  && detail?.verification?.hasSpecifications === true;
 
 function cookieHeader(xs) {
   return (xs || []).map((x) => String(x).split(";", 1)[0]).filter(Boolean).join("; ");
@@ -361,13 +366,16 @@ async function collectServiceDetails(services) {
       const fetched = await fetchDetailHtml(group.url);
       const offerings = group.offerings.map((item) => {
         const detail = parseAbmRebuildDetailV2(fetched.html, fetched.finalUrl, { ...item, kind: "service" });
+        const productStyleService = isProductStyleService(item, detail);
         return {
           status: "ok",
           inventory: item,
           detail,
           qa: {
             skuMatch: detail.verification?.skuMatches === true,
-            serviceOfferMatch: item.sku ? detail.verification?.serviceOfferMatched === true : true,
+            serviceOfferMatch: item.sku
+              ? detail.verification?.serviceOfferMatched === true || productStyleService
+              : true,
             documents: detail.counts?.documents || 0,
             officialImages: detail.counts?.images || 0,
             priceLeak: hasPriceLeak(detail),

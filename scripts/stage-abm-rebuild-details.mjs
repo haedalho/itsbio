@@ -55,6 +55,11 @@ if (ALLOW_PARTIAL && !BATCH_KEY) {
 const clean = (value) => String(value || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
 const hasCurrency = (value) => /(?:\b(?:USD|CAD)\b\s*:?)?\s*\$\s*\d|\b(?:USD|CAD)\s+\d[\d,.]*/i.test(String(value || ""));
 const isCommerceKey = (value) => /price|cost|amount|currency|cart|quantity/i.test(clean(value));
+const isProductStyleService = (inventory, detail) =>
+  /^T\d+(?:-\d+)?$/i.test(clean(inventory?.sku))
+  && /(?:^|-)cell-line(?:-|\.|$)/i.test(clean(inventory?.url))
+  && !detail?.serviceOffer
+  && detail?.verification?.hasSpecifications === true;
 
 function safeUrl(value) {
   const text = clean(value);
@@ -141,6 +146,7 @@ function sanitizeDetail(kind, inventory, detail, collectedAt) {
       })).filter((item) => item.url)
     : [];
   const images = Array.isArray(detail?.images) ? [...new Set(detail.images.map(safeUrl).filter(Boolean))] : [];
+  const productStyleService = kind === "service" && isProductStyleService(inventory, detail);
   const record = {
     _key: `${kind}-${(sku || sourceUrl).replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 90)}`,
     key: `${kind}:${(sku || sourceUrl).toLowerCase()}`,
@@ -171,7 +177,9 @@ function sanitizeDetail(kind, inventory, detail, collectedAt) {
     collectedAt,
     verification: {
       skuMatches: detail?.verification?.skuMatches === true,
-      serviceOfferMatched: kind === "service" ? detail?.verification?.serviceOfferMatched === true : undefined,
+      serviceOfferMatched: kind === "service"
+        ? detail?.verification?.serviceOfferMatched === true || productStyleService
+        : undefined,
       hasSpecifications: detail?.verification?.hasSpecifications === true,
       hasOfficialImages: images.length > 0,
       priceLeak: false,

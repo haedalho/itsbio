@@ -26,8 +26,12 @@ const client = createClient({ projectId, dataset, apiVersion, token, useCdn: fal
 const result = await client.fetch(`{
   "inventoryProducts": *[_type == "abmRebuildChunk" && version == $version && kind == "product"].records[]{sku,url},
   "inventoryServices": *[_type == "abmRebuildChunk" && version == $version && kind == "service"].records[]{sku,url},
-  "detailProducts": *[_type == "abmRebuildDetailChunk" && version == $version && kind == "product"].records[]{key,sku,images},
-  "detailServices": *[_type == "abmRebuildDetailChunk" && version == $version && kind == "service"].records[]{key,sku,images},
+  "detailProducts": *[_type == "abmRebuildDetailChunk" && version == $version && kind == "product"].records[]{
+    key,sku,title,sourceUrl,images,verification
+  },
+  "detailServices": *[_type == "abmRebuildDetailChunk" && version == $version && kind == "service"].records[]{
+    key,sku,title,sourceUrl,images,verification
+  },
   "serviceLandings": *[_type == "abmRebuildLandingChunk" && version == $version && kind == "service"].records[]{pathKey,images,html,children[]{image}}
 }`, { version: VERSION });
 
@@ -49,6 +53,13 @@ function compare(kind, inventory, details, expected) {
   const extra = detailKeys.filter((key) => !inventorySet.has(key));
   const duplicates = detailKeys.filter((key, index) => detailKeys.indexOf(key) !== index);
   const unmanagedImages = details.flatMap((row) => (row.images || []).filter((url) => !managed(url)).map((url) => ({ key: row.key, url })));
+  const invalidVerification = details.filter((row) =>
+    !String(row.title || "").trim()
+    || !String(row.sourceUrl || "").trim()
+    || row.verification?.skuMatches !== true
+    || row.verification?.priceLeak !== false
+    || (kind === "service" && row.verification?.serviceOfferMatched !== true)
+  ).map((row) => row.key);
   return {
     expected,
     inventory: inventory.length,
@@ -59,8 +70,9 @@ function compare(kind, inventory, details, expected) {
     extra,
     duplicates: [...new Set(duplicates)],
     unmanagedImages,
+    invalidVerification,
     passed: inventory.length === expected && details.length === expected && inventorySet.size === expected && detailSet.size === expected
-      && !missing.length && !extra.length && !duplicates.length && !unmanagedImages.length,
+      && !missing.length && !extra.length && !duplicates.length && !unmanagedImages.length && !invalidVerification.length,
   };
 }
 
