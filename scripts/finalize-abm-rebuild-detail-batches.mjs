@@ -54,9 +54,10 @@ const data = await client.fetch(`{
   "chunks": *[_type == "abmRebuildDetailChunk" && version == $version]{_id,kind,"records":records[]{key,images}}
 }`, { version: VERSION });
 
-const batchPrefix = (kind) => `abm-rebuild-detail-${kind}-batch-`;
+const canonicalBatchPattern = (kind) => new RegExp(`^abm-rebuild-detail-${kind}-batch-${kind === "product" ? "p" : "s"}\\d{3}-chunk-`);
 const validateKind = (kind, inventory, expected) => {
-  const chunks = (data.chunks || []).filter((chunk) => chunk.kind === kind && String(chunk._id || "").startsWith(batchPrefix(kind)));
+  const pattern = canonicalBatchPattern(kind);
+  const chunks = (data.chunks || []).filter((chunk) => chunk.kind === kind && pattern.test(String(chunk._id || "")));
   const records = chunks.flatMap((chunk) => chunk.records || []);
   const inventoryKeys = inventory.map((row) => keyForInventory(kind, row));
   const detailKeys = records.map(cleanKey);
@@ -107,7 +108,7 @@ if (!report.passed) {
 }
 
 const obsoleteIds = (data.chunks || [])
-  .filter((chunk) => !String(chunk._id || "").startsWith(batchPrefix(chunk.kind)))
+  .filter((chunk) => !canonicalBatchPattern(chunk.kind).test(String(chunk._id || "")))
   .map((chunk) => chunk._id)
   .filter(Boolean);
 for (let index = 0; index < obsoleteIds.length; index += 100) {

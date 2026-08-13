@@ -217,7 +217,12 @@ async function authoritativeInventory() {
 }
 
 async function fetchDetailHtml(url) {
-  for (let attempt = 0; attempt < 7; attempt++) {
+  const retryDelay = (attempt, retryAfter = 0) => Math.max(
+    retryAfter * 1000,
+    Math.min(30_000, 2_500 * (2 ** attempt)),
+  );
+  let lastError = new Error(`fetch failed: ${url}`);
+  for (let attempt = 0; attempt < 8; attempt++) {
     await sleep(GAP_MS);
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 30000);
@@ -233,19 +238,27 @@ async function fetchDetailHtml(url) {
       });
       clearTimeout(timer);
       if (r.status === 429) {
+        lastError = new Error(`HTTP ${r.status}: ${url}`);
         const retry = Number(r.headers.get("retry-after") || 0);
-        await sleep(Math.max(retry * 1000, 1500 * (attempt + 1)));
+        await sleep(retryDelay(attempt, retry));
+        continue;
+      }
+      if (r.status === 408 || r.status >= 500) {
+        lastError = new Error(`HTTP ${r.status}: ${url}`);
+        const retry = Number(r.headers.get("retry-after") || 0);
+        await sleep(retryDelay(attempt, retry));
         continue;
       }
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       return { html: await r.text(), finalUrl: r.url || url, httpStatus: r.status };
     } catch (error) {
       clearTimeout(timer);
-      if (attempt === 6) throw error;
-      await sleep(500 * (attempt + 1));
+      lastError = error;
+      if (attempt === 7) throw error;
+      await sleep(retryDelay(attempt));
     }
   }
-  throw new Error("fetch failed");
+  throw lastError;
 }
 
 async function pool(items, workers, fn) {

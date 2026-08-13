@@ -44,8 +44,11 @@ jobs:
         shell: bash
         run: |
           node <<'NODE' >> "$GITHUB_OUTPUT"
-          const batches = [{ kind: 'service', start: 0, count: 251, key: 's000' }];
+          const batches = [];
           const size = 50;
+          for (let start = 0, index = 0; start < 251; start += size, index += 1) {
+            batches.push({ kind: 'service', start, count: Math.min(size, 251 - start), key: `s${String(index).padStart(3, '0')}` });
+          }
           for (let start = 0, index = 0; start < 5144; start += size, index += 1) {
             batches.push({ kind: 'product', start, count: Math.min(size, 5144 - start), key: `p${String(index).padStart(3, '0')}` });
           }
@@ -56,7 +59,7 @@ jobs:
     needs: prepare
     strategy:
       fail-fast: false
-      max-parallel: 8
+      max-parallel: 2
       matrix:
         batch: ${{ fromJson(needs.prepare.outputs.batches) }}
     runs-on: ubuntu-latest
@@ -127,8 +130,37 @@ jobs:
           console.log(`${kind} batch ${process.env.ABM_BATCH_KEY}: ${count} rows`);
           NODE
 
+      - id: precheck
+        name: Skip an already complete exact batch
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import { createClient } from 'next-sanity';
+          const inventory = JSON.parse(fs.readFileSync(process.env.ABM_INVENTORY_FILE, 'utf8'));
+          const kind = process.env.ABM_BATCH_KIND;
+          const rows = kind === 'product' ? inventory.products : inventory.services;
+          const expected = new Set(rows.map((row) => `${kind}:${String(row.sku || row.url).trim().toLowerCase()}`));
+          const client = createClient({
+            projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
+            dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
+            apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION,
+            useCdn: false,
+          });
+          const docs = await client.fetch('*[_type == "abmRebuildDetailChunk" && version == $version && kind == $kind]{_id,"keys":records[].key}', {
+            version: '2026-08-09-search-v5',
+            kind,
+          });
+          const prefix = `abm-rebuild-detail-${kind}-batch-${process.env.ABM_BATCH_KEY}-chunk-`;
+          const keys = docs.filter((doc) => String(doc._id || '').startsWith(prefix)).flatMap((doc) => doc.keys || []);
+          const actual = new Set(keys.map((key) => String(key || '').trim().toLowerCase()));
+          const complete = keys.length === expected.size && actual.size === expected.size && [...expected].every((key) => actual.has(key));
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `complete=${complete}\n`);
+          console.log(`${process.env.ABM_BATCH_KEY}: staged=${actual.size}/${expected.size}, complete=${complete}`);
+          NODE
+
       - id: collect
         name: Collect official details for this batch
+        if: steps.precheck.outputs.complete != 'true'
         continue-on-error: true
         run: >-
           node scripts/abm-full-detail-collect-runner.mjs
@@ -136,7 +168,7 @@ jobs:
           --gap-ms ${{ inputs.gap_ms || '300' }}
 
       - name: Stage successful details and owned images immediately
-        if: always() && hashFiles('.cache/abm-full-detail-collect/products.json') != ''
+        if: always() && steps.precheck.outputs.complete != 'true' && hashFiles('.cache/abm-full-detail-collect/products.json') != ''
         run: >-
           node scripts/stage-abm-rebuild-details.mjs
           --products .cache/abm-full-detail-collect/products.json
@@ -146,7 +178,7 @@ jobs:
           --version 2026-08-09-search-v5
 
       - name: Fail incomplete collection after staging valid records
-        if: steps.collect.outcome != 'success'
+        if: steps.precheck.outputs.complete != 'true' && steps.collect.outcome != 'success'
         run: |
           echo "Collector reported errors for batch $ABM_BATCH_KEY; valid rows were staged and this batch must be retried."
           exit 1

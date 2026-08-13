@@ -1,0 +1,18 @@
+name: Stop overloaded ABM batch run once
+
+on:
+  push:
+    branches:
+      - agent/abm-full-rebuild
+    paths:
+      - .github/workflows/cancel-overloaded-abm-batches-once.yml
+
+concurrency:
+  group: abm-full-detail-staging
+  cancel-in-progress: true
+
+jobs:
+  stop:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Previous overloaded ABM batch run cancelled; corrected low-concurrency run will start separately."
