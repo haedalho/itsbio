@@ -138,8 +138,8 @@ const STAGED_RECORD_QUERY = `*[
   _type == "abmRebuildChunk"
   && version == $version
   && kind == $kind
-  && ($key in records[].sku || $key in records[].url)
-][0].records[sku == $key || url == $key][0]`;
+  && count(records[lower(sku) == lower($key) || lower(url) == lower($key)]) > 0
+][0].records[lower(sku) == lower($key) || lower(url) == lower($key)][0]`;
 
 export async function getAbmStagedRecord(kind: AbmStagedRecord["kind"], key: string) {
   const decodedKey = decodeURIComponent(key);
