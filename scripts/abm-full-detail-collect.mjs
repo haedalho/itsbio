@@ -232,8 +232,9 @@ async function fetchDetailHtml(url) {
         redirect: "follow",
         signal: controller.signal,
         headers: {
-          "user-agent": "Mozilla/5.0 (compatible; ITSBIO-ABM-DetailCollector/1.0; +https://itsbio.vercel.app)",
+          "user-agent": "Mozilla/5.0",
           accept: "text/html,application/xhtml+xml",
+          "accept-language": "en-US,en;q=0.9",
         },
       });
       clearTimeout(timer);

@@ -44,12 +44,12 @@ jobs:
         shell: bash
         run: |
           node <<'NODE' >> "$GITHUB_OUTPUT"
-          const batches = [];
+          const batches = [{ kind: 'product', start: 0, count: 1, key: 'p000' }];
           const size = 50;
           for (let start = 0, index = 0; start < 251; start += size, index += 1) {
             batches.push({ kind: 'service', start, count: Math.min(size, 251 - start), key: `s${String(index).padStart(3, '0')}` });
           }
-          for (let start = 0, index = 0; start < 5144; start += size, index += 1) {
+          for (let start = 1, index = 1; start < 5144; start += size, index += 1) {
             batches.push({ kind: 'product', start, count: Math.min(size, 5144 - start), key: `p${String(index).padStart(3, '0')}` });
           }
           console.log(`batches=${JSON.stringify(batches)}`);
@@ -59,7 +59,7 @@ jobs:
     needs: prepare
     strategy:
       fail-fast: false
-      max-parallel: 2
+      max-parallel: 1
       matrix:
         batch: ${{ fromJson(needs.prepare.outputs.batches) }}
     runs-on: ubuntu-latest

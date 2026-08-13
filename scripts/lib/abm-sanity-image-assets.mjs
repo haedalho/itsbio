@@ -62,8 +62,9 @@ async function downloadOfficialImage(sourceUrl) {
       redirect: "follow",
       signal: controller.signal,
       headers: {
-        "user-agent": "Mozilla/5.0 (compatible; ITSBIO-ABM-AssetMigration/1.0; +https://itsbio.vercel.app)",
+        "user-agent": "Mozilla/5.0",
         accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+        "accept-language": "en-US,en;q=0.9",
       },
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
