@@ -1,14 +1,6 @@
 name: Stage ABM rebuild preview details
 
 on:
-  push:
-    branches:
-      - agent/abm-full-rebuild
-    paths:
-      - lib/abm/rebuild-parser.mjs
-      - lib/abm/rebuild-parser-v2.mjs
-      - scripts/stage-abm-rebuild-details.mjs
-      - .github/workflows/stage-abm-rebuild-preview-details.yml
   workflow_dispatch:
 
 permissions:
@@ -45,6 +37,7 @@ jobs:
           node scripts/stage-abm-rebuild-details.mjs
           --qa-results .cache/abm-rebuild-parser-qa/results.json
           --allow-partial
+          --batch-key preview-sample
           --version 2026-08-09-search-v5
 
       - name: Upload QA and staging reports

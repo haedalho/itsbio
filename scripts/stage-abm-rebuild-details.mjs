@@ -5,7 +5,8 @@
  * Safety:
  * - writes only `_type == "abmRebuildDetailChunk"`
  * - never creates, patches, or deletes production `product` / `category` documents
- * - stores official image URLs as metadata; it does not create Sanity assets
+ * - rehosts official ABM images as owned Sanity assets before writing details
+ * - supports stable, non-overlapping batch chunk IDs for resumable staging
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -29,6 +30,8 @@ const MAX_BYTES = Math.max(100_000, Math.min(900_000, Number(readArg("--max-byte
 const DRY = argv.includes("--dry");
 const ALLOW_PARTIAL = argv.includes("--allow-partial");
 const REPLACE = argv.includes("--replace");
+const BATCH_KEY_RAW = readArg("--batch-key");
+const BATCH_KEY = BATCH_KEY_RAW.replace(/[^A-Za-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
 const OUT = path.resolve(".cache/abm-rebuild-detail-staging");
 fs.mkdirSync(OUT, { recursive: true });
 
@@ -44,6 +47,10 @@ const token = [
 ].map((value) => String(value || "").trim()).find(Boolean) || "";
 
 if (!DRY && !token) throw new Error("No Sanity write token available");
+if (BATCH_KEY_RAW && !BATCH_KEY) throw new Error("--batch-key must contain at least one letter or number");
+if (ALLOW_PARTIAL && !BATCH_KEY) {
+  throw new Error("--allow-partial requires --batch-key so partial runs cannot overwrite one another");
+}
 
 const clean = (value) => String(value || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
 const hasCurrency = (value) => /(?:\b(?:USD|CAD)\b\s*:?)?\s*\$\s*\d|\b(?:USD|CAD)\s+\d[\d,.]*/i.test(String(value || ""));
@@ -208,6 +215,11 @@ function loadRecords() {
   };
 }
 
+function chunkIdPrefix(kind) {
+  const batchSegment = BATCH_KEY ? `-batch-${BATCH_KEY}` : "";
+  return `abm-rebuild-detail-${kind}${batchSegment}-chunk-`;
+}
+
 function makeChunks(records, kind) {
   const chunks = [];
   let current = [];
@@ -225,7 +237,7 @@ function makeChunks(records, kind) {
   }
   if (current.length) chunks.push(current);
   return chunks.map((recordsInChunk, chunkIndex) => ({
-    _id: `abm-rebuild-detail-${kind}-chunk-${String(chunkIndex).padStart(4, "0")}`,
+    _id: `${chunkIdPrefix(kind)}${String(chunkIndex).padStart(4, "0")}`,
     _type: "abmRebuildDetailChunk",
     version: VERSION,
     kind,
@@ -277,6 +289,7 @@ const report = {
   generatedAt: new Date().toISOString(),
   dryRun: DRY,
   version: VERSION,
+  batchKey: BATCH_KEY || null,
   products: loaded.products.length,
   services: loaded.services.length,
   inputErrors: loaded.inputErrors,
@@ -295,6 +308,18 @@ if (!DRY) {
     for (const doc of docs.slice(index, index + 25)) transaction = transaction.createOrReplace(doc);
     await transaction.commit({ autoGenerateArrayKeys: true });
     console.log(`[stage detail] ${Math.min(index + 25, docs.length)}/${docs.length}`);
+  }
+  if (BATCH_KEY) {
+    const batchIds = await client.fetch(`*[_type == "abmRebuildDetailChunk" && version == $version]._id`, { version: VERSION });
+    const staleBatchIds = batchIds.filter((id) =>
+      (id.startsWith(chunkIdPrefix("product")) || id.startsWith(chunkIdPrefix("service"))) && !expectedIds.has(id),
+    );
+    for (let index = 0; index < staleBatchIds.length; index += 100) {
+      let transaction = client.transaction();
+      for (const id of staleBatchIds.slice(index, index + 100)) transaction = transaction.delete(id);
+      await transaction.commit();
+    }
+    report.staleBatchChunksRemoved = staleBatchIds.length;
   }
   if (REPLACE) {
     const stale = await client.fetch(`*[_type == "abmRebuildDetailChunk" && version == $version]._id`, { version: VERSION });
