@@ -818,7 +818,7 @@ function HtmlBlock({ html, brandKey }: { html: string; brandKey: string }) {
   if (!cleaned) return null;
   return (
     <section className="mt-8">
-      <HtmlContent html={cleaned} />
+      <HtmlContent html={cleaned} mode={brandKey === "abm" ? "abm-detail" : "default"} />
     </section>
   );
 }
@@ -1246,6 +1246,10 @@ export default async function AbmProductsPathPage({
     : Array.isArray(category?.blocks)
       ? category.blocks
       : [];
+  const hasEmbeddedProductTable = blocks.some((block: any) => {
+    const html = typeof block?.html === "string" ? block.html : "";
+    return /<table\b/i.test(html) && /Product\s+(?:List|Name)|Cat\.?\s*No\.?/i.test(html);
+  });
 
   const fallbackHtmlRaw = blocks.length
     ? ""
@@ -1327,7 +1331,7 @@ export default async function AbmProductsPathPage({
               renderContentBlocks(blocks, brandKey, theme)
             ) : fallbackHtml ? (
               <section className="mt-8">
-                <HtmlContent html={fallbackHtml} />
+                <HtmlContent html={fallbackHtml} mode={brandKey === "abm" ? "abm-detail" : "default"} />
                 {category?.sourceUrl ? (
                   <div className="mt-4 text-sm">
                     <a
@@ -1356,7 +1360,7 @@ export default async function AbmProductsPathPage({
               </div>
             )}
 
-            {stagedProductsInCategory.length ? (
+            {stagedProductsInCategory.length && !hasEmbeddedProductTable ? (
               <section className="mt-10" aria-label="ABM product list">
                 <AbmStagedCatalog
                   kind="product"

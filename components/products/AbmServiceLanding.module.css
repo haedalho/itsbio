@@ -439,10 +439,10 @@
 
 .source :global(.models-table-wrap) {
   overflow-x: auto;
-  border: 1px solid #f0ebe7;
-  border-radius: 18px;
+  border: 0;
+  border-radius: 0;
   background: #fff;
-  box-shadow: 0 6px 16px rgb(0 0 0 / 2.8%);
+  box-shadow: none;
 }
 
 .source :global(.models-offered-table) {

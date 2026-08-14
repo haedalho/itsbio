@@ -69,34 +69,30 @@ export default function AbmStagedCatalog({
       </div>
 
       {visible.length ? (
-        <div className="mt-3 overflow-x-auto">
-          <div className="hidden min-w-[680px] grid-cols-[minmax(0,1fr)_130px_180px_100px] bg-[#f2632f] px-4 py-3 text-sm font-semibold text-white md:grid">
-            <span>{kind === "product" ? "Product name" : "Service name"}</span>
-            <span>Cat. No.</span>
-            <span>{kind === "product" ? "Size" : "Category"}</span>
-            <span>Details</span>
-          </div>
-          <div className="min-w-0 divide-y divide-neutral-200 border-x border-b border-neutral-200 md:min-w-[680px]">
+        <div className="abm-table-scroll mt-3" role="region" aria-label={`Scrollable ABM ${kind} list`} tabIndex={0}>
+          <table className="abm-data-table">
+            <caption className="sr-only">{kind === "product" ? "ABM product list" : "ABM service list"}</caption>
+            <thead>
+              <tr>
+                <th scope="col">{kind === "product" ? "Product Name" : "Service Name"}</th>
+                <th scope="col">Cat. No.</th>
+                <th scope="col">{kind === "product" ? "Size" : "Category"}</th>
+              </tr>
+            </thead>
+            <tbody>
             {visible.map((row) => (
-              <div
-                key={`${row.kind}-${stagedRecordKey(row)}`}
-                className="grid gap-2 bg-white px-4 py-3 text-sm transition even:bg-neutral-50 hover:bg-orange-50 md:grid-cols-[minmax(0,1fr)_130px_180px_100px] md:items-center"
-              >
-                <Link href={stagedRecordPath(kind, row)} prefetch={false} className="min-w-0 font-medium leading-6 text-[#dc5a2b] hover:underline hover:underline-offset-4">
-                  {cleanTitle(row.title)}
-                </Link>
-                <span className="text-sm font-medium text-neutral-600">
-                  <span className="mr-2 text-xs font-semibold uppercase tracking-wide text-neutral-400 md:hidden">Cat. No.</span>
-                  {row.sku || "—"}
-                </span>
-                <span className="min-w-0 text-neutral-600">
-                  <span className="mr-2 text-xs font-semibold uppercase tracking-wide text-neutral-400 md:hidden">{kind === "product" ? "Size" : "Category"}</span>
-                  {kind === "product" ? row.unit || "—" : row.searchCategory || row.filterTitle || "ABM Service"}
-                </span>
-                <Link href={stagedRecordPath(kind, row)} prefetch={false} className="font-semibold text-[#dc5a2b] hover:underline">View</Link>
-              </div>
+              <tr key={`${row.kind}-${stagedRecordKey(row)}`}>
+                <td>
+                  <Link href={stagedRecordPath(kind, row)} prefetch={false}>{cleanTitle(row.title)}</Link>
+                </td>
+                <td>
+                  {row.sku ? <Link href={stagedRecordPath(kind, row)} prefetch={false}>{row.sku}</Link> : "—"}
+                </td>
+                <td>{kind === "product" ? row.unit || "—" : row.searchCategory || row.filterTitle || "ABM Service"}</td>
+              </tr>
             ))}
-          </div>
+            </tbody>
+          </table>
         </div>
       ) : (
         <div className="border-b border-neutral-300 px-5 py-12 text-center text-neutral-600">

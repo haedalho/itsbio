@@ -496,7 +496,43 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"]
       table.setAttribute("class", TABLE_CLASS);
       ["style", "width", "height", "bgcolor", "border", "cellpadding", "cellspacing", "align"].forEach((attribute) => table.removeAttribute(attribute));
       table.querySelectorAll("th").forEach((th) => th.setAttribute("scope", "col"));
-      if (!table.parentElement?.classList.contains(TABLE_WRAP_CLASS)) {
+      const sectionRows = Array.from(table.querySelectorAll<HTMLTableRowElement>('tr[id^="table-product-mini-category-"]'));
+      sectionRows.forEach((row) => {
+        row.classList.add("abm-table-section-row");
+        row.removeAttribute("style");
+        row.querySelectorAll("td, th").forEach((cell) => cell.removeAttribute("style"));
+      });
+
+      if (sectionRows.length && !doc.querySelector(".abm-table-anchor-nav")) {
+        const nav = doc.createElement("nav");
+        nav.setAttribute("class", "abm-table-anchor-nav");
+        nav.setAttribute("aria-label", "Product groups");
+        sectionRows.forEach((row, index) => {
+          const label = collapseWs(row.cells[0]?.textContent || "");
+          if (!row.id || !label) return;
+          if (index) {
+            const separator = doc.createElement("span");
+            separator.setAttribute("aria-hidden", "true");
+            separator.textContent = "|";
+            nav.appendChild(separator);
+          }
+          const anchor = doc.createElement("a");
+          anchor.setAttribute("href", `#${row.id}`);
+          anchor.textContent = /Fluorescent\s+Marker/i.test(label)
+            ? "GFP, RFP, CFP, YFP"
+            : label.replace(/\s*\(FLAG\)\s*/i, "").trim();
+          nav.appendChild(anchor);
+        });
+        if (nav.children.length) doc.body.insertBefore(nav, doc.body.firstChild);
+      }
+
+      const existingWrap = table.parentElement?.classList.contains("models-table-wrap") ? table.parentElement : null;
+      if (existingWrap) {
+        existingWrap.classList.add(TABLE_WRAP_CLASS);
+        existingWrap.setAttribute("role", "region");
+        existingWrap.setAttribute("aria-label", "Scrollable product information table");
+        existingWrap.setAttribute("tabindex", "0");
+      } else if (!table.parentElement?.classList.contains(TABLE_WRAP_CLASS)) {
         const wrap = doc.createElement("div");
         wrap.setAttribute("class", TABLE_WRAP_CLASS);
         wrap.setAttribute("role", "region");
