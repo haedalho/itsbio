@@ -227,11 +227,7 @@ export default function ProductTabsClient({
     mode: kind === "service" ? "abm-service" : "abm-detail",
   }), [sourceUrl, kind]);
   const tabs = React.useMemo(() => {
-    return [
-      { key: "overview", label: "Overview", enabled: hasUsableHtml(overviewHtml) },
-      { key: "specs", label: "Specifications", enabled: hasUsableHtml(specsHtml) },
-      { key: "service", label: "Service Details", enabled: hasUsableHtml(serviceDetailsHtml) },
-      { key: "datasheet", label: "Datasheet", enabled: hasUsableHtml(datasheetHtml) },
+    const shared = [
       {
         key: "documents",
         label: "Documents",
@@ -241,7 +237,18 @@ export default function ProductTabsClient({
       { key: "references", label: "References", enabled: hasUsableHtml(referencesHtml) },
       { key: "reviews", label: "Reviews", enabled: hasUsableHtml(reviewsHtml) },
     ];
-  }, [overviewHtml, specsHtml, serviceDetailsHtml, datasheetHtml, documentsHtml, documents, faqsHtml, referencesHtml, reviewsHtml]);
+    return kind === "product"
+      ? [
+          { key: "specs", label: "Specifications", enabled: hasUsableHtml(specsHtml) },
+          { key: "datasheet", label: "Datasheet", enabled: hasUsableHtml(datasheetHtml) },
+          ...shared,
+        ]
+      : [
+          { key: "overview", label: "Overview", enabled: hasUsableHtml(overviewHtml) },
+          { key: "service", label: "Service Details", enabled: hasUsableHtml(serviceDetailsHtml) },
+          ...shared,
+        ];
+  }, [kind, overviewHtml, specsHtml, serviceDetailsHtml, datasheetHtml, documentsHtml, documents, faqsHtml, referencesHtml, reviewsHtml]);
 
   const firstEnabled = tabs.find((x) => x.enabled)?.key || "specs";
   const [active, setActive] = React.useState<string>(firstEnabled);
@@ -254,9 +261,9 @@ export default function ProductTabsClient({
 
   return (
     <section className="mt-8">
-      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_20px_60px_-38px_rgba(15,23,42,0.45)]">
-        <div className="border-b border-slate-200 bg-slate-50/80 px-3 py-3 md:px-5">
-          <div className="scrollbar-hidden flex gap-2 overflow-x-auto" role="tablist" aria-label="Product information">
+      <div className="overflow-hidden border border-neutral-200 bg-white">
+        <div className="border-b border-neutral-200 bg-neutral-100">
+          <div className="scrollbar-hidden flex overflow-x-auto" role="tablist" aria-label="Product information">
             {tabs.map((t) => {
               const isActive = active === t.key;
               const disabled = !t.enabled;
@@ -271,12 +278,12 @@ export default function ProductTabsClient({
                   disabled={disabled}
                   onClick={() => !disabled && setActive(t.key)}
                   className={[
-                    "inline-flex h-10 shrink-0 items-center justify-center rounded-full border px-4 text-sm font-semibold transition",
+                    "inline-flex h-12 shrink-0 items-center justify-center border-r border-neutral-200 px-5 text-sm font-semibold transition",
                     disabled
-                      ? "cursor-not-allowed border-transparent bg-transparent text-slate-400"
+                      ? "cursor-not-allowed bg-neutral-100 text-neutral-400"
                       : isActive
-                      ? "border-slate-900 bg-slate-900 text-white shadow-sm"
-                      : "border-slate-200 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-700",
+                      ? "bg-[#f2632f] text-white"
+                      : "bg-neutral-100 text-neutral-700 hover:bg-white hover:text-[#dc5a2b]",
                   ].join(" ")}
                 >
                   {t.label}
@@ -286,7 +293,7 @@ export default function ProductTabsClient({
           </div>
         </div>
 
-        <div className="px-5 py-6 md:px-8 md:py-8">
+        <div className="px-5 py-6 md:px-6 md:py-7">
           {active === "overview" && hasUsableHtml(overviewHtml) ? (
             <HtmlContent html={overviewHtml as string} {...contentContext} />
           ) : active === "service" && hasUsableHtml(serviceDetailsHtml) ? (

@@ -173,7 +173,7 @@ animation: partners-marquee 22s linear infinite;
 .abm-rich h3,
 .abm-rich h4 {
   margin: 1.7em 0 0.65em;
-  color: #0f172a;
+  color: #dc5a2b;
   font-weight: 700;
   line-height: 1.3;
   letter-spacing: -0.02em;
@@ -212,10 +212,10 @@ animation: partners-marquee 22s linear infinite;
   margin: 1.25rem 0 2rem;
   overflow-x: auto;
   border: 1px solid #dbe2ea;
-  border-top: 3px solid #ea580c;
-  border-radius: 16px;
+  border-top: 0;
+  border-radius: 0;
   background: #fff;
-  box-shadow: 0 15px 38px -34px rgba(15, 23, 42, 0.7);
+  box-shadow: none;
   scrollbar-color: #cbd5e1 transparent;
 }
 
@@ -245,7 +245,7 @@ animation: partners-marquee 22s linear infinite;
 .abm-data-table tr:last-child > * { border-bottom: 0; }
 .abm-data-table thead th,
 .abm-data-table tr:first-child > th {
-  background: #0f172a;
+  background: #f2632f;
   color: #fff;
   font-weight: 700;
   letter-spacing: 0.01em;

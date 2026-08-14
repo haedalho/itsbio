@@ -21,7 +21,7 @@
   width: 100%;
   margin: 0 auto;
   color: var(--abm-text);
-  font-family: "Century Gothic", Arial, sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 14px;
   line-height: 1.55;
   container-type: inline-size;
@@ -58,7 +58,7 @@
   justify-content: center;
   padding: 10px 18px;
   border: 0;
-  border-radius: 999px;
+  border-radius: 0;
   background: var(--abm-orange);
   color: #fff !important;
   font-size: 0.9em;
@@ -92,15 +92,15 @@
 
 .source :global(.organoid-hero) {
   position: relative;
-  overflow: hidden;
   margin-bottom: 28px;
-  padding: 30px;
-  border: 1px solid #f2e4dc;
-  border-radius: 22px;
-  background: linear-gradient(135deg, #fff7f2 0%, #fff 58%, #f8fbfb 100%);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
 }
 
 .source :global(.organoid-hero::after) {
+  display: none;
   position: absolute;
   top: -80px;
   right: -80px;
@@ -149,9 +149,9 @@
 .source :global(.hero-panel) {
   padding: 18px;
   border: 1px solid var(--abm-line);
-  border-radius: 18px;
+  border-radius: 0;
   background: rgb(255 255 255 / 94%);
-  box-shadow: var(--abm-shadow);
+  box-shadow: none;
 }
 
 .source :global(.hero-panel h3) {
@@ -204,11 +204,11 @@
 }
 
 .source :global(.section-shell) {
-  padding: 26px;
-  border: 1px solid var(--abm-line);
-  border-radius: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
   background: #fff;
-  box-shadow: 0 8px 22px rgb(0 0 0 / 3.5%);
+  box-shadow: none;
 }
 
 .source :global(.section-shell.grey) {
@@ -245,9 +245,9 @@
   align-items: center;
   padding: 18px;
   border: 1px solid #f0ebe7;
-  border-radius: 20px;
+  border-radius: 0;
   background: #fff;
-  box-shadow: 0 8px 20px rgb(0 0 0 / 3.2%);
+  box-shadow: none;
 }
 
 .source :global(.workflow-step:nth-child(even)) {

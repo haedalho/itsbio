@@ -21,7 +21,7 @@ import {
   findAbmServiceCategory,
   type AbmCatalogGroup,
 } from "@/lib/abm/catalog-taxonomy";
-import { getAbmStagedRecords, getAbmStagedServiceLanding } from "@/lib/abm/rebuild-staging";
+import { getAbmStagedRecords, getAbmStagedServiceLanding, isManagedAbmImageUrl } from "@/lib/abm/rebuild-staging";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -33,8 +33,8 @@ const ABM_ROOTS = ["general-materials", "cellular-materials", "genetic-materials
 // ✅ Kent 메뉴 상단 고정 헤더(가상 그룹)
 const KENT_MENU_TITLE = "General Lab Equipment";
 
-const PAGE_SHELL = "mx-auto max-w-[1320px] px-6";
-const CONTENT_LAYOUT = "grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[296px_minmax(0,1fr)]";
+const PAGE_SHELL = "mx-auto max-w-[1140px] px-4";
+const CONTENT_LAYOUT = "grid gap-7 lg:grid-cols-[260px_minmax(0,1fr)]";
 
 type Theme = {
   accentBg: string;
@@ -407,6 +407,32 @@ function buildTreeFromAllCategories(roots: CatLite[], descendants: CatLite[]) {
   return rootNodes;
 }
 
+function findTreeNodeByPath(nodes: TreeNode[], path: string[]): TreeNode | undefined {
+  const wanted = path.join("/");
+  for (const node of nodes) {
+    if (node.path.join("/") === wanted) return node;
+    const nested = findTreeNodeByPath(node.children || [], path);
+    if (nested) return nested;
+  }
+  return undefined;
+}
+
+function CategoryLinkRail({ brandKey, nodes }: { brandKey: string; nodes: TreeNode[] }) {
+  if (!nodes.length) return null;
+  return (
+    <nav className="mt-4 flex flex-wrap items-center gap-y-2 text-base font-semibold" aria-label="Subcategories">
+      {nodes.map((node, index) => (
+        <span key={node.key} className="flex items-center">
+          {index ? <span className="mx-2 text-neutral-800" aria-hidden>|</span> : null}
+          <Link href={buildHref(brandKey, node.path)} prefetch={false} className="text-[#1386ac] hover:underline hover:underline-offset-4">
+            {stripBrandSuffix(node.title)}
+          </Link>
+        </span>
+      ))}
+    </nav>
+  );
+}
+
 /** -------------------- HTML rewrite -------------------- */
 
 function getBaseUrlForBrand(brandKey: string) {
@@ -458,6 +484,10 @@ function safeHtmlForRender(html: string, brandKey: string) {
   const baseUrl = getBaseUrlForBrand(brandKey);
   let out = html || "";
   if (brandKey === "abm") out = stripUnwantedAbmNav(out);
+  if (brandKey === "abm") {
+    out = out.replace(/<li\b[^>]*>(?:(?!<\/li>)[\s\S])*Wholesale\s+Prices?(?:(?!<\/li>)[\s\S])*<\/li>/gi, "");
+    out = out.replace(/Wholesale\s+Prices?/gi, "");
+  }
   out = rewriteRelativeUrls(out, baseUrl);
   out = rewriteAnchorsToLegacy(out, brandKey);
   return out.trim();
@@ -521,10 +551,10 @@ function SideNavTree({
 
   const isPrefix = (full: string, prefix: string) => full === prefix || full.startsWith(prefix + "/");
 
-  const LINE_LEFT = "left-[18px]";
-  const DOT_LEFT = "left-[18px]";
-  const ARROW_LEFT = "left-[28px]";
-  const TEXT_OFFSET = "ml-[34px]";
+  const LINE_LEFT = "hidden";
+  const DOT_LEFT = "hidden";
+  const ARROW_LEFT = "hidden";
+  const TEXT_OFFSET = "ml-3";
 
   function nodeHref(n: { path: string[] }) {
     return buildHref(brandKey, n.path);
@@ -580,7 +610,7 @@ function SideNavTree({
 
                 <span
                   className={[
-                    "relative block rounded-xl px-3 py-2 text-sm leading-6 transition",
+                    "relative block px-2 py-1.5 text-sm leading-5 transition",
                     TEXT_OFFSET,
                     isActive
                       ? `${theme.accentActiveBg} ${theme.accentActiveText} font-semibold`
@@ -611,7 +641,7 @@ function SideNavTree({
             href={nodeHref(node)}
             prefetch={false}
             className={[
-              "flex items-center justify-between rounded-xl px-3 py-2 text-sm transition",
+              "flex items-center justify-between px-2 py-1.5 text-sm transition",
               isOpen ? `${theme.accentText} font-semibold` : "text-neutral-800 hover:bg-neutral-50",
             ].join(" ")}
           >
@@ -627,7 +657,7 @@ function SideNavTree({
             </span>
           </Link>
 
-          <div className={isOpen ? "mt-1 block" : "mt-1 hidden group-hover/section:block"}>
+          <div className={isOpen ? "block" : "hidden group-hover/section:block"}>
             <Children nodes={node.children} />
           </div>
         </div>
@@ -639,7 +669,7 @@ function SideNavTree({
         href={nodeHref(node)}
         prefetch={false}
         className={[
-          "flex items-center justify-between rounded-xl px-3 py-2 text-sm transition",
+          "flex items-center justify-between px-2 py-1.5 text-sm transition",
           isActive ? `${theme.accentActiveBg} ${theme.accentActiveText} font-semibold` : "text-neutral-800 hover:bg-neutral-50",
         ].join(" ")}
       >
@@ -652,33 +682,17 @@ function SideNavTree({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div className="border-b border-neutral-200 px-5 py-4">
-        <div className={`text-base font-semibold ${theme.accentText}`}>{stripBrandSuffix(activeRootTitle)}</div>
+    <div className="overflow-hidden rounded-sm border border-neutral-200 bg-white shadow-sm">
+      <div className="border-b border-neutral-200 bg-neutral-100 px-5 py-3">
+        <div className={`text-xl font-bold ${theme.accentText}`}>{isKentMode ? stripBrandSuffix(activeRootTitle) : "All Products"}</div>
       </div>
 
-      <div className="p-2">
-        {!isKentMode ? (
+      <div className="p-3">
+        {!isKentMode && activeRoot ? (
           <>
-            <div className="space-y-1">
-              {roots
-                .filter((r) => (r.path?.[0] || "") !== activeRoot)
-                .map((r) => (
-                  <Link
-                    key={r._id}
-                    href={buildHref(brandKey, r.path)}
-                    prefetch={false}
-                    className="flex items-center justify-between rounded-xl px-3 py-2 text-sm text-neutral-800 hover:bg-neutral-50"
-                  >
-                    <span className="min-w-0 truncate">{stripBrandSuffix(r.title)}</span>
-                    <span className="text-neutral-300" aria-hidden>
-                      ›
-                    </span>
-                  </Link>
-                ))}
-            </div>
-
-            <div className="my-2 border-t border-neutral-200" />
+            <Link href={buildHref(brandKey, [activeRoot])} prefetch={false} className="flex items-center justify-between px-2 py-2 text-sm font-semibold text-[#dc5a2b]">
+              <span>{stripBrandSuffix(activeRootTitle)}</span><span aria-hidden>⌃</span>
+            </Link>
           </>
         ) : null}
 
@@ -686,28 +700,28 @@ function SideNavTree({
           {activeRootTree?.length ? (
             activeRootTree.map((n) => <NodeRow key={n.key} node={n} />)
           ) : (
-            <div className="px-3 py-2 text-sm text-neutral-500">하위 카테고리가 없습니다.</div>
+            !activeRoot ? roots.map((root) => (
+              <Link key={root._id} href={buildHref(brandKey, root.path)} prefetch={false} className="flex items-center justify-between px-2 py-2 text-sm font-semibold text-neutral-800 hover:text-[#dc5a2b]">
+                <span>{stripBrandSuffix(root.title)}</span><span aria-hidden>⌄</span>
+              </Link>
+            )) : null
           )}
         </div>
 
-        {!isKentMode ? (
-          <>
-            <div className="my-3 border-t border-neutral-200" />
-            <div className="px-3 pb-2 text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">Services</div>
-            <div className="space-y-1">
-              {ABM_SERVICE_GROUPS.map((group) => (
+        {!isKentMode && activeRoot ? (
+          <div className="mt-2 border-t border-neutral-200 pt-2">
+            {roots.filter((root) => root.path?.[0] !== activeRoot).map((root) => (
                 <Link
-                  key={group.slug}
-                  href={group.href}
+                  key={root._id}
+                  href={buildHref(brandKey, root.path)}
                   prefetch={false}
-                  className="flex items-center justify-between rounded-xl px-3 py-2 text-sm text-neutral-800 hover:bg-neutral-50"
+                  className="flex items-center justify-between px-2 py-2 text-sm font-semibold text-neutral-800 hover:text-[#dc5a2b]"
                 >
-                  <span className="min-w-0 truncate">{group.title}</span>
-                  <span className="text-neutral-300" aria-hidden>›</span>
+                  <span className="min-w-0 truncate">{stripBrandSuffix(root.title)}</span>
+                  <span aria-hidden>⌄</span>
                 </Link>
-              ))}
-            </div>
-          </>
+            ))}
+          </div>
         ) : null}
       </div>
     </div>
@@ -803,25 +817,21 @@ function ResourceSection({
 
   return (
     <section className="mt-10">
-      <h3 className={`text-xl font-semibold ${theme.accentText}`}>Resources</h3>
+      <h3 className={`text-2xl font-bold ${theme.accentText}`}>Resource</h3>
 
-      <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+      <div className="mt-4 grid gap-x-7 gap-y-8 sm:grid-cols-2 xl:grid-cols-4">
         {safeItems.map((x) => (
           <Link key={x.key} href={legacyHref(brandKey, x.href)} prefetch={false} className="block">
-            <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm transition hover:border-neutral-300 hover:shadow-md">
-              <div className="overflow-hidden rounded-t-2xl bg-neutral-100">
+            <div className="bg-white">
+              {isManagedAbmImageUrl(x.imageUrl) ? <div className="overflow-hidden bg-neutral-100">
                 <div className="relative aspect-[16/9] w-full">
-                  {x.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={x.imageUrl} alt={x.title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-                  ) : (
-                    <div className="absolute inset-0" />
-                  )}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={x.imageUrl} alt={x.title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                 </div>
-              </div>
+              </div> : null}
 
-              <div className="p-5">
-                <div className="line-clamp-2 text-base font-semibold leading-snug text-neutral-900">
+              <div className="pt-2">
+                <div className="line-clamp-2 text-base font-bold leading-snug text-neutral-900 hover:text-[#dc5a2b]">
                   {stripBrandSuffix(x.title)}
                 </div>
                 <div className="mt-2 line-clamp-1 text-sm italic text-neutral-600">{x.subtitle || "Learning Resources"}</div>
@@ -850,19 +860,14 @@ function TopPublicationsSection({
     <section className="mt-14">
       <h3 className={`text-2xl font-semibold ${theme.accentText}`}>Top Publications</h3>
 
-      <div className="mt-6 space-y-5">
+      <div className="mt-5 border-y border-neutral-300">
         {sorted.map((p, idx) => {
           const no = String(p.order ?? idx + 1).padStart(2, "0");
           return (
-            <div key={p.key} className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-              <div className="flex gap-5">
-                <div className="w-14 shrink-0">
-                  <div className={`text-3xl font-semibold ${theme.accentText}`}>{no}</div>
-                  <div className={`mt-2 h-[2px] w-10 ${theme.accentBg}`} />
-                </div>
-                <div className="min-w-0">
-                  <div className="whitespace-pre-line text-sm leading-6 text-neutral-900">{p.citation}</div>
-                </div>
+            <div key={p.key} className="grid grid-cols-[52px_minmax(0,1fr)] gap-4 border-b border-neutral-200 bg-white px-2 py-4 last:border-b-0">
+              <div className={`text-xl font-semibold ${theme.accentText}`}>{no}</div>
+              <div className="min-w-0">
+                <div className="whitespace-pre-line text-sm leading-6 text-neutral-900">{p.citation}</div>
               </div>
             </div>
           );
@@ -982,18 +987,21 @@ export default async function AbmProductsPathPage({
     slug: string;
     thumb?: string;
   }> = Array.isArray(data?.products) ? data.products : [];
-  const stagedProductsInCategory = path.length && ABM_ROOTS.includes(path[0] as (typeof ABM_ROOTS)[number])
-    ? (await getAbmStagedRecords("product")).filter((record) =>
-        abmRecordBelongsToProductPath(record, path, category?.title || humanizeSegment(path.at(-1) || "")),
-      )
-    : [];
-
   let activeRootTree: TreeNode[] = [];
   if (isKent) {
     activeRootTree = buildTreeFromAllCategories(roots, descendants);
   } else if (activeRoot) {
     activeRootTree = buildTreeFromDescendants([activeRoot], descendants);
   }
+
+  const activePageNode = path.length > 1 ? findTreeNodeByPath(activeRootTree, path) : undefined;
+  const childCategoryNodes = path.length === 1 ? activeRootTree : activePageNode?.children || [];
+  const isProductListPage = path.length >= 3 || (path.length > 1 && childCategoryNodes.length === 0);
+  const stagedProductsInCategory = isProductListPage && ABM_ROOTS.includes(path[0] as (typeof ABM_ROOTS)[number])
+    ? (await getAbmStagedRecords("product")).filter((record) =>
+        abmRecordBelongsToProductPath(record, path, category?.title || humanizeSegment(path.at(-1) || "")),
+      )
+    : [];
 
   const stagedKind = path[0] === "products" ? "product" : path[0] === "services" ? "service" : null;
   if (stagedKind) {
@@ -1005,20 +1013,26 @@ export default async function AbmProductsPathPage({
     if (path.length > 1 && !selectedGroup) notFound();
     if (stagedKind === "service" && path.length > 1 && !selectedServiceNode) notFound();
     if (stagedKind === "product" && path.length > 2) notFound();
-    const visibleRecords = stagedKind === "service" && servicePath.length
-      ? stagedRecords.filter((record) => abmRecordBelongsToServicePath(record, servicePath))
-      : selectedGroup
-        ? stagedRecords.filter((record) => abmRecordBelongsToGroup(record, selectedGroup))
-        : [];
+    const visibleRecords = stagedQuery
+      ? stagedRecords
+      : stagedKind === "service" && servicePath.length
+        ? stagedRecords.filter((record) => abmRecordBelongsToServicePath(record, servicePath))
+        : selectedGroup
+          ? stagedRecords.filter((record) => abmRecordBelongsToGroup(record, selectedGroup))
+          : [];
     const serviceLanding = selectedServiceNode ? await getAbmStagedServiceLanding(servicePath) : undefined;
     const groupCounts = new Map(groups.map((group) => [
       group.slug,
       stagedRecords.filter((record) => abmRecordBelongsToGroup(record, group)).length,
     ]));
-    const selectedTitle = selectedServiceNode?.title || selectedGroup?.title;
-    const selectedDescription = selectedServiceNode && "description" in selectedServiceNode && typeof selectedServiceNode.description === "string"
-      ? selectedServiceNode.description
-      : selectedGroup?.description;
+    const selectedTitle = stagedQuery
+      ? `Search results for “${stagedQuery}”`
+      : selectedServiceNode?.title || selectedGroup?.title;
+    const selectedDescription = stagedQuery
+      ? `Matching ABM ${stagedKind === "product" ? "products" : "services"} from the staged catalog.`
+      : selectedServiceNode && "description" in selectedServiceNode && typeof selectedServiceNode.description === "string"
+        ? selectedServiceNode.description
+        : selectedGroup?.description;
     const breadcrumbItems = [
       { label: "Home", href: "/" },
       { label: "Products", href: "/products" },
@@ -1037,10 +1051,11 @@ export default async function AbmProductsPathPage({
       <div>
         <HeroBanner brandTitle={brand.title} />
         <div className={PAGE_SHELL}>
-          <div className="mt-6 flex justify-end"><Breadcrumb items={breadcrumbItems} /></div>
-          <div className={`mt-10 pb-14 ${CONTENT_LAYOUT}`}>
+          <div className="mt-4"><Breadcrumb items={breadcrumbItems} /></div>
+          <div className={`mt-5 pb-14 ${CONTENT_LAYOUT}`}>
             <aside className="self-start lg:sticky lg:top-24">
               <AbmCatalogSideNav
+                mode={stagedKind}
                 activeProductRoot={stagedKind === "product" ? selectedGroup?.slug : ""}
                 activeServicePath={servicePath}
               />
@@ -1093,7 +1108,7 @@ export default async function AbmProductsPathPage({
                 </section>
               ) : null}
 
-              {selectedGroup || selectedServiceNode ? (
+              {selectedGroup || selectedServiceNode || stagedQuery ? (
                 <>
                   <div className="mt-10 border-t border-neutral-200 pt-8">
                     <Link href={`/products/abm/${path[0]}`} className="text-sm font-semibold text-orange-700 underline underline-offset-4">
@@ -1134,11 +1149,11 @@ export default async function AbmProductsPathPage({
         <HeroBanner brandTitle={brand.title} />
 
         <div className={PAGE_SHELL}>
-          <div className="mt-6 flex justify-end">
+          <div className="mt-4">
             <Breadcrumb items={breadcrumbItems} />
           </div>
 
-          <div className={`mt-10 ${CONTENT_LAYOUT}`}>
+          <div className={`mt-5 ${CONTENT_LAYOUT}`}>
             <aside className="self-start lg:sticky lg:top-24">
               <SideNavTree
                 brandKey={brandKey}
@@ -1151,7 +1166,7 @@ export default async function AbmProductsPathPage({
             </aside>
 
             <main className="min-w-0">
-              <h2 className="text-3xl font-semibold tracking-tight text-neutral-900">ABM catalog</h2>
+              <h1 className="text-3xl font-bold tracking-tight text-neutral-900">ABM Products & Services</h1>
               <p className="mt-3 max-w-3xl leading-7 text-neutral-700">
                 Browse the official hierarchy for ABM Products and Services. Category landing content, resources, images, and reviewed detail pages remain inside ITS BIO.
               </p>
@@ -1222,11 +1237,11 @@ export default async function AbmProductsPathPage({
       <HeroBanner brandTitle={brand.title} />
 
       <div className={PAGE_SHELL}>
-        <div className="mt-6 flex justify-end">
+        <div className="mt-4">
           <Breadcrumb items={breadcrumbItems} />
         </div>
 
-        <div className={`mt-10 ${CONTENT_LAYOUT}`}>
+        <div className={`mt-5 ${CONTENT_LAYOUT}`}>
           <aside className="self-start lg:sticky lg:top-24">
             <SideNavTree
               brandKey={brandKey}
@@ -1239,7 +1254,8 @@ export default async function AbmProductsPathPage({
           </aside>
 
           <main className="min-w-0">
-            <h2 className="text-3xl font-semibold tracking-tight text-neutral-900 md:text-4xl">{pageTitle}</h2>
+            <h1 className="text-3xl font-bold tracking-tight text-neutral-900">{pageTitle}</h1>
+            <CategoryLinkRail brandKey={brandKey} nodes={childCategoryNodes} />
 
             {isKent && productsInCategory.length ? (
               <div className="mt-6">
@@ -1318,8 +1334,7 @@ export default async function AbmProductsPathPage({
             )}
 
             {stagedProductsInCategory.length ? (
-              <section className="mt-12 border-t border-neutral-200 pt-10" aria-labelledby="staged-abm-products">
-                <h2 id="staged-abm-products" className="text-2xl font-semibold text-neutral-900">Products</h2>
+              <section className="mt-10" aria-label="ABM product list">
                 <AbmStagedCatalog
                   kind="product"
                   records={stagedProductsInCategory}

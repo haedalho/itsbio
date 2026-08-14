@@ -24,7 +24,7 @@ function ServiceNodes({
 }) {
   if (!nodes.length) return null;
   return (
-    <div className={depth ? "ml-3 border-l border-neutral-200 pl-2" : ""}>
+    <div className={depth ? "ml-3 pl-2" : ""}>
       {nodes.map((node) => {
         const path = [...parentPath, node.slug];
         const onTrail = serviceNodeActive(activePath, path);
@@ -33,12 +33,12 @@ function ServiceNodes({
           <div key={path.join("/")}>
             <Link
               href={abmServiceCategoryHref(path)}
-              className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm leading-5 transition ${
+              className={`flex items-center justify-between px-2 py-1.5 text-sm leading-5 transition ${
                 exact
-                  ? "bg-orange-100 font-semibold text-orange-800"
+                  ? "font-semibold text-[#dc5a2b]"
                   : onTrail
-                    ? "font-semibold text-orange-700 hover:bg-orange-50"
-                    : "text-neutral-700 hover:bg-neutral-50"
+                    ? "font-semibold text-[#dc5a2b]"
+                    : "text-neutral-700 hover:text-[#dc5a2b]"
               }`}
             >
               <span>{node.title}</span>
@@ -55,39 +55,39 @@ function ServiceNodes({
 }
 
 export default function AbmCatalogSideNav({
+  mode = "product",
   activeProductRoot = "",
   activeServicePath = [],
 }: {
+  mode?: "product" | "service";
   activeProductRoot?: string;
   activeServicePath?: string[];
 }) {
+  const serviceMode = mode === "service";
   return (
-    <nav className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm" aria-label="ABM Products and Services">
-      <div className="border-b border-neutral-200 px-5 py-4">
-        <div className="text-base font-semibold text-orange-700">ABM Catalog</div>
+    <nav className="overflow-hidden rounded-sm border border-neutral-200 bg-white shadow-sm" aria-label="ABM Products and Services">
+      <div className="border-b border-neutral-200 bg-neutral-100 px-5 py-3">
+        <div className="text-xl font-bold text-[#dc5a2b]">{serviceMode ? "All Services" : "All Products"}</div>
       </div>
 
-      <div className="p-2">
-        <div className="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">Products</div>
-        <div className="space-y-1">
+      <div className="p-3">
+        {!serviceMode ? <div>
           {ABM_PRODUCT_GROUPS.map((group) => (
             <Link
               key={group.slug}
               href={group.href}
-              className={`flex items-center justify-between rounded-xl px-3 py-2 text-sm transition ${
+              className={`flex items-center justify-between px-2 py-2 text-sm font-semibold transition ${
                 activeProductRoot === group.slug
-                  ? "bg-orange-100 font-semibold text-orange-800"
-                  : "text-neutral-800 hover:bg-neutral-50"
+                  ? "text-[#dc5a2b]"
+                  : "text-neutral-800 hover:text-[#dc5a2b]"
               }`}
             >
               <span>{group.title}</span><span className="text-neutral-300" aria-hidden>›</span>
             </Link>
           ))}
-        </div>
+        </div> : null}
 
-        <div className="my-3 border-t border-neutral-200" />
-        <div className="px-3 pb-2 text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">Services</div>
-        <div className="space-y-1">
+        {serviceMode ? <div>
           {ABM_SERVICE_GROUPS.map((group) => {
             const path = [group.slug];
             const onTrail = serviceNodeActive(activeServicePath, path);
@@ -96,12 +96,12 @@ export default function AbmCatalogSideNav({
               <div key={group.slug}>
                 <Link
                   href={group.href}
-                  className={`flex items-center justify-between rounded-xl px-3 py-2 text-sm transition ${
+                  className={`flex items-center justify-between px-2 py-2 text-sm font-semibold transition ${
                     exact
-                      ? "bg-orange-100 font-semibold text-orange-800"
+                      ? "text-[#dc5a2b]"
                       : onTrail
-                        ? "font-semibold text-orange-700 hover:bg-orange-50"
-                        : "text-neutral-800 hover:bg-neutral-50"
+                        ? "text-[#dc5a2b]"
+                        : "text-neutral-800 hover:text-[#dc5a2b]"
                   }`}
                 >
                   <span>{group.title}</span><span className="text-neutral-300" aria-hidden>›</span>
@@ -112,7 +112,7 @@ export default function AbmCatalogSideNav({
               </div>
             );
           })}
-        </div>
+        </div> : null}
       </div>
     </nav>
   );

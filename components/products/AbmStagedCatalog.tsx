@@ -9,10 +9,6 @@ function cleanTitle(value: string) {
   return value.replace(/\s+/g, " ").trim() || "Untitled item";
 }
 
-function rowCategory(row: AbmStagedRecord) {
-  return row.searchCategory || row.filterPath?.at(-1) || row.filterTitle || "ABM";
-}
-
 export default function AbmStagedCatalog({
   kind,
   records,
@@ -44,11 +40,11 @@ export default function AbmStagedCatalog({
     `${base}?page=${nextPage}${normalizedQuery ? `&q=${encodeURIComponent(query)}` : ""}`;
 
   return (
-    <section className="mt-8" aria-labelledby="abm-catalog-list-title">
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b-2 border-neutral-900 pb-5">
+    <section className="mt-10" aria-labelledby="abm-catalog-list-title">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 id="abm-catalog-list-title" className="text-xl font-semibold text-neutral-950">
-            {kind === "product" ? "Products" : "Services"}
+          <h2 id="abm-catalog-list-title" className="text-2xl font-bold text-[#f2632f]">
+            {kind === "product" ? "Product List" : "Service List"}
           </h2>
           <p className="mt-1 text-sm text-neutral-500">
             {filtered.length.toLocaleString()} {kind === "product" ? "products" : "services"}
@@ -64,40 +60,41 @@ export default function AbmStagedCatalog({
             name="q"
             defaultValue={query}
             placeholder={kind === "product" ? "Search name or Cat. No." : "Search service name"}
-            className="h-10 min-w-0 flex-1 border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-orange-600 sm:w-72"
+            className="h-10 min-w-0 flex-1 border border-neutral-300 bg-neutral-50 px-3 text-sm outline-none transition focus:border-[#f2632f] sm:w-72"
           />
-          <button className="h-10 bg-orange-600 px-5 text-sm font-semibold text-white transition hover:bg-orange-700" type="submit">
+          <button className="h-10 bg-[#f2632f] px-5 text-sm font-semibold text-white transition hover:bg-[#d95221]" type="submit">
             Search
           </button>
         </form>
       </div>
 
       {visible.length ? (
-        <div>
-          <div className="hidden grid-cols-[minmax(0,1fr)_120px_160px_20px] gap-5 border-b border-neutral-200 bg-neutral-50 px-4 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-neutral-500 md:grid">
+        <div className="mt-3 overflow-x-auto">
+          <div className="hidden min-w-[680px] grid-cols-[minmax(0,1fr)_130px_180px_100px] bg-[#f2632f] px-4 py-3 text-sm font-semibold text-white md:grid">
             <span>{kind === "product" ? "Product name" : "Service name"}</span>
             <span>Cat. No.</span>
-            <span>Category</span>
-            <span aria-hidden />
+            <span>{kind === "product" ? "Size" : "Category"}</span>
+            <span>Details</span>
           </div>
-          <div className="divide-y divide-neutral-200 border-b border-neutral-300">
+          <div className="min-w-0 divide-y divide-neutral-200 border-x border-b border-neutral-200 md:min-w-[680px]">
             {visible.map((row) => (
-              <Link
+              <div
                 key={`${row.kind}-${stagedRecordKey(row)}`}
-                href={stagedRecordPath(kind, row)}
-                prefetch={false}
-                className="group grid gap-2 px-4 py-4 transition hover:bg-orange-50/70 md:grid-cols-[minmax(0,1fr)_120px_160px_20px] md:items-center md:gap-5"
+                className="grid gap-2 bg-white px-4 py-3 text-sm transition even:bg-neutral-50 hover:bg-orange-50 md:grid-cols-[minmax(0,1fr)_130px_180px_100px] md:items-center"
               >
-                <span className="min-w-0 font-semibold leading-6 text-neutral-900 group-hover:text-orange-700 group-hover:underline group-hover:underline-offset-4">
+                <Link href={stagedRecordPath(kind, row)} prefetch={false} className="min-w-0 font-medium leading-6 text-[#dc5a2b] hover:underline hover:underline-offset-4">
                   {cleanTitle(row.title)}
-                </span>
+                </Link>
                 <span className="text-sm font-medium text-neutral-600">
                   <span className="mr-2 text-xs font-semibold uppercase tracking-wide text-neutral-400 md:hidden">Cat. No.</span>
                   {row.sku || "—"}
                 </span>
-                <span className="min-w-0 truncate text-sm text-neutral-500">{rowCategory(row)}</span>
-                <span className="hidden text-lg text-orange-600 transition group-hover:translate-x-1 md:block" aria-hidden>›</span>
-              </Link>
+                <span className="min-w-0 text-neutral-600">
+                  <span className="mr-2 text-xs font-semibold uppercase tracking-wide text-neutral-400 md:hidden">{kind === "product" ? "Size" : "Category"}</span>
+                  {kind === "product" ? row.unit || "—" : row.searchCategory || row.filterTitle || "ABM Service"}
+                </span>
+                <Link href={stagedRecordPath(kind, row)} prefetch={false} className="font-semibold text-[#dc5a2b] hover:underline">View</Link>
+              </div>
             ))}
           </div>
         </div>

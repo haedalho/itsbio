@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
+import HtmlContent from "@/components/site/HtmlContent";
 import AbmHeroBanner from "@/components/products/AbmHeroBanner";
 import AbmCatalogSideNav from "@/components/products/AbmCatalogSideNav";
 import ProductGalleryClient from "@/components/products/ProductGalleryClient";
@@ -69,8 +70,8 @@ export default async function AbmStagedDetailPage({
   return (
     <div className="bg-white">
       <AbmHeroBanner title={title} eyebrow={`ABM ${kind}`} />
-      <div className="border-b border-neutral-200 bg-neutral-50">
-        <div className="mx-auto max-w-7xl px-6 py-5">
+      <div className="border-b border-neutral-200 bg-white">
+        <div className="mx-auto max-w-[1140px] px-4 py-4">
           <Breadcrumb items={[
             { label: "Home", href: "/" },
             { label: "Products", href: "/products" },
@@ -81,30 +82,25 @@ export default async function AbmStagedDetailPage({
         </div>
       </div>
 
-      <main className="mx-auto max-w-7xl px-6 py-10">
-        <div className="grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)]">
+      <main className="mx-auto max-w-[1140px] px-4 py-7">
+        <div className="grid gap-7 lg:grid-cols-[260px_minmax(0,1fr)]">
           <aside className="self-start lg:sticky lg:top-24">
-            <AbmCatalogSideNav activeProductRoot={activeProductRoot} activeServicePath={activeServicePath} />
+            <AbmCatalogSideNav mode={kind} activeProductRoot={activeProductRoot} activeServicePath={activeServicePath} />
           </aside>
 
           <section className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-orange-700">ABM {kind}</span>
-              {record.sku ? <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">Cat. No. {record.sku}</span> : null}
-            </div>
-            <h1 className="mt-4 max-w-4xl text-3xl font-semibold leading-tight tracking-tight text-slate-950 md:text-[42px]">{title}</h1>
+            <h1 className="max-w-4xl text-3xl font-bold leading-tight tracking-tight text-neutral-950">{title}</h1>
 
             <div className={[
-              "mt-8 grid gap-8 border-t border-slate-200 pt-8",
-              gallery.length ? "md:grid-cols-[minmax(0,1fr)_360px]" : "xl:grid-cols-[minmax(0,1fr)_390px]",
+              "mt-6 grid gap-8 border-t border-neutral-200 pt-7",
+              gallery.length ? "md:grid-cols-[minmax(0,1fr)_400px]" : "xl:grid-cols-[minmax(0,1fr)_400px]",
             ].join(" ")}>
               <div className={gallery.length ? "min-h-[320px]" : "min-h-0"}>
                 {gallery.length ? (
                   <ProductGalleryClient images={gallery} title={title} />
                 ) : (
-                  <div className="flex min-h-[220px] items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-slate-50/70 px-8 text-center">
+                  <div className="flex min-h-[220px] items-center justify-center border border-dashed border-neutral-300 bg-neutral-50 px-8 text-center">
                     <div className="max-w-md">
-                      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-xl shadow-sm" aria-hidden>⌁</div>
                       <h2 className="mt-4 text-base font-semibold text-slate-900">Official image not available</h2>
                       <p className="mt-2 text-sm leading-6 text-slate-600">ABM does not provide a valid official image for this record. Product information and reviewed documents remain available below.</p>
                     </div>
@@ -112,12 +108,11 @@ export default async function AbmStagedDetailPage({
                 )}
               </div>
 
-              <aside className="self-start overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_18px_45px_-32px_rgba(15,23,42,0.55)]">
-                <div className="border-b border-slate-200 bg-slate-950 px-6 py-5">
-                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-orange-300">ITS BIO · ABM</p>
-                  <h2 className="mt-1 text-lg font-semibold text-white">{kind === "product" ? "Product Information" : "Service Information"}</h2>
+              <aside className="self-start overflow-hidden rounded-xl border-2 border-[#f2632f] bg-white">
+                <div className="border-b border-orange-100 px-6 py-4">
+                  <h2 className="text-lg font-semibold text-[#dc5a2b]">{kind === "product" ? "Product Information" : "Service Information"}</h2>
                 </div>
-                <dl className="divide-y divide-slate-100 px-6">
+                <dl className="px-6 py-2">
                   {record.sku ? <div className="grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"><dt className="font-semibold text-slate-900">Cat. No.</dt><dd className="font-medium text-slate-700">{record.sku}</dd></div> : null}
                   {record.unit ? <div className="grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"><dt className="font-semibold text-slate-900">Unit</dt><dd className="text-slate-700">{record.unit}</dd></div> : null}
                   {(record.category || record.searchCategory || record.filterTitle) ? <div className="grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"><dt className="font-semibold text-slate-900">Category</dt><dd className="text-slate-700">{record.category || record.searchCategory || record.filterTitle}</dd></div> : null}
@@ -126,17 +121,24 @@ export default async function AbmStagedDetailPage({
                     <div key={label} className="grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"><dt className="font-semibold text-slate-900">{label}</dt><dd className="text-slate-700">{value}</dd></div>
                   ))}
                 </dl>
-                <div className="border-t border-orange-100 bg-orange-50/70 p-5">
+                <div className="border-t border-orange-100 p-5">
                   <p className="mb-4 text-sm leading-6 text-slate-600">For availability, lead time, and technical questions, contact ITS BIO.</p>
-                  <Link href={`/quote?item=${encodeURIComponent(`${title} ${record.sku || ""}`.trim())}`} className="inline-flex w-full items-center justify-center rounded-xl bg-orange-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700">Request a Quote</Link>
-                  <Link href="/contact" className="mt-3 inline-flex w-full items-center justify-center rounded-xl border border-orange-300 bg-white px-4 py-3 text-sm font-semibold text-orange-800 transition hover:bg-orange-100">Contact ITS BIO</Link>
+                  <Link href={`/quote?item=${encodeURIComponent(`${title} ${record.sku || ""}`.trim())}`} className="inline-flex w-full items-center justify-center bg-[#f2632f] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#d95221]">Request a Quote</Link>
+                  <Link href="/contact" className="mt-3 inline-flex w-full items-center justify-center border border-[#f2632f] bg-white px-4 py-3 text-sm font-semibold text-[#dc5a2b] transition hover:bg-orange-50">Contact ITS BIO</Link>
                 </div>
               </aside>
             </div>
 
+            {kind === "product" && overviewHtml ? (
+              <section className="mt-9 border-t border-neutral-200 pt-7" aria-labelledby="abm-product-overview">
+                <h2 id="abm-product-overview" className="text-2xl font-bold text-[#dc5a2b]">Overview</h2>
+                <div className="mt-4"><HtmlContent html={overviewHtml} baseUrl={record.sourceUrl} mode="abm-detail" /></div>
+              </section>
+            ) : null}
+
             <div className="mt-10 itsbio-product-tabs">
               <ProductTabsClient
-                overviewHtml={overviewHtml}
+                overviewHtml={kind === "service" ? overviewHtml : undefined}
                 specsHtml={record.specificationsHtml}
                 serviceDetailsHtml={record.serviceDetailsHtml}
                 datasheetHtml={record.datasheetHtml}

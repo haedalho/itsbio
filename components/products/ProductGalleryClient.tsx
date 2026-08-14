@@ -28,7 +28,7 @@ export default function ProductGalleryClient({
   return (
     <div className="w-full">
       {/* Main (카드 제거, 내부만 유지) */}
-      <div className="relative mx-auto aspect-[4/3] w-full max-w-[560px] overflow-hidden rounded-2xl bg-neutral-50">
+      <div className="relative mx-auto aspect-square w-full max-w-[560px] overflow-hidden bg-neutral-50">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={active.url}
@@ -50,7 +50,7 @@ export default function ProductGalleryClient({
                   type="button"
                   onClick={() => setActiveIdx(i)}
                   className={[
-                    "relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border bg-white transition",
+                    "relative h-16 w-16 shrink-0 overflow-hidden border bg-white transition",
                     selected
                       ? "border-orange-500 ring-2 ring-orange-500/30"
                       : "border-neutral-200 hover:border-neutral-300",

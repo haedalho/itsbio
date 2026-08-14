@@ -439,6 +439,13 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"]
     if (bad) removeNode(a);
   });
 
+  if (isAbmMode) {
+    doc.querySelectorAll("li, p, span, div").forEach((el) => {
+      const text = collapseWs(el.textContent || "");
+      if (/^(?:wholesale\s+prices?|add\s+to\s+cart|buy\s+now)$/i.test(text)) removeNode(el);
+    });
+  }
+
   // 5) 확정 로고/국기 이미지 제거
   doc.querySelectorAll("img").forEach((img) => {
     if (isDefinitelyBrandOrFlag(img as HTMLImageElement)) removeNode(img);
