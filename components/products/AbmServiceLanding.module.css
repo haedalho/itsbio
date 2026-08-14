@@ -468,13 +468,20 @@
   border-radius: 0;
   background: #fff;
   box-shadow: none;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.source :global(.models-table-wrap::-webkit-scrollbar) {
+  display: none;
 }
 
 .source :global(.models-offered-table) {
   width: 100%;
-  min-width: 760px;
+  min-width: 0;
   border-collapse: separate;
   border-spacing: 0;
+  table-layout: fixed;
 }
 
 .source :global(.models-offered-table th),
@@ -483,6 +490,7 @@
   border-bottom: 1px solid #f0ebe7;
   text-align: left;
   vertical-align: top;
+  overflow-wrap: anywhere;
 }
 
 .source :global(.models-offered-table th) {
@@ -630,6 +638,11 @@
   }
 
   .source :global(.abm-data-table) {
+    min-width: 620px;
+    table-layout: auto;
+  }
+
+  .source :global(.models-offered-table) {
     min-width: 620px;
     table-layout: auto;
   }
