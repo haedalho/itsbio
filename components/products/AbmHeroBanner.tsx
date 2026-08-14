@@ -17,7 +17,7 @@ export default function AbmHeroBanner({
           <div className="mx-auto flex h-full max-w-[1320px] items-center px-6">
             <div className="max-w-4xl">
               <div className="text-xs font-semibold uppercase tracking-[0.16em] text-white/80">{eyebrow}</div>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">{title}</h1>
+              <div className="mt-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">{title}</div>
             </div>
           </div>
         </div>
