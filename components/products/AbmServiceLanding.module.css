@@ -38,6 +38,31 @@
   text-decoration: none;
 }
 
+/* Service tables should fit the content column on desktop. The source markup
+   contains nowrap cells and fixed minimum widths that otherwise create the
+   unnecessary horizontal bar shown below the table. */
+.source :global(.abm-table-scroll) {
+  overflow-x: visible;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.source :global(.abm-table-scroll::-webkit-scrollbar) {
+  display: none;
+}
+
+.source :global(.abm-data-table) {
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.source :global(.abm-data-table th),
+.source :global(.abm-data-table td) {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .source :global(.organoid-page h1),
 .source :global(.organoid-page h2),
 .source :global(.organoid-page h3),
@@ -600,6 +625,15 @@
 }
 
 @media (max-width: 720px) {
+  .source :global(.abm-table-scroll) {
+    overflow-x: auto;
+  }
+
+  .source :global(.abm-data-table) {
+    min-width: 620px;
+    table-layout: auto;
+  }
+
   .source :global(.organoid-hero),
   .source :global(.section-shell),
   .source :global(.final-cta) {
