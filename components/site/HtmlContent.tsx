@@ -54,7 +54,7 @@ function isHeadingAtOrAbove(el: Element, level: number) {
  */
 function markExternalVectorSectionLinks(doc: Document, baseUrl: string) {
   const headings = Array.from(doc.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6")).filter((heading) =>
-    /^Available\b.*\bVectors?\b.*$/i.test(collapseWs(heading.textContent || ""))
+    /^Available\b.*vectors?.*$/i.test(collapseWs(heading.textContent || ""))
   );
   if (!headings.length) return;
 
