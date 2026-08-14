@@ -55,7 +55,7 @@ function ServiceNodes({
 }
 
 export default function AbmCatalogSideNav({
-  mode = "product",
+  mode: _mode = "product",
   activeProductRoot = "",
   activeServicePath = [],
 }: {
@@ -63,15 +63,14 @@ export default function AbmCatalogSideNav({
   activeProductRoot?: string;
   activeServicePath?: string[];
 }) {
-  const serviceMode = mode === "service";
   return (
     <nav className="overflow-hidden rounded-sm border border-neutral-200 bg-white shadow-sm" aria-label="ABM Products and Services">
       <div className="border-b border-neutral-200 bg-neutral-100 px-5 py-3">
-        <div className="text-xl font-bold text-[#dc5a2b]">{serviceMode ? "All Services" : "All Products"}</div>
+        <div className="text-xl font-bold text-[#dc5a2b]">All Products</div>
       </div>
 
       <div className="p-3">
-        {!serviceMode ? <div>
+        <div>
           {ABM_PRODUCT_GROUPS.map((group) => (
             <Link
               key={group.slug}
@@ -85,9 +84,10 @@ export default function AbmCatalogSideNav({
               <span>{group.title}</span><span className="text-neutral-300" aria-hidden>›</span>
             </Link>
           ))}
-        </div> : null}
+        </div>
 
-        {serviceMode ? <div>
+        <div className="mt-3 border-t border-neutral-200 pt-3">
+          <div className="px-2 pb-2 text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">Services</div>
           {ABM_SERVICE_GROUPS.map((group) => {
             const path = [group.slug];
             const onTrail = serviceNodeActive(activeServicePath, path);
@@ -112,7 +112,7 @@ export default function AbmCatalogSideNav({
               </div>
             );
           })}
-        </div> : null}
+        </div>
       </div>
     </nav>
   );

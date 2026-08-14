@@ -27,6 +27,11 @@ import {
   getAbmStagedServiceLanding,
   isManagedAbmImageUrl,
 } from "@/lib/abm/rebuild-staging";
+import {
+  abmResourceImagePath,
+  abmResourcePagePath,
+  isOfficialAbmResourceImageUrl,
+} from "@/lib/abm/resource-links";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -108,6 +113,10 @@ function stripBrandSuffix(title: string) {
 }
 
 function legacyHref(brandKey: string, url: string) {
+  if (brandKey === "abm") {
+    const resourcePath = abmResourcePagePath(url);
+    if (resourcePath) return resourcePath;
+  }
   return `/products/${brandKey}/legacy?u=${encodeURIComponent(url)}`;
 }
 
@@ -441,16 +450,12 @@ function CategoryLinkRail({ brandKey, nodes }: { brandKey: string; nodes: TreeNo
 function isTrustedAbmResourceImageUrl(value?: string) {
   if (!value) return false;
   if (isManagedAbmImageUrl(value)) return true;
-  try {
-    const url = new URL(value);
-    const hostname = url.hostname.toLowerCase();
-    const isOfficialAbmHost = hostname === "abmgood.com" || hostname === "www.abmgood.com";
-    return isOfficialAbmHost
-      && url.pathname.startsWith("/assets/images/")
-      && /\.(?:avif|gif|jpe?g|png|webp)$/i.test(url.pathname);
-  } catch {
-    return false;
-  }
+  return isOfficialAbmResourceImageUrl(value);
+}
+
+function trustedAbmResourceImageSrc(value?: string) {
+  if (!value) return "";
+  return isManagedAbmImageUrl(value) ? value : abmResourceImagePath(value);
 }
 
 /** -------------------- HTML rewrite -------------------- */
@@ -743,6 +748,23 @@ function SideNavTree({
             ))}
           </div>
         ) : null}
+
+        {!isKentMode ? (
+          <div className="mt-3 border-t border-neutral-200 pt-3">
+            <div className="px-2 pb-2 text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">Services</div>
+            {ABM_SERVICE_GROUPS.map((group) => (
+              <Link
+                key={group.slug}
+                href={group.href}
+                prefetch={false}
+                className="flex items-center justify-between px-2 py-2 text-sm font-semibold text-neutral-800 hover:text-[#dc5a2b]"
+              >
+                <span>{group.title}</span>
+                <span className="text-neutral-300" aria-hidden>›</span>
+              </Link>
+            ))}
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -846,7 +868,7 @@ function ResourceSection({
               {isTrustedAbmResourceImageUrl(x.imageUrl) ? <div className="overflow-hidden bg-neutral-100">
                 <div className="relative aspect-[16/9] w-full">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={x.imageUrl} alt={x.title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                  <img src={trustedAbmResourceImageSrc(x.imageUrl)} alt={x.title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                 </div>
               </div> : null}
 

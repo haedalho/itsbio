@@ -1,4 +1,6 @@
-const ABM_HOSTS = new Set(["abmgood.com", "www.abmgood.com"]);
+import { abmResourcePagePath, normalizeAbmResourcePageUrl } from "@/lib/abm/resource-links";
+
+const ABM_HOSTS = new Set(["abmgood.com", "www.abmgood.com", "info.abmgood.com"]);
 const DOCUMENT_PATH = /\.(?:pdf|docx?|xlsx?|pptx?|csv|zip)(?:$|[?#])/i;
 const COMMERCE_PATH = /\/(?:free-sample|shopping-cart|checkout|customer\/account|my-account)(?:\/|$)/i;
 
@@ -28,6 +30,7 @@ export function internalizeAbmHref(rawHref: string, baseUrl = "") {
 
   if (!ABM_HOSTS.has(resolved.hostname.toLowerCase())) return resolved.toString();
   resolved.protocol = "https:";
+  if (normalizeAbmResourcePageUrl(resolved.toString())) return abmResourcePagePath(resolved.toString());
   resolved.hostname = "www.abmgood.com";
 
   if (COMMERCE_PATH.test(resolved.pathname)) return "";

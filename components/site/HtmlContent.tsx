@@ -256,6 +256,10 @@ function resolveSrcset(srcset: string, baseUrl: string) {
     .join(", ");
 }
 
+function isInternalItsbioMediaUrl(value: string) {
+  return /^\/products\/abm\/resource-image(?:\?|$)/i.test((value || "").trim());
+}
+
 function isInternalItsbioHref(href: string) {
   const h = (href || "").trim();
   if (!h) return true;
@@ -303,7 +307,7 @@ function fixMediaAndLinks(doc: Document, baseUrl: string, internalizeAbm: boolea
 
     // src 절대경로
     const src = (img.getAttribute("src") || "").trim();
-    if (src && baseUrl) img.setAttribute("src", resolveUrl(src, baseUrl));
+    if (src && baseUrl && !isInternalItsbioMediaUrl(src)) img.setAttribute("src", resolveUrl(src, baseUrl));
 
     // srcset 절대경로
     const ss = (img.getAttribute("srcset") || "").trim();
