@@ -70,14 +70,25 @@ export function isManagedAbmImageUrl(value?: string) {
 }
 
 const STAGED_QUERY = `{
-  "records": *[_type == "abmRebuildChunk" && version == $version && kind == $kind].records[],
-  "details": *[_type == "abmRebuildDetailChunk" && version == $version && kind == $kind].records[]{
-    key,
-    "previewImage": images[0],
-    "previewSummary": coalesce(description, overview),
-    listingPaths,
-    breadcrumbs
-  }
+  "records": *[_type == "abmRebuildChunk" && version == $version && kind == $kind].records[]{
+    kind,
+    sku,
+    title,
+    url,
+    unit,
+    searchCategory,
+    filterTitle,
+    filterPath,
+    listingFilters
+  },
+  "details": select(
+    $kind == "service" => *[_type == "abmRebuildDetailChunk" && version == $version && kind == $kind].records[]{
+      key,
+      listingPaths,
+      breadcrumbs
+    },
+    []
+  )
 }`;
 
 export async function getAbmStagedRecords(kind: AbmStagedRecord["kind"]): Promise<AbmStagedRecord[]> {
@@ -85,8 +96,6 @@ export async function getAbmStagedRecords(kind: AbmStagedRecord["kind"]): Promis
     records?: AbmStagedRecord[];
     details?: Array<{
       key?: string;
-      previewImage?: string;
-      previewSummary?: string;
       listingPaths?: string[][];
       breadcrumbs?: string[];
     }>;
@@ -100,9 +109,6 @@ export async function getAbmStagedRecords(kind: AbmStagedRecord["kind"]): Promis
     const detail = details.get(key);
     return {
       ...record,
-      hasDetail: Boolean(detail),
-      previewImage: isManagedAbmImageUrl(detail?.previewImage) ? detail?.previewImage : undefined,
-      previewSummary: detail?.previewSummary,
       listingPaths: detail?.listingPaths,
       breadcrumbs: detail?.breadcrumbs,
     };

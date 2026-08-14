@@ -1,12 +1,16 @@
 import Link from "next/link";
 
 import type { AbmStagedRecord } from "@/lib/abm/rebuild-staging";
-import { isManagedAbmImageUrl, stagedRecordKey, stagedRecordPath } from "@/lib/abm/rebuild-staging";
+import { stagedRecordKey, stagedRecordPath } from "@/lib/abm/rebuild-staging";
 
-const PAGE_SIZE = 48;
+const PAGE_SIZE = 30;
 
 function cleanTitle(value: string) {
   return value.replace(/\s+/g, " ").trim() || "Untitled item";
+}
+
+function rowCategory(row: AbmStagedRecord) {
+  return row.searchCategory || row.filterPath?.at(-1) || row.filterTitle || "ABM";
 }
 
 export default function AbmStagedCatalog({
@@ -40,84 +44,78 @@ export default function AbmStagedCatalog({
     `${base}?page=${nextPage}${normalizedQuery ? `&q=${encodeURIComponent(query)}` : ""}`;
 
   return (
-    <section className="mt-8">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+    <section className="mt-8" aria-labelledby="abm-catalog-list-title">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b-2 border-neutral-900 pb-5">
         <div>
-          <p className="text-sm text-neutral-500">
+          <h2 id="abm-catalog-list-title" className="text-xl font-semibold text-neutral-950">
+            {kind === "product" ? "Products" : "Services"}
+          </h2>
+          <p className="mt-1 text-sm text-neutral-500">
             {filtered.length.toLocaleString()} {kind === "product" ? "products" : "services"}
             {normalizedQuery ? ` matching “${query}”` : ""}
           </p>
         </div>
         <form action={base} className="flex w-full max-w-md gap-2 sm:w-auto">
+          <label htmlFor={`abm-${kind}-search`} className="sr-only">
+            {kind === "product" ? "Search product name or catalog number" : "Search service name"}
+          </label>
           <input
+            id={`abm-${kind}-search`}
             name="q"
             defaultValue={query}
             placeholder={kind === "product" ? "Search name or Cat. No." : "Search service name"}
-            className="h-11 min-w-0 flex-1 rounded-xl border border-neutral-200 bg-white px-4 text-sm outline-none focus:border-orange-500 sm:w-72"
+            className="h-10 min-w-0 flex-1 border border-neutral-300 bg-white px-3 text-sm outline-none transition focus:border-orange-600 sm:w-72"
           />
-          <button className="h-11 rounded-xl bg-orange-500 px-4 text-sm font-semibold text-white hover:bg-orange-600" type="submit">
+          <button className="h-10 bg-orange-600 px-5 text-sm font-semibold text-white transition hover:bg-orange-700" type="submit">
             Search
           </button>
         </form>
       </div>
 
       {visible.length ? (
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {visible.map((row) => {
-            const content = (
-              <>
-                <div className="relative -mx-5 -mt-5 mb-5 h-40 overflow-hidden rounded-t-2xl bg-neutral-50">
-                  {isManagedAbmImageUrl(row.previewImage) ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={row.previewImage} alt="" className="h-full w-full object-contain p-4" loading="lazy" />
-                  ) : (
-                    <div className="flex h-full items-center justify-center px-5 text-center text-xs font-medium uppercase tracking-wide text-neutral-400">
-                      Detail image pending
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-start justify-between gap-3">
-                  <span className="rounded-full bg-orange-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-orange-700">
-                    {kind === "product" ? "Product" : "Service"}
-                  </span>
-                  {row.sku ? <span className="text-xs text-neutral-500">{row.sku}</span> : null}
-                </div>
-                <h3 className="mt-4 line-clamp-3 text-base font-semibold leading-6 text-neutral-900 group-hover:text-orange-700">
-                  {cleanTitle(row.title)}
-                </h3>
-                {row.previewSummary ? (
-                  <p className="mt-3 line-clamp-2 text-sm leading-6 text-neutral-600">{row.previewSummary}</p>
-                ) : (row.filterTitle || row.searchCategory) ? (
-                  <p className="mt-3 line-clamp-2 text-sm text-neutral-500">{row.filterTitle || row.searchCategory}</p>
-                ) : null}
-                <span className={`mt-5 inline-flex text-sm font-semibold ${row.hasDetail ? "text-orange-700" : "text-neutral-500"}`}>
-                  {row.hasDetail ? "View details →" : "Detail collection in progress"}
-                </span>
-              </>
-            );
-
-            return (
+        <div>
+          <div className="hidden grid-cols-[minmax(0,1fr)_120px_160px_20px] gap-5 border-b border-neutral-200 bg-neutral-50 px-4 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-neutral-500 md:grid">
+            <span>{kind === "product" ? "Product name" : "Service name"}</span>
+            <span>Cat. No.</span>
+            <span>Category</span>
+            <span aria-hidden />
+          </div>
+          <div className="divide-y divide-neutral-200 border-b border-neutral-300">
+            {visible.map((row) => (
               <Link
                 key={`${row.kind}-${stagedRecordKey(row)}`}
                 href={stagedRecordPath(kind, row)}
-                className="group overflow-hidden rounded-2xl border border-neutral-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md"
+                prefetch={false}
+                className="group grid gap-2 px-4 py-4 transition hover:bg-orange-50/70 md:grid-cols-[minmax(0,1fr)_120px_160px_20px] md:items-center md:gap-5"
               >
-                {content}
+                <span className="min-w-0 font-semibold leading-6 text-neutral-900 group-hover:text-orange-700 group-hover:underline group-hover:underline-offset-4">
+                  {cleanTitle(row.title)}
+                </span>
+                <span className="text-sm font-medium text-neutral-600">
+                  <span className="mr-2 text-xs font-semibold uppercase tracking-wide text-neutral-400 md:hidden">Cat. No.</span>
+                  {row.sku || "—"}
+                </span>
+                <span className="min-w-0 truncate text-sm text-neutral-500">{rowCategory(row)}</span>
+                <span className="hidden text-lg text-orange-600 transition group-hover:translate-x-1 md:block" aria-hidden>›</span>
               </Link>
-            );
-          })}
+            ))}
+          </div>
         </div>
       ) : (
-        <div className="mt-5 rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 p-10 text-center text-neutral-600">
+        <div className="border-b border-neutral-300 px-5 py-12 text-center text-neutral-600">
           No {kind === "product" ? "products" : "services"} found.
         </div>
       )}
 
       {totalPages > 1 ? (
-        <nav className="mt-8 flex items-center justify-center gap-3" aria-label="Pagination">
-          {safePage > 1 ? <Link className="rounded-xl border border-neutral-200 px-4 py-2 text-sm" href={pageHref(safePage - 1)}>Previous</Link> : null}
-          <span className="text-sm text-neutral-600">Page {safePage} of {totalPages}</span>
-          {safePage < totalPages ? <Link className="rounded-xl border border-neutral-200 px-4 py-2 text-sm" href={pageHref(safePage + 1)}>Next</Link> : null}
+        <nav className="mt-7 flex items-center justify-between border-t border-neutral-200 pt-5" aria-label="Pagination">
+          {safePage > 1 ? (
+            <Link className="text-sm font-semibold text-neutral-700 hover:text-orange-700" href={pageHref(safePage - 1)} prefetch={false}>← Previous</Link>
+          ) : <span />}
+          <span className="text-sm text-neutral-500">Page {safePage.toLocaleString()} of {totalPages.toLocaleString()}</span>
+          {safePage < totalPages ? (
+            <Link className="text-sm font-semibold text-neutral-700 hover:text-orange-700" href={pageHref(safePage + 1)} prefetch={false}>Next →</Link>
+          ) : <span />}
         </nav>
       ) : null}
     </section>

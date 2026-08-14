@@ -210,7 +210,7 @@ const PAGE_QUERY = `
   ),
 
   "products": select(
-    $hasPath => *[
+    $isKent && $hasPath => *[
       _type=="product"
       && isActive==true
       && (
@@ -471,21 +471,24 @@ function HeroBanner({ brandTitle }: { brandTitle: string }) {
 
 function CatalogGroupGrid({ groups, counts }: { groups: AbmCatalogGroup[]; counts?: Map<string, number> }) {
   return (
-    <div className="mt-5 grid gap-4 md:grid-cols-3">
+    <div className="mt-5 border-y border-neutral-300">
       {groups.map((group) => (
         <Link
           key={`${group.kind}-${group.slug}`}
           href={group.href}
-          className="group flex min-h-52 flex-col rounded-2xl border border-neutral-200 bg-white p-6 transition hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md"
+          prefetch={false}
+          className="group grid gap-2 border-b border-neutral-200 px-3 py-5 transition last:border-b-0 hover:bg-orange-50/70 md:grid-cols-[220px_minmax(0,1fr)_auto] md:items-center md:gap-6"
         >
-          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-orange-600">
-            {group.kind === "product" ? "Product category" : "Service category"}
-          </span>
-          <h3 className="mt-3 text-xl font-semibold leading-7 text-neutral-900 group-hover:text-orange-700">{group.title}</h3>
-          <p className="mt-3 flex-1 text-sm leading-6 text-neutral-600">{group.description}</p>
-          <div className="mt-5 flex items-center justify-between gap-3 text-sm font-semibold text-orange-700">
-            <span>{group.kind === "product" ? "Open category landing" : "Browse services"} →</span>
-            {counts?.has(group.slug) ? <span className="text-xs text-neutral-500">{counts.get(group.slug)?.toLocaleString()}</span> : null}
+          <div>
+            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-orange-600">
+              {group.kind === "product" ? "Product category" : "Service category"}
+            </span>
+            <h3 className="mt-1 text-lg font-semibold leading-7 text-neutral-900 group-hover:text-orange-700 group-hover:underline group-hover:underline-offset-4">{group.title}</h3>
+          </div>
+          <p className="text-sm leading-6 text-neutral-600">{group.description}</p>
+          <div className="flex items-center gap-3 text-sm font-semibold text-orange-700">
+            {counts?.has(group.slug) ? <span className="whitespace-nowrap text-xs font-medium text-neutral-500">{counts.get(group.slug)?.toLocaleString()} items</span> : null}
+            <span className="text-lg transition group-hover:translate-x-1" aria-hidden>›</span>
           </div>
         </Link>
       ))}
@@ -1068,18 +1071,21 @@ export default async function AbmProductsPathPage({
               {selectedServiceNode?.children?.length ? (
                 <section className="mt-10" aria-labelledby="service-subcategories">
                   <h2 id="service-subcategories" className="text-2xl font-semibold text-neutral-900">Service Categories</h2>
-                  <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  <div className="mt-5 border-y border-neutral-300">
                     {selectedServiceNode.children.map((child) => {
                       const childPath = [...servicePath, child.slug];
                       return (
                         <Link
                           key={childPath.join("/")}
                           href={abmServiceCategoryHref(childPath)}
-                          className="group rounded-2xl border border-neutral-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md"
+                          prefetch={false}
+                          className="group flex items-center justify-between gap-4 border-b border-neutral-200 px-3 py-4 transition last:border-b-0 hover:bg-orange-50/70"
                         >
-                          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-orange-600">Service category</p>
-                          <h3 className="mt-2 text-lg font-semibold leading-6 text-neutral-900 group-hover:text-orange-700">{child.title}</h3>
-                          <span className="mt-5 inline-flex text-sm font-semibold text-orange-700">Open landing →</span>
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-orange-600">Service category</p>
+                            <h3 className="mt-1 text-base font-semibold leading-6 text-neutral-900 group-hover:text-orange-700 group-hover:underline group-hover:underline-offset-4">{child.title}</h3>
+                          </div>
+                          <span className="text-lg text-orange-600 transition group-hover:translate-x-1" aria-hidden>›</span>
                         </Link>
                       );
                     })}
