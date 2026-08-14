@@ -38,8 +38,8 @@ const ABM_ROOTS = ["general-materials", "cellular-materials", "genetic-materials
 // ✅ Kent 메뉴 상단 고정 헤더(가상 그룹)
 const KENT_MENU_TITLE = "General Lab Equipment";
 
-const PAGE_SHELL = "mx-auto max-w-[1140px] px-4";
-const CONTENT_LAYOUT = "grid gap-7 lg:grid-cols-[260px_minmax(0,1fr)]";
+const PAGE_SHELL = "mx-auto max-w-[1320px] px-6";
+const CONTENT_LAYOUT = "grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[296px_minmax(0,1fr)]";
 
 type Theme = {
   accentBg: string;

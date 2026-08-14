@@ -63,7 +63,16 @@ export function isManagedAbmImageUrl(value?: string) {
   if (!value) return false;
   try {
     const url = new URL(value);
-    return url.hostname === "cdn.sanity.io" && url.pathname.startsWith("/images/9b5twpc8/");
+    if (url.hostname !== "cdn.sanity.io" || !url.pathname.startsWith("/images/9b5twpc8/")) return false;
+
+    // Sanity image asset paths end in `-WIDTHxHEIGHT.ext`. Tiny assets collected
+    // from source pages are document icons, controls, or placeholders—not
+    // meaningful product/service imagery—and must never be enlarged in a gallery.
+    const dimensions = url.pathname.match(/-(\d+)x(\d+)\.[a-z0-9]+$/i);
+    if (!dimensions) return false;
+    const width = Number.parseInt(dimensions[1], 10);
+    const height = Number.parseInt(dimensions[2], 10);
+    return width >= 96 && height >= 96;
   } catch {
     return false;
   }

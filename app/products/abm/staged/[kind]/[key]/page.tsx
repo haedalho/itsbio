@@ -70,8 +70,8 @@ export default async function AbmStagedDetailPage({
   return (
     <div className="bg-white">
       <AbmHeroBanner title={title} eyebrow={`ABM ${kind}`} />
-      <div className="border-b border-neutral-200 bg-white">
-        <div className="mx-auto max-w-[1140px] px-4 py-4">
+      <div className="border-b border-neutral-200 bg-neutral-50">
+        <div className="mx-auto max-w-[1320px] px-6 py-5">
           <Breadcrumb items={[
             { label: "Home", href: "/" },
             { label: "Products", href: "/products" },
@@ -82,8 +82,8 @@ export default async function AbmStagedDetailPage({
         </div>
       </div>
 
-      <main className="mx-auto max-w-[1140px] px-4 py-7">
-        <div className="grid gap-7 lg:grid-cols-[260px_minmax(0,1fr)]">
+      <main className="mx-auto max-w-[1320px] px-6 py-10">
+        <div className="grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[296px_minmax(0,1fr)]">
           <aside className="self-start lg:sticky lg:top-24">
             <AbmCatalogSideNav mode={kind} activeProductRoot={activeProductRoot} activeServicePath={activeServicePath} />
           </aside>
@@ -93,22 +93,15 @@ export default async function AbmStagedDetailPage({
 
             <div className={[
               "mt-6 grid gap-8 border-t border-neutral-200 pt-7",
-              gallery.length ? "md:grid-cols-[minmax(0,1fr)_400px]" : "xl:grid-cols-[minmax(0,1fr)_400px]",
+              gallery.length ? "md:grid-cols-[minmax(0,1fr)_400px]" : "grid-cols-1",
             ].join(" ")}>
-              <div className={gallery.length ? "min-h-[320px]" : "min-h-0"}>
-                {gallery.length ? (
+              {gallery.length ? (
+                <div className="min-h-[320px]">
                   <ProductGalleryClient images={gallery} title={title} />
-                ) : (
-                  <div className="flex min-h-[220px] items-center justify-center border border-dashed border-neutral-300 bg-neutral-50 px-8 text-center">
-                    <div className="max-w-md">
-                      <h2 className="mt-4 text-base font-semibold text-slate-900">Official image not available</h2>
-                      <p className="mt-2 text-sm leading-6 text-slate-600">ABM does not provide a valid official image for this record. Product information and reviewed documents remain available below.</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+                </div>
+              ) : null}
 
-              <aside className="self-start overflow-hidden rounded-xl border-2 border-[#f2632f] bg-white">
+              <aside className={`self-start overflow-hidden rounded-xl border-2 border-[#f2632f] bg-white ${gallery.length ? "" : "max-w-[520px]"}`}>
                 <div className="border-b border-orange-100 px-6 py-4">
                   <h2 className="text-lg font-semibold text-[#dc5a2b]">{kind === "product" ? "Product Information" : "Service Information"}</h2>
                 </div>
