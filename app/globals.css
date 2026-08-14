@@ -282,10 +282,65 @@ animation: partners-marquee 22s linear infinite;
 .abm-data-table a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .abm-data-table a::after { content: none !important; }
 
+/* ABM service FAQs arrive as JavaScript-only collapse tables. HtmlContent
+   converts them to native details elements so they remain fast and usable. */
+.abm-service-faq-list {
+  width: 100%;
+  margin: 0.5rem 0 2rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.abm-service-faq-item {
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.abm-service-faq-item summary {
+  position: relative;
+  padding: 17px 48px 17px 0;
+  color: #111827;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+  list-style: none;
+  text-align: left;
+}
+
+.abm-service-faq-item summary::-webkit-details-marker { display: none; }
+.abm-service-faq-item summary::after {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid #ef6331;
+  color: #dc5a2b;
+  content: "+";
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1;
+  transform: translateY(-50%);
+}
+
+.abm-service-faq-item[open] summary { color: #dc5a2b; }
+.abm-service-faq-item[open] summary::after { content: "−"; }
+.abm-service-faq-answer {
+  max-width: 920px;
+  padding: 0 48px 18px 0;
+  color: #475569;
+  line-height: 1.72;
+}
+.abm-service-faq-answer > :last-child { margin-bottom: 0; }
+
 @media (max-width: 767px) {
   .abm-rich { font-size: 15px; }
   .abm-table-anchor-nav { gap: 7px 9px; font-size: 15px; }
   .abm-data-table { min-width: 680px; }
   .abm-data-table th,
   .abm-data-table td { padding: 11px 6px 11px 11px; }
+  .abm-service-faq-item summary { padding-right: 42px; font-size: 15px; }
+  .abm-service-faq-answer { padding-right: 0; }
 }

@@ -13,6 +13,8 @@ type Props = {
 
 const TABLE_WRAP_CLASS = "abm-table-scroll";
 const TABLE_CLASS = "abm-data-table";
+const EXTERNAL_VECTOR_LINK_ATTR = "data-abm-external-vector";
+const DIRECT_DOCUMENT_PATH = /\.(?:pdf|docx?|xlsx?|pptx?|csv|zip)(?:$|[?#])/i;
 
 function lower(x: unknown) {
   return String(x ?? "").toLowerCase();
@@ -22,6 +24,137 @@ function removeNode(n: Element | null) {
 }
 function collapseWs(s: string) {
   return (s || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function extractLegacyAbmTarget(href: string) {
+  try {
+    const url = new URL(href, "https://www.itsbio.co.kr");
+    if (url.pathname !== "/products/abm/legacy") return "";
+    return (url.searchParams.get("u") || "").trim();
+  } catch {
+    return "";
+  }
+}
+
+function officialAbmTarget(href: string, baseUrl: string) {
+  const legacyTarget = extractLegacyAbmTarget(href);
+  const resolved = legacyTarget || (baseUrl ? resolveUrl(href, baseUrl) : href);
+  return isOfficialAbmUrl(resolved) ? resolved : "";
+}
+
+function isHeadingAtOrAbove(el: Element, level: number) {
+  const match = /^H([1-6])$/.exec(el.tagName);
+  return !!match && Number(match[1]) <= level;
+}
+
+/**
+ * Vector catalog links in service editorial sections are intentionally kept
+ * on the official ABM site. These destinations are not part of the staged
+ * product/service corpus yet, so internalizing them creates avoidable 404s.
+ */
+function markExternalVectorSectionLinks(doc: Document, baseUrl: string) {
+  const headings = Array.from(doc.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6")).filter((heading) =>
+    /^Available\b.*\bVectors?\b.*$/i.test(collapseWs(heading.textContent || ""))
+  );
+  if (!headings.length) return;
+
+  const allElements = Array.from(doc.body.querySelectorAll<HTMLElement>("*"));
+  headings.forEach((heading) => {
+    const level = Number(heading.tagName.slice(1));
+    const start = allElements.indexOf(heading);
+    if (start < 0) return;
+
+    for (let index = start + 1; index < allElements.length; index++) {
+      const el = allElements[index];
+      if (isHeadingAtOrAbove(el, level)) break;
+      if (el.tagName !== "A") continue;
+
+      const anchor = el as HTMLAnchorElement;
+      const href = (anchor.getAttribute("href") || "").trim();
+      if (href && officialAbmTarget(href, baseUrl)) {
+        anchor.setAttribute(EXTERNAL_VECTOR_LINK_ATTR, "true");
+      }
+    }
+  });
+}
+
+/** Convert ABM's JS-only, alternating question/answer tables to native HTML. */
+function transformServiceFaqs(doc: Document) {
+  const faqHeadings = Array.from(doc.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6")).filter((heading) =>
+    /^FAQs?$/i.test(collapseWs(heading.textContent || ""))
+  );
+  if (!faqHeadings.length) return;
+
+  const allElements = Array.from(doc.body.querySelectorAll<HTMLElement>("*"));
+  const headingIndex = new Map(faqHeadings.map((heading) => [heading, allElements.indexOf(heading)]));
+
+  faqHeadings.forEach((heading) => {
+    const start = headingIndex.get(heading) ?? -1;
+    if (start < 0) return;
+    const level = Number(heading.tagName.slice(1));
+    const list = doc.createElement("div");
+    list.className = "abm-service-faq-list";
+    const sources = new Set<Element>();
+    const seenTargets = new Set<string>();
+
+    for (let index = start + 1; index < allElements.length; index++) {
+      const el = allElements[index];
+      if (isHeadingAtOrAbove(el, level)) break;
+      if (!el.matches("b.customfaq, .customfaq")) continue;
+
+      const trigger = el.closest<HTMLAnchorElement>('a[href^="#"]');
+      const targetId = (trigger?.getAttribute("href") || "").slice(1);
+      if (!targetId || seenTargets.has(targetId)) continue;
+
+      const answer = doc.getElementById(targetId);
+      if (!answer || !answer.matches(".panel-collapse,.collapse,.accordion-collapse")) continue;
+      const answerBody =
+        answer.querySelector<HTMLElement>(".abm-perfect-faqs-text,.panel-body,.card-body,.accordion-body") || answer;
+      const question = collapseWs(el.textContent || trigger?.textContent || "");
+      const answerHtml = answerBody.innerHTML.trim();
+      if (!question || !collapseWs(answerBody.textContent || "")) continue;
+
+      const details = doc.createElement("details");
+      details.className = "abm-service-faq-item";
+      if (!list.children.length) details.setAttribute("open", "");
+
+      const summary = doc.createElement("summary");
+      summary.textContent = question;
+      const content = doc.createElement("div");
+      content.className = "abm-service-faq-answer";
+      content.innerHTML = answerHtml;
+      details.append(summary, content);
+      list.appendChild(details);
+      seenTargets.add(targetId);
+
+      const questionTable = trigger?.closest("table");
+      const answerTable = answer.closest("table");
+      if (questionTable) sources.add(questionTable);
+      else if (trigger) sources.add(trigger);
+      if (answerTable) sources.add(answerTable);
+      else sources.add(answer);
+    }
+
+    if (!list.children.length) return;
+    heading.insertAdjacentElement("afterend", list);
+    sources.forEach((source) => removeNode(source));
+  });
+}
+
+function isSmallUiGlyph(img: HTMLImageElement) {
+  const src = lower(img.getAttribute("src"));
+  const alt = lower(img.getAttribute("alt"));
+  const cls = lower(img.getAttribute("class"));
+  const width = Number.parseInt(img.getAttribute("width") || "", 10);
+  const height = Number.parseInt(img.getAttribute("height") || "", 10);
+  const encodedSize = src.match(/-(\d+)x(\d+)\.(?:png|gif|jpe?g|webp)(?:$|\?)/i);
+  const encodedWidth = Number(encodedSize?.[1] || 0);
+  const encodedHeight = Number(encodedSize?.[2] || 0);
+  const tinyDimensions =
+    (width > 0 && height > 0 && width <= 48 && height <= 48) ||
+    (encodedWidth > 0 && encodedHeight > 0 && encodedWidth <= 48 && encodedHeight <= 48);
+
+  return /(?:^|[\s/_-])(pdf|icon|glyph)(?:[\s/_.-]|$)/i.test(`${src} ${alt} ${cls}`) || (tinyDimensions && !alt);
 }
 
 function normalizeMailto(html: string) {
@@ -348,6 +481,28 @@ function fixMediaAndLinks(doc: Document, baseUrl: string, internalizeAbm: boolea
   doc.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((a) => {
     const href = (a.getAttribute("href") || "").trim();
     if (!href) return;
+
+    if (a.getAttribute(EXTERNAL_VECTOR_LINK_ATTR) === "true") {
+      const externalTarget = officialAbmTarget(href, baseUrl);
+      if (externalTarget) {
+        a.setAttribute("href", externalTarget);
+        a.setAttribute("target", "_blank");
+        a.setAttribute("rel", "noreferrer noopener");
+      }
+      a.removeAttribute(EXTERNAL_VECTOR_LINK_ATTR);
+      return;
+    }
+
+    // Older staged HTML may already contain the internal legacy resolver.
+    // Official files should still bypass it and open the real ABM document.
+    const legacyTarget = extractLegacyAbmTarget(href);
+    if (legacyTarget && isOfficialAbmUrl(legacyTarget) && DIRECT_DOCUMENT_PATH.test(legacyTarget)) {
+      a.setAttribute("href", legacyTarget);
+      a.setAttribute("target", "_blank");
+      a.setAttribute("rel", "noreferrer noopener");
+      return;
+    }
+
     if (isInternalItsbioHref(href)) return;
 
     const resolved = baseUrl ? resolveUrl(href, baseUrl) : href;
@@ -385,10 +540,16 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"]
   const isAbmMode = mode === "abm-detail" || mode === "abm-service";
 
   // baseUrl 없으면 추정
-  const effectiveBase = (baseUrl || "").trim() || inferBaseUrlFromHtml(html);
+  const effectiveBase =
+    (baseUrl || "").trim() || (isAbmMode ? "https://www.abmgood.com" : inferBaseUrlFromHtml(html));
 
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
+
+  if (mode === "abm-service") {
+    markExternalVectorSectionLinks(doc, effectiveBase);
+    transformServiceFaqs(doc);
+  }
 
   // ✅ 0.5) (가장 중요) 이미지/미디어 URL 보정 + lazyload src 복구
   fixMediaAndLinks(doc, effectiveBase, isAbmMode);
@@ -459,7 +620,7 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"]
   // 모든 공식 이미지를 Sanity asset으로 바꾸며, 이 검사는 잘못된 staging의 방어선이다.
   if (mode === "abm-service") {
     doc.querySelectorAll<HTMLImageElement>("img").forEach((img) => {
-      if (!isManagedAbmImage((img.getAttribute("src") || "").trim())) removeNode(img);
+      if (isSmallUiGlyph(img) || !isManagedAbmImage((img.getAttribute("src") || "").trim())) removeNode(img);
       else {
         img.removeAttribute("srcset");
         img.removeAttribute("data-srcset");
