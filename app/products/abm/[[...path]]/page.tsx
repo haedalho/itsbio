@@ -1125,7 +1125,12 @@ export default async function AbmProductsPathPage({
               ) : null}
 
               {serviceLanding?.html ? (
-                <AbmServiceLanding html={serviceLanding.html} />
+                <>
+                  <h1 className="mb-7 text-3xl font-semibold tracking-tight text-neutral-900 md:text-4xl">
+                    {selectedTitle || "ABM Service"}
+                  </h1>
+                  <AbmServiceLanding html={serviceLanding.html} />
+                </>
               ) : null}
 
               {selectedServiceNode?.children?.length ? (
@@ -1160,13 +1165,15 @@ export default async function AbmProductsPathPage({
                       ← All {stagedKind === "product" ? "Product" : "Service"} categories
                     </Link>
                   </div>
-                  <AbmStagedCatalog
-                    kind={stagedKind}
-                    records={visibleRecords}
-                    query={stagedQuery}
-                    page={stagedPage}
-                    basePath={`/products/abm/${path.join("/")}`}
-                  />
+                  {stagedKind === "service" && serviceLanding?.html && !stagedQuery && visibleRecords.length === 0 ? null : (
+                    <AbmStagedCatalog
+                      kind={stagedKind}
+                      records={visibleRecords}
+                      query={stagedQuery}
+                      page={stagedPage}
+                      basePath={`/products/abm/${path.join("/")}`}
+                    />
+                  )}
                 </>
               ) : (
                 <CatalogGroupGrid groups={groups} counts={groupCounts} />
