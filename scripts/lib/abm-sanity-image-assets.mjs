@@ -67,6 +67,10 @@ async function downloadOfficialImage(sourceUrl) {
         "accept-language": "en-US,en;q=0.9",
       },
     });
+    // ABM occasionally leaves an image URL in product markup after deleting
+    // the file. A confirmed missing source is an explicit no-image state, not
+    // a reason to discard the otherwise valid product detail record.
+    if (response.status === 404 || response.status === 410) return null;
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const mimeType = String(response.headers.get("content-type") || "").split(";", 1)[0].trim().toLowerCase();
     if (!mimeType.startsWith("image/")) throw new Error(`unexpected content-type ${mimeType || "missing"}`);
@@ -89,6 +93,7 @@ export function createAbmImageRehoster({ client, dryRun = false, logEvery = 50 }
     uploadedAssets: 0,
     reusedManagedAssets: 0,
     rewrittenHtmlImages: 0,
+    missingOfficialImages: 0,
     failures: 0,
   };
 
@@ -111,7 +116,12 @@ export function createAbmImageRehoster({ client, dryRun = false, logEvery = 50 }
 
     const task = (async () => {
       try {
-        const { bytes, mimeType } = await downloadOfficialImage(sourceUrl);
+        const downloaded = await downloadOfficialImage(sourceUrl);
+        if (!downloaded) {
+          stats.missingOfficialImages += 1;
+          return "";
+        }
+        const { bytes, mimeType } = downloaded;
         const digest = crypto.createHash("sha256").update(bytes).digest("hex").slice(0, 16);
         const asset = await client.assets.upload("image", bytes, {
           filename: `${digest}-${filenameFor(sourceUrl, mimeType)}`,
@@ -142,6 +152,10 @@ export function createAbmImageRehoster({ client, dryRun = false, logEvery = 50 }
         continue;
       }
       const managedUrl = await rehostUrl(source, baseUrl);
+      if (!managedUrl) {
+        node.remove();
+        continue;
+      }
       node.attr("src", managedUrl);
       for (const attribute of ["srcset", "data-src", "data-srcset", "data-original", "data-lazy-src"]) node.removeAttr(attribute);
       stats.rewrittenHtmlImages += 1;
@@ -168,6 +182,10 @@ export function createAbmImageRehoster({ client, dryRun = false, logEvery = 50 }
     const next = { ...record };
     for (const field of IMAGE_FIELDS) next[field] = await rewriteHtml(next[field], next.sourceUrl);
     next.images = await rehostUrls(next.images, next.sourceUrl);
+    next.verification = {
+      ...(next.verification || {}),
+      hasOfficialImages: next.images.length > 0,
+    };
     if (!dryRun && next.images.some((url) => !isManagedAbmImageUrl(url))) {
       throw new Error(`${next.key || next.sku}: unmanaged gallery image remains`);
     }

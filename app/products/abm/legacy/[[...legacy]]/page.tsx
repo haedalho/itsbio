@@ -9,19 +9,19 @@ export const revalidate = 0;
 const RESOLVE_STAGED_QUERY = `*[
   _type == "abmRebuildChunk"
   && version == $version
-  && count(records[url in $urls]) > 0
-][0].records[url in $urls][0]`;
+  && count(records[lower(url) in $urls]) > 0
+][0].records[lower(url) in $urls][0]`;
 
 const RESOLVE_EXISTING_QUERY = `{
   "category": *[
     _type == "category"
     && (themeKey == "abm" || brand->themeKey == "abm" || brand->slug.current == "abm")
-    && sourceUrl in $urls
+    && lower(sourceUrl) in $urls
   ][0]{path},
   "product": *[
     _type == "product"
     && (brandSlug == "abm" || brand->themeKey == "abm" || brand->slug.current == "abm")
-    && sourceUrl in $urls
+    && lower(sourceUrl) in $urls
   ][0]{"slug": slug.current}
 }`;
 
@@ -35,9 +35,18 @@ function abmUrlCandidates(rawValue: string) {
     url.hostname = "www.abmgood.com";
     url.hash = "";
     url.search = "";
-    const canonical = url.toString();
-    const withoutWww = canonical.replace("https://www.abmgood.com/", "https://abmgood.com/");
-    return [...new Set([canonical, withoutWww])];
+    const pathVariants = new Set([url.pathname]);
+    if (/\.html?$/i.test(url.pathname)) pathVariants.add(url.pathname.replace(/\.html?$/i, ""));
+    else if (!url.pathname.endsWith("/")) pathVariants.add(`${url.pathname}.html`);
+    if (url.pathname !== "/") pathVariants.add(url.pathname.replace(/\/$/, ""));
+
+    const candidates: string[] = [];
+    for (const pathname of pathVariants) {
+      url.pathname = pathname;
+      const canonical = url.toString();
+      candidates.push(canonical, canonical.replace("https://www.abmgood.com/", "https://abmgood.com/"));
+    }
+    return [...new Set(candidates.map((candidate) => candidate.toLowerCase()))];
   } catch {
     return [];
   }
@@ -66,6 +75,12 @@ export default async function AbmLegacyResolverPage({
   if (existing?.category?.path?.length) redirect(`/products/abm/${existing.category.path.join("/")}`);
   if (existing?.product?.slug) redirect(`/products/abm/item/${existing.product.slug}`);
 
-  // ABM content must be collected and reviewed into Sanity before it can be shown.
-  notFound();
+  // Never send a valid official ABM content link to a 404. An unmatched source
+  // lands in the staged inventory search while its detail is being collected.
+  const source = new URL(urls[0]);
+  const query = decodeURIComponent(source.pathname.split("/").pop() || "")
+    .replace(/\.html?$/i, "")
+    .replace(/[-_]+/g, " ")
+    .trim();
+  redirect(`/products/abm/products${query ? `?q=${encodeURIComponent(query)}` : ""}`);
 }

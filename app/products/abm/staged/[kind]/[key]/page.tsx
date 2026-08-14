@@ -88,30 +88,48 @@ export default async function AbmStagedDetailPage({
           </aside>
 
           <section className="min-w-0">
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-orange-600">ABM {kind}</p>
-            <h1 className="mt-2 text-3xl font-semibold leading-tight tracking-tight text-neutral-900 md:text-4xl">{title}</h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-orange-700">ABM {kind}</span>
+              {record.sku ? <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">Cat. No. {record.sku}</span> : null}
+            </div>
+            <h1 className="mt-4 max-w-4xl text-3xl font-semibold leading-tight tracking-tight text-slate-950 md:text-[42px]">{title}</h1>
 
-            <div className="mt-7 grid gap-8 border-t border-neutral-200 pt-8 md:grid-cols-[minmax(0,1fr)_340px]">
-              <div className="min-h-[320px]">
-                {gallery.length ? <ProductGalleryClient images={gallery} title={title} /> : null}
+            <div className={[
+              "mt-8 grid gap-8 border-t border-slate-200 pt-8",
+              gallery.length ? "md:grid-cols-[minmax(0,1fr)_360px]" : "xl:grid-cols-[minmax(0,1fr)_390px]",
+            ].join(" ")}>
+              <div className={gallery.length ? "min-h-[320px]" : "min-h-0"}>
+                {gallery.length ? (
+                  <ProductGalleryClient images={gallery} title={title} />
+                ) : (
+                  <div className="flex min-h-[220px] items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-slate-50/70 px-8 text-center">
+                    <div className="max-w-md">
+                      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-xl shadow-sm" aria-hidden>⌁</div>
+                      <h2 className="mt-4 text-base font-semibold text-slate-900">Official image not available</h2>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">ABM does not provide a valid official image for this record. Product information and reviewed documents remain available below.</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <aside className="self-start border border-neutral-200 bg-white shadow-sm">
-                <div className="border-b border-neutral-200 bg-neutral-50 px-6 py-4">
-                  <h2 className="text-base font-semibold text-neutral-900">{kind === "product" ? "Product Information" : "Service Information"}</h2>
+              <aside className="self-start overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_18px_45px_-32px_rgba(15,23,42,0.55)]">
+                <div className="border-b border-slate-200 bg-slate-950 px-6 py-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-orange-300">ITS BIO · ABM</p>
+                  <h2 className="mt-1 text-lg font-semibold text-white">{kind === "product" ? "Product Information" : "Service Information"}</h2>
                 </div>
-                <dl className="divide-y divide-neutral-100 px-6">
-                  {record.sku ? <div className="grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"><dt className="font-semibold text-neutral-900">Cat. No.</dt><dd className="text-neutral-700">{record.sku}</dd></div> : null}
-                  {record.unit ? <div className="grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"><dt className="font-semibold text-neutral-900">Unit</dt><dd className="text-neutral-700">{record.unit}</dd></div> : null}
-                  {(record.category || record.searchCategory || record.filterTitle) ? <div className="grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"><dt className="font-semibold text-neutral-900">Category</dt><dd className="text-neutral-700">{record.category || record.searchCategory || record.filterTitle}</dd></div> : null}
-                  {record.storage ? <div className="grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"><dt className="font-semibold text-neutral-900">Storage</dt><dd className="text-neutral-700">{record.storage}</dd></div> : null}
+                <dl className="divide-y divide-slate-100 px-6">
+                  {record.sku ? <div className="grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"><dt className="font-semibold text-slate-900">Cat. No.</dt><dd className="font-medium text-slate-700">{record.sku}</dd></div> : null}
+                  {record.unit ? <div className="grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"><dt className="font-semibold text-slate-900">Unit</dt><dd className="text-slate-700">{record.unit}</dd></div> : null}
+                  {(record.category || record.searchCategory || record.filterTitle) ? <div className="grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"><dt className="font-semibold text-slate-900">Category</dt><dd className="text-slate-700">{record.category || record.searchCategory || record.filterTitle}</dd></div> : null}
+                  {record.storage ? <div className="grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"><dt className="font-semibold text-slate-900">Storage</dt><dd className="text-slate-700">{record.storage}</dd></div> : null}
                   {kind === "service" && serviceFields.map(([label, value]) => (
-                    <div key={label} className="grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"><dt className="font-semibold text-neutral-900">{label}</dt><dd className="text-neutral-700">{value}</dd></div>
+                    <div key={label} className="grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"><dt className="font-semibold text-slate-900">{label}</dt><dd className="text-slate-700">{value}</dd></div>
                   ))}
                 </dl>
-                <div className="border-t border-neutral-200 bg-orange-50 p-5">
-                  <Link href={`/quote?item=${encodeURIComponent(`${title} ${record.sku || ""}`.trim())}`} className="inline-flex w-full items-center justify-center bg-orange-600 px-4 py-3 text-sm font-semibold text-white hover:bg-orange-700">Request a Quote</Link>
-                  <Link href="/contact" className="mt-3 inline-flex w-full items-center justify-center border border-orange-300 bg-white px-4 py-3 text-sm font-semibold text-orange-800 hover:bg-orange-100">Contact ITS BIO</Link>
+                <div className="border-t border-orange-100 bg-orange-50/70 p-5">
+                  <p className="mb-4 text-sm leading-6 text-slate-600">For availability, lead time, and technical questions, contact ITS BIO.</p>
+                  <Link href={`/quote?item=${encodeURIComponent(`${title} ${record.sku || ""}`.trim())}`} className="inline-flex w-full items-center justify-center rounded-xl bg-orange-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700">Request a Quote</Link>
+                  <Link href="/contact" className="mt-3 inline-flex w-full items-center justify-center rounded-xl border border-orange-300 bg-white px-4 py-3 text-sm font-semibold text-orange-800 transition hover:bg-orange-100">Contact ITS BIO</Link>
                 </div>
               </aside>
             </div>
@@ -127,6 +145,8 @@ export default async function AbmStagedDetailPage({
                 referencesHtml={record.referencesHtml}
                 reviewsHtml={record.reviewsHtml}
                 documents={documents}
+                sourceUrl={record.sourceUrl}
+                kind={kind}
               />
             </div>
 
