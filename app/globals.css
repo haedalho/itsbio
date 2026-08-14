@@ -229,17 +229,19 @@ animation: partners-marquee 22s linear infinite;
 .abm-table-scroll {
   width: 100%;
   margin: 1.25rem 0 2rem;
-  overflow-x: auto;
+  overflow-x: visible;
   border: 0;
   border-radius: 0;
   background: #fff;
   box-shadow: none;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+.abm-table-scroll::-webkit-scrollbar { display: none; }
 
 .abm-data-table {
   width: 100%;
-  min-width: 680px;
+  min-width: 0;
   margin: 0 !important;
   border-collapse: collapse;
   border-spacing: 0;
@@ -247,6 +249,7 @@ animation: partners-marquee 22s linear infinite;
   color: #111;
   font-size: 15px;
   line-height: 1.43;
+  table-layout: fixed;
   text-align: left;
 }
 
@@ -257,7 +260,9 @@ animation: partners-marquee 22s linear infinite;
   border-top: 1px solid rgb(221 221 221 / 52%);
   text-align: left;
   vertical-align: top;
-  white-space: nowrap;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .abm-data-table thead th,
@@ -277,7 +282,7 @@ animation: partners-marquee 22s linear infinite;
   scroll-margin-top: 120px;
 }
 .abm-data-table td:first-child,
-.abm-data-table th:first-child { min-width: 250px; }
+.abm-data-table th:first-child { width: 38%; min-width: 0; }
 .abm-data-table a { color: #ef6331; text-decoration: none; }
 .abm-data-table a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .abm-data-table a::after { content: none !important; }
@@ -362,9 +367,12 @@ animation: partners-marquee 22s linear infinite;
 @media (max-width: 767px) {
   .abm-rich { font-size: 15px; }
   .abm-table-anchor-nav { gap: 7px 9px; font-size: 15px; }
-  .abm-data-table { min-width: 680px; }
+  .abm-table-scroll { overflow-x: auto; }
+  .abm-data-table { min-width: 680px; table-layout: auto; }
   .abm-data-table th,
   .abm-data-table td { padding: 11px 6px 11px 11px; }
+  .abm-data-table td:first-child,
+  .abm-data-table th:first-child { width: auto; min-width: 220px; }
   .abm-products-specification .abm-table-scroll { overflow-x: auto; }
   .abm-products-specification .abm-data-table {
     min-width: 620px;
