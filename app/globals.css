@@ -282,6 +282,30 @@ animation: partners-marquee 22s linear infinite;
 .abm-data-table a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .abm-data-table a::after { content: none !important; }
 
+/* Product specification tables are two-column detail grids. Let long values
+   wrap inside the panel instead of forcing a desktop horizontal scrollbar. */
+.abm-products-specification .abm-table-scroll {
+  overflow-x: visible;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.abm-products-specification .abm-table-scroll::-webkit-scrollbar { display: none; }
+.abm-products-specification .abm-data-table {
+  min-width: 0;
+  table-layout: fixed;
+}
+.abm-products-specification .abm-data-table th,
+.abm-products-specification .abm-data-table td {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.abm-products-specification .abm-data-table th:first-child,
+.abm-products-specification .abm-data-table td:first-child {
+  width: 28%;
+  min-width: 0;
+}
+
 /* ABM service FAQs arrive as JavaScript-only collapse tables. HtmlContent
    converts them to native details elements so they remain fast and usable. */
 .abm-service-faq-list {
@@ -341,6 +365,11 @@ animation: partners-marquee 22s linear infinite;
   .abm-data-table { min-width: 680px; }
   .abm-data-table th,
   .abm-data-table td { padding: 11px 6px 11px 11px; }
+  .abm-products-specification .abm-table-scroll { overflow-x: auto; }
+  .abm-products-specification .abm-data-table {
+    min-width: 620px;
+    table-layout: auto;
+  }
   .abm-service-faq-item summary { padding-right: 42px; font-size: 15px; }
   .abm-service-faq-answer { padding-right: 0; }
 }
