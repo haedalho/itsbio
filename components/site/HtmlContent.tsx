@@ -116,6 +116,7 @@ function transformServiceFaqs(doc: Document) {
 
       const details = doc.createElement("details");
       details.className = "abm-service-faq-item";
+      details.setAttribute("name", "abm-service-faq");
       if (!list.children.length) details.setAttribute("open", "");
 
       const summary = doc.createElement("summary");
