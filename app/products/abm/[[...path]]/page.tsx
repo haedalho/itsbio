@@ -438,6 +438,21 @@ function CategoryLinkRail({ brandKey, nodes }: { brandKey: string; nodes: TreeNo
   );
 }
 
+function isTrustedAbmResourceImageUrl(value?: string) {
+  if (!value) return false;
+  if (isManagedAbmImageUrl(value)) return true;
+  try {
+    const url = new URL(value);
+    const hostname = url.hostname.toLowerCase();
+    const isOfficialAbmHost = hostname === "abmgood.com" || hostname === "www.abmgood.com";
+    return isOfficialAbmHost
+      && url.pathname.startsWith("/assets/images/")
+      && /\.(?:avif|gif|jpe?g|png|webp)$/i.test(url.pathname);
+  } catch {
+    return false;
+  }
+}
+
 /** -------------------- HTML rewrite -------------------- */
 
 function getBaseUrlForBrand(brandKey: string) {
@@ -828,7 +843,7 @@ function ResourceSection({
         {safeItems.map((x) => (
           <Link key={x.key} href={legacyHref(brandKey, x.href)} prefetch={false} className="block">
             <div className="bg-white">
-              {isManagedAbmImageUrl(x.imageUrl) ? <div className="overflow-hidden bg-neutral-100">
+              {isTrustedAbmResourceImageUrl(x.imageUrl) ? <div className="overflow-hidden bg-neutral-100">
                 <div className="relative aspect-[16/9] w-full">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={x.imageUrl} alt={x.title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
