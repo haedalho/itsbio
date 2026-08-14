@@ -46,7 +46,7 @@ function extractResourcePage(sourceHtml: string, sourceUrl: string) {
     const height = Number.parseInt(image.attr("height") || "0", 10);
     const label = `${resolved} ${image.attr("alt") || ""}`.toLowerCase();
     const isTiny = width > 0 && height > 0 && (width < 96 || height < 96);
-    const isUiAsset = /(?:logo|flag|avatar|social|share|pdf[-_ ]?icon)/i.test(label);
+    const isUiAsset = /(?:logo|flag|avatar|social|share|cart|timer|pdf[-_ ]?icon|\/assets\/img\/general\/)/i.test(label);
     if (!isOfficialAbmResourceImageUrl(resolved) || isTiny || isUiAsset) {
       image.remove();
       return;
