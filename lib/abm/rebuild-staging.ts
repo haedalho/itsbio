@@ -115,6 +115,21 @@ export async function getAbmStagedRecords(kind: AbmStagedRecord["kind"]): Promis
   });
 }
 
+const STAGED_COUNT_QUERY = `count(*[
+  _type == "abmRebuildChunk"
+  && version == $version
+  && kind == $kind
+].records[])`;
+
+/** Lightweight inventory count for landing pages; avoids transferring the full catalog. */
+export async function getAbmStagedRecordCount(kind: AbmStagedRecord["kind"]): Promise<number> {
+  const count = await sanityClient.fetch<number>(STAGED_COUNT_QUERY, {
+    version: ABM_REBUILD_VERSION,
+    kind,
+  });
+  return Number.isFinite(count) ? count : 0;
+}
+
 const STAGED_LANDING_QUERY = `*[
   _type == "abmRebuildLandingChunk"
   && version == $version

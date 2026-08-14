@@ -21,7 +21,12 @@ import {
   findAbmServiceCategory,
   type AbmCatalogGroup,
 } from "@/lib/abm/catalog-taxonomy";
-import { getAbmStagedRecords, getAbmStagedServiceLanding, isManagedAbmImageUrl } from "@/lib/abm/rebuild-staging";
+import {
+  getAbmStagedRecordCount,
+  getAbmStagedRecords,
+  getAbmStagedServiceLanding,
+  isManagedAbmImageUrl,
+} from "@/lib/abm/rebuild-staging";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -1005,7 +1010,6 @@ export default async function AbmProductsPathPage({
 
   const stagedKind = path[0] === "products" ? "product" : path[0] === "services" ? "service" : null;
   if (stagedKind) {
-    const stagedRecords = await getAbmStagedRecords(stagedKind);
     const groups = stagedKind === "product" ? ABM_PRODUCT_GROUPS : ABM_SERVICE_GROUPS;
     const selectedGroup = findAbmCatalogGroup(stagedKind, path[1]);
     const servicePath = stagedKind === "service" ? path.slice(1) : [];
@@ -1013,6 +1017,8 @@ export default async function AbmProductsPathPage({
     if (path.length > 1 && !selectedGroup) notFound();
     if (stagedKind === "service" && path.length > 1 && !selectedServiceNode) notFound();
     if (stagedKind === "product" && path.length > 2) notFound();
+    const shouldLoadRecords = Boolean(stagedQuery || selectedGroup || selectedServiceNode);
+    const stagedRecords = shouldLoadRecords ? await getAbmStagedRecords(stagedKind) : [];
     const visibleRecords = stagedQuery
       ? stagedRecords
       : stagedKind === "service" && servicePath.length
@@ -1021,10 +1027,12 @@ export default async function AbmProductsPathPage({
           ? stagedRecords.filter((record) => abmRecordBelongsToGroup(record, selectedGroup))
           : [];
     const serviceLanding = selectedServiceNode ? await getAbmStagedServiceLanding(servicePath) : undefined;
-    const groupCounts = new Map(groups.map((group) => [
-      group.slug,
-      stagedRecords.filter((record) => abmRecordBelongsToGroup(record, group)).length,
-    ]));
+    const groupCounts = shouldLoadRecords
+      ? new Map(groups.map((group) => [
+          group.slug,
+          stagedRecords.filter((record) => abmRecordBelongsToGroup(record, group)).length,
+        ]))
+      : undefined;
     const selectedTitle = stagedQuery
       ? `Search results for “${stagedQuery}”`
       : selectedServiceNode?.title || selectedGroup?.title;
@@ -1134,9 +1142,9 @@ export default async function AbmProductsPathPage({
   }
 
   if (!path.length) {
-    const [stagedProducts, stagedServices] = await Promise.all([
-      getAbmStagedRecords("product"),
-      getAbmStagedRecords("service"),
+    const [stagedProductCount, stagedServiceCount] = await Promise.all([
+      getAbmStagedRecordCount("product"),
+      getAbmStagedRecordCount("service"),
     ]);
     const breadcrumbItems = [
       { label: "Home", href: "/" },
@@ -1178,7 +1186,7 @@ export default async function AbmProductsPathPage({
                     <h3 id="abm-product-categories" className="mt-1 text-2xl font-semibold text-neutral-900">Product Categories</h3>
                   </div>
                   <Link href="/products/abm/products" className="text-sm font-semibold text-orange-700 underline underline-offset-4">
-                    {stagedProducts.length.toLocaleString()} catalog records
+                    {stagedProductCount.toLocaleString()} catalog records
                   </Link>
                 </div>
                 <CatalogGroupGrid groups={ABM_PRODUCT_GROUPS} />
@@ -1191,7 +1199,7 @@ export default async function AbmProductsPathPage({
                     <h3 id="abm-service-categories" className="mt-1 text-2xl font-semibold text-neutral-900">Service Categories</h3>
                   </div>
                   <Link href="/products/abm/services" className="text-sm font-semibold text-orange-700 underline underline-offset-4">
-                    {stagedServices.length.toLocaleString()} service offerings
+                    {stagedServiceCount.toLocaleString()} service offerings
                   </Link>
                 </div>
                 <CatalogGroupGrid groups={ABM_SERVICE_GROUPS} />
