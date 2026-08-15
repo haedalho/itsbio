@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
-import { sanityClient } from "@/lib/sanity/sanity.client";
+import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 import kentCurrentTaxonomy from "@/data/kent-current-taxonomy.json";
 
 export const revalidate = 300;
@@ -366,10 +366,10 @@ function ProductGrid({ products }: { products: ProductRow[] }) {
 }
 
 export default async function TissueCollectionPage() {
-  const data = await sanityClient.fetch(PAGE_QUERY, {
+  const data = await sanityCdnClient.fetch(PAGE_QUERY, {
     brandKey: BRAND_KEY,
     slugs: PRODUCT_SLUGS,
-  });
+  }, PUBLIC_CATALOG_CACHE);
 
   const brandTitle = data?.brand?.title || "Kent Scientific";
   const products = chooseProducts(Array.isArray(data?.products) ? data.products : []);

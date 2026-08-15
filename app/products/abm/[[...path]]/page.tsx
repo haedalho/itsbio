@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
-import { sanityClient } from "@/lib/sanity/sanity.client";
+import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 import HtmlContent from "@/components/site/HtmlContent";
 import AbmStagedCatalog from "@/components/products/AbmStagedCatalog";
 import AbmHeroBanner from "@/components/products/AbmHeroBanner";
@@ -33,9 +33,7 @@ import {
   isOfficialAbmResourceImageUrl,
 } from "@/lib/abm/resource-links";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
+export const revalidate = 300;
 
 // ✅ ABM는 루트 3갈래만 루트로 취급 (루트 오염 방지)
 const ABM_ROOTS = ["general-materials", "cellular-materials", "genetic-materials"] as const;
@@ -1003,7 +1001,7 @@ export default async function AbmProductsPathPage({
   const hasActiveRoot = !!activeRoot;
   const pathStr = path.join("/");
 
-  const data = await sanityClient.fetch(PAGE_QUERY, {
+  const data = await sanityCdnClient.fetch(PAGE_QUERY, {
     brandKey,
     isKent,
     isAbm: brandKey === "abm",
@@ -1013,7 +1011,7 @@ export default async function AbmProductsPathPage({
     activeRoot,
     pathArr: path,
     pathStr,
-  });
+  }, PUBLIC_CATALOG_CACHE);
 
   const brand = data?.brand;
   if (!brand?._id) notFound();

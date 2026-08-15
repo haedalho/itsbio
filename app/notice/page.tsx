@@ -4,12 +4,10 @@ import Image from "next/image";
 import Breadcrumb from "@/components/site/Breadcrumb";
 import NeedAssistance from "@/components/site/NeedAssistance";
 
-import { sanityClient } from "@/lib/sanity/sanity.client";
+import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 import { urlFor } from "@/lib/sanity/image";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
+export const revalidate = 300;
 
 type SP = { q?: string; page?: string };
 
@@ -141,10 +139,10 @@ export default async function NoticePage({
   const end = start + PAGE_SIZE;
 
   const [pinnedItems, normalItems, normalTotal, globalNormalTotal] = await Promise.all([
-    sanityClient.fetch(PINNED_QUERY, { q }, { cache: "no-store" }),
-    sanityClient.fetch(NORMAL_LIST_QUERY, { q, start, end }, { cache: "no-store" }),
-    sanityClient.fetch(NORMAL_COUNT_QUERY, { q }, { cache: "no-store" }),
-    sanityClient.fetch(GLOBAL_NORMAL_COUNT_QUERY, {}, { cache: "no-store" }),
+    sanityCdnClient.fetch(PINNED_QUERY, { q }, PUBLIC_CATALOG_CACHE),
+    sanityCdnClient.fetch(NORMAL_LIST_QUERY, { q, start, end }, PUBLIC_CATALOG_CACHE),
+    sanityCdnClient.fetch(NORMAL_COUNT_QUERY, { q }, PUBLIC_CATALOG_CACHE),
+    sanityCdnClient.fetch(GLOBAL_NORMAL_COUNT_QUERY, {}, PUBLIC_CATALOG_CACHE),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(Number(normalTotal) / PAGE_SIZE));

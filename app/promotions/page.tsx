@@ -4,7 +4,7 @@ import Link from "next/link";
 import Breadcrumb from "@/components/site/Breadcrumb";
 import NeedAssistance from "@/components/site/NeedAssistance";
 
-import { sanityClient } from "@/lib/sanity/sanity.client";
+import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 import { urlFor } from "@/lib/sanity/image";
 
 type PromotionDoc = {
@@ -110,7 +110,7 @@ export default async function PromotionsPage({
 
   // ✅ isActive 없어도 기본 노출(true)로 처리
   const TOTAL_QUERY = `count(*[_type=="promotion" && coalesce(isActive,true)==true ${filter}])`;
-  const total = await sanityClient.fetch<number>(TOTAL_QUERY, {}, { cache: "no-store" });
+  const total = await sanityCdnClient.fetch<number>(TOTAL_QUERY, {}, PUBLIC_CATALOG_CACHE);
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const currentPage = Math.min(pageParam, totalPages);
@@ -136,10 +136,10 @@ export default async function PromotionsPage({
         "cover": coalesce(image, gallery[0])
       }
   `;
-  const promotions = await sanityClient.fetch<PromotionDoc[]>(
+  const promotions = await sanityCdnClient.fetch<PromotionDoc[]>(
     PROMOTIONS_QUERY,
     {},
-    { cache: "no-store" }
+    PUBLIC_CATALOG_CACHE
   );
 
   const showingFrom = total === 0 ? 0 : start + 1;

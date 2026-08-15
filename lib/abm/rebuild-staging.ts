@@ -1,4 +1,4 @@
-import { sanityClient } from "@/lib/sanity/sanity.client";
+import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 
 export const ABM_REBUILD_VERSION = "2026-08-09-search-v5";
 
@@ -101,7 +101,7 @@ const STAGED_QUERY = `{
 }`;
 
 export async function getAbmStagedRecords(kind: AbmStagedRecord["kind"]): Promise<AbmStagedRecord[]> {
-  const result = await sanityClient.fetch<{
+  const result = await sanityCdnClient.fetch<{
     records?: AbmStagedRecord[];
     details?: Array<{
       key?: string;
@@ -111,7 +111,7 @@ export async function getAbmStagedRecords(kind: AbmStagedRecord["kind"]): Promis
   }>(STAGED_QUERY, {
     version: ABM_REBUILD_VERSION,
     kind,
-  });
+  }, PUBLIC_CATALOG_CACHE);
   const details = new Map((result?.details || []).map((detail) => [String(detail.key || "").toLowerCase(), detail]));
   return (Array.isArray(result?.records) ? result.records : []).map((record) => {
     const key = `${kind}:${String(record.sku || record.url).trim().toLowerCase()}`;
@@ -132,10 +132,10 @@ const STAGED_COUNT_QUERY = `count(*[
 
 /** Lightweight inventory count for landing pages; avoids transferring the full catalog. */
 export async function getAbmStagedRecordCount(kind: AbmStagedRecord["kind"]): Promise<number> {
-  const count = await sanityClient.fetch<number>(STAGED_COUNT_QUERY, {
+  const count = await sanityCdnClient.fetch<number>(STAGED_COUNT_QUERY, {
     version: ABM_REBUILD_VERSION,
     kind,
-  });
+  }, PUBLIC_CATALOG_CACHE);
   return Number.isFinite(count) ? count : 0;
 }
 
@@ -157,10 +157,10 @@ const STAGED_LANDING_QUERY = `*[
 
 export async function getAbmStagedServiceLanding(path: string[]): Promise<AbmStagedLanding | undefined> {
   if (!path.length) return undefined;
-  const result = await sanityClient.fetch<AbmStagedLanding | null>(STAGED_LANDING_QUERY, {
+  const result = await sanityCdnClient.fetch<AbmStagedLanding | null>(STAGED_LANDING_QUERY, {
     version: ABM_REBUILD_VERSION,
     path: path.join("/"),
-  });
+  }, PUBLIC_CATALOG_CACHE);
   return result || undefined;
 }
 
@@ -173,11 +173,11 @@ const STAGED_RECORD_QUERY = `*[
 
 export async function getAbmStagedRecord(kind: AbmStagedRecord["kind"], key: string) {
   const decodedKey = decodeURIComponent(key);
-  return sanityClient.fetch<AbmStagedRecord | null>(STAGED_RECORD_QUERY, {
+  return sanityCdnClient.fetch<AbmStagedRecord | null>(STAGED_RECORD_QUERY, {
     version: ABM_REBUILD_VERSION,
     kind,
     key: decodedKey,
-  });
+  }, PUBLIC_CATALOG_CACHE);
 }
 
 export function stagedRecordKey(row: AbmStagedRecord) {
@@ -209,11 +209,11 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
   if (!record) return undefined;
 
   const detailKey = `${kind}:${String(record.sku || record.url).trim().toLowerCase()}`;
-  const staged = await sanityClient.fetch<Record<string, unknown> | null>(STAGED_DETAIL_QUERY, {
+  const staged = await sanityCdnClient.fetch<Record<string, unknown> | null>(STAGED_DETAIL_QUERY, {
     version: ABM_REBUILD_VERSION,
     kind,
     key: detailKey,
-  });
+  }, PUBLIC_CATALOG_CACHE);
   if (!staged) {
     return {
       ...record,

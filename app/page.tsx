@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import BrandsShowcase from "@/components/site/home/BrandsShowcase";
-import { sanityClient } from "@/lib/sanity/sanity.client";
+import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 import { urlFor } from "@/lib/sanity/image";
 
 type PromotionDoc = {
@@ -255,8 +255,8 @@ function PartnersCarousel() {
 
 export default async function Home() {
   const [promotions, notices] = await Promise.all([
-    sanityClient.fetch<PromotionDoc[]>(PROMOTIONS_QUERY, {}, { cache: "no-store" }),
-    sanityClient.fetch<NoticeDoc[]>(NOTICES_QUERY, {}, { cache: "no-store" }),
+    sanityCdnClient.fetch<PromotionDoc[]>(PROMOTIONS_QUERY, {}, PUBLIC_CATALOG_CACHE),
+    sanityCdnClient.fetch<NoticeDoc[]>(NOTICES_QUERY, {}, PUBLIC_CATALOG_CACHE),
   ]);
 
   return (

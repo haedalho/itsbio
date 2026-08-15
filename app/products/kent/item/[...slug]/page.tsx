@@ -8,7 +8,7 @@ import {
   sanitizeKentSections,
   sanitizeKentSourceHtml,
 } from "@/lib/kent/source-content";
-import { sanityClient } from "@/lib/sanity/sanity.client";
+import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 
 export const revalidate = 300;
 
@@ -390,12 +390,11 @@ export default async function KentProductDetailPage({
   const slug = slugParts.join("/");
   if (!slug) notFound();
 
-  const client = (sanityClient as any).withConfig?.({ useCdn: true }) ?? sanityClient;
-  const bundle = await client.fetch(ITEM_PAGE_QUERY, {
+  const bundle = await sanityCdnClient.fetch(ITEM_PAGE_QUERY, {
     brandKey: BRAND_KEY,
     productType: PRODUCT_DOC_TYPE,
     slug,
-  });
+  }, PUBLIC_CATALOG_CACHE);
   const brand = bundle?.brand;
   const product = bundle?.product;
   if (!brand?._id || !product?._id) notFound();

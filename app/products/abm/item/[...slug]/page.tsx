@@ -4,15 +4,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
-import { sanityClient } from "@/lib/sanity/sanity.client";
+import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 
 
 import ProductGalleryClient from "@/components/products/ProductGalleryClient";
 import ProductTabsClient from "@/components/products/ProductTabs";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
+export const revalidate = 300;
 
 const THEME = {
   accentBg: "bg-orange-500",
@@ -120,7 +118,7 @@ function isGalleryNoiseUrl(u: string) {
   return false;
 }
 
-/** -------------------- GROQ (✅ item도 1회 fetch로 묶기) -------------------- */
+/** -------------------- GROQ -------------------- */
 
 const ITEM_PAGE_QUERY = `
 {
@@ -158,8 +156,12 @@ const ITEM_PAGE_QUERY = `
     images[]{ _key, asset->{ url } },
 
     enrichedAt
-  },
+  }
+}
+`;
 
+const NAV_QUERY = `
+{
   "roots": *[
     _type == "category"
     && (
@@ -475,18 +477,10 @@ export default async function AbmProductDetailPage({
 
   if (!slug) notFound();
 
-  // ✅ dev/배포 모두: 최신 읽기
-  const client = sanityClient.withConfig({ useCdn: false });
-
-  // ✅ 1회 fetch로 data 가져오기
-  const bundle = await client.fetch<AbmItemBundle>(ITEM_PAGE_QUERY, {
+  const bundle = await sanityCdnClient.fetch<AbmItemBundle>(ITEM_PAGE_QUERY, {
     brandKey,
     slug,
-    isAbm: brandKey === "abm",
-    abmRoots: ABM_ROOTS,
-    hasActiveRoot: false, // 아래에서 계산 후 다시 쓰기
-    activeRoot: "",
-  });
+  }, PUBLIC_CATALOG_CACHE);
 
   const brand = bundle?.brand;
   if (!brand?._id) notFound();
@@ -497,16 +491,15 @@ export default async function AbmProductDetailPage({
   const categoryPath: string[] = Array.isArray(product?.categoryPath) ? product.categoryPath : [];
   const activeRoot = categoryPath[0] || "";
 
-  // descendants는 activeRoot 있으면 다시 1번 더 fetch (bundle에서 activeRoot를 모른 채 호출했기 때문)
-  // -> 하지만 이 호출은 가볍고(카테고리 페이지처럼) enrich에 비하면 매우 작음
-  const data2 = await client.fetch<AbmItemBundle>(ITEM_PAGE_QUERY, {
+  // Fetch only navigation categories after the product reveals its active root.
+  // The former implementation downloaded the complete product document twice.
+  const data2 = await sanityCdnClient.fetch<AbmItemBundle>(NAV_QUERY, {
     brandKey,
-    slug,
     isAbm: brandKey === "abm",
     abmRoots: ABM_ROOTS,
     hasActiveRoot: !!activeRoot,
     activeRoot,
-  });
+  }, PUBLIC_CATALOG_CACHE);
 
   const roots: CatLite[] = Array.isArray(data2?.roots) ? data2.roots : [];
   const descendants: CatLite[] = Array.isArray(data2?.descendants) ? data2.descendants : [];

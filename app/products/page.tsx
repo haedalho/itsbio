@@ -5,11 +5,9 @@ import Breadcrumb from "@/components/site/Breadcrumb";
 import NeedAssistance from "@/components/site/NeedAssistance";
 import BrandGridSelector from "@/components/products/BrandGridSelector";
 
-import { sanityClient } from "@/lib/sanity/sanity.client";
+import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
+export const revalidate = 300;
 
 type SP = { q?: string; brand?: string; category?: string; page?: string };
 
@@ -262,8 +260,8 @@ export default async function ProductsPage({ searchParams }: { searchParams?: Pr
   const q = qRaw ? `*${qRaw}*` : "";
 
   const [cats, data] = await Promise.all([
-    sanityClient.fetch(CATS_QUERY, {}, { cache: "no-store" }),
-    sanityClient.fetch(PRODUCTS_QUERY, { q, brand, cat, from, to }, { cache: "no-store" }),
+    sanityCdnClient.fetch(CATS_QUERY, {}, PUBLIC_CATALOG_CACHE),
+    sanityCdnClient.fetch(PRODUCTS_QUERY, { q, brand, cat, from, to }, PUBLIC_CATALOG_CACHE),
   ]);
 
   const popular = (data?.popular ?? []) as any[];

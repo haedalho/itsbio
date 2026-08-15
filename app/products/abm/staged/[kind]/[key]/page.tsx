@@ -10,8 +10,7 @@ import ProductTabsClient from "@/components/products/ProductTabs";
 import { ABM_PRODUCT_GROUPS, findAbmServicePathForLabels } from "@/lib/abm/catalog-taxonomy";
 import { getAbmStagedDetail, isManagedAbmImageUrl } from "@/lib/abm/rebuild-staging";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 300;
 
 function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (character) => ({
