@@ -1,36 +1,21 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import {
-  getAbmStagedRecord,
-  searchAbmStagedRecords,
-  stagedRecordPath,
-  type AbmStagedRecord,
-} from "@/lib/abm/rebuild-staging";
+import { getAbmStagedRecord, stagedRecordPath } from "@/lib/abm/rebuild-staging";
 import { sanityClient } from "@/lib/sanity/sanity.client";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
-type CatalogProduct = {
+type ProductMatch = {
   _id: string;
   title?: string;
   sku?: string;
   summary?: string;
   brandKey?: string;
   slug?: string;
-  matchingVariant?: { title?: string; sku?: string; catNo?: string };
-};
-
-type SearchResult = {
-  id: string;
-  brandKey: "abm" | "kent";
-  kind: "product" | "service";
-  title: string;
-  catalogNumber?: string;
-  summary?: string;
-  href: string;
+  matchingVariant?: { sku?: string; catNo?: string };
 };
 
 const FIND_EXACT_CATALOG_NUMBER = `
@@ -51,15 +36,8 @@ const FIND_EXACT_CATALOG_NUMBER = `
   )
 ] | order(_updatedAt desc)[0...4] {
   _id,
-  title,
-  sku,
-  summary,
   "brandKey": coalesce(brandSlug, brand->themeKey, brand->slug.current),
-  "slug": slug.current,
-  "matchingVariant": variants[
-    lower(sku) == lower($catalogNumber)
-    || lower(catNo) == lower($catalogNumber)
-  ][0]{ title, sku, catNo }
+  "slug": slug.current
 }
 `;
 
@@ -81,7 +59,7 @@ const FIND_KEYWORD_PRODUCTS = `
       || catNo match $query
     ]) > 0
   )
-] | order(title asc)[0...24] {
+] | order(title asc)[0...20] {
   _id,
   title,
   sku,
@@ -92,7 +70,7 @@ const FIND_KEYWORD_PRODUCTS = `
     title match $query
     || sku match $query
     || catNo match $query
-  ][0]{ title, sku, catNo }
+  ][0]{ sku, catNo }
 }
 `;
 
@@ -113,100 +91,12 @@ function isCatalogNumberCandidate(value: string) {
   );
 }
 
-function productHref(product: CatalogProduct) {
+function productHref(product: ProductMatch) {
   const brandKey = String(product.brandKey || "").toLowerCase();
   if (!product.slug) return "";
   if (brandKey === "kent") return `/products/kent/item/${encodeURIComponent(product.slug)}`;
   if (brandKey === "abm") return `/products/abm/item/${encodeURIComponent(product.slug)}`;
   return "";
-}
-
-function productResult(product: CatalogProduct): SearchResult | undefined {
-  const normalizedBrandKey = String(product.brandKey || "").toLowerCase();
-  if (normalizedBrandKey !== "abm" && normalizedBrandKey !== "kent") return undefined;
-  const brandKey: SearchResult["brandKey"] = normalizedBrandKey;
-  const href = productHref(product);
-  if (!href || !product.title) return undefined;
-  return {
-    id: product._id,
-    brandKey,
-    kind: "product",
-    title: product.title,
-    catalogNumber: product.matchingVariant?.catNo || product.matchingVariant?.sku || product.sku,
-    summary: product.summary,
-    href,
-  };
-}
-
-function stagedResult(record: AbmStagedRecord): SearchResult {
-  return {
-    id: `abm-${record.kind}-${record.sku || record.url}`,
-    brandKey: "abm",
-    kind: record.kind,
-    title: record.title,
-    catalogNumber: record.sku,
-    summary: record.searchCategory || record.filterTitle,
-    href: stagedRecordPath(record.kind, record),
-  };
-}
-
-function dedupeResults(results: SearchResult[]) {
-  const seen = new Set<string>();
-  return results.filter((result) => {
-    const key = [result.brandKey, result.kind, result.catalogNumber || result.title]
-      .join(":")
-      .toLowerCase();
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
-function ResultSection({ brand, results }: { brand: "ABM" | "KENT"; results: SearchResult[] }) {
-  if (!results.length) return null;
-  const isKent = brand === "KENT";
-  return (
-    <section className="mt-10" aria-labelledby={`${brand.toLowerCase()}-results`}>
-      <div className="flex items-end justify-between gap-4 border-b border-slate-200 pb-4">
-        <div>
-          <p className={`text-xs font-bold uppercase tracking-[0.2em] ${isKent ? "text-blue-600" : "text-orange-600"}`}>
-            {brand}
-          </p>
-          <h2 id={`${brand.toLowerCase()}-results`} className="mt-1 text-2xl font-semibold text-slate-950">
-            {brand} results
-          </h2>
-        </div>
-        <span className="text-sm text-slate-500">{results.length} found</span>
-      </div>
-
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
-        {results.map((result) => (
-          <Link
-            key={result.id}
-            href={result.href}
-            className="group rounded-2xl border border-slate-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg"
-          >
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-              <span className={`h-2 w-2 rounded-full ${isKent ? "bg-blue-600" : "bg-orange-500"}`} />
-              {result.kind}
-            </div>
-            <h3 className="mt-3 text-lg font-semibold leading-7 text-slate-950 group-hover:text-orange-600">
-              {result.title}
-            </h3>
-            {result.catalogNumber && (
-              <p className="mt-2 text-sm text-slate-600">
-                {isKent ? "Item #" : "Cat. No."} <span className="font-semibold text-slate-900">{result.catalogNumber}</span>
-              </p>
-            )}
-            {result.summary && <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-500">{result.summary}</p>}
-            <span className="mt-5 inline-flex text-sm font-semibold text-slate-900 group-hover:text-orange-600">
-              View details&nbsp;→
-            </span>
-          </Link>
-        ))}
-      </div>
-    </section>
-  );
 }
 
 export default async function SearchPage({
@@ -233,7 +123,7 @@ export default async function SearchPage({
   const catalogNumber = normalizeCatalogNumber(q);
   if (isCatalogNumberCandidate(catalogNumber)) {
     const [exactDocs, stagedProduct, stagedService] = await Promise.all([
-      sanityClient.fetch<CatalogProduct[]>(FIND_EXACT_CATALOG_NUMBER, { catalogNumber }),
+      sanityClient.fetch<ProductMatch[]>(FIND_EXACT_CATALOG_NUMBER, { catalogNumber }),
       getAbmStagedRecord("product", catalogNumber),
       getAbmStagedRecord("service", catalogNumber),
     ]);
@@ -246,22 +136,10 @@ export default async function SearchPage({
     if (stagedService) redirect(stagedRecordPath("service", stagedService));
   }
 
-  const [products, stagedProducts, stagedServices] = await Promise.all([
-    sanityClient.fetch<CatalogProduct[]>(FIND_KEYWORD_PRODUCTS, { query: `*${q}*` }),
-    searchAbmStagedRecords("product", q),
-    searchAbmStagedRecords("service", q),
-  ]);
-
-  const results = dedupeResults([
-    ...(Array.isArray(products) ? products : []).flatMap((product) => {
-      const result = productResult(product);
-      return result ? [result] : [];
-    }),
-    ...stagedProducts.map(stagedResult),
-    ...stagedServices.map(stagedResult),
-  ]);
-  const kentResults = results.filter((result) => result.brandKey === "kent");
-  const abmResults = results.filter((result) => result.brandKey === "abm");
+  const keywordProducts = await sanityClient.fetch<ProductMatch[]>(FIND_KEYWORD_PRODUCTS, {
+    query: `*${q}*`,
+  });
+  const products = (Array.isArray(keywordProducts) ? keywordProducts : []).filter((product) => productHref(product));
 
   return (
     <main className="bg-slate-50/70">
@@ -272,16 +150,41 @@ export default async function SearchPage({
           Results for <span className="font-semibold text-slate-950">“{q}”</span> across ABM and Kent.
         </p>
 
-        {results.length ? (
-          <>
-            <ResultSection brand="KENT" results={kentResults} />
-            <ResultSection brand="ABM" results={abmResults} />
-          </>
+        {products.length ? (
+          <div className="mt-10 grid gap-4 md:grid-cols-2">
+            {products.map((product) => {
+              const href = productHref(product);
+              const brandKey = String(product.brandKey || "").toLowerCase();
+              const isKent = brandKey === "kent";
+              const catalog = product.matchingVariant?.catNo || product.matchingVariant?.sku || product.sku;
+              return (
+                <Link
+                  key={product._id}
+                  href={href}
+                  className="group rounded-2xl border border-slate-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg"
+                >
+                  <p className={`text-xs font-bold uppercase tracking-[0.16em] ${isKent ? "text-blue-600" : "text-orange-600"}`}>
+                    {isKent ? "KENT" : "ABM"}
+                  </p>
+                  <h2 className="mt-3 text-lg font-semibold leading-7 text-slate-950 group-hover:text-orange-600">
+                    {product.title}
+                  </h2>
+                  {catalog && (
+                    <p className="mt-2 text-sm text-slate-600">
+                      {isKent ? "Item #" : "Cat. No."} <span className="font-semibold text-slate-900">{catalog}</span>
+                    </p>
+                  )}
+                  {product.summary && <p className="mt-3 text-sm leading-6 text-slate-500">{product.summary}</p>}
+                  <span className="mt-5 inline-flex text-sm font-semibold text-slate-900 group-hover:text-orange-600">
+                    View details&nbsp;→
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
         ) : (
           <section className="mt-10 rounded-3xl border border-slate-200 bg-white px-6 py-14 text-center shadow-sm">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50 text-2xl text-orange-600">
-              ?
-            </div>
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50 text-2xl text-orange-600">?</div>
             <h2 className="mt-5 text-2xl font-semibold text-slate-950">No matching product found</h2>
             <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-slate-500">
               Check the catalog number, spacing, or hyphens, or try searching with the product name.

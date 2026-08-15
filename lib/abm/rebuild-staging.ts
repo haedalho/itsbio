@@ -180,40 +180,6 @@ export async function getAbmStagedRecord(kind: AbmStagedRecord["kind"], key: str
   });
 }
 
-const STAGED_SEARCH_QUERY = `(*[
-  _type == "abmRebuildChunk"
-  && version == $version
-  && kind == $kind
-].records[])[
-  title match $query
-  || sku match $query
-] | order(title asc)[0...12] {
-  kind,
-  sku,
-  title,
-  url,
-  unit,
-  searchCategory,
-  filterTitle,
-  filterPath,
-  listingFilters
-}`;
-
-/** Read-only keyword search across the staged ABM inventory. */
-export async function searchAbmStagedRecords(
-  kind: AbmStagedRecord["kind"],
-  query: string,
-): Promise<AbmStagedRecord[]> {
-  const value = String(query || "").trim();
-  if (!value) return [];
-  const records = await sanityClient.fetch<AbmStagedRecord[]>(STAGED_SEARCH_QUERY, {
-    version: ABM_REBUILD_VERSION,
-    kind,
-    query: `*${value}*`,
-  });
-  return Array.isArray(records) ? records : [];
-}
-
 export function stagedRecordKey(row: AbmStagedRecord) {
   return row.sku || row.url;
 }
