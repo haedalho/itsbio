@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 
 import { sanityClient } from "@/lib/sanity/sanity.client";
-import { looksLikeCatNo } from "@/lib/abm/abm";
 import { getAbmStagedRecord, stagedRecordPath } from "@/lib/abm/rebuild-staging";
 
 export const dynamic = "force-dynamic";
@@ -10,66 +9,121 @@ export const fetchCache = "force-no-store";
 
 const BRAND_KEY = "abm";
 
-const FIND_BY_SKU_OR_TITLE = `
+type ExactCatalogMatch = {
+  _id: string;
+  brandKey?: string;
+  categoryPath?: string[];
+  slug?: string;
+};
+
+const FIND_EXACT_CATALOG_NUMBER = `
+*[
+  _type=="product"
+  && (!defined(isActive) || isActive==true)
+  && (
+    brandSlug in ["abm", "kent"]
+    || brand->slug.current in ["abm", "kent"]
+    || brand->themeKey in ["abm", "kent"]
+  )
+  && (
+    lower(sku) == lower($catalogNumber)
+    || count(variants[
+      lower(sku) == lower($catalogNumber)
+      || lower(catNo) == lower($catalogNumber)
+    ]) > 0
+  )
+] | order(_updatedAt desc)[0...4] {
+  _id,
+  "brandKey": coalesce(brandSlug, brand->themeKey, brand->slug.current),
+  "slug": slug.current,
+  categoryPath
+}
+`;
+
+const FIND_ABM_BY_TITLE = `
 *[
   _type=="product"
   && isActive==true
   && (brand->slug.current == $brandKey || brand->themeKey == $brandKey)
-  && (
-    (defined($sku) && sku == $sku)
-    || (defined($q) && title match $q)
-  )
+  && title match $q
 ] | order(_updatedAt desc)[0] {
-  _id,
-  title,
-  sku,
   "slug": slug.current,
-  sourceUrl,
-  categoryPath,
-  categoryPathTitles,
-  enrichedAt
+  categoryPath
 }
 `;
+
+function normalizeCatalogNumber(value: string) {
+  return value
+    .normalize("NFKC")
+    .replace(/[‐‑‒–—―−]/g, "-")
+    .trim();
+}
+
+function isCatalogNumberCandidate(value: string) {
+  return (
+    value.length >= 2
+    && value.length <= 64
+    && /\d/.test(value)
+    && !/\s/.test(value)
+    && /^[A-Za-z0-9._/+()-]+$/.test(value)
+  );
+}
 
 function categoryHref(categoryPath: string[]) {
   if (!categoryPath?.length) return `/products/${BRAND_KEY}`;
   return `/products/${BRAND_KEY}/${categoryPath.join("/")}`;
 }
 
+function exactCatalogHref(doc: ExactCatalogMatch) {
+  const brandKey = String(doc.brandKey || "").toLowerCase();
+  if (!doc.slug) return "";
+  if (brandKey === "kent") return `/products/kent/item/${encodeURIComponent(doc.slug)}`;
+  if (brandKey === "abm") {
+    const href = categoryHref(doc.categoryPath || []);
+    return `${href}?open=${encodeURIComponent(doc.slug)}`;
+  }
+  return "";
+}
+
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams?: { q?: string };
+  searchParams?: Promise<{ q?: string }> | { q?: string };
 }) {
-  const qRaw = (searchParams?.q || "").trim();
+  const resolvedSearchParams = await Promise.resolve(searchParams);
+  const qRaw = (resolvedSearchParams?.q || "").trim();
   const q = qRaw.replace(/\s+/g, " ").trim();
 
   if (!q) redirect(`/products/${BRAND_KEY}`);
 
-  // 1) Sanity 우선 검색 (Cat.No exact / title match)
-  const sku = looksLikeCatNo(q) ? q : undefined;
-  const doc = await sanityClient.fetch(FIND_BY_SKU_OR_TITLE, {
-    brandKey: BRAND_KEY,
-    sku: sku ?? null,
-    q: q ? `*${q}*` : null,
-  });
+  // 1) ABM / KENT 카탈로그 번호를 동일한 규칙으로 정확히 조회한다.
+  // KENT variant의 sku/catNo도 부모 제품 상세로 연결한다.
+  const catalogNumber = normalizeCatalogNumber(q);
+  if (isCatalogNumberCandidate(catalogNumber)) {
+    const [exactDocs, stagedProduct, stagedService] = await Promise.all([
+      sanityClient.fetch<ExactCatalogMatch[]>(FIND_EXACT_CATALOG_NUMBER, { catalogNumber }),
+      getAbmStagedRecord("product", catalogNumber),
+      getAbmStagedRecord("service", catalogNumber),
+    ]);
 
+    const exactHref = (Array.isArray(exactDocs) ? exactDocs : [])
+      .map(exactCatalogHref)
+      .find(Boolean);
+    if (exactHref) redirect(exactHref);
+    if (stagedProduct) redirect(stagedRecordPath("product", stagedProduct));
+    if (stagedService) redirect(stagedRecordPath("service", stagedService));
+  }
+
+  // 2) 기존 ABM 제품명 검색 동작은 그대로 유지한다.
+  const doc = await sanityClient.fetch(FIND_ABM_BY_TITLE, {
+    brandKey: BRAND_KEY,
+    q: `*${q}*`,
+  });
   if (doc?.slug) {
     const href = categoryHref(doc.categoryPath || []);
     redirect(`${href}?open=${encodeURIComponent(doc.slug)}`);
   }
 
-  // 2) Production Product에 없으면 완전 적재된 ABM staging inventory에서 찾는다.
-  // Preview runtime에서는 ABM 원본 사이트를 호출하거나 Product 문서를 생성하지 않는다.
-  if (looksLikeCatNo(q)) {
-    const [product, service] = await Promise.all([
-      getAbmStagedRecord("product", q),
-      getAbmStagedRecord("service", q),
-    ]);
-    if (product) redirect(stagedRecordPath("product", product));
-    if (service) redirect(stagedRecordPath("service", service));
-  }
-
-  // 2-B) 제목/키워드는 자체 catalog filter로 이어진다.
+  // 3) 키워드 미일치는 기존 ABM catalog filter로 이어진다.
   redirect(`/products/${BRAND_KEY}/products?q=${encodeURIComponent(q)}`);
 }
