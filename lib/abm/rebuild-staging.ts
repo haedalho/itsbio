@@ -200,7 +200,10 @@ const STAGED_SEARCH_QUERY = `(*[
 }`;
 
 /** Read-only keyword search across the staged ABM inventory. */
-export async function searchAbmStagedRecords(kind: AbmStagedRecord["kind"], query: string) {
+export async function searchAbmStagedRecords(
+  kind: AbmStagedRecord["kind"],
+  query: string,
+): Promise<AbmStagedRecord[]> {
   const value = String(query || "").trim();
   if (!value) return [];
   const records = await sanityClient.fetch<AbmStagedRecord[]>(STAGED_SEARCH_QUERY, {

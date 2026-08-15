@@ -122,8 +122,9 @@ function productHref(product: CatalogProduct) {
 }
 
 function productResult(product: CatalogProduct): SearchResult | undefined {
-  const brandKey = String(product.brandKey || "").toLowerCase();
-  if (brandKey !== "abm" && brandKey !== "kent") return undefined;
+  const normalizedBrandKey = String(product.brandKey || "").toLowerCase();
+  if (normalizedBrandKey !== "abm" && normalizedBrandKey !== "kent") return undefined;
+  const brandKey: SearchResult["brandKey"] = normalizedBrandKey;
   const href = productHref(product);
   if (!href || !product.title) return undefined;
   return {
