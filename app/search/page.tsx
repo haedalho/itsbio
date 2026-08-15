@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { sanityClient } from "@/lib/sanity/sanity.client";
@@ -116,5 +117,43 @@ export default async function SearchPage({
     redirect(`${href}?open=${encodeURIComponent(doc.slug)}`);
   }
 
-  redirect("/products");
+  return (
+    <main className="bg-slate-50/70">
+      <div className="mx-auto flex min-h-[58vh] max-w-5xl items-center justify-center px-6 py-16 md:py-20">
+        <section className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white px-6 py-14 text-center shadow-[0_20px_60px_rgba(15,23,42,0.07)] md:px-12">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-orange-50 text-2xl font-semibold text-orange-600">
+            ?
+          </div>
+          <p className="mt-6 text-xs font-bold uppercase tracking-[0.22em] text-orange-600">ITS BIO Search</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">No matching product found</h1>
+          <p className="mt-4 text-slate-600">
+            No ABM or Kent product matched <span className="font-semibold text-slate-950">“{q}”</span>.
+          </p>
+          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">
+            Check the catalog number, spacing, or hyphens, or try searching with the product name.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link
+              href="/products/abm"
+              className="rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 transition hover:border-orange-300 hover:text-orange-600"
+            >
+              Browse ABM
+            </Link>
+            <Link
+              href="/products/kent"
+              className="rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 transition hover:border-blue-300 hover:text-blue-700"
+            >
+              Browse Kent
+            </Link>
+            <Link
+              href="/contact"
+              className="rounded-full bg-orange-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-700"
+            >
+              Contact us
+            </Link>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
 }
