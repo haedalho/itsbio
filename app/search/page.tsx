@@ -12,7 +12,6 @@ const BRAND_KEY = "abm";
 type ExactCatalogMatch = {
   _id: string;
   brandKey?: string;
-  categoryPath?: string[];
   slug?: string;
 };
 
@@ -35,8 +34,7 @@ const FIND_EXACT_CATALOG_NUMBER = `
 ] | order(_updatedAt desc)[0...4] {
   _id,
   "brandKey": coalesce(brandSlug, brand->themeKey, brand->slug.current),
-  "slug": slug.current,
-  categoryPath
+  "slug": slug.current
 }
 `;
 
@@ -78,10 +76,7 @@ function exactCatalogHref(doc: ExactCatalogMatch) {
   const brandKey = String(doc.brandKey || "").toLowerCase();
   if (!doc.slug) return "";
   if (brandKey === "kent") return `/products/kent/item/${encodeURIComponent(doc.slug)}`;
-  if (brandKey === "abm") {
-    const href = categoryHref(doc.categoryPath || []);
-    return `${href}?open=${encodeURIComponent(doc.slug)}`;
-  }
+  if (brandKey === "abm") return `/products/abm/item/${encodeURIComponent(doc.slug)}`;
   return "";
 }
 
