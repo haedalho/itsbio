@@ -70,7 +70,7 @@ export default function Header() {
         </nav>
 
         <div className="ml-auto flex items-center gap-3">
-          <SearchBox className="hidden w-80 md:block" />
+          <SearchBox className="hidden w-80 md:block xl:w-[420px]" />
           <Link
             href="/quote"
             className="rounded-full bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-700 md:px-6"
