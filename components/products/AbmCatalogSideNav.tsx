@@ -75,6 +75,7 @@ export default function AbmCatalogSideNav({
             <Link
               key={group.slug}
               href={group.href}
+              prefetch={true}
               className={`flex items-center justify-between px-2 py-2 text-sm font-semibold transition ${
                 activeProductRoot === group.slug
                   ? "text-[#dc5a2b]"
@@ -96,6 +97,7 @@ export default function AbmCatalogSideNav({
               <div key={group.slug}>
                 <Link
                   href={group.href}
+                  prefetch={true}
                   className={`flex items-center justify-between px-2 py-2 text-sm font-semibold transition ${
                     exact
                       ? "text-[#dc5a2b]"

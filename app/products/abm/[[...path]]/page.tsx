@@ -529,7 +529,7 @@ function CatalogGroupGrid({ groups, counts }: { groups: AbmCatalogGroup[]; count
         <Link
           key={`${group.kind}-${group.slug}`}
           href={group.href}
-          prefetch={false}
+          prefetch={true}
           className="group grid gap-2 border-b border-neutral-200 px-3 py-5 transition last:border-b-0 hover:bg-orange-50/70 md:grid-cols-[220px_minmax(0,1fr)_auto] md:items-center md:gap-6"
         >
           <div>
@@ -724,7 +724,7 @@ function SideNavTree({
             activeRootTree.map((n) => <NodeRow key={n.key} node={n} />)
           ) : (
             !activeRoot ? roots.map((root) => (
-              <Link key={root._id} href={buildHref(brandKey, root.path)} prefetch={false} className="flex items-center justify-between px-2 py-2 text-sm font-semibold text-neutral-800 hover:text-[#dc5a2b]">
+              <Link key={root._id} href={buildHref(brandKey, root.path)} prefetch={true} className="flex items-center justify-between px-2 py-2 text-sm font-semibold text-neutral-800 hover:text-[#dc5a2b]">
                 <span>{stripBrandSuffix(root.title)}</span><span aria-hidden>⌄</span>
               </Link>
             )) : null
@@ -737,7 +737,7 @@ function SideNavTree({
                 <Link
                   key={root._id}
                   href={buildHref(brandKey, root.path)}
-                  prefetch={false}
+                  prefetch={true}
                   className="flex items-center justify-between px-2 py-2 text-sm font-semibold text-neutral-800 hover:text-[#dc5a2b]"
                 >
                   <span className="min-w-0 truncate">{stripBrandSuffix(root.title)}</span>
@@ -754,7 +754,7 @@ function SideNavTree({
               <Link
                 key={group.slug}
                 href={group.href}
-                prefetch={false}
+                prefetch={true}
                 className="flex items-center justify-between px-2 py-2 text-sm font-semibold text-neutral-800 hover:text-[#dc5a2b]"
               >
                 <span>{group.title}</span>
