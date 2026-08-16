@@ -14,7 +14,7 @@ const QUERY = `
     || brand->themeKey == "abm"
     || brand->slug.current == "abm"
   )
-  && count(path) == 2
+  && count(path) > 1
   && path[0] in $roots
 ]
 | order(path[0] asc, order asc, title asc) {
@@ -36,7 +36,8 @@ export async function GET() {
   const rows = await sanityCdnClient.fetch<Row[]>(QUERY, { roots: ROOTS }, PUBLIC_CATALOG_CACHE);
 
   const items = (Array.isArray(rows) ? rows : [])
-    .filter((row) => Array.isArray(row.path) && row.path.length === 2 && ROOTS.includes(row.path[0] as (typeof ROOTS)[number]))
+    .filter((row) => Array.isArray(row.path) && row.path.length > 1 && ROOTS.includes(row.path[0] as (typeof ROOTS)[number]))
+    .sort((a, b) => (a.path?.length || 99) - (b.path?.length || 99))
     .map((row) => ({
       id: row._id,
       title: String(row.title || "").trim(),
