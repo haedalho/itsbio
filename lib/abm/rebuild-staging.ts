@@ -217,7 +217,9 @@ const EXISTING_ABM_IMAGE_QUERY = `*[
   )
   && (
     ($sku != "" && lower(sku) == lower($sku))
+    || ($sku != "" && count(variants[defined(sku) && lower(sku) == lower($sku)]) > 0)
     || ($title != "" && lower(title) == lower($title))
+    || ($sourceUrl != "" && sourceUrl == $sourceUrl)
   )
 ][0]{ imageUrls }`;
 
@@ -228,6 +230,7 @@ async function getExistingManagedProductImages(record: AbmStagedRecord) {
   const result = await sanityCdnClient.fetch<ExistingAbmImages | null>(EXISTING_ABM_IMAGE_QUERY, {
     sku: String(record.sku || "").trim(),
     title: String(record.title || "").trim(),
+    sourceUrl: String(record.url || "").trim(),
   }, PUBLIC_CATALOG_CACHE);
   return normalizedDetailImages(undefined, result?.imageUrls);
 }
