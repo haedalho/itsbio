@@ -3,6 +3,19 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+type BrandTheme = {
+  gradient: string;
+  softBg: string;
+  activeBg: string;
+  border: string;
+  text: string;
+  hoverText: string;
+  hoverBorder: string;
+  button: string;
+  ring: string;
+  dot: string;
+};
+
 type Brand = {
   key: string;
   name: string;
@@ -11,6 +24,142 @@ type Brand = {
   href: string;
   searchKey: string;
   categories: string[];
+  theme: BrandTheme;
+};
+
+const THEMES: Record<string, BrandTheme> = {
+  abm: {
+    gradient: "from-orange-600 via-orange-500 to-orange-400",
+    softBg: "bg-orange-50/55",
+    activeBg: "bg-orange-50",
+    border: "border-orange-200",
+    text: "text-orange-700",
+    hoverText: "hover:text-orange-700",
+    hoverBorder: "hover:border-orange-200",
+    button: "bg-orange-600 hover:bg-orange-700",
+    ring: "focus:ring-orange-100",
+    dot: "bg-orange-500",
+  },
+  kent: {
+    gradient: "from-blue-700 via-blue-600 to-blue-500",
+    softBg: "bg-blue-50/55",
+    activeBg: "bg-blue-50",
+    border: "border-blue-200",
+    text: "text-blue-700",
+    hoverText: "hover:text-blue-700",
+    hoverBorder: "hover:border-blue-200",
+    button: "bg-blue-600 hover:bg-blue-700",
+    ring: "focus:ring-blue-100",
+    dot: "bg-blue-500",
+  },
+  itschem: {
+    gradient: "from-rose-600 via-rose-500 to-rose-400",
+    softBg: "bg-rose-50/55",
+    activeBg: "bg-rose-50",
+    border: "border-rose-200",
+    text: "text-rose-700",
+    hoverText: "hover:text-rose-700",
+    hoverBorder: "hover:border-rose-200",
+    button: "bg-rose-600 hover:bg-rose-700",
+    ring: "focus:ring-rose-100",
+    dot: "bg-rose-500",
+  },
+  aims: {
+    gradient: "from-sky-700 via-sky-600 to-sky-500",
+    softBg: "bg-sky-50/55",
+    activeBg: "bg-sky-50",
+    border: "border-sky-200",
+    text: "text-sky-700",
+    hoverText: "hover:text-sky-700",
+    hoverBorder: "hover:border-sky-200",
+    button: "bg-sky-600 hover:bg-sky-700",
+    ring: "focus:ring-sky-100",
+    dot: "bg-sky-500",
+  },
+  seedburo: {
+    gradient: "from-green-700 via-green-600 to-green-500",
+    softBg: "bg-green-50/55",
+    activeBg: "bg-green-50",
+    border: "border-green-200",
+    text: "text-green-700",
+    hoverText: "hover:text-green-700",
+    hoverBorder: "hover:border-green-200",
+    button: "bg-green-600 hover:bg-green-700",
+    ring: "focus:ring-green-100",
+    dot: "bg-green-500",
+  },
+  bioplastics: {
+    gradient: "from-yellow-400 via-amber-300 to-amber-200",
+    softBg: "bg-yellow-50/65",
+    activeBg: "bg-yellow-50",
+    border: "border-yellow-200",
+    text: "text-yellow-700",
+    hoverText: "hover:text-yellow-700",
+    hoverBorder: "hover:border-yellow-200",
+    button: "bg-yellow-400 hover:bg-yellow-500 text-slate-950",
+    ring: "focus:ring-yellow-100",
+    dot: "bg-yellow-400",
+  },
+  cleaver: {
+    gradient: "from-purple-700 via-purple-600 to-purple-500",
+    softBg: "bg-purple-50/55",
+    activeBg: "bg-purple-50",
+    border: "border-purple-200",
+    text: "text-purple-700",
+    hoverText: "hover:text-purple-700",
+    hoverBorder: "hover:border-purple-200",
+    button: "bg-purple-600 hover:bg-purple-700",
+    ring: "focus:ring-purple-100",
+    dot: "bg-purple-500",
+  },
+  cellfree: {
+    gradient: "from-blue-950 via-blue-900 to-blue-700",
+    softBg: "bg-blue-50/50",
+    activeBg: "bg-blue-50",
+    border: "border-blue-200",
+    text: "text-blue-900",
+    hoverText: "hover:text-blue-900",
+    hoverBorder: "hover:border-blue-200",
+    button: "bg-blue-900 hover:bg-blue-950",
+    ring: "focus:ring-blue-100",
+    dot: "bg-blue-900",
+  },
+  plaslabs: {
+    gradient: "from-slate-950 via-slate-900 to-slate-700",
+    softBg: "bg-slate-50/75",
+    activeBg: "bg-slate-100",
+    border: "border-slate-300",
+    text: "text-slate-900",
+    hoverText: "hover:text-slate-950",
+    hoverBorder: "hover:border-slate-400",
+    button: "bg-slate-900 hover:bg-slate-950",
+    ring: "focus:ring-slate-200",
+    dot: "bg-slate-900",
+  },
+  affinity: {
+    gradient: "from-sky-500 via-cyan-400 to-cyan-300",
+    softBg: "bg-cyan-50/55",
+    activeBg: "bg-cyan-50",
+    border: "border-cyan-200",
+    text: "text-sky-700",
+    hoverText: "hover:text-sky-700",
+    hoverBorder: "hover:border-sky-200",
+    button: "bg-sky-500 hover:bg-sky-600",
+    ring: "focus:ring-sky-100",
+    dot: "bg-sky-400",
+  },
+  dogen: {
+    gradient: "from-red-950 via-red-800 to-red-700",
+    softBg: "bg-red-50/55",
+    activeBg: "bg-red-50",
+    border: "border-red-200",
+    text: "text-red-800",
+    hoverText: "hover:text-red-800",
+    hoverBorder: "hover:border-red-200",
+    button: "bg-red-800 hover:bg-red-900",
+    ring: "focus:ring-red-100",
+    dot: "bg-red-800",
+  },
 };
 
 const BRANDS: Brand[] = [
@@ -23,50 +172,65 @@ const BRANDS: Brand[] = [
     searchKey: "abm",
     categories: [
       "General Materials",
-      "Cellular Materials",
-      "Genetic Materials",
       "PCR Enzymes",
+      "Enzymes & Kits",
       "Antibodies",
-      "Cell Culture",
+      "Biorepository",
+      "Transfection Reagents",
+      "DNA / RNA Purification",
+      "Gel Documentation",
+      "Cellular Materials",
+      "Cell Library Collections",
+      "3D & Organoid",
+      "Media & Supplements",
+      "Genetic Materials",
       "Viral Vectors",
+      "CRISPR",
+      "Expression Systems",
       "Custom Services",
     ],
+    theme: THEMES.abm,
   },
   {
     key: "kent",
     name: "Kent Scientific",
     area: "Animal Research",
-    description: "Integrated systems for laboratory animal anesthesia, ventilation, monitoring, surgery, warming, and handling.",
+    description: "Integrated systems for laboratory animal anesthesia, ventilation, monitoring, surgery, warming, identification, and handling.",
     href: "/products/kent",
     searchKey: "kent",
     categories: [
       "Anesthesia",
       "Ventilation",
       "Physiological Monitoring",
-      "Blood Pressure",
+      "Noninvasive Blood Pressure",
       "Surgery",
       "Warming",
+      "Rodent Identification",
       "Animal Handling",
-      "Feeding & Syringe",
+      "Syringe Pump",
+      "Feeding Needles",
     ],
+    theme: THEMES.kent,
   },
   {
-    key: "cleaver",
-    name: "Cleaver Scientific",
-    area: "Laboratory Equipment",
-    description: "Practical laboratory equipment for electrophoresis, gel documentation, blotting, imaging, and related workflows.",
+    key: "itschem",
+    name: "ITSChem",
+    area: "Research Materials",
+    description: "Specialty research materials and responsive laboratory sourcing support for scientific and industrial workflows.",
     href: "/products#brands",
-    searchKey: "cleaverscientific",
-    categories: [
-      "Horizontal Gel Systems",
-      "Vertical Gel Systems",
-      "Power Supplies",
-      "Gel Documentation",
-      "Blotting",
-      "Electrophoresis",
-      "Accessories",
-      "Lab Equipment",
-    ],
+    searchKey: "itschem",
+    categories: ["Research Materials", "Laboratory Supply", "Specialty Materials", "Sourcing Support"],
+    theme: THEMES.itschem,
+  },
+  {
+    key: "aims",
+    name: "AIMS",
+    area: "Animal Identification",
+    description: "Identification systems and accessories designed to support reliable laboratory animal research and care.",
+    href: "/products#brands",
+    searchKey: "aims",
+    categories: ["Lab Animal Identification System", "AIMS Accessories"],
+    theme: THEMES.aims,
   },
   {
     key: "seedburo",
@@ -76,87 +240,49 @@ const BRANDS: Brand[] = [
     href: "/products#brands",
     searchKey: "seedburo",
     categories: [
-      "Dividers",
+      "Divider",
       "Density Measurement",
-      "Sieves & Shakers",
-      "Seed Counting",
+      "Sieve Shakers, Test Sieves & Screens",
+      "Seed Counting & Analysis",
+      "Farm & Ranch",
       "Grinders & Mills",
       "Moisture Testers",
-      "Germination",
+      "Spiral Separators",
+      "Sample Bags & Containers",
+      "Germination Equipment",
       "Grain & Seed Cleaners",
     ],
-  },
-  {
-    key: "aims",
-    name: "AIMS",
-    area: "Animal Identification",
-    description: "Identification and data solutions designed for reliable laboratory animal research, tracking, and care.",
-    href: "/products#brands",
-    searchKey: "aims",
-    categories: [
-      "Animal Identification",
-      "Identification Systems",
-      "Readers",
-      "Tags & Markers",
-      "Data Management",
-      "Accessories",
-      "Animal Care",
-      "Research Support",
-    ],
+    theme: THEMES.seedburo,
   },
   {
     key: "bioplastics",
     name: "BIOplastics",
     area: "PCR & qPCR Consumables",
-    description: "Precision laboratory plastic consumables engineered for consistent PCR, qPCR, and molecular diagnostic workflows.",
+    description: "Precision laboratory plastic consumables for consistent PCR, qPCR, and molecular diagnostic workflows.",
     href: "/products#brands",
     searchKey: "bioplastics",
-    categories: [
-      "Single Tubes",
-      "Tube Strips",
-      "Strips with Caps",
-      "PCR Plates",
-      "Cap Strips",
-      "Mats & Seals",
-      "PCR Consumables",
-      "qPCR Consumables",
-    ],
+    categories: ["Single Tubes", "Tube Strips", "Tube Strips with Caps", "Plates", "Cap Strips, Mats & Seals"],
+    theme: THEMES.bioplastics,
+  },
+  {
+    key: "cleaver",
+    name: "Cleaver Scientific",
+    area: "Laboratory Equipment",
+    description: "Practical equipment for electrophoresis, gel documentation, blotting, power supply, and clinical laboratory workflows.",
+    href: "/products#brands",
+    searchKey: "cleaverscientific",
+    categories: ["Horizontal Gel Systems", "Vertical, Blotting & DGGE", "Power Supplies", "Clinical & Pharmaceutical", "Gel Documentation"],
+    theme: THEMES.cleaver,
   },
   {
     key: "cellfree",
     name: "CellFree Sciences",
     area: "Protein Expression",
-    description: "Wheat-germ cell-free protein expression systems, reagents, kits, and services for advanced protein research.",
+    description: "Wheat-germ cell-free protein expression systems, vectors, reagents, kits, and services for advanced protein research.",
     href: "/products#brands",
     searchKey: "cellfreesciences",
-    categories: [
-      "Protein Expression",
-      "Wheat Germ Systems",
-      "Expression Kits",
-      "Reagents",
-      "Protein Synthesis",
-      "Screening",
-      "Accessories",
-      "Research Services",
-    ],
-  },
-  {
-    key: "itschem",
-    name: "ITSChem",
-    area: "Research Materials",
-    description: "Specialty research materials and responsive laboratory supply support for scientific and industrial workflows.",
-    href: "/products#brands",
-    searchKey: "itschem",
-    categories: [
-      "Research Materials",
-      "Laboratory Supply",
-      "Specialty Materials",
-      "Chemicals",
-      "Reagents",
-      "Consumables",
-      "Custom Sourcing",
-      "Technical Support",
-    ],
+    categories: ["pEU Vector", "Protein Expression Kits", "Reagents"],
+    theme: THEMES.cellfree,
   },
   {
     key: "plaslabs",
@@ -167,23 +293,48 @@ const BRANDS: Brand[] = [
     searchKey: "plaslabs",
     categories: [
       "Glove Boxes",
-      "Controlled Enclosures",
+      "Glove Box Accessories",
+      "Custom Glove Boxes",
+      "Animal Care & Research",
+      "PCR Chambers",
       "Desiccators",
-      "Anaerobic Chambers",
-      "Animal Care",
-      "Handling Systems",
-      "Accessories",
-      "Custom Enclosures",
+      "Ventilated Balance Enclosures",
+      "Lab CO2 / Vacuum Chambers",
+      "Tissue Culture Hoods",
+      "Stream Tables",
     ],
+    theme: THEMES.plaslabs,
+  },
+  {
+    key: "affinity",
+    name: "Affinity Immuno",
+    area: "Immunoassays",
+    description: "Immunoassay products and antibody solutions for life science and diagnostic research workflows.",
+    href: "/products#brands",
+    searchKey: "affinityimmuno",
+    categories: ["ELISA", "Antibodies", "COVID-19", "IgEasY"],
+    theme: THEMES.affinity,
+  },
+  {
+    key: "dogen",
+    name: "DoGen",
+    area: "Cell & Protein Research",
+    description: "Research solutions for cell-based assays and protein biochemistry applications.",
+    href: "/products#brands",
+    searchKey: "dogen",
+    categories: ["Cell Based Assay", "Protein Biochemistry"],
+    theme: THEMES.dogen,
   },
 ];
 
 const QUICK_LINKS = [
-  { label: "Product Hub", href: "/products", desc: "Browse all brands" },
-  { label: "Catalog Search", href: "/search", desc: "Name or Catalog No." },
-  { label: "Promotions", href: "/promotions", desc: "Current offers" },
-  { label: "Request a Quote", href: "/quote", desc: "Send an inquiry" },
-] as const;
+  { label: "Product Hub", href: "/products" },
+  { label: "Catalog Search", href: "/search" },
+  { label: "Promotions", href: "/promotions" },
+  { label: "Notice", href: "/notice" },
+  { label: "Request a Quote", href: "/quote" },
+  { label: "Contact", href: "/contact" },
+];
 
 function SearchIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
@@ -194,30 +345,26 @@ function SearchIcon({ className = "h-5 w-5" }: { className?: string }) {
   );
 }
 
-function ArrowIcon() {
+function ArrowIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+    <svg viewBox="0 0 20 20" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
       <path d="M4 10h11" />
       <path d="m11 6 4 4-4 4" />
     </svg>
   );
 }
 
-function categoryHref(brand: Brand, category: string) {
-  const params = new URLSearchParams({ q: category, brand: brand.searchKey });
-  return `/search?${params.toString()}`;
-}
-
 export default function ProductsMegaMenu() {
   const [open, setOpen] = useState(false);
-  const [activeKey, setActiveKey] = useState<string | null>(null);
+  const [activeKey, setActiveKey] = useState("abm");
   const rootRef = useRef<HTMLDivElement | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const activeBrand = useMemo(
-    () => (activeKey ? BRANDS.find((brand) => brand.key === activeKey) ?? null : null),
+    () => BRANDS.find((brand) => brand.key === activeKey) ?? BRANDS[0],
     [activeKey]
   );
+  const theme = activeBrand.theme;
 
   const cancelClose = () => {
     if (!closeTimer.current) return;
@@ -230,17 +377,14 @@ export default function ProductsMegaMenu() {
     closeTimer.current = setTimeout(() => setOpen(false), 240);
   };
 
-  const closeMenu = () => {
-    setOpen(false);
-    setActiveKey(null);
-  };
+  const closeMenu = () => setOpen(false);
 
   useEffect(() => {
     const onPointerDown = (event: MouseEvent) => {
-      if (rootRef.current && !rootRef.current.contains(event.target as Node)) closeMenu();
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false);
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeMenu();
+      if (event.key === "Escape") setOpen(false);
     };
 
     document.addEventListener("mousedown", onPointerDown);
@@ -285,55 +429,52 @@ export default function ProductsMegaMenu() {
 
       {open ? (
         <div
-          className="fixed left-1/2 top-[76px] z-[70] w-[min(1260px,calc(100vw-40px))] -translate-x-1/2 pt-3"
+          className="fixed left-1/2 top-[76px] z-[70] w-[min(1340px,calc(100vw-28px))] -translate-x-1/2 pt-3"
           onMouseEnter={cancelClose}
           onMouseLeave={scheduleClose}
         >
-          <div className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_30px_90px_rgba(15,23,42,0.16)]">
-            <div className="flex items-center gap-5 border-b border-slate-200 bg-[#fbfaf8] px-7 py-5 lg:px-8">
-              <div className="min-w-[210px]">
-                <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-orange-600">ITS BIO PRODUCTS</div>
-                <div className="mt-1 text-[17px] font-semibold tracking-[-0.02em] text-[#071d43]">Find your next solution</div>
-              </div>
-
-              <form action="/search" method="get" className="relative flex min-w-0 flex-1" onSubmit={closeMenu}>
-                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                  <SearchIcon />
-                </span>
-                <input
-                  name="q"
-                  required
-                  aria-label="Search products"
-                  placeholder="Search by product name or catalog number"
-                  className="h-12 w-full rounded-full border border-slate-300 bg-white pl-12 pr-32 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
-                />
-                <button className="absolute right-1.5 top-1.5 h-9 rounded-full bg-orange-600 px-5 text-xs font-semibold text-white transition hover:bg-orange-700">
-                  Search
-                </button>
-              </form>
-
-              <Link
-                href="/products"
-                onClick={closeMenu}
-                className="hidden h-11 shrink-0 items-center gap-2 rounded-full border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-800 transition hover:border-orange-300 hover:text-orange-600 lg:inline-flex"
-              >
-                Product Hub <ArrowIcon />
-              </Link>
-            </div>
-
-            <div className="grid min-h-[470px] lg:grid-cols-[1.18fr_.82fr]">
-              <div className="border-b border-slate-200 p-7 lg:border-b-0 lg:border-r lg:p-8">
-                <div className="flex items-end justify-between gap-5">
-                  <div>
-                    <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-orange-600">Explore by brand</div>
-                    <h2 className="mt-1 text-[25px] font-semibold tracking-[-0.035em] text-[#071d43]">Specialists across the research workflow</h2>
-                  </div>
-                  <span className="hidden text-xs font-medium text-slate-400 sm:block">Hover to explore</span>
+          <div className="max-h-[calc(100vh-94px)] overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_30px_90px_rgba(15,23,42,0.17)]">
+            <div className={`relative overflow-hidden bg-gradient-to-r ${theme.gradient} px-7 py-4 text-white transition-colors duration-300`}>
+              <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full border border-white/15" />
+              <div className="pointer-events-none absolute right-[25%] -bottom-24 h-44 w-44 rounded-full border border-white/10" />
+              <div className="relative flex items-center gap-5">
+                <div className="min-w-[245px]">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/70">ITS BIO PRODUCT PORTFOLIO</div>
+                  <div className="mt-1 text-[18px] font-semibold tracking-[-0.02em]">{activeBrand.name}</div>
                 </div>
 
-                <div className="mt-6 grid overflow-hidden rounded-[24px] border border-slate-200 sm:grid-cols-2 xl:grid-cols-3">
-                  {BRANDS.map((brand, index) => {
-                    const active = activeKey === brand.key;
+                <form action="/search" method="get" className="relative flex min-w-0 flex-1" onSubmit={closeMenu}>
+                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                    <SearchIcon />
+                  </span>
+                  <input
+                    name="q"
+                    required
+                    aria-label="Search products"
+                    placeholder="Search by product name or catalog number"
+                    className={`h-12 w-full rounded-full border border-white/40 bg-white pl-12 pr-32 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:ring-4 ${theme.ring}`}
+                  />
+                  <button className={`absolute right-1.5 top-1.5 h-9 rounded-full px-5 text-xs font-semibold text-white shadow-sm ${theme.button}`}>
+                    Search
+                  </button>
+                </form>
+
+                <Link
+                  href="/products"
+                  onClick={closeMenu}
+                  className="hidden h-11 shrink-0 items-center gap-2 rounded-full border border-white/40 bg-white/10 px-5 text-sm font-semibold text-white backdrop-blur transition hover:bg-white hover:text-slate-900 lg:inline-flex"
+                >
+                  Product Hub <ArrowIcon />
+                </Link>
+              </div>
+            </div>
+
+            <div className="grid min-h-[548px] lg:grid-cols-[230px_1fr_270px]">
+              <aside className={`border-b border-slate-200 p-5 transition-colors duration-300 lg:border-b-0 lg:border-r ${theme.softBg}`}>
+                <div className="px-2 pb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Browse by brand</div>
+                <div className="space-y-1">
+                  {BRANDS.map((brand) => {
+                    const active = activeBrand.key === brand.key;
                     return (
                       <button
                         key={brand.key}
@@ -342,143 +483,108 @@ export default function ProductsMegaMenu() {
                         onFocus={() => setActiveKey(brand.key)}
                         onClick={() => setActiveKey(brand.key)}
                         className={[
-                          "group/brand relative flex min-h-[104px] items-center justify-between gap-4 border-slate-200 px-5 py-4 text-left transition duration-200",
-                          active ? "z-10 bg-[#fff8f1] shadow-[inset_3px_0_0_#ea580c]" : "bg-white hover:bg-slate-50",
-                          index % 3 !== 2 ? "xl:border-r" : "",
-                          index < 6 ? "xl:border-b" : "",
-                          index % 2 === 0 ? "sm:border-r xl:border-r" : "sm:border-r-0",
-                          index < 8 ? "sm:border-b" : "",
+                          "group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition",
+                          active ? `${brand.theme.activeBg} ${brand.theme.text}` : "text-slate-800 hover:bg-white",
                         ].join(" ")}
                       >
-                        <div className="min-w-0">
-                          <div className={`text-[10px] font-bold uppercase tracking-[0.16em] transition ${active ? "text-orange-600" : "text-slate-400 group-hover/brand:text-orange-500"}`}>
-                            {brand.area}
-                          </div>
-                          <div className={`mt-1.5 truncate text-[15px] font-semibold tracking-[-0.015em] transition ${active ? "text-[#071d43]" : "text-slate-900"}`}>
-                            {brand.name}
-                          </div>
-                        </div>
-                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs transition ${active ? "border-orange-200 bg-white text-orange-600" : "border-slate-200 text-slate-300 group-hover/brand:border-orange-200 group-hover/brand:text-orange-500"}`}>
-                          {String(index + 1).padStart(2, "0")}
+                        <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${brand.theme.dot}`} />
+                        <span className="min-w-0">
+                          <span className="block truncate text-[13px] font-semibold">{brand.name}</span>
+                          <span className="mt-0.5 block truncate text-[9px] uppercase tracking-[0.12em] text-slate-400">{brand.area}</span>
                         </span>
                       </button>
                     );
                   })}
                 </div>
+              </aside>
 
-                <div className="mt-5 grid grid-cols-2 gap-2 border-t border-slate-100 pt-5 sm:grid-cols-4">
-                  {QUICK_LINKS.map((item) => (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      onClick={closeMenu}
-                      className="group/quick rounded-2xl border border-slate-200 bg-[#fbfaf8] px-4 py-3 transition hover:border-orange-200 hover:bg-[#fff8f1]"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-semibold text-slate-800 group-hover/quick:text-orange-700">{item.label}</span>
-                        <span className="text-slate-300 group-hover/quick:text-orange-500" aria-hidden>→</span>
-                      </div>
-                      <div className="mt-1 text-[10px] text-slate-400">{item.desc}</div>
-                    </Link>
-                  ))}
+              <section className="min-w-0 border-b border-slate-200 p-6 lg:border-b-0 lg:border-r lg:p-7">
+                <div className="flex items-start justify-between gap-8 border-b border-slate-200 pb-5">
+                  <div>
+                    <div className={`text-[10px] font-bold uppercase tracking-[0.2em] ${theme.text}`}>{activeBrand.area}</div>
+                    <h2 className="mt-1.5 text-[27px] font-semibold tracking-[-0.035em] text-[#071d43]">{activeBrand.name}</h2>
+                    <p className="mt-2 max-w-2xl text-xs leading-5 text-slate-600">{activeBrand.description}</p>
+                  </div>
+                  <Link
+                    href={activeBrand.href}
+                    onClick={closeMenu}
+                    className={`hidden h-10 shrink-0 items-center gap-2 rounded-full border bg-white px-4 text-xs font-semibold transition xl:inline-flex ${theme.border} ${theme.text} ${theme.activeBg}`}
+                  >
+                    Explore brand <ArrowIcon className="h-3.5 w-3.5" />
+                  </Link>
                 </div>
-              </div>
 
-              <aside className="relative overflow-hidden bg-[#fffaf5] p-7 lg:p-8">
-                <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full border border-orange-100" />
-                <div className="pointer-events-none absolute right-14 top-14 h-40 w-40 rounded-full border border-dashed border-orange-200/80" />
-                <div className="pointer-events-none absolute -bottom-24 -left-14 h-56 w-56 rounded-full border border-slate-200/70" />
-
-                {activeBrand ? (
-                  <div className="relative z-10 flex h-full flex-col" key={activeBrand.key}>
-                    <div>
-                      <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-orange-600">{activeBrand.area}</div>
-                      <h3 className="mt-2 text-[28px] font-semibold leading-tight tracking-[-0.035em] text-[#071d43]">{activeBrand.name}</h3>
-                      <p className="mt-3 text-sm leading-6 text-slate-600">{activeBrand.description}</p>
-                    </div>
-
-                    <div className="mt-6">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Product categories</div>
-                        <span className="text-[10px] font-semibold text-orange-600">{activeBrand.categories.length} areas</span>
-                      </div>
-                      <div className="mt-3 grid grid-cols-2 gap-2">
-                        {activeBrand.categories.map((category) => (
-                          <Link
-                            key={category}
-                            href={categoryHref(activeBrand, category)}
-                            onClick={closeMenu}
-                            className="group/category flex min-h-10 items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] font-medium text-slate-700 shadow-sm transition hover:border-orange-200 hover:text-orange-700"
-                          >
-                            <span>{category}</span>
-                            <span className="text-slate-300 transition group-hover/category:translate-x-0.5 group-hover/category:text-orange-500" aria-hidden>›</span>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="mt-auto pt-6">
-                      <div className="flex flex-wrap gap-2">
-                        <Link
-                          href={activeBrand.href}
-                          onClick={closeMenu}
-                          className="inline-flex h-11 items-center gap-3 rounded-full bg-orange-600 px-5 text-sm font-semibold text-white transition hover:bg-orange-700"
-                        >
-                          Explore {activeBrand.name} <ArrowIcon />
-                        </Link>
-                        <Link
-                          href={`/search?brand=${encodeURIComponent(activeBrand.searchKey)}&q=*`}
-                          onClick={closeMenu}
-                          className="inline-flex h-11 items-center gap-2 rounded-full border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:border-orange-300 hover:text-orange-600"
-                        >
-                          Search brand
-                        </Link>
-                      </div>
-
-                      <form action="/search" method="get" onSubmit={closeMenu} className="mt-4 flex items-center gap-2 border-t border-orange-100 pt-4">
-                        <input type="hidden" name="brand" value={activeBrand.searchKey} />
-                        <div className="relative min-w-0 flex-1">
-                          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                            <SearchIcon className="h-4 w-4" />
-                          </span>
-                          <input
-                            name="q"
-                            required
-                            aria-label={`Search ${activeBrand.name}`}
-                            placeholder={`Search within ${activeBrand.name}`}
-                            className="h-10 w-full rounded-full border border-slate-300 bg-white pl-9 pr-3 text-xs text-slate-800 outline-none placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                          />
-                        </div>
-                        <button className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#071d43] text-white transition hover:bg-orange-600" aria-label={`Search ${activeBrand.name}`}>
-                          <SearchIcon className="h-4 w-4" />
-                        </button>
-                      </form>
-                    </div>
+                <div className="mt-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Product categories</div>
+                    <span className="text-[11px] text-slate-400">Choose a category to search within this brand</span>
                   </div>
-                ) : (
-                  <div className="relative z-10 flex h-full flex-col">
-                    <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-orange-600">ITS BIO PORTFOLIO</div>
-                    <h3 className="mt-3 max-w-sm text-[29px] font-semibold leading-[1.12] tracking-[-0.04em] text-[#071d43]">
-                      Explore the full portfolio without leaving the menu.
-                    </h3>
-                    <p className="mt-4 max-w-sm text-sm leading-6 text-slate-600">
-                      Hover a brand to open more product categories, search within that brand, or jump directly to its catalog.
-                    </p>
 
-                    <div className="mt-7 grid grid-cols-2 gap-2">
-                      {["Life Science", "Animal Research", "Lab Equipment", "PCR & qPCR", "Protein Expression", "Research Materials", "Agricultural Research", "Controlled Environments"].map((area) => (
-                        <div key={area} className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-medium text-slate-600 shadow-sm">
-                          {area}
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="mt-auto flex items-center gap-3 border-t border-orange-100 pt-5 text-xs text-slate-500">
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full border border-orange-200 bg-white text-orange-600">↗</span>
-                      Select any brand to reveal 8 product areas and quick actions.
-                    </div>
+                  <div className="mt-3 grid gap-x-7 sm:grid-cols-2 xl:grid-cols-3">
+                    {activeBrand.categories.map((category) => (
+                      <Link
+                        key={category}
+                        href={`/search?q=${encodeURIComponent(category)}&brand=${encodeURIComponent(activeBrand.searchKey)}`}
+                        onClick={closeMenu}
+                        className={`group/category flex min-h-10 items-center justify-between gap-3 border-b border-slate-200 py-2 text-[13px] font-medium text-slate-700 transition ${theme.hoverText} ${theme.hoverBorder}`}
+                      >
+                        <span>{category}</span>
+                        <ArrowIcon className={`h-3.5 w-3.5 shrink-0 -translate-x-1 opacity-0 transition group-hover/category:translate-x-0 group-hover/category:opacity-100 ${theme.text}`} />
+                      </Link>
+                    ))}
                   </div>
-                )}
+                </div>
+
+                <form action="/search" method="get" onSubmit={closeMenu} className="relative mt-5 border-t border-slate-200 pt-5">
+                  <input type="hidden" name="brand" value={activeBrand.searchKey} />
+                  <span className="pointer-events-none absolute left-3.5 top-[37px] -translate-y-1/2 text-slate-400">
+                    <SearchIcon className="h-4 w-4" />
+                  </span>
+                  <input
+                    name="q"
+                    required
+                    aria-label={`Search ${activeBrand.name}`}
+                    placeholder={`Search within ${activeBrand.name}`}
+                    className={`h-10 w-full rounded-full border border-slate-300 bg-white pl-10 pr-28 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:ring-4 ${theme.ring}`}
+                  />
+                  <button className={`absolute right-1 top-6 h-8 rounded-full px-4 text-[11px] font-semibold text-white ${theme.button}`}>
+                    Search
+                  </button>
+                </form>
+              </section>
+
+              <aside className={`relative overflow-hidden p-6 transition-colors duration-300 ${theme.softBg}`}>
+                <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full border border-slate-200/70" />
+                <div className={`pointer-events-none absolute right-7 top-28 h-3 w-3 rounded-full ${theme.dot} opacity-20`} />
+
+                <div className="relative z-10">
+                  <div className={`text-[10px] font-bold uppercase tracking-[0.2em] ${theme.text}`}>Quick access</div>
+                  <div className="mt-4 space-y-1">
+                    {QUICK_LINKS.map((item) => (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        onClick={closeMenu}
+                        className={`group/quick flex items-center justify-between gap-3 rounded-xl border border-transparent px-3 py-2.5 text-[13px] font-semibold text-slate-700 transition hover:bg-white ${theme.hoverText} ${theme.hoverBorder}`}
+                      >
+                        <span>{item.label}</span>
+                        <ArrowIcon className="h-3.5 w-3.5 text-slate-300 transition group-hover/quick:translate-x-0.5" />
+                      </Link>
+                    ))}
+                  </div>
+
+                  <div className="mt-6 border-t border-slate-200 pt-5">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Need help?</div>
+                    <p className="mt-2 text-xs leading-5 text-slate-500">Tell us your application, product name, or catalog number and we can help identify the right option.</p>
+                    <Link
+                      href="/contact"
+                      onClick={closeMenu}
+                      className={`mt-4 inline-flex h-10 items-center gap-2 rounded-full px-4 text-xs font-semibold text-white shadow-sm ${theme.button}`}
+                    >
+                      Ask our team <ArrowIcon className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                </div>
               </aside>
             </div>
           </div>
