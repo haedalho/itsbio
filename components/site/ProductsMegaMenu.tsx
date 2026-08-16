@@ -21,7 +21,16 @@ const BRANDS: Brand[] = [
     description: "Research reagents, cell biology products, genetic materials, molecular tools, and custom research services.",
     href: "/products/abm",
     searchKey: "abm",
-    categories: ["General Materials", "Cellular Materials", "Genetic Materials", "Custom Services"],
+    categories: [
+      "General Materials",
+      "Cellular Materials",
+      "Genetic Materials",
+      "PCR Enzymes",
+      "Antibodies",
+      "Cell Culture",
+      "Viral Vectors",
+      "Custom Services",
+    ],
   },
   {
     key: "kent",
@@ -30,7 +39,16 @@ const BRANDS: Brand[] = [
     description: "Integrated systems for laboratory animal anesthesia, ventilation, monitoring, surgery, warming, and handling.",
     href: "/products/kent",
     searchKey: "kent",
-    categories: ["Anesthesia", "Ventilation", "Physiological Monitoring", "Surgery & Warming"],
+    categories: [
+      "Anesthesia",
+      "Ventilation",
+      "Physiological Monitoring",
+      "Blood Pressure",
+      "Surgery",
+      "Warming",
+      "Animal Handling",
+      "Feeding & Syringe",
+    ],
   },
   {
     key: "cleaver",
@@ -39,7 +57,16 @@ const BRANDS: Brand[] = [
     description: "Practical laboratory equipment for electrophoresis, gel documentation, blotting, imaging, and related workflows.",
     href: "/products#brands",
     searchKey: "cleaverscientific",
-    categories: ["Electrophoresis", "Gel Systems", "Blotting", "Imaging"],
+    categories: [
+      "Horizontal Gel Systems",
+      "Vertical Gel Systems",
+      "Power Supplies",
+      "Gel Documentation",
+      "Blotting",
+      "Electrophoresis",
+      "Accessories",
+      "Lab Equipment",
+    ],
   },
   {
     key: "seedburo",
@@ -48,7 +75,16 @@ const BRANDS: Brand[] = [
     description: "Specialized instruments for seed, grain, moisture, germination, cleaning, and agricultural quality testing.",
     href: "/products#brands",
     searchKey: "seedburo",
-    categories: ["Seed Testing", "Moisture Testing", "Grain Analysis", "Sample Preparation"],
+    categories: [
+      "Dividers",
+      "Density Measurement",
+      "Sieves & Shakers",
+      "Seed Counting",
+      "Grinders & Mills",
+      "Moisture Testers",
+      "Germination",
+      "Grain & Seed Cleaners",
+    ],
   },
   {
     key: "aims",
@@ -57,7 +93,16 @@ const BRANDS: Brand[] = [
     description: "Identification and data solutions designed for reliable laboratory animal research, tracking, and care.",
     href: "/products#brands",
     searchKey: "aims",
-    categories: ["Animal Identification", "Identification Systems", "Accessories", "Research Support"],
+    categories: [
+      "Animal Identification",
+      "Identification Systems",
+      "Readers",
+      "Tags & Markers",
+      "Data Management",
+      "Accessories",
+      "Animal Care",
+      "Research Support",
+    ],
   },
   {
     key: "bioplastics",
@@ -66,7 +111,16 @@ const BRANDS: Brand[] = [
     description: "Precision laboratory plastic consumables engineered for consistent PCR, qPCR, and molecular diagnostic workflows.",
     href: "/products#brands",
     searchKey: "bioplastics",
-    categories: ["Single Tubes", "Tube Strips", "PCR Plates", "Caps & Seals"],
+    categories: [
+      "Single Tubes",
+      "Tube Strips",
+      "Strips with Caps",
+      "PCR Plates",
+      "Cap Strips",
+      "Mats & Seals",
+      "PCR Consumables",
+      "qPCR Consumables",
+    ],
   },
   {
     key: "cellfree",
@@ -75,7 +129,16 @@ const BRANDS: Brand[] = [
     description: "Wheat-germ cell-free protein expression systems, reagents, kits, and services for advanced protein research.",
     href: "/products#brands",
     searchKey: "cellfreesciences",
-    categories: ["Protein Expression", "Wheat Germ Systems", "Reagents & Kits", "Research Services"],
+    categories: [
+      "Protein Expression",
+      "Wheat Germ Systems",
+      "Expression Kits",
+      "Reagents",
+      "Protein Synthesis",
+      "Screening",
+      "Accessories",
+      "Research Services",
+    ],
   },
   {
     key: "itschem",
@@ -84,7 +147,16 @@ const BRANDS: Brand[] = [
     description: "Specialty research materials and responsive laboratory supply support for scientific and industrial workflows.",
     href: "/products#brands",
     searchKey: "itschem",
-    categories: ["Research Materials", "Laboratory Supply", "Specialty Materials", "Sourcing Support"],
+    categories: [
+      "Research Materials",
+      "Laboratory Supply",
+      "Specialty Materials",
+      "Chemicals",
+      "Reagents",
+      "Consumables",
+      "Custom Sourcing",
+      "Technical Support",
+    ],
   },
   {
     key: "plaslabs",
@@ -93,9 +165,25 @@ const BRANDS: Brand[] = [
     description: "Controlled-atmosphere enclosures and handling systems for sensitive laboratory and animal research workflows.",
     href: "/products#brands",
     searchKey: "plaslabs",
-    categories: ["Glove Boxes", "Enclosures", "Desiccators", "Animal Care"],
+    categories: [
+      "Glove Boxes",
+      "Controlled Enclosures",
+      "Desiccators",
+      "Anaerobic Chambers",
+      "Animal Care",
+      "Handling Systems",
+      "Accessories",
+      "Custom Enclosures",
+    ],
   },
 ];
+
+const QUICK_LINKS = [
+  { label: "Product Hub", href: "/products", desc: "Browse all brands" },
+  { label: "Catalog Search", href: "/search", desc: "Name or Catalog No." },
+  { label: "Promotions", href: "/promotions", desc: "Current offers" },
+  { label: "Request a Quote", href: "/quote", desc: "Send an inquiry" },
+] as const;
 
 function SearchIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
@@ -113,6 +201,11 @@ function ArrowIcon() {
       <path d="m11 6 4 4-4 4" />
     </svg>
   );
+}
+
+function categoryHref(brand: Brand, category: string) {
+  const params = new URLSearchParams({ q: category, brand: brand.searchKey });
+  return `/search?${params.toString()}`;
 }
 
 export default function ProductsMegaMenu() {
@@ -192,11 +285,11 @@ export default function ProductsMegaMenu() {
 
       {open ? (
         <div
-          className="fixed left-1/2 top-[76px] z-[70] w-[min(1240px,calc(100vw-40px))] -translate-x-1/2 pt-3"
+          className="fixed left-1/2 top-[76px] z-[70] w-[min(1260px,calc(100vw-40px))] -translate-x-1/2 pt-3"
           onMouseEnter={cancelClose}
           onMouseLeave={scheduleClose}
         >
-          <div className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_30px_90px_rgba(15,23,42,0.18)]">
+          <div className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_30px_90px_rgba(15,23,42,0.16)]">
             <div className="flex items-center gap-5 border-b border-slate-200 bg-[#fbfaf8] px-7 py-5 lg:px-8">
               <div className="min-w-[210px]">
                 <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-orange-600">ITS BIO PRODUCTS</div>
@@ -228,7 +321,7 @@ export default function ProductsMegaMenu() {
               </Link>
             </div>
 
-            <div className="grid min-h-[430px] lg:grid-cols-[1.38fr_.82fr]">
+            <div className="grid min-h-[470px] lg:grid-cols-[1.18fr_.82fr]">
               <div className="border-b border-slate-200 p-7 lg:border-b-0 lg:border-r lg:p-8">
                 <div className="flex items-end justify-between gap-5">
                   <div>
@@ -242,14 +335,14 @@ export default function ProductsMegaMenu() {
                   {BRANDS.map((brand, index) => {
                     const active = activeKey === brand.key;
                     return (
-                      <Link
+                      <button
                         key={brand.key}
-                        href={brand.href}
+                        type="button"
                         onMouseEnter={() => setActiveKey(brand.key)}
                         onFocus={() => setActiveKey(brand.key)}
-                        onClick={closeMenu}
+                        onClick={() => setActiveKey(brand.key)}
                         className={[
-                          "group/brand relative flex min-h-[104px] items-center justify-between gap-4 border-slate-200 px-5 py-4 transition duration-200",
+                          "group/brand relative flex min-h-[104px] items-center justify-between gap-4 border-slate-200 px-5 py-4 text-left transition duration-200",
                           active ? "z-10 bg-[#fff8f1] shadow-[inset_3px_0_0_#ea580c]" : "bg-white hover:bg-slate-50",
                           index % 3 !== 2 ? "xl:border-r" : "",
                           index < 6 ? "xl:border-b" : "",
@@ -268,67 +361,95 @@ export default function ProductsMegaMenu() {
                         <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs transition ${active ? "border-orange-200 bg-white text-orange-600" : "border-slate-200 text-slate-300 group-hover/brand:border-orange-200 group-hover/brand:text-orange-500"}`}>
                           {String(index + 1).padStart(2, "0")}
                         </span>
-                      </Link>
+                      </button>
                     );
                   })}
                 </div>
 
-                <div className="mt-5 flex items-center justify-between gap-4 border-t border-slate-100 pt-4">
-                  <p className="text-xs text-slate-500">Not sure which brand fits your application?</p>
-                  <Link href="/contact" onClick={closeMenu} className="inline-flex items-center gap-2 text-xs font-semibold text-slate-800 transition hover:text-orange-600">
-                    Ask our team <ArrowIcon />
-                  </Link>
+                <div className="mt-5 grid grid-cols-2 gap-2 border-t border-slate-100 pt-5 sm:grid-cols-4">
+                  {QUICK_LINKS.map((item) => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      onClick={closeMenu}
+                      className="group/quick rounded-2xl border border-slate-200 bg-[#fbfaf8] px-4 py-3 transition hover:border-orange-200 hover:bg-[#fff8f1]"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-semibold text-slate-800 group-hover/quick:text-orange-700">{item.label}</span>
+                        <span className="text-slate-300 group-hover/quick:text-orange-500" aria-hidden>→</span>
+                      </div>
+                      <div className="mt-1 text-[10px] text-slate-400">{item.desc}</div>
+                    </Link>
+                  ))}
                 </div>
               </div>
 
-              <aside className="relative overflow-hidden bg-[#071d43] p-7 text-white lg:p-8">
-                <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full border border-white/10" />
-                <div className="pointer-events-none absolute right-12 top-12 h-40 w-40 rounded-full border border-dashed border-orange-400/20" />
-                <div className="pointer-events-none absolute -bottom-28 -left-16 h-60 w-60 rounded-full border border-orange-400/10" />
+              <aside className="relative overflow-hidden bg-[#fffaf5] p-7 lg:p-8">
+                <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full border border-orange-100" />
+                <div className="pointer-events-none absolute right-14 top-14 h-40 w-40 rounded-full border border-dashed border-orange-200/80" />
+                <div className="pointer-events-none absolute -bottom-24 -left-14 h-56 w-56 rounded-full border border-slate-200/70" />
 
                 {activeBrand ? (
                   <div className="relative z-10 flex h-full flex-col" key={activeBrand.key}>
                     <div>
-                      <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-orange-400">{activeBrand.area}</div>
-                      <h3 className="mt-3 text-[28px] font-semibold leading-tight tracking-[-0.035em]">{activeBrand.name}</h3>
-                      <p className="mt-4 text-sm leading-6 text-white/65">{activeBrand.description}</p>
+                      <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-orange-600">{activeBrand.area}</div>
+                      <h3 className="mt-2 text-[28px] font-semibold leading-tight tracking-[-0.035em] text-[#071d43]">{activeBrand.name}</h3>
+                      <p className="mt-3 text-sm leading-6 text-slate-600">{activeBrand.description}</p>
                     </div>
 
-                    <div className="mt-7">
-                      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Key product areas</div>
+                    <div className="mt-6">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Product categories</div>
+                        <span className="text-[10px] font-semibold text-orange-600">{activeBrand.categories.length} areas</span>
+                      </div>
                       <div className="mt-3 grid grid-cols-2 gap-2">
                         {activeBrand.categories.map((category) => (
-                          <div key={category} className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2.5 text-xs font-medium text-white/80">
-                            {category}
-                          </div>
+                          <Link
+                            key={category}
+                            href={categoryHref(activeBrand, category)}
+                            onClick={closeMenu}
+                            className="group/category flex min-h-10 items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] font-medium text-slate-700 shadow-sm transition hover:border-orange-200 hover:text-orange-700"
+                          >
+                            <span>{category}</span>
+                            <span className="text-slate-300 transition group-hover/category:translate-x-0.5 group-hover/category:text-orange-500" aria-hidden>›</span>
+                          </Link>
                         ))}
                       </div>
                     </div>
 
-                    <div className="mt-auto pt-7">
-                      <Link
-                        href={activeBrand.href}
-                        onClick={closeMenu}
-                        className="inline-flex h-11 items-center gap-3 rounded-full bg-orange-600 px-5 text-sm font-semibold text-white transition hover:bg-orange-500"
-                      >
-                        Explore {activeBrand.name} <ArrowIcon />
-                      </Link>
+                    <div className="mt-auto pt-6">
+                      <div className="flex flex-wrap gap-2">
+                        <Link
+                          href={activeBrand.href}
+                          onClick={closeMenu}
+                          className="inline-flex h-11 items-center gap-3 rounded-full bg-orange-600 px-5 text-sm font-semibold text-white transition hover:bg-orange-700"
+                        >
+                          Explore {activeBrand.name} <ArrowIcon />
+                        </Link>
+                        <Link
+                          href={`/search?brand=${encodeURIComponent(activeBrand.searchKey)}&q=*`}
+                          onClick={closeMenu}
+                          className="inline-flex h-11 items-center gap-2 rounded-full border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:border-orange-300 hover:text-orange-600"
+                        >
+                          Search brand
+                        </Link>
+                      </div>
 
-                      <form action="/search" method="get" onSubmit={closeMenu} className="mt-4 flex items-center gap-2 border-t border-white/10 pt-4">
+                      <form action="/search" method="get" onSubmit={closeMenu} className="mt-4 flex items-center gap-2 border-t border-orange-100 pt-4">
                         <input type="hidden" name="brand" value={activeBrand.searchKey} />
                         <div className="relative min-w-0 flex-1">
-                          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/35">
+                          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                             <SearchIcon className="h-4 w-4" />
                           </span>
                           <input
                             name="q"
                             required
                             aria-label={`Search ${activeBrand.name}`}
-                            placeholder={`Search ${activeBrand.name}`}
-                            className="h-10 w-full rounded-full border border-white/15 bg-white/[0.07] pl-9 pr-3 text-xs text-white outline-none placeholder:text-white/35 focus:border-orange-400"
+                            placeholder={`Search within ${activeBrand.name}`}
+                            className="h-10 w-full rounded-full border border-slate-300 bg-white pl-9 pr-3 text-xs text-slate-800 outline-none placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
                           />
                         </div>
-                        <button className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#071d43] transition hover:bg-orange-50 hover:text-orange-700" aria-label={`Search ${activeBrand.name}`}>
+                        <button className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#071d43] text-white transition hover:bg-orange-600" aria-label={`Search ${activeBrand.name}`}>
                           <SearchIcon className="h-4 w-4" />
                         </button>
                       </form>
@@ -336,27 +457,25 @@ export default function ProductsMegaMenu() {
                   </div>
                 ) : (
                   <div className="relative z-10 flex h-full flex-col">
-                    <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-orange-400">ITS BIO PORTFOLIO</div>
-                    <h3 className="mt-3 max-w-sm text-[29px] font-semibold leading-[1.12] tracking-[-0.04em]">
-                      One place to explore specialized scientific brands.
+                    <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-orange-600">ITS BIO PORTFOLIO</div>
+                    <h3 className="mt-3 max-w-sm text-[29px] font-semibold leading-[1.12] tracking-[-0.04em] text-[#071d43]">
+                      Explore the full portfolio without leaving the menu.
                     </h3>
-                    <p className="mt-4 max-w-sm text-sm leading-6 text-white/65">
-                      Move across the brand list to preview each partner, its focus, and major product areas without leaving the menu.
+                    <p className="mt-4 max-w-sm text-sm leading-6 text-slate-600">
+                      Hover a brand to open more product categories, search within that brand, or jump directly to its catalog.
                     </p>
 
-                    <div className="mt-8 grid grid-cols-2 gap-2">
-                      {["Life Science", "Animal Research", "Lab Equipment", "PCR & qPCR", "Protein Expression", "Research Materials"].map((area) => (
-                        <div key={area} className="rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2.5 text-xs font-medium text-white/65">
+                    <div className="mt-7 grid grid-cols-2 gap-2">
+                      {["Life Science", "Animal Research", "Lab Equipment", "PCR & qPCR", "Protein Expression", "Research Materials", "Agricultural Research", "Controlled Environments"].map((area) => (
+                        <div key={area} className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-medium text-slate-600 shadow-sm">
                           {area}
                         </div>
                       ))}
                     </div>
 
-                    <div className="mt-auto border-t border-white/10 pt-5">
-                      <div className="flex items-center gap-3 text-xs text-white/45">
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full border border-orange-400/25 text-orange-400">↗</span>
-                        Hover a brand to see its product areas and quick actions.
-                      </div>
+                    <div className="mt-auto flex items-center gap-3 border-t border-orange-100 pt-5 text-xs text-slate-500">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full border border-orange-200 bg-white text-orange-600">↗</span>
+                      Select any brand to reveal 8 product areas and quick actions.
                     </div>
                   </div>
                 )}
