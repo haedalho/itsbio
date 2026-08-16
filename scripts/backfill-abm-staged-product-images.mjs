@@ -34,6 +34,7 @@ const SKU = String(readArg("--sku")).trim();
 const VERSION = String(readArg("--version", "2026-08-09-search-v5")).trim();
 const SOURCE_OVERRIDE = String(readArg("--source-url")).trim();
 const APPLY = argv.includes("--apply");
+const DEBUG_HTML = argv.includes("--debug-html");
 const OUT = path.resolve(".cache/abm-image-backfill");
 fs.mkdirSync(OUT, { recursive: true });
 
@@ -51,14 +52,9 @@ const token = [
 ].map((value) => String(value || "").trim()).find(Boolean) || "";
 
 if (APPLY && !token) throw new Error("--apply requires a Sanity write token");
+if (APPLY && DEBUG_HTML) throw new Error("--debug-html is read-only and cannot be combined with --apply");
 
-const client = createClient({
-  projectId,
-  dataset,
-  apiVersion,
-  token: token || undefined,
-  useCdn: false,
-});
+const client = createClient({ projectId, dataset, apiVersion, token: token || undefined, useCdn: false });
 
 const CHUNK_QUERY = `*[
   _type == "abmRebuildDetailChunk"
@@ -70,9 +66,7 @@ const CHUNK_QUERY = `*[
 function assertOfficialAbmPage(value) {
   const url = new URL(value);
   const hostname = url.hostname.toLowerCase();
-  if (hostname !== "abmgood.com" && !hostname.endsWith(".abmgood.com")) {
-    throw new Error(`Refusing non-ABM source URL: ${value}`);
-  }
+  if (hostname !== "abmgood.com" && !hostname.endsWith(".abmgood.com")) throw new Error(`Refusing non-ABM source URL: ${value}`);
   if (!["http:", "https:"].includes(url.protocol)) throw new Error(`Unsupported source protocol: ${url.protocol}`);
   return url.toString();
 }
@@ -117,34 +111,20 @@ function galleryDiagnostics(html) {
   const hints = [];
   const seen = new Set();
   const selector = [
-    ".xzoom",
-    ".xzoom-gallery",
-    "[xoriginal]",
-    "[xpreview]",
-    "[data-xoriginal]",
-    "[data-xpreview]",
-    "[class*='product-image']",
-    "[class*='product_image']",
-    "[class*='gallery']",
-    "[class*='fancybox']",
-    "[class*='lightbox']",
+    ".xzoom", ".xzoom-gallery", "[xoriginal]", "[xpreview]", "[data-xoriginal]", "[data-xpreview]",
+    "[class*='product-image']", "[class*='product_image']", "[class*='gallery']", "[class*='fancybox']", "[class*='lightbox']",
   ].join(",");
-
   $(selector).each((_, node) => {
     if (hints.length >= 30) return;
-    const attrs = node.attribs || {};
     const picked = {};
-    for (const [name, value] of Object.entries(attrs)) {
+    for (const [name, value] of Object.entries(node.attribs || {})) {
       if (/^(?:class|id|src|href|srcset|xoriginal|xpreview|data-.*(?:src|image|zoom|original|preview|full|large|gallery|lightbox|fancybox).*)$/i.test(name)) {
         picked[name] = String(value).slice(0, 1000);
       }
     }
     const item = { tag: node.tagName || node.name || "", attrs: picked };
     const key = JSON.stringify(item);
-    if (!seen.has(key)) {
-      seen.add(key);
-      hints.push(item);
-    }
+    if (!seen.has(key)) { seen.add(key); hints.push(item); }
   });
   return hints;
 }
@@ -156,49 +136,28 @@ function writeReport(report) {
 }
 
 const chunks = await client.fetch(CHUNK_QUERY, { version: VERSION, sku: SKU });
-if (!Array.isArray(chunks) || chunks.length !== 1) {
-  throw new Error(`Expected exactly one staged detail chunk for ${SKU}; found ${Array.isArray(chunks) ? chunks.length : 0}`);
-}
+if (!Array.isArray(chunks) || chunks.length !== 1) throw new Error(`Expected exactly one staged detail chunk for ${SKU}; found ${Array.isArray(chunks) ? chunks.length : 0}`);
 
 const chunk = chunks[0];
-const matches = (chunk.records || []).map((record, index) => ({ record, index })).filter(({ record }) =>
-  String(record?.sku || "").trim().toLowerCase() === SKU.toLowerCase(),
-);
+const matches = (chunk.records || []).map((record, index) => ({ record, index })).filter(({ record }) => String(record?.sku || "").trim().toLowerCase() === SKU.toLowerCase());
 if (matches.length !== 1) throw new Error(`Expected exactly one ${SKU} record inside ${chunk._id}; found ${matches.length}`);
 
 const { record, index: recordIndex } = matches[0];
 const sourceUrl = assertOfficialAbmPage(SOURCE_OVERRIDE || record.sourceUrl || "");
 const fetched = await fetchOfficialHtml(sourceUrl);
-const parsed = parseAbmRebuildDetailV2(fetched.html, fetched.finalUrl, {
-  kind: "product",
-  sku: record.sku,
-  title: record.title,
-});
+if (DEBUG_HTML) fs.writeFileSync(path.join(OUT, `${SKU.replace(/[^A-Za-z0-9._-]+/g, "_")}-source.html`), fetched.html);
 
+const parsed = parseAbmRebuildDetailV2(fetched.html, fetched.finalUrl, { kind: "product", sku: record.sku, title: record.title });
 const discovered = Array.isArray(parsed?.images) ? [...new Set(parsed.images.filter(Boolean))] : [];
-const existingManaged = Array.isArray(record.images)
-  ? [...new Set(record.images.filter((url) => isManagedAbmImageUrl(url)))]
-  : [];
+const existingManaged = Array.isArray(record.images) ? [...new Set(record.images.filter((url) => isManagedAbmImageUrl(url)))] : [];
 
 const report = {
-  generatedAt: new Date().toISOString(),
-  apply: APPLY,
-  version: VERSION,
-  sku: SKU,
-  chunkId: chunk._id,
-  sourceUrl: fetched.finalUrl,
-  discoveredOfficialImages: discovered,
-  existingManagedImages: existingManaged,
-  galleryMarkupHints: galleryDiagnostics(fetched.html),
-  uploadedManagedImages: [],
-  finalManagedImages: existingManaged,
-  changed: false,
+  generatedAt: new Date().toISOString(), apply: APPLY, version: VERSION, sku: SKU, chunkId: chunk._id,
+  sourceUrl: fetched.finalUrl, discoveredOfficialImages: discovered, existingManagedImages: existingManaged,
+  galleryMarkupHints: galleryDiagnostics(fetched.html), uploadedManagedImages: [], finalManagedImages: existingManaged, changed: false,
 };
 
-if (!discovered.length) {
-  writeReport(report);
-  throw new Error(`${SKU}: no strict product image candidates discovered on the official page`);
-}
+if (!discovered.length) { writeReport(report); throw new Error(`${SKU}: no strict product image candidates discovered on the official page`); }
 
 if (APPLY) {
   const rehoster = createAbmImageRehoster({ client, dryRun: false, logEvery: 1 });
@@ -207,18 +166,8 @@ if (APPLY) {
   if (!managed.length) throw new Error(`${SKU}: official images were found but no managed Sanity image was produced`);
 
   const finalManaged = [...new Set([...existingManaged, ...managed])];
-  const nextRecord = {
-    ...record,
-    images: finalManaged,
-    verification: {
-      ...(record.verification || {}),
-      hasOfficialImages: true,
-    },
-  };
-
-  if (stableWithoutImageFields(record) !== stableWithoutImageFields(nextRecord)) {
-    throw new Error(`${SKU}: safety assertion failed; a non-image field would change`);
-  }
+  const nextRecord = { ...record, images: finalManaged, verification: { ...(record.verification || {}), hasOfficialImages: true } };
+  if (stableWithoutImageFields(record) !== stableWithoutImageFields(nextRecord)) throw new Error(`${SKU}: safety assertion failed; a non-image field would change`);
 
   const nextRecords = [...chunk.records];
   nextRecords[recordIndex] = nextRecord;
@@ -230,7 +179,6 @@ if (APPLY) {
     await client.patch(chunk._id).ifRevisionId(chunk._rev).set({ records: nextRecords }).commit();
     report.changed = true;
   }
-
   report.uploadedManagedImages = managed;
   report.finalManagedImages = finalManaged;
   report.rehostStats = rehoster.stats;
