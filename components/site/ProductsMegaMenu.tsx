@@ -233,18 +233,7 @@ const BRANDS: Brand[] = [
     description: "Integrated systems for laboratory animal anesthesia, ventilation, monitoring, surgery, warming, identification, and handling.",
     href: "/products/kent",
     searchKey: "kent",
-    categories: [
-      "Anesthesia",
-      "Ventilation",
-      "Physiological Monitoring",
-      "Noninvasive Blood Pressure",
-      "Surgery",
-      "Warming",
-      "Rodent Identification",
-      "Animal Handling",
-      "Syringe Pump",
-      "Feeding Needles",
-    ],
+    categories: ["Anesthesia", "Ventilation", "Physiological Monitoring", "Noninvasive Blood Pressure", "Surgery", "Warming", "Rodent Identification", "Animal Handling", "Syringe Pump", "Feeding Needles"],
     theme: THEMES.kent,
   },
   {
@@ -274,19 +263,7 @@ const BRANDS: Brand[] = [
     description: "Specialized instruments for seed, grain, moisture, germination, cleaning, and agricultural quality testing.",
     href: "/products#brands",
     searchKey: "seedburo",
-    categories: [
-      "Divider",
-      "Density Measurement",
-      "Sieve Shakers, Test Sieves & Screens",
-      "Seed Counting & Analysis",
-      "Farm & Ranch",
-      "Grinders & Mills",
-      "Moisture Testers",
-      "Spiral Separators",
-      "Sample Bags & Containers",
-      "Germination Equipment",
-      "Grain & Seed Cleaners",
-    ],
+    categories: ["Divider", "Density Measurement", "Sieve Shakers, Test Sieves & Screens", "Seed Counting & Analysis", "Farm & Ranch", "Grinders & Mills", "Moisture Testers", "Spiral Separators", "Sample Bags & Containers", "Germination Equipment", "Grain & Seed Cleaners"],
     theme: THEMES.seedburo,
   },
   {
@@ -326,18 +303,7 @@ const BRANDS: Brand[] = [
     description: "Controlled-atmosphere enclosures and handling systems for sensitive laboratory and animal research workflows.",
     href: "/products#brands",
     searchKey: "plaslabs",
-    categories: [
-      "Glove Boxes",
-      "Glove Box Accessories",
-      "Custom Glove Boxes",
-      "Animal Care & Research",
-      "PCR Chambers",
-      "Desiccators",
-      "Ventilated Balance Enclosures",
-      "Lab CO2 / Vacuum Chambers",
-      "Tissue Culture Hoods",
-      "Stream Tables",
-    ],
+    categories: ["Glove Boxes", "Glove Box Accessories", "Custom Glove Boxes", "Animal Care & Research", "PCR Chambers", "Desiccators", "Ventilated Balance Enclosures", "Lab CO2 / Vacuum Chambers", "Tissue Culture Hoods", "Stream Tables"],
     theme: THEMES.plaslabs,
   },
   {
@@ -377,10 +343,7 @@ export default function ProductsMegaMenu() {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const activeBrand = useMemo(
-    () => BRANDS.find((brand) => brand.key === activeKey) ?? BRANDS[0],
-    [activeKey]
-  );
+  const activeBrand = useMemo(() => BRANDS.find((brand) => brand.key === activeKey) ?? BRANDS[0], [activeKey]);
   const theme = activeBrand.theme;
 
   const cancelClose = () => {
@@ -446,7 +409,7 @@ export default function ProductsMegaMenu() {
 
       {open ? (
         <div
-          className="fixed left-1/2 top-[76px] z-[70] w-[min(1320px,calc(100vw-36px))] -translate-x-1/2 pt-3"
+          className="fixed left-1/2 top-[76px] z-[70] w-[min(1340px,calc(100vw-30px))] -translate-x-1/2 pt-3"
           onMouseEnter={cancelClose}
           onMouseLeave={scheduleClose}
         >
@@ -469,7 +432,7 @@ export default function ProductsMegaMenu() {
               </div>
             </div>
 
-            <div className="grid min-h-[500px] lg:grid-cols-[225px_1fr_275px]">
+            <div className="grid min-h-[520px] lg:grid-cols-[225px_1fr_265px]">
               <aside className={`border-b border-slate-200 p-5 transition-colors duration-300 lg:border-b-0 lg:border-r ${theme.softBg}`}>
                 <div className="px-2 pb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Browse by brand</div>
                 <div className="space-y-1">
@@ -514,32 +477,47 @@ export default function ProductsMegaMenu() {
                 </div>
 
                 {activeBrand.groups ? (
-                  <div className="mt-5 grid gap-x-7 gap-y-7 sm:grid-cols-2 xl:grid-cols-4">
-                    {activeBrand.groups.map((group) => (
-                      <div key={group.label} className="min-w-0">
-                        <Link
-                          href={group.href}
-                          onClick={closeMenu}
-                          className={`group/heading flex items-center justify-between gap-2 border-b-2 pb-2 text-[13px] font-semibold tracking-[-0.01em] ${theme.text} ${theme.border}`}
-                        >
-                          <span>{group.label}</span>
-                          <ArrowIcon className="h-3.5 w-3.5 opacity-50 transition group-hover/heading:translate-x-0.5 group-hover/heading:opacity-100" />
-                        </Link>
-                        <div className="mt-2.5 space-y-0.5">
-                          {group.items.map((item) => (
-                            <Link
-                              key={item}
-                              href={`/search?q=${encodeURIComponent(item)}&brand=abm`}
-                              onClick={closeMenu}
-                              className={`group/item flex items-start gap-2 rounded-lg px-1.5 py-1.5 text-[12px] leading-4 text-slate-600 transition hover:bg-slate-50 ${theme.hoverText}`}
-                            >
-                              <span className={`mt-[6px] h-1 w-1 shrink-0 rounded-full ${theme.dot} opacity-55`} />
-                              <span>{item}</span>
-                            </Link>
-                          ))}
-                        </div>
+                  <div className="mt-5">
+                    <div className="mb-4 flex items-end justify-between gap-4">
+                      <div>
+                        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">ABM product families</div>
+                        <div className="mt-1 text-sm text-slate-500">Start with a major family, then choose a product area.</div>
                       </div>
-                    ))}
+                    </div>
+
+                    <div className="grid gap-x-8 gap-y-8 xl:grid-cols-2">
+                      {activeBrand.groups.map((group) => (
+                        <section key={group.label} className="min-w-0 border-t-[3px] border-orange-500 pt-3">
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <div className="text-[9px] font-bold uppercase tracking-[0.23em] text-orange-500">Product family</div>
+                              <Link
+                                href={group.href}
+                                onClick={closeMenu}
+                                className="group/family mt-1.5 inline-flex items-center gap-3 text-[20px] font-semibold leading-tight tracking-[-0.03em] text-[#071d43] transition hover:text-orange-700"
+                              >
+                                {group.label}
+                                <ArrowIcon className="h-4 w-4 text-orange-500 transition group-hover/family:translate-x-1" />
+                              </Link>
+                            </div>
+                          </div>
+
+                          <div className="mt-3 grid grid-cols-2 gap-x-5">
+                            {group.items.map((item) => (
+                              <Link
+                                key={item}
+                                href={`/search?q=${encodeURIComponent(item)}&brand=abm`}
+                                onClick={closeMenu}
+                                className="group/item flex min-h-8 items-start gap-2 border-b border-slate-100 py-1.5 text-[11.5px] leading-4 text-slate-600 transition hover:border-orange-100 hover:text-orange-700"
+                              >
+                                <span className="mt-[6px] h-1 w-1 shrink-0 rounded-full bg-orange-400" />
+                                <span>{item}</span>
+                              </Link>
+                            ))}
+                          </div>
+                        </section>
+                      ))}
+                    </div>
                   </div>
                 ) : (
                   <>
@@ -576,17 +554,18 @@ export default function ProductsMegaMenu() {
                   </div>
 
                   {activeBrand.groups ? (
-                    <div className="mt-6 border-t border-slate-200 pt-5">
-                      <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">ABM families</div>
-                      <div className="mt-3 flex flex-wrap gap-2">
+                    <div className="mt-7 border-t border-slate-200 pt-5">
+                      <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">Major families</div>
+                      <div className="mt-3 space-y-2">
                         {activeBrand.groups.map((group) => (
                           <Link
                             key={group.label}
                             href={group.href}
                             onClick={closeMenu}
-                            className={`rounded-full border bg-white px-3 py-1.5 text-[10px] font-semibold transition ${theme.border} ${theme.text} ${theme.activeBg}`}
+                            className="group/side flex items-center justify-between gap-3 border-b border-orange-100 pb-2.5 text-[12px] font-semibold text-slate-700 transition hover:text-orange-700"
                           >
-                            {group.label}
+                            <span>{group.label}</span>
+                            <ArrowIcon className="h-3.5 w-3.5 text-orange-400 transition group-hover/side:translate-x-0.5" />
                           </Link>
                         ))}
                       </div>
