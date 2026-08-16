@@ -4,7 +4,20 @@ import Link from "next/link";
 import Breadcrumb from "@/components/site/Breadcrumb";
 import PageHero from "@/components/site/PageHero";
 
-const BRANDS = [
+type Brand = {
+  key: string;
+  name: string;
+  shortName: string;
+  eyebrow: string;
+  description: string;
+  logo: string;
+  href: string;
+  tags: string[];
+  internal?: boolean;
+  external?: boolean;
+};
+
+const BRANDS: Brand[] = [
   {
     key: "abm",
     name: "Applied Biological Materials (abm) Inc.",
@@ -103,9 +116,9 @@ const BRANDS = [
     tags: ["Glove Boxes", "Enclosures", "Animal Care"],
     external: true,
   },
-] as const;
+];
 
-function BrandCard({ brand, index }: { brand: (typeof BRANDS)[number]; index: number }) {
+function BrandCard({ brand, index }: { brand: Brand; index: number }) {
   return (
     <article className="group relative flex min-h-[340px] flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_12px_32px_rgba(15,23,42,0.05)] transition duration-300 hover:-translate-y-1 hover:border-orange-200 hover:shadow-[0_22px_50px_rgba(15,23,42,0.09)] md:p-7">
       <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full border border-orange-100 opacity-0 transition duration-300 group-hover:opacity-100" />
