@@ -15,7 +15,7 @@ export default function SearchLoading() {
         <p className="mt-6 text-xs font-bold uppercase tracking-[0.22em] text-orange-600">ITS BIO Search</p>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Searching the catalog…</h1>
         <p className="mt-3 text-sm leading-6 text-slate-500">
-          Checking ABM and Kent products and catalog numbers.
+          Looking for the best match to your search.
         </p>
         <div className="mx-auto mt-7 h-1.5 w-36 overflow-hidden rounded-full bg-slate-100">
           <div className="h-full w-2/3 animate-pulse rounded-full bg-orange-500" />
