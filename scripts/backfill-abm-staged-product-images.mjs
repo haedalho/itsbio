@@ -16,6 +16,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createClient } from "next-sanity";
+import * as cheerio from "cheerio";
 
 import { parseAbmRebuildDetailV2 } from "../lib/abm/rebuild-parser-v2.mjs";
 import {
@@ -72,7 +73,7 @@ function assertOfficialAbmPage(value) {
   if (hostname !== "abmgood.com" && !hostname.endsWith(".abmgood.com")) {
     throw new Error(`Refusing non-ABM source URL: ${value}`);
   }
-  if (!['http:', 'https:'].includes(url.protocol)) throw new Error(`Unsupported source protocol: ${url.protocol}`);
+  if (!["http:", "https:"].includes(url.protocol)) throw new Error(`Unsupported source protocol: ${url.protocol}`);
   return url.toString();
 }
 
@@ -107,10 +108,51 @@ async function fetchOfficialHtml(sourceUrl) {
 function stableWithoutImageFields(record) {
   const copy = JSON.parse(JSON.stringify(record));
   delete copy.images;
-  if (copy.verification && typeof copy.verification === "object") {
-    delete copy.verification.hasOfficialImages;
-  }
+  if (copy.verification && typeof copy.verification === "object") delete copy.verification.hasOfficialImages;
   return JSON.stringify(copy);
+}
+
+function galleryDiagnostics(html) {
+  const $ = cheerio.load(html || "", { decodeEntities: false });
+  const hints = [];
+  const seen = new Set();
+  const selector = [
+    ".xzoom",
+    ".xzoom-gallery",
+    "[xoriginal]",
+    "[xpreview]",
+    "[data-xoriginal]",
+    "[data-xpreview]",
+    "[class*='product-image']",
+    "[class*='product_image']",
+    "[class*='gallery']",
+    "[class*='fancybox']",
+    "[class*='lightbox']",
+  ].join(",");
+
+  $(selector).each((_, node) => {
+    if (hints.length >= 30) return;
+    const attrs = node.attribs || {};
+    const picked = {};
+    for (const [name, value] of Object.entries(attrs)) {
+      if (/^(?:class|id|src|href|srcset|xoriginal|xpreview|data-.*(?:src|image|zoom|original|preview|full|large|gallery|lightbox|fancybox).*)$/i.test(name)) {
+        picked[name] = String(value).slice(0, 1000);
+      }
+    }
+    const item = { tag: node.tagName || node.name || "", attrs: picked };
+    const key = JSON.stringify(item);
+    if (!seen.has(key)) {
+      seen.add(key);
+      hints.push(item);
+    }
+  });
+  return hints;
+}
+
+function writeReport(report) {
+  const reportPath = path.join(OUT, `${SKU.replace(/[^A-Za-z0-9._-]+/g, "_")}-${APPLY ? "apply" : "dry"}.json`);
+  fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
+  console.log(JSON.stringify(report, null, 2));
 }
 
 const chunks = await client.fetch(CHUNK_QUERY, { version: VERSION, sku: SKU });
@@ -134,8 +176,6 @@ const parsed = parseAbmRebuildDetailV2(fetched.html, fetched.finalUrl, {
 });
 
 const discovered = Array.isArray(parsed?.images) ? [...new Set(parsed.images.filter(Boolean))] : [];
-if (!discovered.length) throw new Error(`${SKU}: no product image candidates discovered on the official page`);
-
 const existingManaged = Array.isArray(record.images)
   ? [...new Set(record.images.filter((url) => isManagedAbmImageUrl(url)))]
   : [];
@@ -149,10 +189,16 @@ const report = {
   sourceUrl: fetched.finalUrl,
   discoveredOfficialImages: discovered,
   existingManagedImages: existingManaged,
+  galleryMarkupHints: galleryDiagnostics(fetched.html),
   uploadedManagedImages: [],
   finalManagedImages: existingManaged,
   changed: false,
 };
+
+if (!discovered.length) {
+  writeReport(report);
+  throw new Error(`${SKU}: no strict product image candidates discovered on the official page`);
+}
 
 if (APPLY) {
   const rehoster = createAbmImageRehoster({ client, dryRun: false, logEvery: 1 });
@@ -176,7 +222,6 @@ if (APPLY) {
 
   const nextRecords = [...chunk.records];
   nextRecords[recordIndex] = nextRecord;
-
   if (JSON.stringify(nextRecords.filter((_, index) => index !== recordIndex)) !== JSON.stringify(chunk.records.filter((_, index) => index !== recordIndex))) {
     throw new Error(`${SKU}: safety assertion failed; another staged record would change`);
   }
@@ -191,6 +236,4 @@ if (APPLY) {
   report.rehostStats = rehoster.stats;
 }
 
-const reportPath = path.join(OUT, `${SKU.replace(/[^A-Za-z0-9._-]+/g, "_")}-${APPLY ? "apply" : "dry"}.json`);
-fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
-console.log(JSON.stringify(report, null, 2));
+writeReport(report);
