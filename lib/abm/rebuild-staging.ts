@@ -205,6 +205,33 @@ const STAGED_DETAIL_QUERY = `*[
   && $key in records[].key
 ][0].records[key == $key][0]`;
 
+// A small number of rebuild records have reviewed content but no copied image array.
+// Reuse only already-managed Sanity media from the matching legacy ABM product;
+// never use its body, price, or external supplier media as a content fallback.
+const EXISTING_ABM_IMAGE_QUERY = `*[
+  _type == "product"
+  && (
+    brandSlug == "abm"
+    || brand->slug.current == "abm"
+    || brand->themeKey == "abm"
+  )
+  && (
+    ($sku != "" && lower(sku) == lower($sku))
+    || ($title != "" && lower(title) == lower($title))
+  )
+][0]{ imageUrls }`;
+
+type ExistingAbmImages = { imageUrls?: string[] };
+
+async function getExistingManagedProductImages(record: AbmStagedRecord) {
+  if (record.kind !== "product") return [];
+  const result = await sanityCdnClient.fetch<ExistingAbmImages | null>(EXISTING_ABM_IMAGE_QUERY, {
+    sku: String(record.sku || "").trim(),
+    title: String(record.title || "").trim(),
+  }, PUBLIC_CATALOG_CACHE);
+  return normalizedDetailImages(undefined, result?.imageUrls);
+}
+
 function mergeNonEmpty<T extends Record<string, unknown>>(base: T, extra: Record<string, unknown>) {
   const out = { ...base } as T & Record<string, unknown>;
   for (const [key, value] of Object.entries(extra)) {
@@ -213,7 +240,7 @@ function mergeNonEmpty<T extends Record<string, unknown>>(base: T, extra: Record
   return out;
 }
 
-/** Resolve preview data from ABM rebuild staging only. Production Product is never a fallback. */
+/** Resolve reviewed staging content. Existing Product may contribute managed Sanity images only. */
 export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: string): Promise<AbmStagedDetail | undefined> {
   const record = await getAbmStagedRecord(kind, key);
   if (!record) return undefined;
@@ -224,19 +251,23 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
     kind,
     key: detailKey,
   }, PUBLIC_CATALOG_CACHE);
+
   if (!staged) {
+    let images = normalizedDetailImages(record.previewImage);
+    if (!images.length) images = await getExistingManagedProductImages(record);
     return {
       ...record,
       sourceUrl: String(record.url || "").trim(),
       hasDetail: false,
-      images: normalizedDetailImages(record.previewImage),
+      images,
     } as AbmStagedDetail;
   }
-  const sourceUrl = String(staged.sourceUrl || record.url || "").trim();
 
+  const sourceUrl = String(staged.sourceUrl || record.url || "").trim();
   const detail = mergeNonEmpty({ ...record, sourceUrl }, staged) as AbmStagedDetail;
   detail.kind = kind;
   detail.hasDetail = true;
   detail.images = normalizedDetailImages(detail.previewImage, detail.images);
+  if (!detail.images.length) detail.images = await getExistingManagedProductImages(record);
   return detail;
 }
