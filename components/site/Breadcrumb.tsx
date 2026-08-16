@@ -30,14 +30,12 @@ function humanize(segment: string) {
 
 function buildCrumbs(pathname: string): Crumb[] {
   const segments = pathname.split("?")[0].split("#")[0].split("/").filter(Boolean);
-
   const crumbs: Crumb[] = [{ label: "Home", href: "/" }];
 
   let acc = "";
   segments.forEach((seg, idx) => {
     acc += `/${seg}`;
     const isLast = idx === segments.length - 1;
-
     crumbs.push({
       label: humanize(seg),
       href: isLast ? undefined : acc,
@@ -47,38 +45,73 @@ function buildCrumbs(pathname: string): Crumb[] {
   return crumbs;
 }
 
-// ✅ items 옵션 추가
+function DesktopBreadcrumb({ crumbs }: { crumbs: Crumb[] }) {
+  return (
+    <ol className="hidden min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap text-[15px] font-medium leading-none text-neutral-600 sm:flex">
+      {crumbs.map((crumb, index) => {
+        const isLast = index === crumbs.length - 1;
+        return (
+          <li
+            key={`${crumb.label}-${index}`}
+            className={`flex min-w-0 items-center gap-2 ${isLast ? "flex-1" : "shrink-0"}`}
+          >
+            {crumb.href && !isLast ? (
+              <Link href={crumb.href} className="shrink-0 transition hover:text-neutral-950">
+                {crumb.label}
+              </Link>
+            ) : (
+              <span
+                aria-current={isLast ? "page" : undefined}
+                title={crumb.label}
+                className={isLast ? "block min-w-0 max-w-[min(58vw,720px)] truncate font-semibold text-neutral-900" : "shrink-0 text-neutral-900"}
+              >
+                {crumb.label}
+              </span>
+            )}
+            {!isLast ? <span className="shrink-0 text-neutral-300">›</span> : null}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+function MobileBreadcrumb({ crumbs }: { crumbs: Crumb[] }) {
+  const first = crumbs[0];
+  const last = crumbs[crumbs.length - 1];
+
+  return (
+    <ol className="flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap text-[13px] font-medium text-neutral-600 sm:hidden">
+      <li className="shrink-0">
+        {first.href ? <Link href={first.href}>{first.label}</Link> : <span>{first.label}</span>}
+      </li>
+      <li className="shrink-0 text-neutral-300">›</li>
+      {crumbs.length > 2 ? (
+        <>
+          <li className="shrink-0 text-neutral-400">…</li>
+          <li className="shrink-0 text-neutral-300">›</li>
+        </>
+      ) : null}
+      <li className="min-w-0 flex-1">
+        <span title={last.label} aria-current="page" className="block truncate font-semibold text-neutral-900">
+          {last.label}
+        </span>
+      </li>
+    </ol>
+  );
+}
+
 export default function Breadcrumb({ items }: { items?: Crumb[] }) {
   const pathname = usePathname();
-
   const resolved = items && items.length ? items : pathname ? buildCrumbs(pathname) : [];
 
-  // ✅ 홈에서는 숨김 (단, items가 직접 들어오면 보여줌)
   if ((!items || items.length === 0) && (!pathname || pathname === "/")) return null;
-
   if (resolved.length <= 1) return null;
 
   return (
-    <nav aria-label="Breadcrumb" className="w-full">
-      <ol className="flex flex-wrap items-center justify-end gap-3 text-[22px] font-medium text-neutral-700 leading-none">
-        {resolved.map((c, i) => {
-          const isLast = i === resolved.length - 1;
-          return (
-            <li key={`${c.label}-${i}`} className="flex items-center gap-3">
-              {c.href && !isLast ? (
-                <Link href={c.href} className="hover:text-neutral-900 hover:font-semibold transition-[font-weight]">
-                  {c.label}
-                </Link>
-              ) : (
-                <span aria-current="page" className="text-neutral-900">
-                  {c.label}
-                </span>
-              )}
-              {!isLast && <span className="text-neutral-400">›</span>}
-            </li>
-          );
-        })}
-      </ol>
+    <nav aria-label="Breadcrumb" className="w-full min-w-0 overflow-hidden">
+      <DesktopBreadcrumb crumbs={resolved} />
+      <MobileBreadcrumb crumbs={resolved} />
     </nav>
   );
 }
