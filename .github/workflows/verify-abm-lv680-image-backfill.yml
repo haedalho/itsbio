@@ -15,7 +15,7 @@ jobs:
   verify-lv680-image:
     runs-on: ubuntu-latest
     environment: Production
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
       NEXT_PUBLIC_SANITY_DATASET: production
@@ -36,7 +36,7 @@ jobs:
           --debug-html
           --source-url https://www.abmgood.com/Lenti-SV40-tsA58-temperature-sensitive-mutant-No-Selection-Marker-Lentivirus,-High-Titer-LV680.html
 
-      - name: Read-only LV680 vector map diagnostic
+      - name: Read-only LV680 vector map source
         if: always()
         run: |
           mkdir -p .cache/abm-image-backfill
@@ -44,6 +44,50 @@ jobs:
             --user-agent 'Mozilla/5.0 (compatible; ITSBIO-ABM-VectorMap-Diagnostic/1.0)' \
             'https://www.abmgood.com/vds/map/cat/164' \
             --output .cache/abm-image-backfill/LV680-map.html
+
+      - name: Install temporary browser renderer
+        if: always()
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Render LV680 vector map without writing data
+        if: always()
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+
+          const out = '.cache/abm-image-backfill';
+          const browser = await chromium.launch({ headless: true });
+          const page = await browser.newPage({ viewport: { width: 900, height: 760 }, deviceScaleFactor: 2 });
+          await page.goto('https://www.abmgood.com/vds/map/cat/164', { waitUntil: 'networkidle', timeout: 60000 });
+          await page.waitForTimeout(3000);
+          const svgCount = await page.locator('svg').count();
+          const canvasCount = await page.locator('canvas').count();
+          const bodyText = (await page.locator('body').innerText()).slice(0, 4000);
+          fs.writeFileSync(`${out}/LV680-render.json`, JSON.stringify({ svgCount, canvasCount, bodyText }, null, 2));
+          fs.writeFileSync(`${out}/LV680-rendered.html`, await page.content());
+
+          if (svgCount > 0) {
+            const svgs = page.locator('svg');
+            let best = null;
+            let bestArea = 0;
+            for (let i = 0; i < svgCount; i += 1) {
+              const box = await svgs.nth(i).boundingBox();
+              const area = box ? box.width * box.height : 0;
+              if (area > bestArea) { bestArea = area; best = svgs.nth(i); }
+            }
+            if (best && bestArea > 10000) {
+              await best.screenshot({ path: `${out}/LV680-vector-map.png`, animations: 'disabled' });
+            } else {
+              await page.screenshot({ path: `${out}/LV680-vector-map.png`, fullPage: true, animations: 'disabled' });
+            }
+          } else {
+            await page.screenshot({ path: `${out}/LV680-vector-map.png`, fullPage: true, animations: 'disabled' });
+          }
+          await browser.close();
+          NODE
 
       - name: Upload verification report
         if: always()
