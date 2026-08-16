@@ -505,7 +505,6 @@ export default function ProductsMegaMenu() {
                     <div className="grid gap-x-8 gap-y-8 xl:grid-cols-2">
                       {activeBrand.groups.map((group) => (
                         <section key={group.label} className="min-w-0 border-t-[3px] border-orange-500 pt-3">
-                          <div className="text-[9px] font-bold uppercase tracking-[0.23em] text-orange-500">Product family</div>
                           <Link
                             href={group.href}
                             onClick={closeMenu}
