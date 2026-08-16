@@ -137,8 +137,8 @@ export default function BrandsShowcase() {
           </p>
         </div>
 
-        <div className="mt-8 overflow-hidden border border-slate-200 bg-white lg:grid lg:grid-cols-[1.02fr_1fr]">
-          <div className="grid grid-cols-2 gap-px bg-slate-200 p-px sm:grid-cols-3 lg:min-h-[520px]">
+        <div className="mt-8 overflow-hidden border border-slate-200 bg-white lg:grid lg:h-[600px] lg:grid-cols-[1.02fr_1fr]">
+          <div className="grid grid-cols-2 gap-px bg-slate-200 p-px sm:grid-cols-3 lg:h-full lg:grid-rows-3">
             {BRANDS.map((brand) => {
               const active = brand.key === selected.key;
               return (
@@ -149,7 +149,7 @@ export default function BrandsShowcase() {
                   aria-pressed={active}
                   aria-label={`${brand.name} 정보 보기`}
                   className={[
-                    "group relative flex min-h-[150px] flex-col items-center justify-center bg-white px-4 py-6 text-center transition sm:min-h-[170px]",
+                    "group relative flex min-h-[150px] flex-col items-center justify-center bg-white px-4 py-6 text-center transition sm:min-h-[170px] lg:min-h-0",
                     "focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-orange-500",
                     active ? "bg-orange-50/45" : "hover:bg-slate-50",
                   ].join(" ")}
@@ -171,7 +171,7 @@ export default function BrandsShowcase() {
             })}
           </div>
 
-          <div className="relative flex min-h-[500px] flex-col overflow-hidden bg-[#fffdfb] px-7 py-9 sm:px-12 sm:py-12 lg:min-h-[520px] lg:px-16">
+          <div className="relative flex min-h-[500px] flex-col overflow-hidden bg-[#fffdfb] px-7 py-9 sm:px-12 sm:py-12 lg:h-full lg:min-h-0 lg:px-16">
             <div className="pointer-events-none absolute -right-20 -top-12 h-80 w-80 rounded-full border border-orange-100/70" />
             <div className="pointer-events-none absolute -bottom-28 right-8 h-64 w-64 rounded-full border border-slate-200/70" />
             <div className="pointer-events-none absolute right-24 top-24 h-3 w-3 rounded-full bg-orange-100" />
