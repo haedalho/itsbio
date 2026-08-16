@@ -1,0 +1,37 @@
+name: Patch ABM mega menu family label
+
+on:
+  push:
+    branches:
+      - agent/homepage-brand-redesign
+    paths:
+      - .github/workflows/patch-megamenu-product-family.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/homepage-brand-redesign
+      - name: Remove only the redundant Product family label
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('components/site/ProductsMegaMenu.tsx')
+          s = p.read_text()
+          needle = '                          <div className="text-[9px] font-bold uppercase tracking-[0.23em] text-orange-500">Product family</div>\n'
+          if s.count(needle) != 1:
+              raise SystemExit(f'Expected exactly one Product family label, found {s.count(needle)}')
+          p.write_text(s.replace(needle, '', 1))
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/site/ProductsMegaMenu.tsx
+          git commit -m "Remove Product family label from ABM mega menu"
+          git push origin HEAD:agent/homepage-brand-redesign
