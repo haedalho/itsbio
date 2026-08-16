@@ -78,6 +78,13 @@ export function isManagedAbmImageUrl(value?: string) {
   }
 }
 
+function normalizedDetailImages(previewImage?: string, images?: string[]) {
+  return Array.from(new Set([
+    String(previewImage || "").trim(),
+    ...(Array.isArray(images) ? images : []),
+  ].filter((value): value is string => isManagedAbmImageUrl(value))));
+}
+
 const STAGED_QUERY = `{
   "records": *[_type == "abmRebuildChunk" && version == $version && kind == $kind].records[]{
     kind,
@@ -88,7 +95,10 @@ const STAGED_QUERY = `{
     searchCategory,
     filterTitle,
     filterPath,
-    listingFilters
+    listingFilters,
+    hasDetail,
+    previewImage,
+    previewSummary
   },
   "details": select(
     $kind == "service" => *[_type == "abmRebuildDetailChunk" && version == $version && kind == $kind].records[]{
@@ -219,7 +229,7 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
       ...record,
       sourceUrl: String(record.url || "").trim(),
       hasDetail: false,
-      images: [],
+      images: normalizedDetailImages(record.previewImage),
     } as AbmStagedDetail;
   }
   const sourceUrl = String(staged.sourceUrl || record.url || "").trim();
@@ -227,6 +237,6 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
   const detail = mergeNonEmpty({ ...record, sourceUrl }, staged) as AbmStagedDetail;
   detail.kind = kind;
   detail.hasDetail = true;
-  detail.images = Array.isArray(detail.images) ? detail.images.filter(isManagedAbmImageUrl) : [];
+  detail.images = normalizedDetailImages(detail.previewImage, detail.images);
   return detail;
 }
