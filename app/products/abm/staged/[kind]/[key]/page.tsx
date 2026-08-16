@@ -42,7 +42,11 @@ export default async function AbmStagedDetailPage({
 
   const listingPath = kind === "product" ? "/products/abm/products" : "/products/abm/services";
   const title = record.title || record.sku || "ABM item";
-  const gallery = (record.images || []).filter(isManagedAbmImageUrl).map((url) => ({ url, alt: title }));
+  const galleryUrls = Array.from(new Set([
+    String(record.previewImage || "").trim(),
+    ...(record.images || []),
+  ].filter((url): url is string => isManagedAbmImageUrl(url))));
+  const gallery = galleryUrls.map((url) => ({ url, alt: title }));
   const paths = Array.isArray(record.listingPaths) && record.listingPaths.length
     ? record.listingPaths
     : record.listingFilters?.map((item) => item.path).filter((path): path is string[] => Array.isArray(path) && path.length > 0)
