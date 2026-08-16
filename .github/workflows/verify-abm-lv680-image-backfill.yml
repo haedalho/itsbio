@@ -29,10 +29,11 @@ jobs:
           cache: npm
       - run: npm install --no-audit --no-fund
 
-      - name: Strict dry-run LV680 image discovery
+      - name: Read-only LV680 source markup diagnostic
         run: >-
           node scripts/backfill-abm-staged-product-images.mjs
           --sku LV680
+          --debug-html
           --source-url https://www.abmgood.com/Lenti-SV40-tsA58-temperature-sensitive-mutant-No-Selection-Marker-Lentivirus,-High-Titer-LV680.html
 
       - name: Upload verification report
