@@ -7,6 +7,7 @@ import HidePricesClient from "@/components/site/HidePricesClient";
 import HomeHeroOverride from "@/components/site/home/HomeHeroOverride";
 import NeedAssistance from "@/components/site/NeedAssistance";
 import FloatingQuoteButton from "@/components/site/FloatingQuoteButton";
+import AbmLinkResolverClient from "@/components/site/AbmLinkResolverClient";
 
 const pretendard = localFont({
   src: "./fonts/PretendardVariable.woff2",
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={`${pretendard.variable} antialiased text-[17px] leading-relaxed`}>
         <HidePricesClient />
+        <AbmLinkResolverClient />
         <div style={{ ["--header-h" as any]: "76px" }}>
           <Header />
           <HomeHeroOverride />
