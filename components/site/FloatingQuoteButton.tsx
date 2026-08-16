@@ -3,6 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
+type QuoteOpenDetail = {
+  product?: string;
+};
+
 export default function FloatingQuoteButton() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -11,6 +15,7 @@ export default function FloatingQuoteButton() {
   const [errorMsg, setErrorMsg] = useState("");
   const panelRef = useRef<HTMLDivElement | null>(null);
   const productRef = useRef<HTMLInputElement | null>(null);
+  const pendingProductRef = useRef("");
 
   useEffect(() => {
     if (!open) return;
@@ -24,18 +29,39 @@ export default function FloatingQuoteButton() {
   }, [open]);
 
   useEffect(() => {
+    const onOpenQuote = (event: Event) => {
+      const detail = (event as CustomEvent<QuoteOpenDetail>).detail;
+      pendingProductRef.current = String(detail?.product || "").trim();
+      openPanel(pendingProductRef.current);
+    };
+
+    window.addEventListener("itsbio:open-quote", onOpenQuote);
+    return () => window.removeEventListener("itsbio:open-quote", onOpenQuote);
+  }, [pathname]);
+
+  useEffect(() => {
     setOpen(false);
     setDone(null);
     setErrorMsg("");
+    pendingProductRef.current = "";
   }, [pathname]);
 
-  function openPanel() {
+  function openPanel(productOverride = "") {
+    const explicitProduct = String(productOverride || pendingProductRef.current || "").trim();
     setOpen(true);
     setDone(null);
     setErrorMsg("");
 
     window.setTimeout(() => {
-      if (!productRef.current || productRef.current.value.trim()) return;
+      if (!productRef.current) return;
+
+      if (explicitProduct) {
+        productRef.current.value = explicitProduct;
+        pendingProductRef.current = "";
+        return;
+      }
+
+      if (productRef.current.value.trim()) return;
       if (!pathname.startsWith("/products")) return;
 
       const heading = document.querySelector("main h1")?.textContent?.trim();
@@ -183,7 +209,7 @@ export default function FloatingQuoteButton() {
 
       <button
         type="button"
-        onClick={openPanel}
+        onClick={() => openPanel()}
         aria-label="Request a Quote"
         aria-expanded={open}
         className="group fixed bottom-6 right-5 z-[68] flex h-14 w-14 items-center justify-center rounded-full bg-orange-600 text-white shadow-[0_12px_34px_rgba(234,88,12,0.32)] ring-1 ring-orange-700/10 transition hover:-translate-y-1 hover:bg-orange-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-200 md:bottom-7 md:right-7"
