@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
 import HtmlContent from "@/components/site/HtmlContent";
+import QuoteTriggerButton from "@/components/site/QuoteTriggerButton";
 import AbmHeroBanner from "@/components/products/AbmHeroBanner";
 import AbmCatalogSideNav from "@/components/products/AbmCatalogSideNav";
 import ProductGalleryClient from "@/components/products/ProductGalleryClient";
@@ -40,8 +41,8 @@ export default async function AbmStagedDetailPage({
   const record = await getAbmStagedDetail(kind, decodeURIComponent(key));
   if (!record) notFound();
 
-  const listingPath = kind === "product" ? "/products/abm/products" : "/products/abm/services";
   const title = record.title || record.sku || "ABM item";
+  const quoteProduct = `${title}${record.sku ? ` — Cat. No. ${record.sku}` : ""}`;
   const galleryUrls = Array.from(new Set([
     String(record.previewImage || "").trim(),
     ...(record.images || []),
@@ -79,12 +80,11 @@ export default async function AbmStagedDetailPage({
     <div className="bg-white">
       <AbmHeroBanner title={title} eyebrow={`ABM ${kind}`} />
       <div className="border-b border-neutral-200 bg-neutral-50">
-        <div className="mx-auto max-w-[1320px] px-6 py-5">
+        <div className="mx-auto max-w-[1320px] px-6 py-4">
           <Breadcrumb items={[
             { label: "Home", href: "/" },
             { label: "Products", href: "/products" },
             { label: "ABM", href: "/products/abm" },
-            { label: kind === "product" ? "Products" : "Services", href: listingPath },
             { label: title, href: `/products/abm/staged/${kind}/${encodeURIComponent(key)}` },
           ]} />
         </div>
@@ -127,7 +127,10 @@ export default async function AbmStagedDetailPage({
 
                   <div className={`${hasGallery ? "border-t border-orange-100 p-5" : "bg-orange-50/35 p-6 md:flex md:flex-col md:justify-center"}`}>
                     <p className="mb-4 text-sm leading-6 text-slate-600">For availability, lead time, and technical questions, contact ITS BIO.</p>
-                    <Link href={`/quote?item=${encodeURIComponent(`${title} ${record.sku || ""}`.trim())}`} className="inline-flex w-full items-center justify-center bg-[#f2632f] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#d95221]">Request a Quote</Link>
+                    <QuoteTriggerButton
+                      product={quoteProduct}
+                      className="inline-flex w-full items-center justify-center bg-[#f2632f] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#d95221]"
+                    />
                     <Link href="/contact" className="mt-3 inline-flex w-full items-center justify-center border border-[#f2632f] bg-white px-4 py-3 text-sm font-semibold text-[#dc5a2b] transition hover:bg-orange-50">Contact ITS BIO</Link>
                   </div>
                 </div>
