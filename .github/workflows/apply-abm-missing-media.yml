@@ -1,0 +1,52 @@
+name: Apply ABM missing staged media
+
+on:
+  push:
+    branches:
+      - agent/homepage-brand-redesign
+    paths:
+      - .github/workflows/apply-abm-missing-media.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 180
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Install temporary browser renderer for official ABM Vector Maps
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Backfill only products that are still missing visible media
+        run: node scripts/backfill-abm-staged-missing-media-all.mjs --apply
+      - name: Upload repair report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: abm-missing-media-apply-${{ github.run_id }}
+          path: |
+            .cache/abm-missing-media-all/
+            .cache/abm-image-backfill/
+            .cache/abm-vector-map-backfill/
+          retention-days: 30
+          if-no-files-found: warn
