@@ -43,8 +43,6 @@ function extractOfficialAbmUrl(href: string) {
 }
 
 function rewriteMegaMenuLinks(menuItems: MenuItem[]) {
-  if (!menuItems.length) return;
-
   document.querySelectorAll<HTMLAnchorElement>('header a[href^="/products/abm/"]').forEach((anchor) => {
     let url: URL;
     try {
@@ -59,11 +57,18 @@ function rewriteMegaMenuLinks(menuItems: MenuItem[]) {
     const root = segments[2] || "";
     if (!ABM_ROOTS.has(root) || segments.length <= 3) return;
 
+    // Until the real Sanity tree arrives, never expose the slug guessed by the
+    // presentation component. The real family landing is always safe.
+    if (!menuItems.length) {
+      anchor.setAttribute("href", `/products/abm/${root}`);
+      return;
+    }
+
     const requested = navKey(anchor.textContent);
     if (!requested) return;
 
     const exact = menuItems.find((item) => {
-      if (item.path?.[0] !== root || item.path.length !== 2) return false;
+      if (item.path?.[0] !== root || item.path.length <= 1) return false;
       const leaf = item.path[item.path.length - 1] || "";
       return navKey(item.title) === requested || navKey(leaf) === requested;
     });
@@ -240,7 +245,7 @@ export default function AbmLinkResolverClient() {
         rewriteAll();
       })
       .catch(() => {
-        // Keep the family links safe if the menu source is temporarily unavailable.
+        // The family landing links remain safe when the menu source is unavailable.
       });
 
     rewriteAll();
