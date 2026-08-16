@@ -47,6 +47,7 @@ export default async function AbmStagedDetailPage({
     ...(record.images || []),
   ].filter((url): url is string => isManagedAbmImageUrl(url))));
   const gallery = galleryUrls.map((url) => ({ url, alt: title }));
+  const hasGallery = gallery.length > 0;
   const paths = Array.isArray(record.listingPaths) && record.listingPaths.length
     ? record.listingPaths
     : record.listingFilters?.map((item) => item.path).filter((path): path is string[] => Array.isArray(path) && path.length > 0)
@@ -69,6 +70,10 @@ export default async function AbmStagedDetailPage({
     const normalized = label.toLowerCase();
     return value && !/price|cost|amount|currency|cart|quantity|^cat\.?\s*no\.?$|^unit$|^service(?:\s+name)?$/.test(normalized);
   });
+
+  const infoRowClass = hasGallery
+    ? "grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"
+    : "grid grid-cols-[120px_1fr] gap-3 border-b border-orange-50 py-4 text-sm last:border-b-0";
 
   return (
     <div className="bg-white">
@@ -96,31 +101,35 @@ export default async function AbmStagedDetailPage({
 
             <div className={[
               "mt-6 grid gap-8 border-t border-neutral-200 pt-7",
-              gallery.length ? "md:grid-cols-[minmax(0,1fr)_400px]" : "grid-cols-1",
+              hasGallery ? "md:grid-cols-[minmax(0,1fr)_400px]" : "grid-cols-1",
             ].join(" ")}>
-              {gallery.length ? (
+              {hasGallery ? (
                 <div className="min-h-[320px]">
                   <ProductGalleryClient images={gallery} title={title} />
                 </div>
               ) : null}
 
-              <aside className={`self-start overflow-hidden rounded-xl border-2 border-[#f2632f] bg-white ${gallery.length ? "" : "max-w-[520px]"}`}>
+              <aside className={`self-start overflow-hidden rounded-xl border-2 border-[#f2632f] bg-white ${hasGallery ? "" : "w-full"}`}>
                 <div className="border-b border-orange-100 px-6 py-4">
                   <h2 className="text-lg font-semibold text-[#dc5a2b]">{kind === "product" ? "Product Information" : "Service Information"}</h2>
                 </div>
-                <dl className="px-6 py-2">
-                  {record.sku ? <div className="grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"><dt className="font-semibold text-slate-900">Cat. No.</dt><dd className="font-medium text-slate-700">{record.sku}</dd></div> : null}
-                  {record.unit ? <div className="grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"><dt className="font-semibold text-slate-900">Unit</dt><dd className="text-slate-700">{record.unit}</dd></div> : null}
-                  {(record.category || record.searchCategory || record.filterTitle) ? <div className="grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"><dt className="font-semibold text-slate-900">Category</dt><dd className="text-slate-700">{record.category || record.searchCategory || record.filterTitle}</dd></div> : null}
-                  {record.storage ? <div className="grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"><dt className="font-semibold text-slate-900">Storage</dt><dd className="text-slate-700">{record.storage}</dd></div> : null}
-                  {kind === "service" && serviceFields.map(([label, value]) => (
-                    <div key={label} className="grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"><dt className="font-semibold text-slate-900">{label}</dt><dd className="text-slate-700">{value}</dd></div>
-                  ))}
-                </dl>
-                <div className="border-t border-orange-100 p-5">
-                  <p className="mb-4 text-sm leading-6 text-slate-600">For availability, lead time, and technical questions, contact ITS BIO.</p>
-                  <Link href={`/quote?item=${encodeURIComponent(`${title} ${record.sku || ""}`.trim())}`} className="inline-flex w-full items-center justify-center bg-[#f2632f] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#d95221]">Request a Quote</Link>
-                  <Link href="/contact" className="mt-3 inline-flex w-full items-center justify-center border border-[#f2632f] bg-white px-4 py-3 text-sm font-semibold text-[#dc5a2b] transition hover:bg-orange-50">Contact ITS BIO</Link>
+
+                <div className={hasGallery ? "" : "md:grid md:grid-cols-[minmax(0,1.35fr)_minmax(280px,.65fr)]"}>
+                  <dl className={hasGallery ? "px-6 py-2" : "px-6 py-3 md:border-r md:border-orange-100 md:px-7"}>
+                    {record.sku ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Cat. No.</dt><dd className="font-medium text-slate-700">{record.sku}</dd></div> : null}
+                    {record.unit ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Unit</dt><dd className="text-slate-700">{record.unit}</dd></div> : null}
+                    {(record.category || record.searchCategory || record.filterTitle) ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Category</dt><dd className="text-slate-700">{record.category || record.searchCategory || record.filterTitle}</dd></div> : null}
+                    {record.storage ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Storage</dt><dd className="text-slate-700">{record.storage}</dd></div> : null}
+                    {kind === "service" && serviceFields.map(([label, value]) => (
+                      <div key={label} className={infoRowClass}><dt className="font-semibold text-slate-900">{label}</dt><dd className="text-slate-700">{value}</dd></div>
+                    ))}
+                  </dl>
+
+                  <div className={`${hasGallery ? "border-t border-orange-100 p-5" : "bg-orange-50/35 p-6 md:flex md:flex-col md:justify-center"}`}>
+                    <p className="mb-4 text-sm leading-6 text-slate-600">For availability, lead time, and technical questions, contact ITS BIO.</p>
+                    <Link href={`/quote?item=${encodeURIComponent(`${title} ${record.sku || ""}`.trim())}`} className="inline-flex w-full items-center justify-center bg-[#f2632f] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#d95221]">Request a Quote</Link>
+                    <Link href="/contact" className="mt-3 inline-flex w-full items-center justify-center border border-[#f2632f] bg-white px-4 py-3 text-sm font-semibold text-[#dc5a2b] transition hover:bg-orange-50">Contact ITS BIO</Link>
+                  </div>
                 </div>
               </aside>
             </div>
