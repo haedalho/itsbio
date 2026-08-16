@@ -1,4 +1,4 @@
-import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
+import { PUBLIC_CATALOG_CACHE, sanityCdnClient, sanityClient } from "@/lib/sanity/sanity.client";
 
 export const ABM_REBUILD_VERSION = "2026-08-09-search-v5";
 
@@ -249,7 +249,12 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
   if (!record) return undefined;
 
   const detailKey = `${kind}:${String(record.sku || record.url).trim().toLowerCase()}`;
-  const staged = await sanityCdnClient.fetch<Record<string, unknown> | null>(STAGED_DETAIL_QUERY, {
+
+  // Read staged detail from the origin API rather than Sanity's CDN. Detail records
+  // are occasionally backfilled after review (for example managed product media),
+  // and the CDN can briefly serve the pre-backfill record. Next's catalog cache still
+  // keeps repeated page reads fast after the fresh origin value has been observed.
+  const staged = await sanityClient.fetch<Record<string, unknown> | null>(STAGED_DETAIL_QUERY, {
     version: ABM_REBUILD_VERSION,
     kind,
     key: detailKey,
