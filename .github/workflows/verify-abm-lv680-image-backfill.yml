@@ -36,6 +36,15 @@ jobs:
           --debug-html
           --source-url https://www.abmgood.com/Lenti-SV40-tsA58-temperature-sensitive-mutant-No-Selection-Marker-Lentivirus,-High-Titer-LV680.html
 
+      - name: Read-only LV680 vector map diagnostic
+        if: always()
+        run: |
+          mkdir -p .cache/abm-image-backfill
+          curl --fail --location --retry 3 \
+            --user-agent 'Mozilla/5.0 (compatible; ITSBIO-ABM-VectorMap-Diagnostic/1.0)' \
+            'https://www.abmgood.com/vds/map/cat/164' \
+            --output .cache/abm-image-backfill/LV680-map.html
+
       - name: Upload verification report
         if: always()
         uses: actions/upload-artifact@v4
