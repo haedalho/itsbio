@@ -72,14 +72,27 @@ function safeOfficialUrl(value: string) {
   }
 }
 
+function safeReturnPath(request: NextRequest) {
+  const referer = request.headers.get("referer") || "";
+  if (!referer) return "/products/abm";
+  try {
+    const url = new URL(referer);
+    const current = new URL(request.url);
+    if (url.origin !== current.origin) return "/products/abm";
+    if (!url.pathname.startsWith("/products/abm")) return "/products/abm";
+    return `${url.pathname}${url.search}`;
+  } catch {
+    return "/products/abm";
+  }
+}
+
 export async function GET(request: NextRequest) {
   const title = clean(request.nextUrl.searchParams.get("title"));
   const sku = clean(request.nextUrl.searchParams.get("sku"));
   const sourceUrl = safeOfficialUrl(clean(request.nextUrl.searchParams.get("u")));
-  const fallbackQuery = sku || title;
 
-  if (!fallbackQuery && !sourceUrl) {
-    return NextResponse.redirect(new URL("/products/abm", request.url), 307);
+  if (!sku && !title && !sourceUrl) {
+    return NextResponse.redirect(new URL(safeReturnPath(request), request.url), 307);
   }
 
   const [chunks, liveRows] = await Promise.all([
@@ -126,8 +139,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const params = new URLSearchParams();
-  params.set("q", fallbackQuery || title || sourceUrl);
-  params.set("brand", "abm");
-  return NextResponse.redirect(new URL(`/search?${params.toString()}`, request.url), 307);
+  // Never dump a category click into a generic search page. If a legacy table
+  // cannot be resolved, remain on the real ABM category the user came from.
+  return NextResponse.redirect(new URL(safeReturnPath(request), request.url), 307);
 }
