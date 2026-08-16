@@ -3,15 +3,32 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-const OTHER_BRANDS = [
-  { name: "Cleaver Scientific", area: "Laboratory Equipment" },
-  { name: "Seedburo", area: "Agricultural Research" },
-  { name: "AIMS", area: "Animal Identification" },
-  { name: "BIOplastics", area: "PCR & qPCR Consumables" },
-  { name: "CellFree Sciences", area: "Protein Expression" },
-  { name: "ITSChem", area: "Research Materials" },
-  { name: "PLAS-LABS", area: "Controlled Environments" },
-] as const;
+type BrandLink = {
+  name: string;
+  area: string;
+  href: string;
+};
+
+const BRANDS: BrandLink[] = [
+  { name: "ABM", area: "Life Science", href: "/products/abm" },
+  { name: "Kent Scientific", area: "Animal Research", href: "/products/kent" },
+  { name: "Cleaver Scientific", area: "Laboratory Equipment", href: "/products#brands" },
+  { name: "Seedburo", area: "Agricultural Research", href: "/products#brands" },
+  { name: "AIMS", area: "Animal Identification", href: "/products#brands" },
+  { name: "BIOplastics", area: "PCR & qPCR Consumables", href: "/products#brands" },
+  { name: "CellFree Sciences", area: "Protein Expression", href: "/products#brands" },
+  { name: "ITSChem", area: "Research Materials", href: "/products#brands" },
+  { name: "PLAS-LABS", area: "Controlled Environments", href: "/products#brands" },
+];
+
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-4-4" />
+    </svg>
+  );
+}
 
 export default function ProductsMegaMenu() {
   const [open, setOpen] = useState(false);
@@ -19,10 +36,9 @@ export default function ProductsMegaMenu() {
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const cancelClose = () => {
-    if (closeTimer.current) {
-      clearTimeout(closeTimer.current);
-      closeTimer.current = null;
-    }
+    if (!closeTimer.current) return;
+    clearTimeout(closeTimer.current);
+    closeTimer.current = null;
   };
 
   const scheduleClose = () => {
@@ -40,12 +56,15 @@ export default function ProductsMegaMenu() {
 
     document.addEventListener("mousedown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
+
     return () => {
       document.removeEventListener("mousedown", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);
       cancelClose();
     };
   }, []);
+
+  const closeMenu = () => setOpen(false);
 
   return (
     <div
@@ -80,112 +99,97 @@ export default function ProductsMegaMenu() {
 
       {open ? (
         <div
-          className="fixed left-1/2 top-[76px] z-[70] w-[min(1120px,calc(100vw-48px))] -translate-x-1/2 pt-3"
+          className="fixed left-1/2 top-[76px] z-[70] w-[min(1180px,calc(100vw-48px))] -translate-x-1/2 pt-3"
           onMouseEnter={cancelClose}
           onMouseLeave={scheduleClose}
         >
-          <div className="overflow-hidden rounded-[26px] border border-slate-200 bg-white shadow-[0_26px_80px_rgba(15,23,42,0.16)]">
-            <div className="grid lg:grid-cols-[0.86fr_1.14fr]">
-              <div className="relative overflow-hidden border-b border-slate-200 bg-[#071d43] p-7 text-white lg:border-b-0 lg:border-r lg:p-8">
-                <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full border border-white/10" />
-                <div className="pointer-events-none absolute -bottom-24 left-16 h-48 w-48 rounded-full border border-orange-400/15" />
-
-                <div className="relative z-10">
-                  <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-orange-400">ITS BIO PRODUCT PORTFOLIO</div>
-                  <h2 className="mt-3 max-w-sm text-[27px] font-semibold leading-[1.12] tracking-[-0.035em]">
-                    Find products by brand or search the catalog.
+          <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_26px_80px_rgba(15,23,42,0.16)]">
+            <div className="border-b border-slate-200 bg-[#fbfaf8] px-7 py-6 lg:px-8">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                <div className="max-w-[560px]">
+                  <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-orange-600">ITS BIO PRODUCT PORTFOLIO</div>
+                  <h2 className="mt-2 text-[25px] font-semibold leading-tight tracking-[-0.035em] text-[#071d43]">
+                    Explore our brands and scientific solutions.
                   </h2>
-                  <p className="mt-4 max-w-sm text-sm leading-6 text-white/65">
-                    Explore specialized scientific brands without mixing thousands of unrelated products into one list.
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Each brand represents a different part of the research workflow. Choose the specialist that fits your application.
                   </p>
-
-                  <Link
-                    href="/products"
-                    onClick={() => setOpen(false)}
-                    className="mt-6 inline-flex h-11 items-center gap-3 rounded-full bg-orange-600 px-5 text-sm font-semibold text-white transition hover:bg-orange-500"
-                  >
-                    Explore all brands <span aria-hidden>→</span>
-                  </Link>
-
-                  <div className="mt-8 border-t border-white/10 pt-6">
-                    <div className="text-xs font-semibold text-white/55">Know the product name or catalog number?</div>
-                    <form action="/search" method="get" className="mt-3 flex gap-2" onSubmit={() => setOpen(false)}>
-                      <input
-                        name="q"
-                        required
-                        aria-label="Search products"
-                        placeholder="Product name or Catalog No."
-                        className="h-11 min-w-0 flex-1 rounded-full border border-white/15 bg-white/10 px-4 text-sm text-white outline-none placeholder:text-white/40 focus:border-orange-400 focus:bg-white/[0.14]"
-                      />
-                      <button className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-[#071d43] transition hover:bg-orange-50 hover:text-orange-700" aria-label="Search catalog">
-                        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                          <circle cx="11" cy="11" r="7" />
-                          <path d="m20 20-4-4" />
-                        </svg>
-                      </button>
-                    </form>
-                  </div>
                 </div>
+
+                <Link
+                  href="/products"
+                  onClick={closeMenu}
+                  className="inline-flex h-11 shrink-0 items-center gap-3 rounded-full border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-800 transition hover:border-orange-300 hover:text-orange-600"
+                >
+                  View all brands <span aria-hidden>→</span>
+                </Link>
               </div>
 
-              <div className="p-7 lg:p-8">
-                <div className="flex items-end justify-between gap-4">
-                  <div>
-                    <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-orange-600">Catalogs available now</div>
-                    <h3 className="mt-1 text-xl font-semibold tracking-[-0.025em] text-slate-950">Featured catalogs</h3>
-                  </div>
-                  <Link href="/products" onClick={() => setOpen(false)} className="text-xs font-semibold text-slate-500 transition hover:text-orange-600">
-                    Product hub →
-                  </Link>
+              <form action="/search" method="get" className="mt-5 flex max-w-[720px] gap-2" onSubmit={closeMenu}>
+                <div className="relative min-w-0 flex-1">
+                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                    <SearchIcon />
+                  </span>
+                  <input
+                    name="q"
+                    required
+                    aria-label="Search products"
+                    placeholder="Search by product name or catalog number"
+                    className="h-12 w-full rounded-full border border-slate-300 bg-white pl-12 pr-5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+                  />
                 </div>
+                <button className="h-12 shrink-0 rounded-full bg-orange-600 px-6 text-sm font-semibold text-white transition hover:bg-orange-700">
+                  Search
+                </button>
+              </form>
+            </div>
 
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="px-7 py-6 lg:px-8 lg:py-7">
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <div>
+                  <div className="text-sm font-semibold text-slate-950">Browse by brand</div>
+                  <div className="mt-0.5 text-xs text-slate-500">All brands are shown with the same priority.</div>
+                </div>
+                <div className="hidden text-xs font-medium text-slate-400 sm:block">9 partner brands</div>
+              </div>
+
+              <div className="grid overflow-hidden rounded-[22px] border border-slate-200 sm:grid-cols-2 lg:grid-cols-3">
+                {BRANDS.map((brand, index) => (
                   <Link
-                    href="/products/abm"
-                    onClick={() => setOpen(false)}
-                    className="group/card relative overflow-hidden rounded-2xl border border-slate-200 bg-[#fffaf5] p-5 transition hover:border-orange-300 hover:shadow-md"
+                    key={brand.name}
+                    href={brand.href}
+                    onClick={closeMenu}
+                    className={[
+                      "group/brand relative min-h-[104px] bg-white px-5 py-5 transition hover:z-10 hover:bg-[#fffaf5]",
+                      "border-slate-200",
+                      index % 3 !== 2 ? "lg:border-r" : "",
+                      index < 6 ? "lg:border-b" : "",
+                      index % 2 === 0 ? "sm:border-r lg:border-r" : "sm:border-r-0",
+                      index < 8 ? "sm:border-b" : "",
+                    ].join(" ")}
                   >
-                    <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-orange-600">Life Science</div>
-                    <div className="mt-2 text-lg font-semibold text-slate-950">ABM</div>
-                    <p className="mt-2 text-xs leading-5 text-slate-500">Research reagents, cell biology, genetic materials, and custom services.</p>
-                    <div className="mt-4 text-xs font-semibold text-orange-600">Browse ABM catalog <span className="inline-block transition group-hover/card:translate-x-1">→</span></div>
-                  </Link>
-
-                  <Link
-                    href="/products/kent"
-                    onClick={() => setOpen(false)}
-                    className="group/card relative overflow-hidden rounded-2xl border border-slate-200 bg-[#f6f9fc] p-5 transition hover:border-[#8da8c8] hover:shadow-md"
-                  >
-                    <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#406b9c]">Animal Research</div>
-                    <div className="mt-2 text-lg font-semibold text-slate-950">Kent Scientific</div>
-                    <p className="mt-2 text-xs leading-5 text-slate-500">Anesthesia, ventilation, monitoring, surgery, warming, and animal care.</p>
-                    <div className="mt-4 text-xs font-semibold text-[#406b9c]">Browse Kent catalog <span className="inline-block transition group-hover/card:translate-x-1">→</span></div>
-                  </Link>
-                </div>
-
-                <div className="mt-7 flex items-center justify-between border-t border-slate-200 pt-5">
-                  <div>
-                    <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">More partner brands</div>
-                    <div className="mt-1 text-xs text-slate-500">Explore each specialist brand from the product hub.</div>
-                  </div>
-                </div>
-
-                <div className="mt-4 grid gap-x-7 gap-y-1 sm:grid-cols-2">
-                  {OTHER_BRANDS.map((brand) => (
-                    <Link
-                      key={brand.name}
-                      href="/products#brands"
-                      onClick={() => setOpen(false)}
-                      className="group/brand flex items-center justify-between gap-3 border-b border-slate-100 py-2.5"
-                    >
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-semibold text-slate-800 transition group-hover/brand:text-orange-600">{brand.name}</span>
-                        <span className="block truncate text-[11px] text-slate-400">{brand.area}</span>
+                    <div className="flex h-full items-center justify-between gap-5">
+                      <div className="min-w-0">
+                        <div className="text-[11px] font-bold uppercase tracking-[0.17em] text-slate-400 transition group-hover/brand:text-orange-500">
+                          {brand.area}
+                        </div>
+                        <div className="mt-1.5 truncate text-[16px] font-semibold tracking-[-0.02em] text-slate-900 transition group-hover/brand:text-orange-700">
+                          {brand.name}
+                        </div>
+                      </div>
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-400 transition group-hover/brand:translate-x-0.5 group-hover/brand:border-orange-200 group-hover/brand:bg-white group-hover/brand:text-orange-600" aria-hidden>
+                        →
                       </span>
-                      <span className="shrink-0 text-slate-300 transition group-hover/brand:translate-x-0.5 group-hover/brand:text-orange-500" aria-hidden>→</span>
-                    </Link>
-                  ))}
-                </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              <div className="mt-5 flex flex-col gap-2 border-t border-slate-100 pt-4 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+                <span>Not sure which brand fits your application?</span>
+                <Link href="/contact" onClick={closeMenu} className="font-semibold text-slate-800 transition hover:text-orange-600">
+                  Ask our team →
+                </Link>
               </div>
             </div>
           </div>
