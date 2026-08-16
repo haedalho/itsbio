@@ -11,6 +11,8 @@ import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.clien
 
 export const revalidate = 300;
 
+const PAGE_SIZE = 12;
+
 type ExactCatalogMatch = {
   _id: string;
   brandKey?: string;
@@ -86,7 +88,7 @@ const LIVE_SEARCH_QUERY = `
     || sku match $match
     || count(variants[sku match $match || catNo match $match]) > 0
   )
-] | order(_updatedAt desc)[0...80] {
+] | order(_updatedAt desc)[0...300] {
   _id,
   title,
   "slug": slug.current,
@@ -108,7 +110,7 @@ const ABM_STAGED_SEARCH_QUERY = `
   && kind in ["product", "service"]
   && count(records[title match $match || sku match $match]) > 0
 ]{
-  "matches": records[title match $match || sku match $match][0...8]
+  "matches": records[title match $match || sku match $match][0...60]
 }
 `;
 
@@ -138,7 +140,7 @@ function normalizeCatalogNumber(value: string) {
 
 function isCatalogNumberCandidate(value: string) {
   return (
-    value.length >= 2
+    value.length >= 3
     && value.length <= 64
     && /\d/.test(value)
     && !/\s/.test(value)
@@ -212,10 +214,34 @@ function liveResultHref(row: LiveSearchRow, brandKey: string) {
   };
 }
 
-function makeSearchHref(query: string, brand?: string) {
+function clampInt(value: unknown, fallback = 1) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(1, Math.trunc(parsed));
+}
+
+function makeSearchHref(query: string, brand?: string, page?: number) {
   const params = new URLSearchParams({ q: query });
   if (brand) params.set("brand", brand);
+  if (page && page > 1) params.set("page", String(page));
   return `/search?${params.toString()}`;
+}
+
+function buildPageNumbers(current: number, total: number) {
+  const pages: Array<number | "..."> = [];
+  if (total <= 7) {
+    for (let page = 1; page <= total; page += 1) pages.push(page);
+    return pages;
+  }
+
+  pages.push(1);
+  const left = Math.max(2, current - 1);
+  const right = Math.min(total - 1, current + 1);
+  if (left > 2) pages.push("...");
+  for (let page = left; page <= right; page += 1) pages.push(page);
+  if (right < total - 1) pages.push("...");
+  pages.push(total);
+  return pages;
 }
 
 function ResultCard({ result }: { result: SearchResult }) {
@@ -239,15 +265,68 @@ function ResultCard({ result }: { result: SearchResult }) {
   );
 }
 
+function Pagination({ query, brand, current, total }: { query: string; brand: string; current: number; total: number }) {
+  if (total <= 1) return null;
+  const pages = buildPageNumbers(current, total);
+
+  return (
+    <nav className="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="Search result pages">
+      <Link
+        href={makeSearchHref(query, brand, Math.max(1, current - 1))}
+        aria-disabled={current === 1}
+        className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+          current === 1
+            ? "pointer-events-none border-slate-200 bg-slate-50 text-slate-300"
+            : "border-slate-300 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-700"
+        }`}
+      >
+        ← Previous
+      </Link>
+
+      {pages.map((page, index) =>
+        page === "..." ? (
+          <span key={`ellipsis-${index}`} className="px-2 text-sm text-slate-400">…</span>
+        ) : (
+          <Link
+            key={page}
+            href={makeSearchHref(query, brand, page)}
+            aria-current={page === current ? "page" : undefined}
+            className={`flex h-10 min-w-10 items-center justify-center rounded-full border px-3 text-sm font-semibold transition ${
+              page === current
+                ? "border-orange-600 bg-orange-600 text-white"
+                : "border-slate-300 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-700"
+            }`}
+          >
+            {page}
+          </Link>
+        ),
+      )}
+
+      <Link
+        href={makeSearchHref(query, brand, Math.min(total, current + 1))}
+        aria-disabled={current === total}
+        className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+          current === total
+            ? "pointer-events-none border-slate-200 bg-slate-50 text-slate-300"
+            : "border-slate-300 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-700"
+        }`}
+      >
+        Next →
+      </Link>
+    </nav>
+  );
+}
+
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ q?: string; brand?: string }> | { q?: string; brand?: string };
+  searchParams?: Promise<{ q?: string; brand?: string; page?: string }> | { q?: string; brand?: string; page?: string };
 }) {
   const resolvedSearchParams = await Promise.resolve(searchParams);
   const qRaw = (resolvedSearchParams?.q || "").trim();
   const q = qRaw.replace(/\s+/g, " ").trim();
   const selectedBrand = normalizeBrandToken((resolvedSearchParams?.brand || "").trim());
+  const requestedPage = clampInt(resolvedSearchParams?.page);
 
   if (!q) redirect("/products");
 
@@ -316,8 +395,7 @@ export default async function SearchPage({
   }
 
   const stagedRows = (Array.isArray(stagedChunks) ? stagedChunks : [])
-    .flatMap((chunk) => (Array.isArray(chunk?.matches) ? chunk.matches : []))
-    .slice(0, 48);
+    .flatMap((chunk) => (Array.isArray(chunk?.matches) ? chunk.matches : []));
 
   for (const row of stagedRows) {
     const title = stringValue(row.title);
@@ -356,6 +434,10 @@ export default async function SearchPage({
     return scoreDiff || a.label.localeCompare(b.label);
   });
   const activeGroup = selectedBrand ? groups.find((group) => group.key === selectedBrand) : undefined;
+  const totalPages = activeGroup ? Math.max(1, Math.ceil(activeGroup.items.length / PAGE_SIZE)) : 1;
+  const currentPage = Math.min(requestedPage, totalPages);
+  const pageStart = (currentPage - 1) * PAGE_SIZE;
+  const pageItems = activeGroup ? activeGroup.items.slice(pageStart, pageStart + PAGE_SIZE) : [];
 
   return (
     <main className="min-h-[calc(100vh-76px)] bg-slate-50/70 px-6 py-12 md:py-16">
@@ -443,11 +525,14 @@ export default async function SearchPage({
                     <p className="text-xs font-bold uppercase tracking-[0.18em] text-orange-600">Brand results</p>
                     <h2 className="mt-1 text-2xl font-semibold text-slate-950">{activeGroup.label}</h2>
                   </div>
-                  <p className="text-sm text-slate-500">{activeGroup.items.length} matching result{activeGroup.items.length === 1 ? "" : "s"}</p>
+                  <p className="text-sm text-slate-500">
+                    {activeGroup.items.length} matching result{activeGroup.items.length === 1 ? "" : "s"} · Page {currentPage} of {totalPages}
+                  </p>
                 </div>
                 <div className="mt-6 grid gap-4 md:grid-cols-2">
-                  {activeGroup.items.slice(0, 12).map((result) => <ResultCard key={result.id} result={result} />)}
+                  {pageItems.map((result) => <ResultCard key={result.id} result={result} />)}
                 </div>
+                <Pagination query={q} brand={activeGroup.key} current={currentPage} total={totalPages} />
               </section>
             ) : (
               <section className="mt-5 rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
