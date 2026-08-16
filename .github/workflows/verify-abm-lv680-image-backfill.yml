@@ -1,0 +1,45 @@
+name: Verify ABM LV680 image backfill
+
+on:
+  push:
+    branches:
+      - agent/homepage-brand-redesign
+    paths:
+      - .github/workflows/verify-abm-lv680-image-backfill.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-lv680-image:
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+
+      - name: Dry-run LV680 image discovery
+        run: >-
+          node scripts/backfill-abm-staged-product-images.mjs
+          --sku LV680
+          --source-url https://www.abmgood.com/Lenti-SV40-tsA58-temperature-sensitive-mutant-No-Selection-Marker-Lentivirus,-High-Titer-LV680.html
+
+      - name: Upload verification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: abm-lv680-image-backfill-dry-${{ github.run_id }}
+          path: .cache/abm-image-backfill/
+          retention-days: 14
+          if-no-files-found: warn
