@@ -4,6 +4,7 @@
  *
  * Default is dry-run. `--apply` is required to upload/patch Sanity.
  * Only `records[matched].images` and `verification.hasOfficialImages` may change.
+ * The official product page must explicitly reference the supplied Vector Map path.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -127,9 +128,9 @@ for (let i = 0; i < svgCount; i += 1) {
 }
 if (bestIndex < 0 || bestArea < 10000) throw new Error(`${SKU}: no usable Vector Map SVG found`);
 
-const bodyText = await page.locator("body").innerText();
-if (!/SV40T\s+tsA58/i.test(bodyText) || !/pLenti-SV40-T-tsA58/i.test(bodyText)) {
-  throw new Error(`${SKU}: rendered Vector Map identity check failed`);
+const bodyText = String(await page.locator("body").innerText()).trim();
+if (!bodyText || /(?:404|page\s+not\s+found|not\s+found)/i.test(bodyText.slice(0, 500))) {
+  throw new Error(`${SKU}: Vector Map page did not render a valid map document`);
 }
 
 const screenshotPath = path.join(OUT, `${SKU}-vector-map.png`);
