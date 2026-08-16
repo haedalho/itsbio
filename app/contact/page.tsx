@@ -21,11 +21,11 @@ const kakaoMapUrl = `https://map.kakao.com/link/search/${kakaoSearchQuery}`;
 
 function DotItem({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_10px_26px_rgba(15,23,42,.04)]">
       <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full bg-orange-500" />
       <div>
         <div className="text-sm font-semibold text-neutral-900">{title}</div>
-        <div className="mt-1 text-neutral-700">{children}</div>
+        <div className="mt-1 text-sm leading-6 text-neutral-700">{children}</div>
       </div>
     </div>
   );
@@ -46,40 +46,65 @@ export default function ContactPage() {
         <div className="mt-6 flex justify-end"><Breadcrumb /></div>
 
         <section id="contact-details" className="mt-8">
-          <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white">
-            <div className="h-[300px] w-full md:h-[360px]">
-              <iframe title="ITS BIO map" className="h-full w-full" loading="lazy" referrerPolicy="no-referrer-when-downgrade" src={googleMapsEmbedWithMarker} />
+          <div className="grid overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_18px_55px_rgba(15,23,42,.08)] lg:grid-cols-[1fr_320px]">
+            <div className="relative h-[330px] w-full md:h-[410px]">
+              <iframe title="ITS BIO office map" className="h-full w-full" loading="lazy" referrerPolicy="no-referrer-when-downgrade" src={googleMapsEmbedWithMarker} />
+              <div className="absolute left-4 top-4 rounded-2xl border border-white/60 bg-white/95 px-4 py-3 shadow-lg backdrop-blur md:left-5 md:top-5">
+                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-orange-600">ITS BIO</div>
+                <div className="mt-1 text-sm font-semibold text-slate-950">Seoul Office</div>
+              </div>
+            </div>
+
+            <div className="flex flex-col justify-between bg-[#071d43] p-6 text-white md:p-8">
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-orange-300">Visit us</div>
+                <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">Find ITS BIO in Kakao Map</h2>
+                <p className="mt-4 text-sm leading-7 text-white/65">한국에서 길찾기나 대중교통 경로를 확인할 때는 카카오맵으로 바로 열어볼 수 있습니다.</p>
+              </div>
+
+              <div className="mt-8 space-y-3">
+                <a className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[#fee500] px-5 text-sm font-bold text-[#191919] transition hover:brightness-95" href={kakaoMapUrl} target="_blank" rel="noreferrer">
+                  Open Kakao Map <span className="ml-3" aria-hidden>→</span>
+                </a>
+                <a className="inline-flex h-12 w-full items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 text-sm font-semibold text-white transition hover:bg-white/10" href={`mailto:${OFFICE.email}`}>
+                  Email ITS BIO
+                </a>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="mt-10 border-t border-neutral-200 pt-10">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+        <section className="mt-12">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-3xl font-semibold tracking-tight text-neutral-900">Office</h2>
-              <p className="mt-2 text-neutral-700">We’re based in Seoul and support fast sourcing and reliable coordination.</p>
+              <div className="text-xs font-bold uppercase tracking-[0.2em] text-orange-600">Office information</div>
+              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-900">Seoul Office</h2>
+              <p className="mt-2 text-neutral-700">We support sourcing, quotations, product identification, and delivery coordination.</p>
             </div>
-            <div className="flex gap-3">
-              <a className="inline-flex items-center justify-center rounded-full border border-neutral-300 px-5 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-50" href={kakaoMapUrl} target="_blank" rel="noreferrer">Kakao Map</a>
-              <a className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2 text-sm font-semibold text-white hover:bg-neutral-800" href={`mailto:${OFFICE.email}`}>Email Us</a>
-            </div>
+            <a className="inline-flex h-11 items-center justify-center rounded-full border border-neutral-300 px-5 text-sm font-semibold text-neutral-900 transition hover:border-orange-300 hover:text-orange-700" href={kakaoMapUrl} target="_blank" rel="noreferrer">Directions in Kakao Map</a>
           </div>
 
-          <div className="mt-8 grid gap-7 lg:grid-cols-2">
+          <div className="mt-8 grid gap-4 md:grid-cols-2">
             <DotItem title="Address">{OFFICE.addressKr}</DotItem>
-            <DotItem title="Business hours">Weekdays: {OFFICE.hours.weekdays}<div className="text-sm text-neutral-600">Lunch: {OFFICE.hours.lunch} / {OFFICE.hours.note}</div></DotItem>
-            <DotItem title="Phone"><a className="hover:text-neutral-900" href={`tel:${OFFICE.tel.replace(/-/g, "")}`}>{OFFICE.tel}</a></DotItem>
+            <DotItem title="Business hours">Weekdays: {OFFICE.hours.weekdays}<div className="mt-1 text-sm text-neutral-600">Lunch: {OFFICE.hours.lunch} / {OFFICE.hours.note}</div></DotItem>
+            <DotItem title="Phone"><a className="hover:text-orange-700" href={`tel:${OFFICE.tel.replace(/-/g, "")}`}>{OFFICE.tel}</a></DotItem>
             <DotItem title="Fax">{OFFICE.fax}</DotItem>
-            <DotItem title="E-mail"><a className="hover:text-neutral-900" href={`mailto:${OFFICE.email}`}>{OFFICE.email}</a></DotItem>
+            <DotItem title="E-mail"><a className="hover:text-orange-700" href={`mailto:${OFFICE.email}`}>{OFFICE.email}</a></DotItem>
+            <DotItem title="Quotation / Lead time">Please include the product name and catalog number when available.</DotItem>
           </div>
         </section>
 
-        <section className="mb-16 mt-12 border-t border-neutral-200 pt-10">
-          <h2 className="text-3xl font-semibold tracking-tight text-neutral-900">Contacts</h2>
-          <p className="mt-3 text-neutral-700">Please use the channel below. We will get back to you as soon as possible.</p>
-          <div className="mt-8 grid gap-7 lg:grid-cols-2">
-            <DotItem title="General inquiries"><a className="hover:text-neutral-900" href={`mailto:${OFFICE.email}`}>{OFFICE.email}</a><div className="mt-1 text-sm text-neutral-600">T {OFFICE.tel} / F {OFFICE.fax}</div></DotItem>
-            <DotItem title="Quotation / Lead time"><a className="hover:text-neutral-900" href={`mailto:${OFFICE.email}`}>{OFFICE.email}</a><div className="mt-1 text-sm text-neutral-600">Please include product name & catalog number.</div></DotItem>
+        <section className="mb-16 mt-12 rounded-[28px] bg-slate-50 px-6 py-8 md:px-8">
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div className="text-xs font-bold uppercase tracking-[0.2em] text-orange-600">Product inquiry</div>
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#071d43]">Need a quotation or product match?</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Catalog number, screenshot, label photo, or partial specification is enough to start an inquiry.</p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <a href="/quote" className="inline-flex h-11 items-center rounded-full bg-orange-600 px-6 text-sm font-semibold text-white transition hover:bg-orange-700">Request a Quote</a>
+              <a href={`mailto:${OFFICE.email}`} className="inline-flex h-11 items-center rounded-full border border-slate-300 bg-white px-6 text-sm font-semibold text-slate-800 transition hover:border-slate-400">{OFFICE.email}</a>
+            </div>
           </div>
         </section>
       </div>
