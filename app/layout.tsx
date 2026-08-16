@@ -6,6 +6,7 @@ import Header from "@/components/site/Header";
 import HidePricesClient from "@/components/site/HidePricesClient";
 import HomeHeroOverride from "@/components/site/home/HomeHeroOverride";
 import NeedAssistance from "@/components/site/NeedAssistance";
+import FloatingQuoteButton from "@/components/site/FloatingQuoteButton";
 
 const pretendard = localFont({
   src: "./fonts/PretendardVariable.woff2",
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="mt-16 md:mt-24">
             <NeedAssistance />
           </div>
+          <FloatingQuoteButton />
         </div>
       </body>
     </html>
