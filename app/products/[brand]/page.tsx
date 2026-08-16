@@ -6,6 +6,7 @@ import Breadcrumb from "@/components/site/Breadcrumb";
 
 type BrandInfo = {
   name: string;
+  searchKey: string;
   eyebrow: string;
   description: string;
   logo?: string;
@@ -18,6 +19,7 @@ type BrandInfo = {
 const BRANDS: Record<string, BrandInfo> = {
   cleaver: {
     name: "Cleaver Scientific",
+    searchKey: "cleaverscientific",
     eyebrow: "LABORATORY EQUIPMENT",
     description: "Electrophoresis, gel documentation, blotting, power supplies, and practical equipment for life science laboratories.",
     logo: "/partners/Cleaverscientific-logo.png",
@@ -28,6 +30,7 @@ const BRANDS: Record<string, BrandInfo> = {
   },
   seedburo: {
     name: "Seedburo",
+    searchKey: "seedburo",
     eyebrow: "AGRICULTURAL RESEARCH",
     description: "Specialized instruments for seed, grain, moisture, germination, cleaning, and agricultural quality testing.",
     logo: "/partners/Seedburo-logo.png",
@@ -38,6 +41,7 @@ const BRANDS: Record<string, BrandInfo> = {
   },
   aims: {
     name: "AIMS",
+    searchKey: "aims",
     eyebrow: "ANIMAL IDENTIFICATION",
     description: "Identification systems and accessories designed to support reliable laboratory animal research and care.",
     logo: "/partners/aims-logo.png",
@@ -48,6 +52,7 @@ const BRANDS: Record<string, BrandInfo> = {
   },
   bioplastics: {
     name: "BIOplastics",
+    searchKey: "bioplastics",
     eyebrow: "PCR & qPCR CONSUMABLES",
     description: "Precision laboratory plastic consumables for consistent PCR, qPCR, and molecular diagnostic workflows.",
     logo: "/partners/bioplastics-logo.png",
@@ -58,6 +63,7 @@ const BRANDS: Record<string, BrandInfo> = {
   },
   cellfree: {
     name: "CellFree Sciences",
+    searchKey: "cellfreesciences",
     eyebrow: "PROTEIN EXPRESSION",
     description: "Wheat-germ cell-free protein expression systems, vectors, reagents, kits, and services for advanced protein research.",
     logo: "/partners/cellfreesciences-logo.png",
@@ -68,6 +74,7 @@ const BRANDS: Record<string, BrandInfo> = {
   },
   itschem: {
     name: "ITSChem",
+    searchKey: "itschem",
     eyebrow: "RESEARCH MATERIALS",
     description: "Specialty research materials and responsive laboratory sourcing support for scientific and industrial workflows.",
     logo: "/partners/itschem-logo.png",
@@ -78,6 +85,7 @@ const BRANDS: Record<string, BrandInfo> = {
   },
   plaslabs: {
     name: "PLAS-LABS",
+    searchKey: "plaslabs",
     eyebrow: "CONTROLLED ENVIRONMENTS",
     description: "Controlled-atmosphere enclosures and handling systems for sensitive laboratory and animal research workflows.",
     logo: "/partners/plaslabs-logo.png",
@@ -88,6 +96,7 @@ const BRANDS: Record<string, BrandInfo> = {
   },
   affinity: {
     name: "Affinity Immuno",
+    searchKey: "affinityimmuno",
     eyebrow: "IMMUNOASSAYS",
     description: "Immunoassay products and antibody solutions for life science and diagnostic research workflows.",
     accent: "#06b6d4",
@@ -97,6 +106,7 @@ const BRANDS: Record<string, BrandInfo> = {
   },
   dogen: {
     name: "DoGen",
+    searchKey: "dogen",
     eyebrow: "CELL & PROTEIN RESEARCH",
     description: "Research solutions for cell-based assays and protein biochemistry applications.",
     accent: "#b91c1c",
@@ -138,7 +148,7 @@ export default async function BrandPreparingPage({
             <h1 className="mt-4 text-[42px] font-semibold leading-[1.05] tracking-[-0.045em] md:text-[54px]">{brand.name}</h1>
             <p className="mt-5 max-w-xl text-[15px] leading-7 text-white/70 md:text-base">{brand.description}</p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <Link href={`/search?brand=${encodeURIComponent(brandKey)}`} className="inline-flex h-11 items-center rounded-full bg-white px-6 text-sm font-semibold" style={{ color: brand.deep }}>Search this brand</Link>
+              <Link href="#product-areas" className="inline-flex h-11 items-center rounded-full bg-white px-6 text-sm font-semibold" style={{ color: brand.deep }}>Explore product areas</Link>
               <Link href="/contact" className="inline-flex h-11 items-center rounded-full border border-white/20 bg-white/5 px-6 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/10">Contact our team</Link>
             </div>
           </div>
@@ -180,20 +190,30 @@ export default async function BrandPreparingPage({
             <p className="mt-4 max-w-xl text-sm leading-7 text-slate-600">
               We are moving this partner catalog into the same internal ITS BIO structure used for ABM and Kent. Until the catalog is complete, the brand remains fully available for quotation, sourcing, and product identification.
             </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link href={`/search?brand=${encodeURIComponent(brandKey)}`} className="inline-flex h-11 items-center rounded-full px-6 text-sm font-semibold text-white" style={{ backgroundColor: brand.accent }}>Search products</Link>
+
+            <form id="brand-search" action="/search" method="get" className="mt-7 rounded-[22px] border border-slate-200 bg-slate-50 p-4">
+              <input type="hidden" name="brand" value={brand.searchKey} />
+              <label htmlFor={`${brandKey}-search`} className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">Search this brand</label>
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                <input id={`${brandKey}-search`} name="q" required placeholder="Product name or catalog number" className="h-11 min-w-0 flex-1 rounded-full border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" />
+                <button className="h-11 shrink-0 rounded-full px-5 text-sm font-semibold text-white" style={{ backgroundColor: brand.accent }}>Search</button>
+              </div>
+            </form>
+
+            <div className="mt-5 flex flex-wrap gap-3">
               <Link href="/quote" className="inline-flex h-11 items-center rounded-full border border-slate-300 bg-white px-6 text-sm font-semibold text-slate-800 transition hover:border-slate-400">Request a Quote</Link>
+              <Link href="/contact" className="inline-flex h-11 items-center rounded-full border border-slate-300 bg-white px-6 text-sm font-semibold text-slate-800 transition hover:border-slate-400">Product identification help</Link>
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-slate-200 bg-slate-50/70 p-6 md:p-8">
+          <div id="product-areas" className="rounded-[28px] border border-slate-200 bg-slate-50/70 p-6 md:p-8">
             <div className="flex items-center justify-between gap-4">
               <h3 className="text-xl font-semibold text-slate-950">Product areas</h3>
               <span className="rounded-full bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 shadow-sm">Preparing</span>
             </div>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               {brand.categories.map((category) => (
-                <Link key={category} href={`/search?q=${encodeURIComponent(category)}&brand=${encodeURIComponent(brandKey)}`} className="group flex min-h-14 items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:-translate-y-0.5 hover:shadow-sm">
+                <Link key={category} href={`/search?q=${encodeURIComponent(category)}&brand=${encodeURIComponent(brand.searchKey)}`} className="group flex min-h-14 items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:-translate-y-0.5 hover:shadow-sm">
                   <span>{category}</span>
                   <span className="transition-transform group-hover:translate-x-1" style={{ color: brand.accent }} aria-hidden>→</span>
                 </Link>
