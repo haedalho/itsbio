@@ -15,6 +15,12 @@ type BrandTheme = {
   dot: string;
 };
 
+type CategoryGroup = {
+  label: string;
+  href: string;
+  items: string[];
+};
+
 type Brand = {
   key: string;
   name: string;
@@ -23,6 +29,7 @@ type Brand = {
   href: string;
   searchKey: string;
   categories: string[];
+  groups?: CategoryGroup[];
   theme: BrandTheme;
 };
 
@@ -150,6 +157,63 @@ const THEMES: Record<string, BrandTheme> = {
   },
 };
 
+const ABM_GROUPS: CategoryGroup[] = [
+  {
+    label: "General Materials",
+    href: "/products/abm/general-materials",
+    items: [
+      "PCR Enzymes",
+      "Enzymes & Kits",
+      "Antibodies",
+      "Biorepository",
+      "Transfection Reagents",
+      "DNA / RNA Purification",
+      "Gel Documentation",
+      "RNA Tracking",
+      "Buffers & General Chemicals",
+      "Equipment",
+      "DNA & Protein Ladders",
+    ],
+  },
+  {
+    label: "Cellular Materials",
+    href: "/products/abm/cellular-materials",
+    items: [
+      "Cell Library Collections",
+      "3D & Organoid",
+      "Hematopoietic Cells",
+      "Microbial Contamination",
+      "Cell Immortalization Reagents",
+      "Media & Supplements",
+      "Growth Factors & Cytokines",
+      "Cell Freezing",
+      "Culture Consumables",
+      "Cell Assay Products",
+      "Cell Culture Equipment",
+    ],
+  },
+  {
+    label: "Genetic Materials",
+    href: "/products/abm/genetic-materials",
+    items: [
+      "Expression-Ready Libraries",
+      "CRISPR",
+      "Expression Systems",
+      "Specialized Vectors",
+      "Kits for Viral Vectors",
+    ],
+  },
+  {
+    label: "Services",
+    href: "/products/abm/services",
+    items: [
+      "Cell & Antibody Services",
+      "DNA & Cloning Services",
+      "Recombinant Virus Packaging",
+    ],
+  },
+];
+
 const BRANDS: Brand[] = [
   {
     key: "abm",
@@ -158,25 +222,8 @@ const BRANDS: Brand[] = [
     description: "Research reagents, cell biology products, genetic materials, molecular tools, and custom research services.",
     href: "/products/abm",
     searchKey: "abm",
-    categories: [
-      "General Materials",
-      "PCR Enzymes",
-      "Enzymes & Kits",
-      "Antibodies",
-      "Biorepository",
-      "Transfection Reagents",
-      "DNA / RNA Purification",
-      "Gel Documentation",
-      "Cellular Materials",
-      "Cell Library Collections",
-      "3D & Organoid",
-      "Media & Supplements",
-      "Genetic Materials",
-      "Viral Vectors",
-      "CRISPR",
-      "Expression Systems",
-      "Custom Services",
-    ],
+    categories: [],
+    groups: ABM_GROUPS,
     theme: THEMES.abm,
   },
   {
@@ -399,7 +446,7 @@ export default function ProductsMegaMenu() {
 
       {open ? (
         <div
-          className="fixed left-1/2 top-[76px] z-[70] w-[min(1280px,calc(100vw-36px))] -translate-x-1/2 pt-3"
+          className="fixed left-1/2 top-[76px] z-[70] w-[min(1320px,calc(100vw-36px))] -translate-x-1/2 pt-3"
           onMouseEnter={cancelClose}
           onMouseLeave={scheduleClose}
         >
@@ -422,7 +469,7 @@ export default function ProductsMegaMenu() {
               </div>
             </div>
 
-            <div className="grid min-h-[500px] lg:grid-cols-[230px_1fr_280px]">
+            <div className="grid min-h-[500px] lg:grid-cols-[225px_1fr_275px]">
               <aside className={`border-b border-slate-200 p-5 transition-colors duration-300 lg:border-b-0 lg:border-r ${theme.softBg}`}>
                 <div className="px-2 pb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Browse by brand</div>
                 <div className="space-y-1">
@@ -466,24 +513,55 @@ export default function ProductsMegaMenu() {
                   </Link>
                 </div>
 
-                <div className="mt-5 flex items-center justify-between gap-4">
-                  <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Product categories</div>
-                  <span className="text-[11px] text-slate-400">Explore products by category</span>
-                </div>
-
-                <div className="mt-3 grid gap-x-7 sm:grid-cols-2 xl:grid-cols-3">
-                  {activeBrand.categories.map((category) => (
-                    <Link
-                      key={category}
-                      href={`/search?q=${encodeURIComponent(category)}&brand=${encodeURIComponent(activeBrand.searchKey)}`}
-                      onClick={closeMenu}
-                      className={`group/category flex min-h-10 items-center justify-between gap-3 border-b border-slate-200 py-2 text-[13px] font-medium text-slate-700 transition ${theme.hoverText} ${theme.hoverBorder}`}
-                    >
-                      <span>{category}</span>
-                      <ArrowIcon className={`h-3.5 w-3.5 shrink-0 -translate-x-1 opacity-0 transition group-hover/category:translate-x-0 group-hover/category:opacity-100 ${theme.text}`} />
-                    </Link>
-                  ))}
-                </div>
+                {activeBrand.groups ? (
+                  <div className="mt-5 grid gap-x-7 gap-y-7 sm:grid-cols-2 xl:grid-cols-4">
+                    {activeBrand.groups.map((group) => (
+                      <div key={group.label} className="min-w-0">
+                        <Link
+                          href={group.href}
+                          onClick={closeMenu}
+                          className={`group/heading flex items-center justify-between gap-2 border-b-2 pb-2 text-[13px] font-semibold tracking-[-0.01em] ${theme.text} ${theme.border}`}
+                        >
+                          <span>{group.label}</span>
+                          <ArrowIcon className="h-3.5 w-3.5 opacity-50 transition group-hover/heading:translate-x-0.5 group-hover/heading:opacity-100" />
+                        </Link>
+                        <div className="mt-2.5 space-y-0.5">
+                          {group.items.map((item) => (
+                            <Link
+                              key={item}
+                              href={`/search?q=${encodeURIComponent(item)}&brand=abm`}
+                              onClick={closeMenu}
+                              className={`group/item flex items-start gap-2 rounded-lg px-1.5 py-1.5 text-[12px] leading-4 text-slate-600 transition hover:bg-slate-50 ${theme.hoverText}`}
+                            >
+                              <span className={`mt-[6px] h-1 w-1 shrink-0 rounded-full ${theme.dot} opacity-55`} />
+                              <span>{item}</span>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                    <div className="mt-5 flex items-center justify-between gap-4">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Product categories</div>
+                      <span className="text-[11px] text-slate-400">Explore products by category</span>
+                    </div>
+                    <div className="mt-3 grid gap-x-7 sm:grid-cols-2 xl:grid-cols-3">
+                      {activeBrand.categories.map((category) => (
+                        <Link
+                          key={category}
+                          href={`/search?q=${encodeURIComponent(category)}&brand=${encodeURIComponent(activeBrand.searchKey)}`}
+                          onClick={closeMenu}
+                          className={`group/category flex min-h-10 items-center justify-between gap-3 border-b border-slate-200 py-2 text-[13px] font-medium text-slate-700 transition ${theme.hoverText} ${theme.hoverBorder}`}
+                        >
+                          <span>{category}</span>
+                          <ArrowIcon className={`h-3.5 w-3.5 shrink-0 -translate-x-1 opacity-0 transition group-hover/category:translate-x-0 group-hover/category:opacity-100 ${theme.text}`} />
+                        </Link>
+                      ))}
+                    </div>
+                  </>
+                )}
               </section>
 
               <aside className={`relative overflow-hidden p-7 transition-colors duration-300 ${theme.softBg}`}>
@@ -496,6 +574,24 @@ export default function ProductsMegaMenu() {
                     <h3 className="mt-3 text-xl font-semibold tracking-[-0.025em] text-[#071d43]">{activeBrand.name}</h3>
                     <p className="mt-3 text-xs leading-6 text-slate-600">{activeBrand.description}</p>
                   </div>
+
+                  {activeBrand.groups ? (
+                    <div className="mt-6 border-t border-slate-200 pt-5">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">ABM families</div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {activeBrand.groups.map((group) => (
+                          <Link
+                            key={group.label}
+                            href={group.href}
+                            onClick={closeMenu}
+                            className={`rounded-full border bg-white px-3 py-1.5 text-[10px] font-semibold transition ${theme.border} ${theme.text} ${theme.activeBg}`}
+                          >
+                            {group.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
 
                   <div className="mt-auto border-t border-slate-200 pt-5">
                     <Link
