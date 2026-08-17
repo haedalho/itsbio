@@ -109,8 +109,15 @@ export default function NavigationLoadingOverlay() {
     };
 
     // Back/forward navigation is intentionally NOT intercepted. Next/browser history
-    // should own popstate so an overlay can never get stranded during history restores.
-    const onPageShow = () => finish();
+    // owns popstate so the loading overlay can never get stranded. If the browser
+    // restores an older DOM snapshot from BFCache, refresh the server components once
+    // so the restored page matches the currently deployed ABM UI/data.
+    const onPageShow = (event: PageTransitionEvent) => {
+      finish();
+      if (event.persisted) {
+        requestAnimationFrame(() => router.refresh());
+      }
+    };
 
     document.addEventListener("click", onClick, true);
     document.addEventListener("submit", onSubmit);
