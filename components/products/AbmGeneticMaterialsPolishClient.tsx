@@ -89,7 +89,7 @@ function flatten(nodes: CanonicalNode[]) {
 }
 flatten(OFFICIAL_GENETIC_TREE);
 
-function anchorKey(anchor: HTMLAnchorElement) {
+function anchorKeys(anchor: HTMLAnchorElement) {
   let leaf = "";
   try {
     const url = new URL(anchor.getAttribute("href") || "", window.location.origin);
@@ -100,20 +100,45 @@ function anchorKey(anchor: HTMLAnchorElement) {
   return [norm(anchor.textContent), norm(leaf)].filter(Boolean);
 }
 
-function matchesNode(anchor: HTMLAnchorElement, item: CanonicalNode) {
-  const keys = anchorKey(anchor);
-  return keys.some((value) => item.aliases.some((alias) => value === alias || value.startsWith(`${alias} `) || alias.startsWith(`${value} `)));
+function nodeMatchScore(anchor: HTMLAnchorElement, item: CanonicalNode) {
+  const keys = anchorKeys(anchor);
+  let best = 0;
+
+  for (const value of keys) {
+    for (const alias of item.aliases) {
+      if (!value || !alias) continue;
+      if (value === alias) {
+        best = Math.max(best, 10000 + alias.length);
+        continue;
+      }
+
+      // Fuzzy matching is intentionally conservative. Previously the one-word
+      // alias "CRISPR" matched every CRISPR child and renamed several distinct
+      // links to CRISPR. Only multi-word aliases may participate here.
+      const aliasTokens = alias.split(" ").filter(Boolean);
+      const valueTokens = value.split(" ").filter(Boolean);
+      if (aliasTokens.length < 2 || valueTokens.length < 2) continue;
+      if (value.startsWith(`${alias} `) || alias.startsWith(`${value} `)) {
+        best = Math.max(best, 1000 + Math.min(alias.length, value.length));
+      }
+    }
+  }
+
+  return best;
 }
 
 function canonicalNodeForAnchor(anchor: HTMLAnchorElement) {
-  return ALL_NODES.find((item) => matchesNode(anchor, item));
+  const ranked = ALL_NODES
+    .map((item) => ({ item, score: nodeMatchScore(anchor, item) }))
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score || b.item.label.length - a.item.label.length);
+  return ranked[0]?.item;
 }
 
 function visibleTextElement(anchor: HTMLAnchorElement) {
   const spans = Array.from(anchor.querySelectorAll<HTMLElement>("span"))
     .filter((span) => !span.children.length && norm(span.textContent));
-  const candidate = spans.find((span) => !/^[⌄⌃^›→]+$/.test((span.textContent || "").trim()));
-  return candidate || null;
+  return spans.find((span) => !/^[⌄⌃^›→]+$/.test((span.textContent || "").trim())) || null;
 }
 
 function setAnchorLabel(anchor: HTMLAnchorElement, label: string) {
@@ -126,26 +151,6 @@ function setAnchorLabel(anchor: HTMLAnchorElement, label: string) {
   anchor.setAttribute("title", label);
 }
 
-function orderForLabel(nodes: CanonicalNode[], label: string) {
-  const wanted = norm(label);
-  const index = nodes.findIndex((item) => norm(item.label) === wanted);
-  return index < 0 ? 999 : index;
-}
-
-function firstAnchorLabel(element: Element) {
-  const anchor = element.matches("a") ? element as HTMLAnchorElement : element.querySelector<HTMLAnchorElement>(":scope > a, a");
-  return anchor ? canonicalNodeForAnchor(anchor)?.label || (anchor.textContent || "") : "";
-}
-
-function reorderDirectChildren(container: HTMLElement, nodes: CanonicalNode[]) {
-  const children = Array.from(container.children);
-  if (children.length < 2) return;
-  const ordered = [...children].sort((a, b) => orderForLabel(nodes, firstAnchorLabel(a)) - orderForLabel(nodes, firstAnchorLabel(b)));
-  ordered.forEach((child) => {
-    if (container.lastElementChild !== child) container.appendChild(child);
-  });
-}
-
 function normalizeGeneticNavigation() {
   const anchors = Array.from(document.querySelectorAll<HTMLAnchorElement>(`a[href^="${GENETIC_ROOT}"]`));
   anchors.forEach((anchor) => {
@@ -156,26 +161,7 @@ function normalizeGeneticNavigation() {
   const aside = Array.from(document.querySelectorAll<HTMLElement>("aside")).find((element) =>
     Array.from(element.querySelectorAll<HTMLAnchorElement>("a")).some((anchor) => norm(anchor.textContent) === "genetic materials"),
   );
-  if (!aside) return;
-  aside.classList.add("itsbio-genetic-sidebar");
-
-  // Reorder the five official Genetic Materials groups without changing their
-  // stored Sanity hrefs. The first matching list is the active root tree.
-  const lists = Array.from(aside.querySelectorAll<HTMLElement>(".space-y-1"));
-  const rootList = lists.find((list) => {
-    const labels = Array.from(list.children).map(firstAnchorLabel).map(norm);
-    return OFFICIAL_GENETIC_TREE.filter((item) => labels.includes(norm(item.label))).length >= 2;
-  });
-  if (rootList) reorderDirectChildren(rootList, OFFICIAL_GENETIC_TREE);
-
-  OFFICIAL_GENETIC_TREE.forEach((parent) => {
-    const parentAnchor = Array.from(aside.querySelectorAll<HTMLAnchorElement>(`a[href^="${GENETIC_ROOT}"]`))
-      .find((anchor) => norm(canonicalNodeForAnchor(anchor)?.label) === norm(parent.label));
-    if (!parentAnchor || !parent.children?.length) return;
-    const section = parentAnchor.parentElement;
-    const childList = section?.querySelector<HTMLElement>(".space-y-1");
-    if (childList) reorderDirectChildren(childList, parent.children);
-  });
+  if (aside) aside.classList.add("itsbio-genetic-sidebar");
 }
 
 function nearestSectionBoundary(start: HTMLElement) {
@@ -192,6 +178,14 @@ function nearestSectionBoundary(start: HTMLElement) {
   return nodes;
 }
 
+function cleanHighlightLabel(value: string) {
+  return String(value || "")
+    .replace(/^[•·›→\s]+/, "")
+    .replace(/[•·›→\s]+$/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function normalizeHighlightedProducts() {
   const headings = Array.from(document.querySelectorAll<HTMLElement>(".itsbio-html h1,.itsbio-html h2,.itsbio-html h3,.itsbio-html h4"))
     .filter((heading) => norm(heading.textContent) === "highlighted products and services");
@@ -203,19 +197,23 @@ function normalizeHighlightedProducts() {
 
     const seen = new Set<string>();
     const cards: Array<{ href: string; label: string; media: Element | null }> = [];
+
     sourceNodes.forEach((source) => {
       source.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((anchor) => {
-        const label = (anchor.textContent || "").replace(/\s*→\s*$/g, "").trim();
-        if (!label || label === "→" || label.length < 3) return;
+        const label = cleanHighlightLabel(anchor.textContent || "");
+        if (!label || label.length < 3) return;
         const href = anchor.getAttribute("href") || "";
+        if (!href || href.startsWith("#")) return;
         const signature = `${href}|${norm(label)}`;
         if (seen.has(signature)) return;
         seen.add(signature);
+
         const owner = anchor.closest("li,div,td") || anchor;
         const media = owner.querySelector("img,svg")?.cloneNode(true) as Element | null;
         cards.push({ href, label, media });
       });
     });
+
     if (cards.length < 3 || cards.length > 12) return;
 
     const grid = document.createElement("div");
@@ -265,6 +263,7 @@ export default function AbmGeneticMaterialsPolishClient() {
     apply();
     const observer = new MutationObserver(apply);
     observer.observe(document.body, { childList: true, subtree: true });
+
     return () => {
       disposed = true;
       observer.disconnect();
