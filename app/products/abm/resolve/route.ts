@@ -11,7 +11,7 @@ const STAGED_QUERY = `
 *[
   _type == "abmRebuildChunk"
   && version == $version
-  && kind == "product"
+  && kind in ["product", "service"]
   && count(records[
     ($sku != "" && lower(sku) == lower($sku))
     || ($sourceUrl != "" && url == $sourceUrl)
@@ -112,19 +112,22 @@ export async function GET(request: NextRequest) {
     .flatMap((chunk) => Array.isArray(chunk.matches) ? chunk.matches : [])
     .filter(Boolean);
 
-  const exactSku = sku
-    ? staged.find((row) => normalized(row.sku) === normalized(sku))
-    : undefined;
+  // The exact clicked source URL is the strongest signal. This matters on ABM
+  // tables where one catalog number can represent a custom service while the
+  // visible vector name points at a separate vector-information page.
   const exactUrl = sourceUrl
     ? staged.find((row) => safeOfficialUrl(row.url) === sourceUrl)
+    : undefined;
+  const exactSku = sku
+    ? staged.find((row) => normalized(row.sku) === normalized(sku))
     : undefined;
   const exactTitle = title
     ? staged.find((row) => normalized(row.title) === normalized(title))
     : undefined;
-  const stagedMatch = exactSku || exactUrl || exactTitle;
+  const stagedMatch = exactUrl || exactSku || exactTitle;
 
   if (stagedMatch) {
-    return NextResponse.redirect(new URL(stagedRecordPath("product", stagedMatch), request.url), 307);
+    return NextResponse.redirect(new URL(stagedRecordPath(stagedMatch.kind, stagedMatch), request.url), 307);
   }
 
   const live = Array.isArray(liveRows) ? liveRows : [];
@@ -139,10 +142,10 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // An exact official source URL is still a real product destination even when
-  // the current staged/live indexes do not contain it. Let the internal legacy
-  // resolver make one more URL-based attempt instead of bouncing the customer
-  // back to the category page and making the click appear broken.
+  // An exact official source URL is still a real ABM destination even when the
+  // current staged/live indexes do not contain it. Let the internal legacy
+  // resolver make one more URL-based attempt instead of bouncing back to the
+  // category page and making the click appear broken.
   if (sourceUrl) {
     return NextResponse.redirect(
       new URL(`/products/abm/legacy?u=${encodeURIComponent(sourceUrl)}`, request.url),
@@ -150,6 +153,6 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Without an exact source URL we do not guess a product route.
+  // Without an exact source URL we do not invent a destination.
   return NextResponse.redirect(new URL(safeReturnPath(request), request.url), 307);
 }
