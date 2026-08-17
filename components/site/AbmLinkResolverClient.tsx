@@ -57,9 +57,6 @@ function gelDocumentationTargetForLink(anchor: HTMLAnchorElement): GelDocumentat
     || leaf === "safeviewer imager"
   ) return "gel-imager";
 
-  // The imported Sanity tree currently contains a duplicate child called
-  // "Gel Documentation". In the side navigation only, that child represents
-  // the DNA-stain section of the parent landing. Keep the real parent link intact.
   if (
     withinGelDocumentation
     && pathname !== GEL_DOCUMENTATION_PATH
@@ -171,8 +168,6 @@ function rewriteMegaMenuLinks(menuItems: MenuItem[]) {
     const root = segments[2] || "";
     if (!ABM_ROOTS.has(root) || segments.length <= 3) return;
 
-    // Until the real Sanity tree arrives, never expose the slug guessed by the
-    // presentation component. The real family landing is always safe.
     if (!menuItems.length) {
       anchor.setAttribute("href", `/products/abm/${root}`);
       return;
@@ -194,8 +189,6 @@ function rewriteMegaMenuLinks(menuItems: MenuItem[]) {
       return;
     }
 
-    // Never leave a guessed category slug active. If no exact stored category
-    // exists, fall back to the real ABM family page rather than inventing a URL.
     anchor.setAttribute("href", `/products/abm/${root}`);
     anchor.dataset.itsbioAbmCategoryResolved = "false";
   });
@@ -289,6 +282,7 @@ function rewriteRichProductLinks(pathname: string) {
 
   document.querySelectorAll<HTMLAnchorElement>(".itsbio-html a[href]").forEach((anchor) => {
     if (anchor.dataset.itsbioAbmProductResolved === "true") return;
+    if (anchor.dataset.itsbioAbmPreserveLink === "true") return;
 
     const href = collapse(anchor.getAttribute("href"));
     if (!href || href.startsWith("#") || /\.(?:pdf|docx?|xlsx?|pptx?|csv|zip)(?:$|[?#])/i.test(href)) return;
