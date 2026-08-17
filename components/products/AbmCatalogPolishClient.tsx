@@ -6,6 +6,13 @@ import { usePathname } from "next/navigation";
 const GEL_DOCUMENTATION = "/products/abm/general-materials/gel-documentation";
 const DNA_STAINS = `${GEL_DOCUMENTATION}#safeview-dna-stains`;
 const GEL_IMAGER = "/products/abm/staged/product/E1001";
+const ABM_CATEGORY_ROOTS = new Set(["general-materials", "cellular-materials", "genetic-materials"]);
+
+type MenuItem = {
+  title?: string;
+  path?: string[];
+  href?: string;
+};
 
 function collapse(value: string | null | undefined) {
   return String(value || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
@@ -195,17 +202,91 @@ function ensureDnaStainsAnchor(pathname: string) {
   return target;
 }
 
+function requestedCategoryPath(pathname: string) {
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments[0] !== "products" || segments[1] !== "abm") return null;
+  const root = segments[2] || "";
+  if (!ABM_CATEGORY_ROOTS.has(root) || segments.length < 4) return null;
+  if (["staged", "item", "resolve", "legacy", "products", "services"].includes(root)) return null;
+  return { root, path: segments.slice(2), leaf: segments.at(-1) || "" };
+}
+
+function tokenSubset(needle: string, haystack: string) {
+  const wanted = key(needle).split(" ").filter(Boolean);
+  const have = new Set(key(haystack).split(" ").filter(Boolean));
+  return wanted.length > 0 && wanted.every((token) => have.has(token));
+}
+
+function findCanonicalCategory(items: MenuItem[], root: string, leaf: string) {
+  const sameRoot = items.filter((item) => Array.isArray(item.path) && item.path?.[0] === root && item.path.length > 1 && item.href);
+  const wanted = key(decodeURIComponent(leaf));
+  if (!wanted) return null;
+
+  const scored = sameRoot.map((item) => {
+    const title = key(item.title);
+    const itemLeaf = key(item.path?.at(-1));
+    let score = 0;
+    if (title === wanted || itemLeaf === wanted) score = 100;
+    else if (title.startsWith(wanted) || itemLeaf.startsWith(wanted)) score = 80;
+    else if (tokenSubset(wanted, title) || tokenSubset(wanted, itemLeaf)) score = 60;
+    return { item, score };
+  }).filter((entry) => entry.score > 0).sort((a, b) => b.score - a.score || (a.item.path?.length || 0) - (b.item.path?.length || 0));
+
+  if (!scored.length) return null;
+  if (scored.length > 1 && scored[0].score === scored[1].score) {
+    const first = scored[0].item;
+    const second = scored[1].item;
+    if (key(first.title) !== key(second.title) && key(first.path?.at(-1)) !== key(second.path?.at(-1))) return null;
+  }
+  return scored[0].item;
+}
+
+async function canonicalizeMissingCategory(pathname: string) {
+  const requested = requestedCategoryPath(pathname);
+  if (!requested) return;
+
+  // Only intervene on the broken empty-state produced by a stale/shortened
+  // category URL. Valid Sanity categories — including intentionally sparse
+  // ones — are left alone.
+  const hasEmptyNotice = Array.from(document.querySelectorAll<HTMLElement>("main div"))
+    .some((element) => collapse(element.textContent).startsWith("본문 데이터가 아직 없습니다."));
+  if (!hasEmptyNotice) return;
+
+  try {
+    const response = await fetch("/api/abm/menu", { credentials: "same-origin", cache: "no-store" });
+    if (!response.ok) return;
+    const payload = await response.json();
+    const items: MenuItem[] = Array.isArray(payload?.items) ? payload.items : [];
+    if (!items.length) return;
+
+    const exact = items.find((item) => {
+      if (!Array.isArray(item.path) || !item.href) return false;
+      return item.path.join("/").toLowerCase() === requested.path.join("/").toLowerCase();
+    });
+    if (exact) return;
+
+    const canonical = findCanonicalCategory(items, requested.root, requested.leaf);
+    const destination = canonical?.href || `/products/abm/${requested.root}`;
+    if (destination && destination !== pathname) window.location.replace(destination);
+  } catch {
+    // If the taxonomy endpoint is temporarily unavailable, keep the current
+    // page visible rather than guessing a category URL.
+  }
+}
+
 export default function AbmCatalogPolishClient() {
   const pathname = usePathname();
 
   useEffect(() => {
     let scheduled = false;
+    let disposed = false;
 
     const apply = () => {
       if (scheduled) return;
       scheduled = true;
       requestAnimationFrame(() => {
         scheduled = false;
+        if (disposed) return;
         normalizeGelDocumentationLinks();
         document.querySelectorAll<HTMLTableElement>(".itsbio-html table").forEach(normalizeAbmTable);
 
@@ -236,11 +317,13 @@ export default function AbmCatalogPolishClient() {
     };
 
     apply();
+    void canonicalizeMissingCategory(pathname);
     const observer = new MutationObserver(apply);
     observer.observe(document.body, { childList: true, subtree: true });
     document.addEventListener("click", onClick, true);
 
     return () => {
+      disposed = true;
       observer.disconnect();
       document.removeEventListener("click", onClick, true);
     };
