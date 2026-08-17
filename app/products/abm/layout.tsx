@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import AbmCatalogPolishClient from "@/components/products/AbmCatalogPolishClient";
 import AbmGeneticMaterialsPolishClient from "@/components/products/AbmGeneticMaterialsPolishClient";
+import AbmCas9VectorsTableFixClient from "@/components/products/AbmCas9VectorsTableFixClient";
 
 const ABM_CATALOG_POLISH_CSS = `
 .itsbio-html .itsbio-abm-table-wrap {
@@ -64,6 +65,46 @@ const ABM_CATALOG_POLISH_CSS = `
 
 .itsbio-html .itsbio-abm-normalized-table tbody tr:not(.abm-table-section-row):hover {
   background: #fff7ed;
+}
+
+/* Cas9 Vectors & Virus keeps ABM's native rowspan grouping after the Price
+   column is removed. This is intentionally scoped to that one category. */
+.itsbio-html .itsbio-cas9-vector-table {
+  width: 100% !important;
+  min-width: 760px !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+}
+
+.itsbio-html .itsbio-cas9-vector-table th,
+.itsbio-html .itsbio-cas9-vector-table td {
+  padding: 12px 14px !important;
+  vertical-align: middle !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
+
+.itsbio-html .itsbio-cas9-vector-table thead th,
+.itsbio-html .itsbio-cas9-vector-table thead td {
+  background: #ef6331 !important;
+  color: #fff !important;
+  font-weight: 700;
+}
+
+.itsbio-html .itsbio-cas9-vector-table .itsbio-cas9-section-row > th,
+.itsbio-html .itsbio-cas9-vector-table .itsbio-cas9-section-row > td {
+  background: #f3f4f6 !important;
+  color: #111827 !important;
+  font-weight: 700;
+}
+
+.itsbio-html .itsbio-cas9-vector-table td[rowspan] {
+  vertical-align: top !important;
+  font-weight: 600;
+}
+
+.itsbio-html .itsbio-cas9-vector-table a::after {
+  content: none !important;
 }
 
 /* Genetic Materials follows the current official ABM menu wording. Long labels
@@ -154,6 +195,10 @@ const ABM_CATALOG_POLISH_CSS = `
     padding: 11px 12px !important;
   }
 
+  .itsbio-html .itsbio-cas9-vector-table {
+    min-width: 760px !important;
+  }
+
   .itsbio-html .itsbio-abm-highlight-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 24px 16px;
@@ -168,6 +213,7 @@ export default function AbmProductsLayout({ children }: { children: ReactNode })
       <style dangerouslySetInnerHTML={{ __html: ABM_CATALOG_POLISH_CSS }} />
       <AbmCatalogPolishClient />
       <AbmGeneticMaterialsPolishClient />
+      <AbmCas9VectorsTableFixClient />
       {children}
     </>
   );
