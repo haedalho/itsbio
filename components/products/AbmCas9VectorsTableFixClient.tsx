@@ -97,7 +97,7 @@ function ensureStyles() {
   style.textContent = `
 #${ADDITIONAL_ID}{margin:64px 0 24px;padding-top:4px}
 #${ADDITIONAL_ID} h2{margin:0 0 18px;color:#ef6331;font-size:27px;font-weight:700;line-height:1.25;letter-spacing:-.02em}
-#${ADDITIONAL_ID} .cas9-additional-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px}
+#${ADDITIONAL_ID} .cas9-additional-grid{display:grid;grid-template-columns:minmax(0,320px);gap:26px}
 #${ADDITIONAL_ID} .cas9-additional-card{display:block;width:100%;margin:0;padding:0;border:0;background:transparent;color:#111827;text-align:left;text-decoration:none;cursor:pointer}
 #${ADDITIONAL_ID} .cas9-additional-card::after{content:none!important}
 #${ADDITIONAL_ID} .cas9-additional-image{width:100%;aspect-ratio:1.93/1;overflow:hidden;background:#f8fafc}
@@ -159,21 +159,7 @@ function ensureAdditionalInformation() {
   workflow.innerHTML = cardMarkup("/images/abm/cas9/workflow.svg", "Workflow", "View our simplified CRISPR workflow.");
   workflow.addEventListener("click", openWorkflowModal);
 
-  const methods = document.createElement("a");
-  methods.className = "cas9-additional-card";
-  methods.href = "https://info.abmgood.com/crispr-cas9";
-  methods.target = "_blank";
-  methods.rel = "noreferrer noopener";
-  methods.innerHTML = cardMarkup("/images/abm/cas9/methods-tools.svg", "CRISPR Methods & Tools", "CRISPR Knowledge Base.");
-
-  const regulation = document.createElement("a");
-  regulation.className = "cas9-additional-card";
-  regulation.href = "https://info.abmgood.com/crispr-cas9-gene-regulation-dCas9";
-  regulation.target = "_blank";
-  regulation.rel = "noreferrer noopener";
-  regulation.innerHTML = cardMarkup("/images/abm/cas9/dcas9-regulation.svg", "CRISPR dCas9 Gene Regulation", "CRISPR Knowledge Base.");
-
-  grid.append(workflow, methods, regulation);
+  grid.append(workflow);
   const insertionPoint = lastTable.closest(".abm-table-scroll, .itsbio-abm-table-wrap, .models-table-wrap") || lastTable;
   insertionPoint.insertAdjacentElement("afterend", section);
 }
