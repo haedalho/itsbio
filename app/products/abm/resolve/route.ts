@@ -139,7 +139,17 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Never dump a category click into a generic search page. If a legacy table
-  // cannot be resolved, remain on the real ABM category the user came from.
+  // An exact official source URL is still a real product destination even when
+  // the current staged/live indexes do not contain it. Let the internal legacy
+  // resolver make one more URL-based attempt instead of bouncing the customer
+  // back to the category page and making the click appear broken.
+  if (sourceUrl) {
+    return NextResponse.redirect(
+      new URL(`/products/abm/legacy?u=${encodeURIComponent(sourceUrl)}`, request.url),
+      307,
+    );
+  }
+
+  // Without an exact source URL we do not guess a product route.
   return NextResponse.redirect(new URL(safeReturnPath(request), request.url), 307);
 }
