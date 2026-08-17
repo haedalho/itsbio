@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import AbmCatalogPolishClient from "@/components/products/AbmCatalogPolishClient";
 import AbmGeneticMaterialsPolishClient from "@/components/products/AbmGeneticMaterialsPolishClient";
 import AbmCas9VectorsTableFixClient from "@/components/products/AbmCas9VectorsTableFixClient";
+import AbmRichProductLinkClient from "@/components/site/AbmRichProductLinkClient";
 
 const ABM_CATALOG_POLISH_CSS = `
 .itsbio-html .itsbio-abm-table-wrap {
@@ -214,6 +215,7 @@ export default function AbmProductsLayout({ children }: { children: ReactNode })
       <AbmCatalogPolishClient />
       <AbmGeneticMaterialsPolishClient />
       <AbmCas9VectorsTableFixClient />
+      <AbmRichProductLinkClient />
       {children}
     </>
   );
