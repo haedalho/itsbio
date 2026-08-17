@@ -47,7 +47,7 @@ export default function NavigationLoadingOverlay() {
 
   useEffect(() => {
     finish();
-    // pathname/search changes mean the requested route has committed.
+    // A pathname/search change means the requested client route has committed.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, searchParams?.toString()]);
 
@@ -73,7 +73,11 @@ export default function NavigationLoadingOverlay() {
       const currentUrl = new URL(window.location.href);
       if (nextUrl.origin !== currentUrl.origin) return;
       if (sameDocumentHashOnly(currentUrl, nextUrl)) return;
-      if (nextUrl.pathname === currentUrl.pathname && nextUrl.search === currentUrl.search && nextUrl.hash === currentUrl.hash) return;
+      if (
+        nextUrl.pathname === currentUrl.pathname
+        && nextUrl.search === currentUrl.search
+        && nextUrl.hash === currentUrl.hash
+      ) return;
 
       event.preventDefault();
       begin();
@@ -104,16 +108,18 @@ export default function NavigationLoadingOverlay() {
       requestAnimationFrame(() => router.push(destination));
     };
 
-    const onPopState = () => begin();
+    // Back/forward navigation is intentionally NOT intercepted. Next/browser history
+    // should own popstate so an overlay can never get stranded during history restores.
+    const onPageShow = () => finish();
 
     document.addEventListener("click", onClick, true);
     document.addEventListener("submit", onSubmit);
-    window.addEventListener("popstate", onPopState);
+    window.addEventListener("pageshow", onPageShow);
 
     return () => {
       document.removeEventListener("click", onClick, true);
       document.removeEventListener("submit", onSubmit);
-      window.removeEventListener("popstate", onPopState);
+      window.removeEventListener("pageshow", onPageShow);
       clearTimers();
     };
     // router is stable in Next App Router.
