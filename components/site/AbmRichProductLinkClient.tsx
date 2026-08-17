@@ -156,6 +156,7 @@ export default function AbmRichProductLinkClient() {
     let queued = false;
     let idleTimer: ReturnType<typeof setTimeout> | null = null;
     let hardStopTimer: ReturnType<typeof setTimeout> | null = null;
+    let observer: MutationObserver | null = null;
 
     const run = () => {
       if (disposed || queued) return;
@@ -167,15 +168,14 @@ export default function AbmRichProductLinkClient() {
     };
 
     const main = document.querySelector("main");
-    const observer = main
-      ? new MutationObserver(() => {
-          run();
-          if (idleTimer) clearTimeout(idleTimer);
-          idleTimer = setTimeout(() => observer.disconnect(), 300);
-        })
-      : null;
-
-    observer?.observe(main as Node, { childList: true, subtree: true });
+    if (main) {
+      observer = new MutationObserver(() => {
+        run();
+        if (idleTimer) clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => observer?.disconnect(), 300);
+      });
+      observer.observe(main, { childList: true, subtree: true });
+    }
 
     // HtmlContent inserts sanitized rich HTML from a passive effect. Watch only
     // the current <main> for a short settling window, then disconnect. This
