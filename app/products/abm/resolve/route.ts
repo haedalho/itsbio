@@ -18,6 +18,7 @@ const STAGED_QUERY = `
     || ($title != "" && lower(title) == lower($title))
   ]) > 0
 ]{
+  "chunkKind": kind,
   "matches": records[
     ($sku != "" && lower(sku) == lower($sku))
     || ($sourceUrl != "" && url == $sourceUrl)
@@ -47,7 +48,10 @@ const LIVE_QUERY = `
 }
 `;
 
-type StagedChunk = { matches?: AbmStagedRecord[] };
+type StagedChunk = {
+  chunkKind?: AbmStagedRecord["kind"];
+  matches?: Array<Partial<AbmStagedRecord> & Pick<AbmStagedRecord, "sku" | "title" | "url">>;
+};
 type LiveRow = { _id: string; title?: string; sku?: string; slug?: string };
 
 function clean(value: string | null) {
@@ -108,9 +112,20 @@ export async function GET(request: NextRequest) {
     ),
   ]);
 
-  const staged = (Array.isArray(chunks) ? chunks : [])
-    .flatMap((chunk) => Array.isArray(chunk.matches) ? chunk.matches : [])
-    .filter(Boolean);
+  const staged: AbmStagedRecord[] = (Array.isArray(chunks) ? chunks : [])
+    .flatMap((chunk) => {
+      const chunkKind = chunk.chunkKind;
+      if (!Array.isArray(chunk.matches) || !chunkKind) return [];
+      return chunk.matches
+        .filter((row) => row && row.sku != null && row.title != null && row.url != null)
+        .map((row) => ({
+          ...row,
+          kind: row.kind === "product" || row.kind === "service" ? row.kind : chunkKind,
+          sku: String(row.sku || ""),
+          title: String(row.title || ""),
+          url: String(row.url || ""),
+        } as AbmStagedRecord));
+    });
 
   // The exact clicked source URL is the strongest signal. This matters on ABM
   // tables where one catalog number can represent a custom service while the
