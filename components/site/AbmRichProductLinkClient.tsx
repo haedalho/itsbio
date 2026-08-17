@@ -50,9 +50,11 @@ function tableProductContext(anchor: HTMLAnchorElement) {
   const table = row?.closest<HTMLTableElement>("table");
   if (!row || !table) return null;
 
+  const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>("tr"));
   const headerRow =
     Array.from(table.querySelectorAll<HTMLTableRowElement>("thead tr")).at(-1)
-    || Array.from(table.querySelectorAll<HTMLTableRowElement>("tr")).find((candidate) => candidate.querySelector("th"))
+    || rows.find((candidate) => candidate.querySelector("th"))
+    || rows.find((candidate) => /(?:Cat\.?\s*No\.?|Catalog\s*(?:No\.?|#))/i.test(collapse(candidate.textContent)))
     || null;
   if (!headerRow) return null;
 
@@ -79,10 +81,10 @@ function findProductContext(anchor: HTMLAnchorElement) {
 
   let node: HTMLElement | null = anchor;
   for (let depth = 0; node && depth < 8; depth += 1, node = node.parentElement) {
+    if (node.classList.contains("itsbio-html")) break;
     const text = collapse(node.textContent);
     const sku = catNoFromText(text);
     if (sku) return { node, sku, title: "" };
-    if (node.classList.contains("itsbio-html")) break;
   }
   return null;
 }
@@ -175,9 +177,10 @@ export default function AbmRichProductLinkClient() {
 
     observer?.observe(main as Node, { childList: true, subtree: true });
 
-    // HtmlContent inserts its sanitized HTML from a passive effect. Run now and
-    // once on the next frame, while the short-lived main observer catches the
-    // actual insertion without bringing back the old permanent body observer.
+    // HtmlContent inserts sanitized rich HTML from a passive effect. Watch only
+    // the current <main> for a short settling window, then disconnect. This
+    // catches the delayed product table insertion without restoring the old
+    // permanent document.body observer that hurt page-to-page performance.
     run();
     requestAnimationFrame(run);
     hardStopTimer = setTimeout(() => observer?.disconnect(), 1800);
