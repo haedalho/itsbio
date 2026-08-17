@@ -1,5 +1,5 @@
-import AbmGelDocumentationLanding from "@/components/products/AbmGelDocumentationLanding";
+import { redirect } from "next/navigation";
 
 export default function GelImagerPage() {
-  return <AbmGelDocumentationLanding kind="gel-imager" />;
+  redirect("/products/abm/staged/product/E1001");
 }
