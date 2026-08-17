@@ -1,5 +1,5 @@
-import AbmGelDocumentationLanding from "@/components/products/AbmGelDocumentationLanding";
+import { redirect } from "next/navigation";
 
 export default function DnaStainsPage() {
-  return <AbmGelDocumentationLanding kind="dna-stains" />;
+  redirect("/products/abm/general-materials/gel-documentation#safeview-dna-stains");
 }
