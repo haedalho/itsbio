@@ -1,15 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect x="2" y="2" width="60" height="60" rx="15" fill="#ffffff"/>
-  <rect x="2.5" y="2.5" width="59" height="59" rx="14.5" fill="none" stroke="#e2e8f0"/>
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#ffffff"/>
+  <rect x="2.5" y="2.5" width="59" height="59" rx="13.5" fill="none" stroke="#dbe3ee"/>
 
-  <!-- Orange orbit inspired by the ITS BIO logo -->
-  <path d="M9.5 26.5C12.2 12.8 23.8 6.2 35.6 7.8C47.4 9.4 54.5 18.4 54.5 29.4" fill="none" stroke="#f5a800" stroke-width="4.2" stroke-linecap="round"/>
-  <circle cx="9.4" cy="26.6" r="2.8" fill="#f5a800"/>
+  <!-- Keep the favicon intentionally simple so ITS stays legible at 16px. -->
+  <text
+    x="32"
+    y="39.5"
+    text-anchor="middle"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="29"
+    font-weight="900"
+    letter-spacing="-2"
+    fill="#123d76"
+  >ITS</text>
 
-  <!-- Compact stacked wordmark so it remains readable in a browser tab -->
-  <text x="32" y="35.5" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18.5" font-weight="900" letter-spacing="-1.2" fill="#123d76">ITS</text>
-  <text x="32" y="52.8" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18.5" font-weight="900" letter-spacing="-1.25" fill="#123d76">BIO</text>
-
-  <!-- Small orange accent through the O area, echoing the original brand mark -->
-  <path d="M43.6 44.7c2.7 1.4 4.4 3.8 4.8 6.6" fill="none" stroke="#f5a800" stroke-width="2.4" stroke-linecap="round"/>
+  <!-- Small orange brand accent inspired by the ITS BIO wordmark. -->
+  <path d="M16 48.5c8.5 3.8 22.8 3.8 32 0" fill="none" stroke="#f5a800" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="48.5" cy="48.1" r="2.3" fill="#f5a800"/>
 </svg>
