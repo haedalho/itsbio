@@ -330,14 +330,15 @@ export default function AbmLinkResolverClient() {
 
   useEffect(() => {
     let disposed = false;
-    let queued = false;
+    let pageQueued = false;
+    let headerQueued = false;
     let menuItems: MenuItem[] = [];
 
-    const rewriteAll = () => {
-      if (queued) return;
-      queued = true;
+    const rewritePage = () => {
+      if (pageQueued) return;
+      pageQueued = true;
       queueMicrotask(() => {
-        queued = false;
+        pageQueued = false;
         if (disposed) return;
         rewriteMegaMenuLinks(menuItems);
         rewriteGelDocumentationLinks();
@@ -347,24 +348,40 @@ export default function AbmLinkResolverClient() {
       });
     };
 
+    const rewriteHeader = () => {
+      if (headerQueued) return;
+      headerQueued = true;
+      requestAnimationFrame(() => {
+        headerQueued = false;
+        if (disposed) return;
+        rewriteMegaMenuLinks(menuItems);
+      });
+    };
+
     void fetch("/api/abm/menu", { credentials: "same-origin" })
       .then((response) => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
       .then((payload) => {
         if (disposed) return;
         menuItems = Array.isArray(payload?.items) ? payload.items : [];
-        rewriteAll();
+        rewritePage();
       })
       .catch(() => {
         // The family landing links remain safe when the menu source is unavailable.
       });
 
-    rewriteAll();
-    const observer = new MutationObserver(rewriteAll);
-    observer.observe(document.body, { childList: true, subtree: true });
+    // Rewrite the committed page once. Rich ABM content does not need a full-body
+    // observer: scanning it on every React DOM mutation was expensive on large pages.
+    rewritePage();
+
+    // The Products mega menu is rendered only when opened, so observe the header
+    // alone and repair those dynamically inserted category links when necessary.
+    const header = document.querySelector("header");
+    const observer = header ? new MutationObserver(rewriteHeader) : null;
+    observer?.observe(header as Node, { childList: true, subtree: true });
 
     return () => {
       disposed = true;
-      observer.disconnect();
+      observer?.disconnect();
     };
   }, [pathname]);
 
