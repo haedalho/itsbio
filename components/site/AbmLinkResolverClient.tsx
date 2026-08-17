@@ -4,6 +4,9 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 const ABM_ROOTS = new Set(["general-materials", "cellular-materials", "genetic-materials"]);
+const GEL_DOCUMENTATION_PATH = "/products/abm/general-materials/gel-documentation";
+const DNA_STAINS_TARGET = `${GEL_DOCUMENTATION_PATH}#safeview-dna-stains`;
+const GEL_IMAGER_TARGET = "/products/abm/staged/product/E1001";
 
 type MenuItem = {
   id?: string;
@@ -11,6 +14,8 @@ type MenuItem = {
   path: string[];
   href: string;
 };
+
+type GelDocumentationTarget = "dna-stains" | "gel-imager";
 
 function collapse(value: string | null | undefined) {
   return String(value || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
@@ -24,6 +29,109 @@ function navKey(value: string | null | undefined) {
     .replace(/[^a-z0-9]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function gelDocumentationTargetForLink(anchor: HTMLAnchorElement): GelDocumentationTarget | null {
+  let url: URL;
+  try {
+    url = new URL(anchor.getAttribute("href") || "", window.location.origin);
+  } catch {
+    return null;
+  }
+
+  const pathname = url.pathname.toLowerCase();
+  const withinGeneralMaterials = pathname.startsWith("/products/abm/general-materials");
+  if (!withinGeneralMaterials) return null;
+
+  const label = navKey(anchor.textContent);
+  const leaf = navKey(decodeURIComponent(pathname.split("/").filter(Boolean).at(-1) || ""));
+  const withinGelDocumentation = pathname === GEL_DOCUMENTATION_PATH
+    || pathname.startsWith(`${GEL_DOCUMENTATION_PATH}/`);
+
+  if (label === "dna stains" || leaf === "dna stains") return "dna-stains";
+
+  if (
+    label === "gel imager"
+    || label === "safeviewer imager"
+    || leaf === "gel imager"
+    || leaf === "safeviewer imager"
+  ) return "gel-imager";
+
+  // The imported Sanity tree currently contains a duplicate child called
+  // "Gel Documentation". In the side navigation only, that child represents
+  // the DNA-stain section of the parent landing. Keep the real parent link intact.
+  if (
+    withinGelDocumentation
+    && pathname !== GEL_DOCUMENTATION_PATH
+    && label === "gel documentation"
+    && !anchor.closest("header")
+  ) return "dna-stains";
+
+  return null;
+}
+
+function setGelDocumentationLinkLabel(anchor: HTMLAnchorElement, label: string) {
+  const textNodes = Array.from(anchor.querySelectorAll<HTMLElement>("span"))
+    .filter((element) => element.children.length === 0 && collapse(element.textContent));
+
+  const preferred = textNodes.find((element) => {
+    const key = navKey(element.textContent);
+    return ["gel documentation", "dna stains", "safeviewer imager", "gel imager"].includes(key);
+  });
+
+  if (preferred) {
+    if (collapse(preferred.textContent) !== label) preferred.textContent = label;
+    return;
+  }
+
+  if (!anchor.children.length && collapse(anchor.textContent) !== label) {
+    anchor.textContent = label;
+  }
+}
+
+function applyGelDocumentationTarget(anchor: HTMLAnchorElement, target: GelDocumentationTarget) {
+  const href = target === "dna-stains" ? DNA_STAINS_TARGET : GEL_IMAGER_TARGET;
+  const label = target === "dna-stains" ? "DNA Stains" : "Gel Imager";
+
+  if (anchor.getAttribute("href") !== href) anchor.setAttribute("href", href);
+  setGelDocumentationLinkLabel(anchor, label);
+  anchor.dataset.itsbioGelDocumentationTarget = target;
+}
+
+function rewriteGelDocumentationLinks() {
+  document.querySelectorAll<HTMLAnchorElement>('a[href^="/products/abm/general-materials"]').forEach((anchor) => {
+    const target = gelDocumentationTargetForLink(anchor);
+    if (target) applyGelDocumentationTarget(anchor, target);
+  });
+}
+
+function ensureGelDocumentationAnchor(pathname: string) {
+  if (pathname.toLowerCase() !== GEL_DOCUMENTATION_PATH) return;
+
+  let target = document.getElementById("safeview-dna-stains") as HTMLElement | null;
+  if (!target) {
+    const candidates = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        ".itsbio-html h1, .itsbio-html h2, .itsbio-html h3, .itsbio-html h4, .itsbio-html h5, .itsbio-html h6, .itsbio-html strong, .itsbio-html b, .itsbio-html p",
+      ),
+    );
+
+    const match = candidates.find((element) => {
+      const key = navKey(element.textContent);
+      return key === "safeview dna stains" || (key.includes("safeview") && key.includes("dna stains") && key.length < 80);
+    });
+
+    if (match) {
+      target = match.closest<HTMLElement>("h1,h2,h3,h4,h5,h6") || match;
+      target.id = "safeview-dna-stains";
+      target.style.scrollMarginTop = "112px";
+    }
+  }
+
+  if (!target || window.location.hash !== "#safeview-dna-stains") return;
+  if (target.dataset.itsbioAnchorScrolled === "true") return;
+  target.dataset.itsbioAnchorScrolled = "true";
+  requestAnimationFrame(() => target?.scrollIntoView({ block: "start" }));
 }
 
 function extractOfficialAbmUrl(href: string) {
@@ -44,6 +152,12 @@ function extractOfficialAbmUrl(href: string) {
 
 function rewriteMegaMenuLinks(menuItems: MenuItem[]) {
   document.querySelectorAll<HTMLAnchorElement>('header a[href^="/products/abm/"]').forEach((anchor) => {
+    const gelTarget = gelDocumentationTargetForLink(anchor);
+    if (gelTarget) {
+      applyGelDocumentationTarget(anchor, gelTarget);
+      return;
+    }
+
     let url: URL;
     try {
       url = new URL(anchor.getAttribute("href") || "", window.location.origin);
@@ -232,8 +346,10 @@ export default function AbmLinkResolverClient() {
         queued = false;
         if (disposed) return;
         rewriteMegaMenuLinks(menuItems);
+        rewriteGelDocumentationLinks();
         rewriteRichProductLinks(pathname);
         hideEmptyCategoryNotice(pathname);
+        ensureGelDocumentationAnchor(pathname);
       });
     };
 
