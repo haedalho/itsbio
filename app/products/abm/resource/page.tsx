@@ -31,7 +31,7 @@ function fallbackReadTime(sourceUrl: string) {
   return "";
 }
 
-function cleanResourceArtifacts($: cheerio.CheerioAPI, article: cheerio.Cheerio<cheerio.Element>) {
+function cleanResourceArtifacts($: cheerio.CheerioAPI, article: cheerio.Cheerio<any>) {
   // Official KB pages contain utility/list markup around icons and navigation.
   // Once those UI images are removed, empty anchors/list items can survive and
   // show up as rows of bullets in our rich-content styles. Remove only nodes
