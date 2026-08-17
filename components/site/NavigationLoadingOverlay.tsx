@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 const SHOW_DELAY_MS = 140;
 const FAILSAFE_MS = 12000;
@@ -16,7 +16,6 @@ function sameDocumentHashOnly(current: URL, target: URL) {
 }
 
 export default function NavigationLoadingOverlay() {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [visible, setVisible] = useState(false);
@@ -79,11 +78,10 @@ export default function NavigationLoadingOverlay() {
         && nextUrl.hash === currentUrl.hash
       ) return;
 
-      event.preventDefault();
+      // Do not prevent the click and do not call router.push here.
+      // Next.js Link must keep ownership of the navigation so its native
+      // prefetch/cache path remains intact. The overlay is visual feedback only.
       begin();
-
-      const destination = `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
-      requestAnimationFrame(() => router.push(destination));
     };
 
     const onSubmit = (event: SubmitEvent) => {
@@ -93,30 +91,22 @@ export default function NavigationLoadingOverlay() {
       if (form.target && form.target !== "_self") return;
       if (form.dataset.noNavigationLoading === "true") return;
 
-      const action = new URL(form.action || window.location.href, window.location.href);
+      let action: URL;
+      try {
+        action = new URL(form.action || window.location.href, window.location.href);
+      } catch {
+        return;
+      }
       if (action.origin !== window.location.origin) return;
 
-      event.preventDefault();
-      const formData = new FormData(form);
-      const params = new URLSearchParams();
-      for (const [key, value] of formData.entries()) {
-        if (typeof value === "string") params.append(key, value);
-      }
-      const query = params.toString();
-      const destination = `${action.pathname}${query ? `?${query}` : ""}${action.hash}`;
+      // Keep the browser/framework's normal form navigation path as well.
       begin();
-      requestAnimationFrame(() => router.push(destination));
     };
 
-    // Back/forward navigation is intentionally NOT intercepted. Next/browser history
-    // owns popstate so the loading overlay can never get stranded. If the browser
-    // restores an older DOM snapshot from BFCache, refresh the server components once
-    // so the restored page matches the currently deployed ABM UI/data.
-    const onPageShow = (event: PageTransitionEvent) => {
+    const onPageShow = () => {
+      // BFCache restores should be instant. Do not force router.refresh() here;
+      // it turns an otherwise instant back/forward navigation into a server fetch.
       finish();
-      if (event.persisted) {
-        requestAnimationFrame(() => router.refresh());
-      }
     };
 
     document.addEventListener("click", onClick, true);
@@ -129,9 +119,8 @@ export default function NavigationLoadingOverlay() {
       window.removeEventListener("pageshow", onPageShow);
       clearTimers();
     };
-    // router is stable in Next App Router.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router]);
+  }, []);
 
   if (!visible) return null;
 
