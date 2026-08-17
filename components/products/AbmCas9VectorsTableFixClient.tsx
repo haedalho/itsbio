@@ -9,6 +9,9 @@ const SECTION_LABELS = /^(?:Cas9 Nuclease|Cas9 Nickase|dCas9 \(double mutant\)|O
 const ADDITIONAL_ID = "itsbio-cas9-additional-info";
 const STYLE_ID = "itsbio-cas9-page-style";
 const MODAL_ID = "itsbio-cas9-workflow-modal";
+const WORKFLOW_IMAGE = "https://www.abmgood.com/assets/images/category/cas9_vectors_viruses/CRISPR_Virus_vector_simple_workflow-updated.png";
+const METHODS_URL = "https://info.abmgood.com/crispr-cas9-methods-tools";
+const DCAS9_URL = "https://info.abmgood.com/crispr-cas9-gene-regulation-dCas9";
 
 function textOf(element: Element | null) {
   return String(element?.textContent || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
@@ -100,13 +103,13 @@ function ensureStyles() {
 #${ADDITIONAL_ID} .cas9-additional-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px}
 #${ADDITIONAL_ID} .cas9-additional-card{display:block;width:100%;margin:0;padding:0;border:0;background:transparent;color:#111827;text-align:left;text-decoration:none;cursor:pointer}
 #${ADDITIONAL_ID} .cas9-additional-card::after{content:none!important}
-#${ADDITIONAL_ID} .cas9-additional-image{width:100%;aspect-ratio:1.93/1;overflow:hidden;background:#f8fafc}
-#${ADDITIONAL_ID} .cas9-additional-image img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .18s ease}
+#${ADDITIONAL_ID} .cas9-additional-image{display:block;width:100%;aspect-ratio:1.93/1;overflow:hidden;background:#f8fafc}
+#${ADDITIONAL_ID} .cas9-additional-image img{display:block;width:100%;height:100%;object-fit:contain;transition:transform .18s ease}
 #${ADDITIONAL_ID} .cas9-additional-card:hover img{transform:scale(1.015)}
 #${ADDITIONAL_ID} .cas9-additional-title{display:block;margin-top:10px;color:#111827;font-size:16px;font-weight:700;line-height:1.4}
 #${ADDITIONAL_ID} .cas9-additional-copy{display:block;margin-top:2px;color:#111827;font-size:15px;font-weight:400;line-height:1.45}
 #${MODAL_ID}{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:28px;background:rgba(15,23,42,.72)}
-#${MODAL_ID} .cas9-modal-panel{position:relative;width:min(900px,94vw);padding:18px;background:#fff;box-shadow:0 24px 70px rgba(0,0,0,.28)}
+#${MODAL_ID} .cas9-modal-panel{position:relative;width:min(1000px,94vw);padding:18px;background:#fff;box-shadow:0 24px 70px rgba(0,0,0,.28)}
 #${MODAL_ID} img{display:block;width:100%;height:auto}
 #${MODAL_ID} button{position:absolute;top:8px;right:8px;display:grid;width:36px;height:36px;place-items:center;border:1px solid #d1d5db;border-radius:999px;background:#fff;color:#111827;font-size:22px;line-height:1;cursor:pointer}
 @media(max-width:767px){#${ADDITIONAL_ID}{margin-top:42px}#${ADDITIONAL_ID} .cas9-additional-grid{grid-template-columns:1fr;gap:28px}#${ADDITIONAL_ID} h2{font-size:23px}}
@@ -121,7 +124,7 @@ function openWorkflowModal() {
   modal.setAttribute("role", "dialog");
   modal.setAttribute("aria-modal", "true");
   modal.setAttribute("aria-label", "CRISPR workflow");
-  modal.innerHTML = `<div class="cas9-modal-panel"><button type="button" aria-label="Close">×</button><img src="/images/abm/cas9/workflow.svg" alt="Simplified CRISPR workflow" /></div>`;
+  modal.innerHTML = `<div class="cas9-modal-panel"><button type="button" aria-label="Close">×</button><img src="${WORKFLOW_IMAGE}" alt="Simplified CRISPR workflow" /></div>`;
 
   const close = () => modal.remove();
   modal.querySelector("button")?.addEventListener("click", close);
@@ -133,6 +136,11 @@ function openWorkflowModal() {
 
 function cardMarkup(image: string, title: string, copy: string) {
   return `<span class="cas9-additional-image"><img src="${image}" alt="${title}" /></span><span class="cas9-additional-title">${title}</span><span class="cas9-additional-copy">${copy}</span>`;
+}
+
+function markPreservedResourceLink(anchor: HTMLAnchorElement) {
+  anchor.dataset.noNavigationLoading = "true";
+  anchor.dataset.itsbioAbmPreserveLink = "true";
 }
 
 function ensureAdditionalInformation() {
@@ -156,24 +164,20 @@ function ensureAdditionalInformation() {
   const workflow = document.createElement("button");
   workflow.type = "button";
   workflow.className = "cas9-additional-card";
-  workflow.innerHTML = cardMarkup("/images/abm/cas9/workflow.svg", "Workflow", "View our simplified CRISPR workflow.");
+  workflow.innerHTML = cardMarkup(WORKFLOW_IMAGE, "Workflow", "View our simplified CRISPR workflow.");
   workflow.addEventListener("click", openWorkflowModal);
 
   const methods = document.createElement("a");
   methods.className = "cas9-additional-card";
-  methods.href = "https://info.abmgood.com/crispr-cas9";
-  methods.target = "_blank";
-  methods.rel = "noreferrer noopener";
-  methods.dataset.noNavigationLoading = "true";
+  methods.href = METHODS_URL;
   methods.innerHTML = cardMarkup("/images/abm/cas9/methods-tools.svg", "CRISPR Methods & Tools", "CRISPR Knowledge Base.");
+  markPreservedResourceLink(methods);
 
   const regulation = document.createElement("a");
   regulation.className = "cas9-additional-card";
-  regulation.href = "https://info.abmgood.com/crispr-cas9-gene-regulation-dCas9";
-  regulation.target = "_blank";
-  regulation.rel = "noreferrer noopener";
-  regulation.dataset.noNavigationLoading = "true";
+  regulation.href = DCAS9_URL;
   regulation.innerHTML = cardMarkup("/images/abm/cas9/dcas9-regulation.svg", "CRISPR dCas9 Gene Regulation", "CRISPR Knowledge Base.");
+  markPreservedResourceLink(regulation);
 
   grid.append(workflow, methods, regulation);
   const insertionPoint = lastTable.closest(".abm-table-scroll, .itsbio-abm-table-wrap, .models-table-wrap") || lastTable;
