@@ -10,8 +10,10 @@ const ADDITIONAL_ID = "itsbio-cas9-additional-info";
 const STYLE_ID = "itsbio-cas9-page-style";
 const MODAL_ID = "itsbio-cas9-workflow-modal";
 const WORKFLOW_IMAGE = "https://www.abmgood.com/assets/images/category/cas9_vectors_viruses/CRISPR_Virus_vector_simple_workflow-updated.png";
-const METHODS_URL = "https://info.abmgood.com/crispr-cas9-methods-tools";
-const DCAS9_URL = "https://info.abmgood.com/crispr-cas9-gene-regulation-dCas9";
+const METHODS_SOURCE_URL = "https://info.abmgood.com/crispr-cas9-methods-tools";
+const DCAS9_SOURCE_URL = "https://info.abmgood.com/crispr-cas9-gene-regulation-dCas9";
+const METHODS_URL = `/products/abm/resource?u=${encodeURIComponent(METHODS_SOURCE_URL)}`;
+const DCAS9_URL = `/products/abm/resource?u=${encodeURIComponent(DCAS9_SOURCE_URL)}`;
 
 function textOf(element: Element | null) {
   return String(element?.textContent || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
@@ -139,7 +141,6 @@ function cardMarkup(image: string, title: string, copy: string) {
 }
 
 function markPreservedResourceLink(anchor: HTMLAnchorElement) {
-  anchor.dataset.noNavigationLoading = "true";
   anchor.dataset.itsbioAbmPreserveLink = "true";
 }
 
