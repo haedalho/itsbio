@@ -15,27 +15,31 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Fetch current Kent homepage and extract logo candidates
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/homepage-brand-redesign
+      - name: Inspect current official logo palette
         shell: bash
         run: |
           set -euo pipefail
+          python -m pip install --quiet pillow
           python - <<'PY'
-          import re, urllib.request, html
-          url='https://www.kentscientific.com/'
-          req=urllib.request.Request(url, headers={'User-Agent':'Mozilla/5.0 (compatible; ITSBIO-Brand-Audit/1.0)'})
-          text=urllib.request.urlopen(req, timeout=30).read().decode('utf-8','replace')
-          print('HTML_BYTES', len(text))
-          imgs=re.findall(r'<img\b[^>]*>', text, flags=re.I)
-          matches=[]
-          for tag in imgs:
-              if re.search(r'logo|kent|scientific', tag, flags=re.I):
-                  matches.append(html.unescape(tag))
-          print('LOGO_CANDIDATES', len(matches))
-          for i,tag in enumerate(matches[:30],1):
-              print(f'[{i}] {tag}')
-          print('HEADER_SNIPPETS')
-          for m in re.finditer(r'<header\b[\s\S]{0,25000}?</header>', text, flags=re.I):
-              header=m.group(0)
-              for tag in re.findall(r'<img\b[^>]*>', header, flags=re.I):
-                  print(html.unescape(tag))
+          from collections import Counter
+          from PIL import Image
+          path='public/partners/KentScientific-logo.png'
+          im=Image.open(path).convert('RGBA')
+          print('SIZE', im.size)
+          pixels=[]
+          for r,g,b,a in im.getdata():
+              if a < 32:
+                  continue
+              # Ignore near-white page/background pixels while preserving brand colors.
+              if r > 245 and g > 245 and b > 245:
+                  continue
+              # Quantize slightly to collapse antialiasing variants.
+              pixels.append((round(r/8)*8, round(g/8)*8, round(b/8)*8, a))
+          counts=Counter(pixels)
+          print('TOP_COLORS')
+          for (r,g,b,a),count in counts.most_common(16):
+              print(f'#{min(r,255):02X}{min(g,255):02X}{min(b,255):02X} alpha={a} count={count}')
           PY
