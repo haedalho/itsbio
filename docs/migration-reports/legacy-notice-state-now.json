@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-08-18T07:44:30.409Z",
-  "found": 17,
-  "withThumbnail": 16,
+  "generatedAt": "2026-08-18T07:46:16.699Z",
+  "found": 20,
+  "withThumbnail": 17,
   "docs": [
     {
       "_id": "legacy-notice-15",
@@ -138,6 +138,30 @@
       "publishedAt": "2024-10-21T09:42:00.000Z",
       "slug": "abm-pdac-vector-virus-31",
       "title": "[abm] 췌장관암(PDAC) 관련 유전자 vector 및 virus 제품 출시!!"
+    },
+    {
+      "_id": "legacy-notice-32",
+      "bodyCount": 12,
+      "hasThumbnail": false,
+      "publishedAt": "2025-02-26T09:23:00.000Z",
+      "slug": "abm-onescript-hot-5x-rt-mastermix-cat-no-g590-32",
+      "title": "[abm] OneScript® Hot 5X RT MasterMix(Cat. No. G590) – 신제품 출시!"
+    },
+    {
+      "_id": "legacy-notice-33",
+      "bodyCount": 1,
+      "hasThumbnail": true,
+      "publishedAt": "2025-04-14T14:28:00.000Z",
+      "slug": "abm-cell-lines-special-offer-33",
+      "title": "[abm] Cell Lines Special Offer"
+    },
+    {
+      "_id": "legacy-notice-34",
+      "bodyCount": 8,
+      "hasThumbnail": false,
+      "publishedAt": "2025-04-17T15:37:00.000Z",
+      "slug": "unlocking-new-insights-into-viral-translation-er-stress-34",
+      "title": "Unlocking New Insights into Viral Translation & ER Stress!"
     }
   ]
 }

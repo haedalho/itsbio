@@ -1,7 +1,7 @@
 # Legacy Notice State
 
-- Found: 17/20
-- With thumbnail: 16/17
+- Found: 20/20
+- With thumbnail: 17/20
 
 - legacy-notice-15 · 2021-08-12 · body 27 · thumb yes · [abm] August Newsletter
 - legacy-notice-16 · 2021-09-10 · body 35 · thumb yes · [abm] September Newsletter
@@ -20,3 +20,6 @@
 - legacy-notice-29 · 2022-10-19 · body 36 · thumb yes · [abm] Safe-Red™ Nucleic Acid Stain is ready for you
 - legacy-notice-30 · 2024-06-11 · body 7 · thumb yes · [abm] PCR 제품 군 1+1 행사 및 Mycoplasma 제품 군 할인 행사!! (8월 30일 까지)
 - legacy-notice-31 · 2024-10-21 · body 44 · thumb no · [abm] 췌장관암(PDAC) 관련 유전자 vector 및 virus 제품 출시!!
+- legacy-notice-32 · 2025-02-26 · body 12 · thumb no · [abm] OneScript® Hot 5X RT MasterMix(Cat. No. G590) – 신제품 출시!
+- legacy-notice-33 · 2025-04-14 · body 1 · thumb yes · [abm] Cell Lines Special Offer
+- legacy-notice-34 · 2025-04-17 · body 8 · thumb no · Unlocking New Insights into Viral Translation & ER Stress!
