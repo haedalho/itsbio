@@ -1,0 +1,71 @@
+name: Inspect Missing Legacy Notice Thumbnails
+
+on:
+  push:
+    branches:
+      - agent/notice-legacy-migration
+    paths:
+      - .github/workflows/legacy-notice-missing-thumbnails.yml
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/notice-legacy-migration
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Inspect source images for vids 31, 32, 34
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs/promises';
+          import * as cheerio from 'cheerio';
+          const vids=[31,32,34];
+          const results=[];
+          for(const vid of vids){
+            const pageUrl=`http://itsbio.co.kr/?page_id=80&vid=${vid}`;
+            const page=await fetch(pageUrl,{headers:{'user-agent':'Mozilla/5.0'}});
+            const html=await page.text();
+            const $=cheerio.load(html);
+            const root=$('#mb_board01_tr_content > td.content-box').first();
+            const images=[];
+            root.find('img').each((_,el)=>{
+              const src=$(el).attr('data-src')||$(el).attr('data-lazy-src')||$(el).attr('src')||'';
+              if(!src||/^data:/i.test(src)) return;
+              try{
+                const url=new URL(src,pageUrl).toString();
+                if(/logo|icon|flag|spinner|avatar|level|arrow\.png|tracking|pixel|spacer/i.test(url)) return;
+                if(!images.includes(url)) images.push(url);
+              }catch{}
+            });
+            const tested=[];
+            for(const url of images.slice(0,8)){
+              try{
+                const r=await fetch(url,{redirect:'follow',headers:{'user-agent':'Mozilla/5.0','referer':pageUrl}});
+                const type=r.headers.get('content-type')||'';
+                const bytes=Buffer.from(await r.arrayBuffer());
+                tested.push({url,status:r.status,type,bytes:bytes.length,finalUrl:r.url});
+              }catch(error){tested.push({url,error:String(error)});}
+            }
+            results.push({vid,pageStatus:page.status,images:tested});
+          }
+          await fs.mkdir('docs/migration-reports',{recursive:true});
+          await fs.writeFile('docs/migration-reports/legacy-notice-missing-thumbnails.json',JSON.stringify(results,null,2));
+          console.log(JSON.stringify(results,null,2));
+          NODE
+      - name: Commit inspection report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/migration-reports/legacy-notice-missing-thumbnails.json
+          git commit -m "Inspect missing legacy Notice thumbnails" || exit 0
+          git push origin HEAD:agent/notice-legacy-migration
