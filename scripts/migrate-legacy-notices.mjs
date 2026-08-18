@@ -5,9 +5,9 @@ import * as cheerio from "cheerio";
 
 const APPLY = process.argv.includes("--apply");
 const MAX_VID_ARG = process.argv.find((arg) => arg.startsWith("--max-vid="));
-const MAX_VID = Math.max(50, Number(MAX_VID_ARG?.split("=")[1] || 250));
-const CONCURRENCY = 4;
-const LEGACY_BASE = "https://itsbio.co.kr/?page_id=80";
+const MAX_VID = Math.max(1, Number(MAX_VID_ARG?.split("=")[1] || 60));
+const CONCURRENCY = 8;
+const LEGACY_BASE = "http://itsbio.co.kr/?page_id=80";
 const REPORT_DIR = path.resolve(".cache/legacy-notice-migration");
 const PROJECT_ID = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || "9b5twpc8";
 const DATASET = process.env.NEXT_PUBLIC_SANITY_DATASET || "production";
@@ -206,7 +206,7 @@ function parseLegacyNotice(html, vid, url) {
 async function discoverVids() {
   const vids = new Set();
   try {
-    const { text } = await fetchWithRetry(LEGACY_BASE, { attempts: 2, timeoutMs: 25000 });
+    const { text } = await fetchWithRetry(LEGACY_BASE, { attempts: 2, timeoutMs: 12000 });
     for (const match of text.matchAll(/[?&]vid=(\d+)/gi)) vids.add(Number(match[1]));
   } catch (error) {
     console.warn(`Legacy list unavailable; probing detail IDs instead: ${error.message}`);
@@ -273,7 +273,7 @@ async function main() {
   const records = (await mapLimit(vids, CONCURRENCY, async (vid) => {
     const url = `${LEGACY_BASE}&vid=${vid}`;
     try {
-      const { text } = await fetchWithRetry(url, { attempts: 2, timeoutMs: 16000 });
+      const { text } = await fetchWithRetry(url, { attempts: 2, timeoutMs: 10000 });
       const record = parseLegacyNotice(text, vid, url);
       if (record) console.log(`FOUND vid=${vid}: ${record.title}`);
       return record;
