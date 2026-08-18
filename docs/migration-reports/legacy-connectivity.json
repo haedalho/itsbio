@@ -1,0 +1,26 @@
+[
+  {
+    "url": "http://itsbio.co.kr/?page_id=80&vid=18",
+    "status": 200,
+    "final": "http://itsbio.co.kr/?page_id=80&vid=18",
+    "length": 132308,
+    "hasAuthor": true,
+    "sample": "<!DOCTYPE html>\n<html lang=\"ko-KR\">\n<head>\n\t<meta charset=\"UTF-8\" />\n<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n\t<link rel=\"pingback\" href=\"http://itsbio.co.kr/xmlrpc.php\" />\n\n\t<script type=\"text/javascript\">\n\t\tdocument.documentElement.className = 'js';\n\t</script>\n\n\t<title>[abm] Immortali"
+  },
+  {
+    "url": "http://www.itsbio.co.kr/?page_id=80&vid=18",
+    "status": 200,
+    "final": "http://itsbio.co.kr/?page_id=80&vid=18",
+    "length": 132308,
+    "hasAuthor": true,
+    "sample": "<!DOCTYPE html>\n<html lang=\"ko-KR\">\n<head>\n\t<meta charset=\"UTF-8\" />\n<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n\t<link rel=\"pingback\" href=\"http://itsbio.co.kr/xmlrpc.php\" />\n\n\t<script type=\"text/javascript\">\n\t\tdocument.documentElement.className = 'js';\n\t</script>\n\n\t<title>[abm] Immortali"
+  },
+  {
+    "url": "https://itsbio.co.kr/?page_id=80&vid=18",
+    "error": "URLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate (_ssl.c:1000)'))"
+  },
+  {
+    "url": "https://www.itsbio.co.kr/?page_id=80&vid=18",
+    "error": "URLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate (_ssl.c:1000)'))"
+  }
+]
