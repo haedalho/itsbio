@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import AbmCatalogPolishClient from "@/components/products/AbmCatalogPolishClient";
 import AbmGeneticMaterialsPolishClient from "@/components/products/AbmGeneticMaterialsPolishClient";
 import AbmCas9VectorsTableFixClient from "@/components/products/AbmCas9VectorsTableFixClient";
+import AbmPrintCleanupClient from "@/components/products/AbmPrintCleanupClient";
 import AbmRichProductLinkClient from "@/components/site/AbmRichProductLinkClient";
 
 const ABM_CATALOG_POLISH_CSS = `
@@ -28,6 +29,7 @@ const ABM_CATALOG_POLISH_CSS = `
   min-width: 0 !important;
   padding: 12px 14px !important;
   vertical-align: top;
+  text-align: left !important;
 }
 
 .itsbio-html .itsbio-abm-normalized-table thead tr > th,
@@ -46,14 +48,18 @@ const ABM_CATALOG_POLISH_CSS = `
   font-weight: 700;
 }
 
+.itsbio-html .itsbio-abm-normalized-table.itsbio-abm-table-compact {
+  table-layout: fixed !important;
+}
+
 .itsbio-html .itsbio-abm-normalized-table.itsbio-abm-table-compact > thead > tr > :first-child,
 .itsbio-html .itsbio-abm-normalized-table.itsbio-abm-table-compact > tbody > tr:not(.abm-table-section-row) > :first-child {
-  width: 64% !important;
+  width: 34% !important;
 }
 
 .itsbio-html .itsbio-abm-normalized-table.itsbio-abm-table-compact > thead > tr > :last-child,
 .itsbio-html .itsbio-abm-normalized-table.itsbio-abm-table-compact > tbody > tr:not(.abm-table-section-row) > :last-child {
-  width: 36% !important;
+  width: 66% !important;
 }
 
 .itsbio-html .itsbio-abm-normalized-table.itsbio-abm-table-wide {
@@ -215,6 +221,7 @@ export default function AbmProductsLayout({ children }: { children: ReactNode })
       <AbmCatalogPolishClient />
       <AbmGeneticMaterialsPolishClient />
       <AbmCas9VectorsTableFixClient />
+      <AbmPrintCleanupClient />
       <AbmRichProductLinkClient />
       {children}
     </>
