@@ -8,7 +8,7 @@ on:
       - .github/workflows/temp-pin-selected-notices.yml
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   pin:
@@ -26,28 +26,22 @@ jobs:
       SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
 
     steps:
-      - name: Pin only legacy Notices 33, 32, and 26
+      - uses: actions/checkout@v4
+      - name: Pin and verify only legacy Notices 33, 32, and 26
         run: |
           node <<'NODE'
+          const fs = require('fs');
           const project = process.env.PROJECT_ID;
           const dataset = process.env.DATASET;
           const version = process.env.API_VERSION;
-          const token = [
-            process.env.SANITY_WRITE_TOKEN,
-            process.env.SANITY_API_WRITE_TOKEN,
-            process.env.SANITY_API_TOKEN,
-            process.env.SANITY_TOKEN,
-            process.env.SANITY_AUTH_TOKEN,
-          ].find(Boolean);
+          const token = [process.env.SANITY_WRITE_TOKEN,process.env.SANITY_API_WRITE_TOKEN,process.env.SANITY_API_TOKEN,process.env.SANITY_TOKEN,process.env.SANITY_AUTH_TOKEN].find(Boolean);
           if (!token) throw new Error('No Sanity write token available');
-
           const expected = new Map([
             ['legacy-notice-33', '[abm] Cell Lines Special Offer'],
             ['legacy-notice-32', '[abm] OneScript® Hot 5X RT MasterMix(Cat. No. G590) – 신제품'],
             ['legacy-notice-26', 'C.B.S. Scientific 대리점'],
           ]);
           const ids = [...expected.keys()];
-
           async function query(groq) {
             const url = new URL(`https://${project}.api.sanity.io/v${version}/data/query/${dataset}`);
             url.searchParams.set('query', groq);
@@ -55,32 +49,27 @@ jobs:
             if (!res.ok) throw new Error(`Query HTTP ${res.status}: ${await res.text()}`);
             return (await res.json()).result;
           }
-
-          const docs = await query(`*[_id in ${JSON.stringify(ids)}]{_id,title,isPinned,order}`);
-          if (!Array.isArray(docs) || docs.length !== 3) {
-            throw new Error(`Expected 3 target docs, found ${JSON.stringify(docs)}`);
-          }
-          for (const doc of docs) {
-            if (!expected.has(doc._id)) throw new Error(`Unexpected doc ${doc._id}`);
-            const title = String(doc.title || '').replace(/\s+/g, ' ').trim();
-            const wanted = expected.get(doc._id).replace(/\s+/g, ' ').trim();
-            if (title !== wanted) throw new Error(`Title mismatch for ${doc._id}: ${title}`);
-          }
-          console.log('BEFORE=' + JSON.stringify(docs));
-
-          const endpoint = `https://${project}.api.sanity.io/v${version}/data/mutate/${dataset}?returnIds=true`;
-          const mutations = ids.map((id) => ({ patch: { id, set: { isPinned: true } } }));
-          const res = await fetch(endpoint, {
-            method: 'POST',
-            headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-            body: JSON.stringify({ mutations }),
-          });
-          if (!res.ok) throw new Error(`Mutation HTTP ${res.status}: ${await res.text()}`);
-          console.log('MUTATION=' + JSON.stringify(await res.json()));
-
-          const after = await query(`*[_id in ${JSON.stringify(ids)}]{_id,title,isPinned,order}`);
-          if (after.length !== 3 || after.some((doc) => doc.isPinned !== true)) {
-            throw new Error(`Pin verification failed: ${JSON.stringify(after)}`);
-          }
-          console.log('AFTER=' + JSON.stringify(after));
+          (async()=>{
+            const docs = await query(`*[_id in ${JSON.stringify(ids)}]{_id,title,isPinned,order}`);
+            if (!Array.isArray(docs) || docs.length !== 3) throw new Error(`Expected 3 target docs, found ${JSON.stringify(docs)}`);
+            for (const doc of docs) {
+              const title = String(doc.title || '').replace(/\s+/g, ' ').trim();
+              const wanted = expected.get(doc._id)?.replace(/\s+/g, ' ').trim();
+              if (!wanted || title !== wanted) throw new Error(`Title mismatch for ${doc._id}: ${title}`);
+            }
+            const endpoint = `https://${project}.api.sanity.io/v${version}/data/mutate/${dataset}?returnIds=true`;
+            const res = await fetch(endpoint, {method:'POST',headers:{authorization:`Bearer ${token}`,'content-type':'application/json'},body:JSON.stringify({mutations:ids.map(id=>({patch:{id,set:{isPinned:true}}}))})});
+            if (!res.ok) throw new Error(`Mutation HTTP ${res.status}: ${await res.text()}`);
+            const after = await query(`*[_id in ${JSON.stringify(ids)}]{_id,title,isPinned,order}`);
+            if (after.length !== 3 || after.some(doc => doc.isPinned !== true)) throw new Error(`Pin verification failed: ${JSON.stringify(after)}`);
+            fs.mkdirSync('docs/migration-reports',{recursive:true});
+            fs.writeFileSync('docs/migration-reports/pinned-notices-verified.md', '# Pinned Notices Verified\n\n' + after.map(d=>`- ${d._id} · isPinned=${d.isPinned} · ${d.title}`).join('\n') + '\n');
+          })().catch(e=>{console.error(e);process.exit(1)});
           NODE
+      - name: Commit verification report
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add docs/migration-reports/pinned-notices-verified.md
+          git diff --cached --quiet || git commit -m "Verify selected Notice pins"
+          git push
