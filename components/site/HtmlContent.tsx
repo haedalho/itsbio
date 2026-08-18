@@ -1,19 +1,20 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { internalizeAbmHref, isOfficialAbmUrl } from "@/lib/abm/internal-links";
 
 type Props = {
   html: string;
   className?: string;
   /** legacy 등에서 상대경로(href="/", src="/")를 절대경로로 바꾸기 위한 base */
   baseUrl?: string;
+  mode?: "default" | "abm-detail" | "abm-service";
 };
 
-const TABLE_WRAP_CLASS = "overflow-x-auto rounded-2xl border border-orange-200 bg-white shadow-sm";
-const TABLE_CLASS = "w-full text-sm text-neutral-800 border-separate border-spacing-0";
-const TH_CLASS = "bg-orange-500 text-white font-semibold text-left px-4 py-3 align-middle";
-const TD_CLASS = "px-4 py-3 border-t border-neutral-100 align-top";
-const STRIPED_ROW_CLASS = "bg-neutral-50";
+const TABLE_WRAP_CLASS = "abm-table-scroll";
+const TABLE_CLASS = "abm-data-table";
+const EXTERNAL_VECTOR_LINK_ATTR = "data-abm-external-vector";
+const DIRECT_DOCUMENT_PATH = /\.(?:pdf|docx?|xlsx?|pptx?|csv|zip)(?:$|[?#])/i;
 
 function lower(x: unknown) {
   return String(x ?? "").toLowerCase();
@@ -25,23 +26,144 @@ function collapseWs(s: string) {
   return (s || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
 }
 
+function extractLegacyAbmTarget(href: string) {
+  try {
+    const url = new URL(href, "https://www.itsbio.co.kr");
+    if (url.pathname !== "/products/abm/legacy") return "";
+    return (url.searchParams.get("u") || "").trim();
+  } catch {
+    return "";
+  }
+}
+
+function officialAbmTarget(href: string, baseUrl: string) {
+  const legacyTarget = extractLegacyAbmTarget(href);
+  const resolved = legacyTarget || (baseUrl ? resolveUrl(href, baseUrl) : href);
+  return isOfficialAbmUrl(resolved) ? resolved : "";
+}
+
+function isHeadingAtOrAbove(el: Element, level: number) {
+  const match = /^H([1-6])$/.exec(el.tagName);
+  return !!match && Number(match[1]) <= level;
+}
+
+/**
+ * Vector catalog links in service editorial sections are intentionally kept
+ * on the official ABM site. These destinations are not part of the staged
+ * product/service corpus yet, so internalizing them creates avoidable 404s.
+ */
+function markExternalVectorSectionLinks(doc: Document, baseUrl: string) {
+  const headings = Array.from(doc.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6")).filter((heading) =>
+    /^Available\b.*(?:vector|adenovector)s?\b.*$/i.test(collapseWs(heading.textContent || ""))
+  );
+  if (!headings.length) return;
+
+  const allElements = Array.from(doc.body.querySelectorAll<HTMLElement>("*"));
+  headings.forEach((heading) => {
+    const level = Number(heading.tagName.slice(1));
+    const start = allElements.indexOf(heading);
+    if (start < 0) return;
+
+    for (let index = start + 1; index < allElements.length; index++) {
+      const el = allElements[index];
+      if (isHeadingAtOrAbove(el, level)) break;
+      if (el.tagName !== "A") continue;
+
+      const anchor = el as HTMLAnchorElement;
+      const href = (anchor.getAttribute("href") || "").trim();
+      if (href && officialAbmTarget(href, baseUrl)) {
+        anchor.setAttribute(EXTERNAL_VECTOR_LINK_ATTR, "true");
+      }
+    }
+  });
+}
+
+/** Convert ABM's JS-only, alternating question/answer tables to native HTML. */
+function transformServiceFaqs(doc: Document) {
+  const faqHeadings = Array.from(doc.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6")).filter((heading) =>
+    /^FAQs?$/i.test(collapseWs(heading.textContent || ""))
+  );
+  if (!faqHeadings.length) return;
+
+  const allElements = Array.from(doc.body.querySelectorAll<HTMLElement>("*"));
+  const headingIndex = new Map(faqHeadings.map((heading) => [heading, allElements.indexOf(heading)]));
+
+  faqHeadings.forEach((heading) => {
+    const start = headingIndex.get(heading) ?? -1;
+    if (start < 0) return;
+    const level = Number(heading.tagName.slice(1));
+    const list = doc.createElement("div");
+    list.className = "abm-service-faq-list";
+    const sources = new Set<Element>();
+    const seenTargets = new Set<string>();
+
+    for (let index = start + 1; index < allElements.length; index++) {
+      const el = allElements[index];
+      if (isHeadingAtOrAbove(el, level)) break;
+      if (!el.matches("b.customfaq, .customfaq")) continue;
+
+      const trigger = el.closest<HTMLAnchorElement>('a[href^="#"]');
+      const targetId = (trigger?.getAttribute("href") || "").slice(1);
+      if (!targetId || seenTargets.has(targetId)) continue;
+
+      const answer = doc.getElementById(targetId);
+      if (!answer || !answer.matches(".panel-collapse,.collapse,.accordion-collapse")) continue;
+      const answerBody =
+        answer.querySelector<HTMLElement>(".abm-perfect-faqs-text,.panel-body,.card-body,.accordion-body") || answer;
+      const question = collapseWs(el.textContent || trigger?.textContent || "");
+      const answerHtml = answerBody.innerHTML.trim();
+      if (!question || !collapseWs(answerBody.textContent || "")) continue;
+
+      const details = doc.createElement("details");
+      details.className = "abm-service-faq-item";
+      details.setAttribute("name", "abm-service-faq");
+      if (!list.children.length) details.setAttribute("open", "");
+
+      const summary = doc.createElement("summary");
+      summary.textContent = question;
+      const content = doc.createElement("div");
+      content.className = "abm-service-faq-answer";
+      content.innerHTML = answerHtml;
+      details.append(summary, content);
+      list.appendChild(details);
+      seenTargets.add(targetId);
+
+      const questionTable = trigger?.closest("table");
+      const answerTable = answer.closest("table");
+      if (questionTable) sources.add(questionTable);
+      else if (trigger) sources.add(trigger);
+      if (answerTable) sources.add(answerTable);
+      else sources.add(answer);
+    }
+
+    if (!list.children.length) return;
+    heading.insertAdjacentElement("afterend", list);
+    sources.forEach((source) => removeNode(source));
+  });
+}
+
+function isSmallUiGlyph(img: HTMLImageElement) {
+  const src = lower(img.getAttribute("src"));
+  const alt = lower(img.getAttribute("alt"));
+  const cls = lower(img.getAttribute("class"));
+  const width = Number.parseInt(img.getAttribute("width") || "", 10);
+  const height = Number.parseInt(img.getAttribute("height") || "", 10);
+  const encodedSize = src.match(/-(\d+)x(\d+)\.(?:png|gif|jpe?g|webp)(?:$|\?)/i);
+  const encodedWidth = Number(encodedSize?.[1] || 0);
+  const encodedHeight = Number(encodedSize?.[2] || 0);
+  const tinyDimensions =
+    (width > 0 && height > 0 && width <= 48 && height <= 48) ||
+    (encodedWidth > 0 && encodedHeight > 0 && encodedWidth <= 48 && encodedHeight <= 48);
+
+  return /(?:^|[\s/_-])(pdf|icon|glyph)(?:[\s/_.-]|$)/i.test(`${src} ${alt} ${cls}`) || (tinyDimensions && !alt);
+}
+
 function normalizeMailto(html: string) {
   return html
     .replace(/mailto:technical@abmgood\.com/gi, "mailto:info@itsbio.co.kr")
     .replace(/mailto:quotes@abmgood\.com/gi, "mailto:info@itsbio.co.kr")
     .replace(/technical@abmgood\.com/gi, "info@itsbio.co.kr")
     .replace(/quotes@abmgood\.com/gi, "info@itsbio.co.kr");
-}
-
-/** ✅ HTML 안의 /p/ 링크를 /item/으로 강제 */
-function rewriteProductPLinksToItem(html: string) {
-  if (!html) return "";
-  let out = html.replace(
-    /\/products\/([^/]+)\/p\/([^"'\s<]+)/gi,
-    (_m, brand, rest) => `/products/${String(brand).toLowerCase()}/item/${rest}`
-  );
-  out = out.replace(/href=["']\/p\/([^"']+)["']/gi, `href="/products/abm/item/$1"`);
-  return out;
 }
 
 /** ✅ 확정 로고/국기 같은 UI 이미지 제거 (제품이미지 보호) */
@@ -144,6 +266,7 @@ function improveReadability(doc: Document) {
   const candidates = Array.from(doc.querySelectorAll("div, section, span"));
   for (const el of candidates) {
     if (!el.parentElement) continue;
+    if (el.closest("table, .abm-table-scroll")) continue;
     if (isGridish(el)) continue;
 
     const hasImg = !!el.querySelector("img");
@@ -267,13 +390,17 @@ function resolveSrcset(srcset: string, baseUrl: string) {
     .join(", ");
 }
 
+function isInternalItsbioMediaUrl(value: string) {
+  return /^\/products\/abm\/resource-image(?:\?|$)/i.test((value || "").trim());
+}
+
 function isInternalItsbioHref(href: string) {
   const h = (href || "").trim();
   if (!h) return true;
   if (h.startsWith("#") || /^mailto:|^tel:/i.test(h)) return true;
 
   // ✅ 우리 사이트 내부 라우트는 절대경로화 금지
-  if (/^\/(products|notice|promotions|studio-admin|contact)(\/|$)/i.test(h)) return true;
+  if (/^\/(products|notice|promotions|studio-admin|contact|quote)(\/|$|\?)/i.test(h)) return true;
 
   return false;
 }
@@ -284,8 +411,7 @@ function isInternalItsbioHref(href: string) {
  * - a[href]는 "우리 내부 링크"는 건드리지 않고, 그 외 루트상대(/xxx)는 baseUrl로 절대경로화
  * - style="background-image:url(...)" 도 보정
  */
-function fixMediaAndLinks(doc: Document, baseUrl: string) {
-  if (!baseUrl) return;
+function fixMediaAndLinks(doc: Document, baseUrl: string, internalizeAbm: boolean) {
 
   // IMG: lazy 속성 → src로 승격
   doc.querySelectorAll<HTMLImageElement>("img").forEach((img) => {
@@ -315,11 +441,11 @@ function fixMediaAndLinks(doc: Document, baseUrl: string) {
 
     // src 절대경로
     const src = (img.getAttribute("src") || "").trim();
-    if (src) img.setAttribute("src", resolveUrl(src, baseUrl));
+    if (src && baseUrl && !isInternalItsbioMediaUrl(src)) img.setAttribute("src", resolveUrl(src, baseUrl));
 
     // srcset 절대경로
     const ss = (img.getAttribute("srcset") || "").trim();
-    if (ss) img.setAttribute("srcset", resolveSrcset(ss, baseUrl));
+    if (ss && baseUrl) img.setAttribute("srcset", resolveSrcset(ss, baseUrl));
 
     // (가끔 핫링크/리퍼러 이슈 완화용)
     img.setAttribute("referrerpolicy", "no-referrer");
@@ -328,16 +454,16 @@ function fixMediaAndLinks(doc: Document, baseUrl: string) {
   // <source srcset=...> (picture)
   doc.querySelectorAll<HTMLSourceElement>("source").forEach((s) => {
     const ss = (s.getAttribute("srcset") || "").trim();
-    if (ss) s.setAttribute("srcset", resolveSrcset(ss, baseUrl));
+    if (ss && baseUrl) s.setAttribute("srcset", resolveSrcset(ss, baseUrl));
   });
 
   // video/audio/poster/track 등
   doc.querySelectorAll<HTMLElement>("video, audio, track, source").forEach((el) => {
     const src = (el.getAttribute("src") || "").trim();
-    if (src) el.setAttribute("src", resolveUrl(src, baseUrl));
+    if (src && baseUrl) el.setAttribute("src", resolveUrl(src, baseUrl));
 
     const poster = (el.getAttribute("poster") || "").trim();
-    if (poster) el.setAttribute("poster", resolveUrl(poster, baseUrl));
+    if (poster && baseUrl) el.setAttribute("poster", resolveUrl(poster, baseUrl));
   });
 
   // background-image:url(...)
@@ -345,6 +471,7 @@ function fixMediaAndLinks(doc: Document, baseUrl: string) {
     const style = el.getAttribute("style") || "";
     if (!style.toLowerCase().includes("url(")) return;
 
+    if (!baseUrl) return;
     const fixed = style.replace(/url\((['"]?)([^'")]+)\1\)/gi, (_m, _q, u) => {
       return `url("${resolveUrl(String(u), baseUrl)}")`;
     });
@@ -355,32 +482,78 @@ function fixMediaAndLinks(doc: Document, baseUrl: string) {
   doc.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((a) => {
     const href = (a.getAttribute("href") || "").trim();
     if (!href) return;
+
+    if (a.getAttribute(EXTERNAL_VECTOR_LINK_ATTR) === "true") {
+      const externalTarget = officialAbmTarget(href, baseUrl);
+      if (externalTarget) {
+        a.setAttribute("href", externalTarget);
+        a.setAttribute("target", "_blank");
+        a.setAttribute("rel", "noreferrer noopener");
+      }
+      a.removeAttribute(EXTERNAL_VECTOR_LINK_ATTR);
+      return;
+    }
+
+    // Older staged HTML may already contain the internal legacy resolver.
+    // Official files should still bypass it and open the real ABM document.
+    const legacyTarget = extractLegacyAbmTarget(href);
+    if (legacyTarget && isOfficialAbmUrl(legacyTarget) && DIRECT_DOCUMENT_PATH.test(legacyTarget)) {
+      a.setAttribute("href", legacyTarget);
+      a.setAttribute("target", "_blank");
+      a.setAttribute("rel", "noreferrer noopener");
+      return;
+    }
+
     if (isInternalItsbioHref(href)) return;
 
-    // 루트상대 or 상대경로면 baseUrl로 붙여줌
-    if (!/^(https?:|mailto:|tel:|#)/i.test(href)) {
-      a.setAttribute("href", resolveUrl(href, baseUrl));
+    const resolved = baseUrl ? resolveUrl(href, baseUrl) : href;
+    const nextHref = internalizeAbm || isOfficialAbmUrl(resolved)
+      ? internalizeAbmHref(href, baseUrl)
+      : resolved;
+    if (!nextHref) removeNode(a);
+    else {
+      a.setAttribute("href", nextHref);
+      if (/^https?:/i.test(nextHref)) {
+        a.setAttribute("target", "_blank");
+        a.setAttribute("rel", "noreferrer noopener");
+      } else {
+        a.removeAttribute("target");
+        a.removeAttribute("rel");
+      }
     }
   });
 }
 
-function sanitizeAndStyle(rawHtml: string, baseUrl?: string) {
+function isManagedAbmImage(src: string) {
+  try {
+    const url = new URL(src, window.location.origin);
+    return url.hostname === "cdn.sanity.io" && url.pathname.startsWith("/images/9b5twpc8/");
+  } catch {
+    return false;
+  }
+}
+
+function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"] = "default") {
   if (!rawHtml) return "";
 
   // ✅ 0) 문자열 레벨 전처리
   let html = normalizeMailto(rawHtml);
-  html = rewriteProductPLinksToItem(html);
+  const isAbmMode = mode === "abm-detail" || mode === "abm-service";
 
   // baseUrl 없으면 추정
-  const effectiveBase = (baseUrl || "").trim() || inferBaseUrlFromHtml(html);
+  const effectiveBase =
+    (baseUrl || "").trim() || (isAbmMode ? "https://www.abmgood.com" : inferBaseUrlFromHtml(html));
 
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
 
-  // ✅ 0.5) (가장 중요) 이미지/미디어 URL 보정 + lazyload src 복구
-  if (effectiveBase) {
-    fixMediaAndLinks(doc, effectiveBase);
+  if (mode === "abm-service") {
+    markExternalVectorSectionLinks(doc, effectiveBase);
+    transformServiceFaqs(doc);
   }
+
+  // ✅ 0.5) (가장 중요) 이미지/미디어 URL 보정 + lazyload src 복구
+  fixMediaAndLinks(doc, effectiveBase, isAbmMode);
 
   // ✅ 1) 우리가 주입한 Products 카드 그리드 제거
   removeInjectedProductsGrid(doc);
@@ -390,8 +563,9 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string) {
     .querySelectorAll("script, style, iframe, form, input, textarea, button, select")
     .forEach((el) => removeNode(el));
 
-  // 3) nav/header/footer/aside 제거 + ABM footer 제거
-  doc.querySelectorAll("nav, header, footer, aside").forEach((el) => removeNode(el));
+  // 3) nav/header/footer 제거 + ABM footer 제거. Service editorial content의
+  // aside는 source page의 실제 정보 패널이므로 보존한다.
+  doc.querySelectorAll(mode === "abm-service" ? "nav, header, footer" : "nav, header, footer, aside").forEach((el) => removeNode(el));
   doc.querySelectorAll("#footer, .footer, .footer-top, .footer-bottom").forEach((el) => removeNode(el));
 
   // ✅ 규칙: Request Free Sample 버튼/링크 제거
@@ -407,15 +581,6 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string) {
       a.setAttribute("href", "mailto:info@itsbio.co.kr");
       a.textContent = "info@itsbio.co.kr";
       return;
-    }
-
-    // DOM 레벨에서도 p링크 보정
-    const h = href.trim();
-    const m = h.match(/^\/products\/([^/]+)\/p\/(.+)$/i);
-    if (m) {
-      const brand = String(m[1]).toLowerCase();
-      const rest = m[2];
-      a.setAttribute("href", `/products/${brand}/item/${rest}`);
     }
 
     const txt = lower(a.textContent);
@@ -440,46 +605,111 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string) {
     if (bad) removeNode(a);
   });
 
+  if (isAbmMode) {
+    doc.querySelectorAll("li, p, span, div").forEach((el) => {
+      const text = collapseWs(el.textContent || "");
+      if (/^(?:wholesale\s+prices?|add\s+to\s+cart|buy\s+now)$/i.test(text)) removeNode(el);
+    });
+  }
+
   // 5) 확정 로고/국기 이미지 제거
   doc.querySelectorAll("img").forEach((img) => {
     if (isDefinitelyBrandOrFlag(img as HTMLImageElement)) removeNode(img);
   });
 
-  // 6) 테이블 Price 컬럼 제거 + 스타일 적용
-  doc.querySelectorAll("table").forEach((table) => {
-    const headerCells = Array.from(table.querySelectorAll("tr:first-child th, tr:first-child td"));
-    const priceIdx = headerCells.findIndex((c) => lower(c.textContent).includes("price"));
+  // ABM Service staging은 외부 이미지를 절대 렌더링하지 않는다. 수집 workflow가
+  // 모든 공식 이미지를 Sanity asset으로 바꾸며, 이 검사는 잘못된 staging의 방어선이다.
+  if (mode === "abm-service") {
+    doc.querySelectorAll<HTMLImageElement>("img").forEach((img) => {
+      if (isSmallUiGlyph(img) || !isManagedAbmImage((img.getAttribute("src") || "").trim())) removeNode(img);
+      else {
+        img.removeAttribute("srcset");
+        img.removeAttribute("data-srcset");
+        img.removeAttribute("data-src");
+      }
+    });
+  }
 
-    if (priceIdx >= 0) {
+  // 6) 판매 컬럼 제거 + ABM 정보 표를 동일한 구조와 디자인으로 정규화
+  doc.querySelectorAll("table").forEach((table) => {
+    const rows = Array.from(table.querySelectorAll(":scope > thead > tr, :scope > tbody > tr, :scope > tr"));
+    const candidateRows = rows.slice(0, 4);
+    const commerceIndices = new Set<number>();
+    const commerceHeader = /(?:^|\b)(?:price|cost|amount|currency|qty|quantity|cart|order|msrp|retail|wholesale|usd|cad)(?:\b|$)/i;
+    candidateRows.forEach((row) => {
+      Array.from(row.children).forEach((cell, index) => {
+        if (commerceHeader.test(collapseWs(cell.textContent || ""))) commerceIndices.add(index);
+      });
+    });
+
+    if (commerceIndices.size) {
       table.querySelectorAll("tr").forEach((tr) => {
         const cells = Array.from(tr.children);
-        const target = cells[priceIdx] as Element | undefined;
-        if (target) removeNode(target);
+        [...commerceIndices].sort((a, b) => b - a).forEach((index) => {
+          const target = cells[index] as Element | undefined;
+          if (target) removeNode(target);
+        });
       });
     }
 
     table.querySelectorAll("td, th").forEach((cell) => {
-      const t = (cell.textContent || "").trim();
-      if (lower(t) === "price") removeNode(cell);
-      if (/\$\s?\d/.test(t)) removeNode(cell);
+      const text = collapseWs(cell.textContent || "");
+      if (/^(?:US|CA)?\$\s?\d[\d,.]*(?:\s*(?:USD|CAD))?$/i.test(text)) cell.textContent = "";
+      ["style", "width", "height", "bgcolor", "border", "cellpadding", "cellspacing", "align", "valign"].forEach((attribute) => cell.removeAttribute(attribute));
     });
 
-    table.setAttribute("class", TABLE_CLASS);
-    table.querySelectorAll("th").forEach((th) => th.setAttribute("class", TH_CLASS));
-    table.querySelectorAll("td").forEach((td) => td.setAttribute("class", TD_CLASS));
+    if (isAbmMode) {
+      table.setAttribute("class", TABLE_CLASS);
+      ["style", "width", "height", "bgcolor", "border", "cellpadding", "cellspacing", "align"].forEach((attribute) => table.removeAttribute(attribute));
+      table.querySelectorAll("th").forEach((th) => th.setAttribute("scope", "col"));
+      const sectionRows = Array.from(table.querySelectorAll<HTMLTableRowElement>('tr[id^="table-product-mini-category-"]'));
+      sectionRows.forEach((row) => {
+        row.classList.add("abm-table-section-row");
+        row.removeAttribute("style");
+        row.querySelectorAll("td, th").forEach((cell) => cell.removeAttribute("style"));
+      });
 
-    const rows = Array.from(table.querySelectorAll("tr"));
-    rows.forEach((tr, idx) => {
-      if (idx > 0 && idx % 2 === 0) tr.setAttribute("class", STRIPED_ROW_CLASS);
-    });
+      if (sectionRows.length && !doc.querySelector(".abm-table-anchor-nav")) {
+        const nav = doc.createElement("nav");
+        nav.setAttribute("class", "abm-table-anchor-nav");
+        nav.setAttribute("aria-label", "Product groups");
+        sectionRows.forEach((row, index) => {
+          const label = collapseWs(row.cells[0]?.textContent || "");
+          if (!row.id || !label) return;
+          if (index) {
+            const separator = doc.createElement("span");
+            separator.setAttribute("aria-hidden", "true");
+            separator.textContent = "|";
+            nav.appendChild(separator);
+          }
+          const anchor = doc.createElement("a");
+          anchor.setAttribute("href", `#${row.id}`);
+          anchor.textContent = /Fluorescent\s+Marker/i.test(label)
+            ? "GFP, RFP, CFP, YFP"
+            : label.replace(/\s*\(FLAG\)\s*/i, "").trim();
+          nav.appendChild(anchor);
+        });
+        if (nav.children.length) doc.body.insertBefore(nav, doc.body.firstChild);
+      }
 
-    const wrap = doc.createElement("div");
-    wrap.setAttribute("class", TABLE_WRAP_CLASS);
-
-    const parent = table.parentNode;
-    if (parent) {
-      parent.insertBefore(wrap, table);
-      wrap.appendChild(table);
+      const existingWrap = table.parentElement?.classList.contains("models-table-wrap") ? table.parentElement : null;
+      if (existingWrap) {
+        existingWrap.classList.add(TABLE_WRAP_CLASS);
+        existingWrap.setAttribute("role", "region");
+        existingWrap.setAttribute("aria-label", "Scrollable product information table");
+        existingWrap.setAttribute("tabindex", "0");
+      } else if (!table.parentElement?.classList.contains(TABLE_WRAP_CLASS)) {
+        const wrap = doc.createElement("div");
+        wrap.setAttribute("class", TABLE_WRAP_CLASS);
+        wrap.setAttribute("role", "region");
+        wrap.setAttribute("aria-label", "Scrollable product information table");
+        wrap.setAttribute("tabindex", "0");
+        const parent = table.parentNode;
+        if (parent) {
+          parent.insertBefore(wrap, table);
+          wrap.appendChild(table);
+        }
+      }
     }
   });
 
@@ -496,7 +726,7 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string) {
   return doc.body.innerHTML.trim();
 }
 
-export default function HtmlContent({ html, className, baseUrl }: Props) {
+export default function HtmlContent({ html, className, baseUrl, mode = "default" }: Props) {
   const [renderHtml, setRenderHtml] = useState<string>("");
 
   const input = useMemo(() => (html || "").trim(), [html]);
@@ -504,13 +734,13 @@ export default function HtmlContent({ html, className, baseUrl }: Props) {
 
   useEffect(() => {
     try {
-      setRenderHtml(sanitizeAndStyle(input, base));
+      setRenderHtml(sanitizeAndStyle(input, base, mode));
     } catch {
       // fallback: 최소한 mailto / p링크만
-      const fallback = rewriteProductPLinksToItem(normalizeMailto(input));
+      const fallback = normalizeMailto(input);
       setRenderHtml(fallback);
     }
-  }, [input, base]);
+  }, [input, base, mode]);
 
   if (!renderHtml) return null;
 
@@ -520,9 +750,9 @@ export default function HtmlContent({ html, className, baseUrl }: Props) {
       <div
         className={[
           "itsbio-html",
-          "prose prose-neutral max-w-none",
-          "prose-a:text-orange-600 prose-a:underline prose-a:underline-offset-4",
-          "prose-table:my-6",
+          mode === "default" ? "prose prose-neutral max-w-none" : "abm-rich max-w-none",
+          mode === "default" ? "prose-a:text-orange-600 prose-a:underline prose-a:underline-offset-4" : "",
+          mode === "default" ? "prose-table:my-6" : "",
           className || "",
         ].join(" ")}
         dangerouslySetInnerHTML={{ __html: renderHtml }}

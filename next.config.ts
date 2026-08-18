@@ -33,8 +33,7 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     const systems = ["somnoflo", "somnosuite", "vetflo"];
-
-    return systems.flatMap((system) => {
+    const kentRedirects = systems.flatMap((system) => {
       const leaf = `anesthesia-accessories-for-${system}`;
       const existingCategory = `/products/kent/anesthesia/${leaf}`;
 
@@ -51,6 +50,20 @@ const nextConfig: NextConfig = {
         },
       ];
     });
+
+    return [
+      {
+        source: "/products/abm/general-materials/gel-documentation/dna-stains",
+        destination: "/products/abm/general-materials/gel-documentation#safeview-dna-stains",
+        permanent: false,
+      },
+      {
+        source: "/products/abm/general-materials/gel-documentation/gel-imager",
+        destination: "/products/abm/staged/product/E1001",
+        permanent: false,
+      },
+      ...kentRedirects,
+    ];
   },
 };
 

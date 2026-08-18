@@ -1,0 +1,40 @@
+name: Audit ABM missing staged media
+
+on:
+  push:
+    branches:
+      - agent/homepage-brand-redesign
+    paths:
+      - .github/workflows/audit-abm-missing-media.yml
+      - scripts/backfill-abm-staged-missing-media-all.mjs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Audit products that are still missing visible media
+        run: node scripts/backfill-abm-staged-missing-media-all.mjs
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: abm-missing-media-audit-${{ github.run_id }}
+          path: .cache/abm-missing-media-all/
+          retention-days: 14
+          if-no-files-found: warn

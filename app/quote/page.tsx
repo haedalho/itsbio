@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PageHero from "@/components/site/PageHero";
 
 export default function QuotePage() {
   const [loading, setLoading] = useState(false);
@@ -13,15 +14,15 @@ export default function QuotePage() {
     setDone(null);
     setErrorMsg("");
 
-    const formEl = e.currentTarget; // ✅ 폼을 안전하게 저장
+    const formEl = e.currentTarget;
     const form = new FormData(formEl);
-
     const payload = {
       name: String(form.get("name") ?? ""),
       org: String(form.get("org") ?? ""),
       email: String(form.get("email") ?? ""),
       product: String(form.get("product") ?? ""),
       message: String(form.get("message") ?? ""),
+      sourcePage: typeof window !== "undefined" ? window.location.href : "",
     };
 
     try {
@@ -30,23 +31,14 @@ export default function QuotePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       const data = await res.json().catch(() => ({} as any));
-
-      // ✅ 성공 조건: HTTP ok + data.ok === true
       if (!res.ok || data.ok !== true) {
         const msg = data?.error || `Request failed (status ${res.status})`;
         setErrorMsg(msg);
-        console.error("Quote API failed:", res.status, data);
         throw new Error(msg);
       }
-
       setDone("ok");
-
-      // ✅ reset이 가능한 경우에만 실행(안전)
-      if (typeof (formEl as any).reset === "function") {
-        (formEl as HTMLFormElement).reset();
-      }
+      formEl.reset();
     } catch (err) {
       console.error("Send failed:", err);
       setDone("fail");
@@ -55,59 +47,49 @@ export default function QuotePage() {
     }
   }
 
+  const fieldClass = "h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-50";
+
   return (
-    <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-xl px-4 py-10">
-        <h1 className="text-3xl font-bold">Request a Quote</h1>
-        <p className="mt-2 text-slate-600">Fill out the form and we’ll get back to you.</p>
+    <main className="bg-slate-50/70">
+      <PageHero
+        eyebrow="REQUEST A QUOTE"
+        title="Tell us what you need"
+        description="Share a product name, catalog number, or requirement. Our team will review your request and prepare the information you need."
+        variant="quote"
+        cta={{ label: "Start request", href: "#quote-form" }}
+      />
 
-        <form onSubmit={onSubmit} className="mt-6 space-y-3 rounded-2xl bg-white border p-5">
-          <input name="name" className="w-full rounded-xl border px-4 py-3" placeholder="Name" />
-          <input name="org" className="w-full rounded-xl border px-4 py-3" placeholder="Company / Lab" />
-
-          <input
-            name="email"
-            type="email"
-            className="w-full rounded-xl border px-4 py-3"
-            placeholder="Email *"
-            required
-          />
-
-          <input
-            name="product"
-            className="w-full rounded-xl border px-4 py-3"
-            placeholder="Product name / Cat No"
-          />
-
-          <textarea
-            name="message"
-            className="w-full rounded-xl border px-4 py-3"
-            placeholder="Message *"
-            rows={5}
-            required
-          />
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-xl bg-blue-700 text-white px-4 py-3 font-semibold disabled:opacity-60"
-          >
-            {loading ? "Sending..." : "Send"}
-          </button>
-
-          {done === "ok" && (
-            <div className="text-sm rounded-xl bg-green-50 text-green-700 p-3">
-              Sent! We will contact you soon.
+      <section id="quote-form" className="mx-auto max-w-6xl px-6 py-12 md:py-16">
+        <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:gap-14">
+          <div className="pt-2">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-600">Quotation support</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">A few details are enough to get started.</h2>
+            <p className="mt-4 text-sm leading-7 text-slate-600">If you do not know the exact catalog number, send the product name, a short specification, or the application. We can help identify the right option.</p>
+            <div className="mt-8 space-y-5 border-t border-slate-200 pt-6 text-sm text-slate-600">
+              <div><span className="font-semibold text-slate-900">Product request</span><div className="mt-1">Product name, catalog number, quantity, or specification.</div></div>
+              <div><span className="font-semibold text-slate-900">Response</span><div className="mt-1">Availability, lead time, quotation, and alternatives when needed.</div></div>
+              <div><span className="font-semibold text-slate-900">Email</span><div className="mt-1">info@itsbio.co.kr</div></div>
             </div>
-          )}
+          </div>
 
-          {done === "fail" && (
-            <div className="text-sm rounded-xl bg-red-50 text-red-700 p-3">
-              Failed to send{errorMsg ? `: ${errorMsg}` : ". Please try again."}
+          <form onSubmit={onSubmit} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_18px_55px_rgba(15,23,42,0.08)] sm:p-7">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <input name="name" className={fieldClass} placeholder="Name" />
+              <input name="org" className={fieldClass} placeholder="Company / Lab" />
             </div>
-          )}
-        </form>
-      </div>
+            <input name="email" type="email" className={`${fieldClass} mt-3`} placeholder="Email *" required />
+            <input name="product" className={`${fieldClass} mt-3`} placeholder="Product name / Catalog No." />
+            <textarea name="message" className="mt-3 min-h-[150px] w-full resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-50" placeholder="Message *" required />
+
+            <button type="submit" disabled={loading} className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-xl bg-orange-600 px-5 text-sm font-semibold text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-60">
+              {loading ? "Sending..." : "Send request"}
+            </button>
+
+            {done === "ok" ? <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">Sent! We will contact you soon.</div> : null}
+            {done === "fail" ? <div className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">Failed to send{errorMsg ? `: ${errorMsg}` : ". Please try again."}</div> : null}
+          </form>
+        </div>
+      </section>
     </main>
   );
 }

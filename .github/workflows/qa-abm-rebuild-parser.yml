@@ -1,0 +1,39 @@
+name: QA ABM rebuild parser
+
+on:
+  push:
+    branches:
+      - agent/abm-full-rebuild
+    paths:
+      - lib/abm/rebuild-parser.mjs
+      - scripts/abm-rebuild-parser-qa.mjs
+      - .github/workflows/qa-abm-rebuild-parser.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Parse representative current ABM Product and Service pages
+        run: node scripts/abm-rebuild-parser-qa.mjs
+      - name: Print QA summary
+        if: always()
+        run: test -f .cache/abm-rebuild-parser-qa/summary.md && cat .cache/abm-rebuild-parser-qa/summary.md || true
+      - name: Upload parser QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: abm-rebuild-parser-qa-${{ github.run_id }}
+          path: .cache/abm-rebuild-parser-qa/
+          retention-days: 30
+          if-no-files-found: warn

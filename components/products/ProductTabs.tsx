@@ -5,6 +5,7 @@ import HtmlContent from "@/components/site/HtmlContent";
 
 type Doc = { url: string; label: string };
 type FaqItem = { q: string; aHtml: string };
+type AbmContentContext = { baseUrl?: string; mode?: "abm-detail" | "abm-service" };
 
 function textOnly(html?: string) {
   return (html || "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
@@ -120,13 +121,13 @@ function parseFaqItems(html?: string): FaqItem[] {
   }
 }
 
-function FaqAccordion({ html }: { html: string }) {
+function FaqAccordion({ html, contentContext }: { html: string; contentContext: AbmContentContext }) {
   const items = React.useMemo(() => parseFaqItems(html), [html]);
   const [openIdx, setOpenIdx] = React.useState<number>(0);
 
   // 파싱 실패하면 "펼친 HTML"을 그대로 보여주되, HtmlContent로 렌더(디자인 유지)
   if (!items.length) {
-    return <HtmlContent html={expandCollapse(html)} />;
+    return <HtmlContent html={expandCollapse(html)} {...contentContext} />;
   }
 
   return (
@@ -185,7 +186,7 @@ function FaqAccordion({ html }: { html: string }) {
                   </div>
 
                   {/* ✅ 여기서 딱 1번만 렌더 → 중복 절대 없음 + 기존 HtmlContent 스타일 유지 */}
-                  <HtmlContent html={it.aHtml} />
+                  <HtmlContent html={it.aHtml} {...contentContext} />
                 </div>
               </div>
             ) : null}
@@ -197,26 +198,36 @@ function FaqAccordion({ html }: { html: string }) {
 }
 
 export default function ProductTabsClient({
+  overviewHtml,
   specsHtml,
+  serviceDetailsHtml,
   datasheetHtml,
   documentsHtml,
   documents,
   faqsHtml,
   referencesHtml,
   reviewsHtml,
+  sourceUrl,
+  kind = "product",
 }: {
+  overviewHtml?: string;
   specsHtml?: string;
+  serviceDetailsHtml?: string;
   datasheetHtml?: string;
   documentsHtml?: string;
   documents?: Doc[];
   faqsHtml?: string;
   referencesHtml?: string;
   reviewsHtml?: string;
+  sourceUrl?: string;
+  kind?: "product" | "service";
 }) {
+  const contentContext = React.useMemo<AbmContentContext>(() => ({
+    baseUrl: sourceUrl,
+    mode: kind === "service" ? "abm-service" : "abm-detail",
+  }), [sourceUrl, kind]);
   const tabs = React.useMemo(() => {
-    return [
-      { key: "specs", label: "Specifications", enabled: hasUsableHtml(specsHtml) },
-      { key: "datasheet", label: "Datasheet", enabled: hasUsableHtml(datasheetHtml) },
+    const shared = [
       {
         key: "documents",
         label: "Documents",
@@ -226,7 +237,18 @@ export default function ProductTabsClient({
       { key: "references", label: "References", enabled: hasUsableHtml(referencesHtml) },
       { key: "reviews", label: "Reviews", enabled: hasUsableHtml(reviewsHtml) },
     ];
-  }, [specsHtml, datasheetHtml, documentsHtml, documents, faqsHtml, referencesHtml, reviewsHtml]);
+    return kind === "product"
+      ? [
+          { key: "specs", label: "Specifications", enabled: hasUsableHtml(specsHtml) },
+          { key: "datasheet", label: "Datasheet", enabled: hasUsableHtml(datasheetHtml) },
+          ...shared,
+        ]
+      : [
+          { key: "overview", label: "Overview", enabled: hasUsableHtml(overviewHtml) },
+          { key: "service", label: "Service Details", enabled: hasUsableHtml(serviceDetailsHtml) },
+          ...shared,
+        ];
+  }, [kind, overviewHtml, specsHtml, serviceDetailsHtml, datasheetHtml, documentsHtml, documents, faqsHtml, referencesHtml, reviewsHtml]);
 
   const firstEnabled = tabs.find((x) => x.enabled)?.key || "specs";
   const [active, setActive] = React.useState<string>(firstEnabled);
@@ -239,9 +261,9 @@ export default function ProductTabsClient({
 
   return (
     <section className="mt-8">
-      <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
-        <div className="border-b border-neutral-200 bg-white px-4 py-3">
-          <div className="flex flex-wrap gap-2">
+      <div className="overflow-hidden border border-neutral-200 bg-white">
+        <div className="border-b border-neutral-200 bg-neutral-100">
+          <div className="scrollbar-hidden flex overflow-x-auto" role="tablist" aria-label="Product information">
             {tabs.map((t) => {
               const isActive = active === t.key;
               const disabled = !t.enabled;
@@ -250,14 +272,18 @@ export default function ProductTabsClient({
                 <button
                   key={t.key}
                   type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-disabled={disabled}
+                  disabled={disabled}
                   onClick={() => !disabled && setActive(t.key)}
                   className={[
-                    "inline-flex h-9 items-center justify-center rounded-full px-4 text-sm font-semibold transition",
+                    "inline-flex h-12 shrink-0 items-center justify-center border-r border-neutral-200 px-5 text-sm font-semibold transition",
                     disabled
-                      ? "bg-neutral-100 text-neutral-400 cursor-not-allowed"
+                      ? "cursor-not-allowed bg-neutral-100 text-neutral-400"
                       : isActive
-                      ? "bg-orange-600 text-white"
-                      : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200",
+                      ? "bg-[#f2632f] text-white"
+                      : "bg-neutral-100 text-neutral-700 hover:bg-white hover:text-[#dc5a2b]",
                   ].join(" ")}
                 >
                   {t.label}
@@ -267,8 +293,12 @@ export default function ProductTabsClient({
           </div>
         </div>
 
-        <div className="px-6 py-6">
-          {active === "documents" ? (
+        <div className="px-5 py-6 md:px-6 md:py-7">
+          {active === "overview" && hasUsableHtml(overviewHtml) ? (
+            <HtmlContent html={overviewHtml as string} {...contentContext} />
+          ) : active === "service" && hasUsableHtml(serviceDetailsHtml) ? (
+            <HtmlContent html={serviceDetailsHtml as string} {...contentContext} />
+          ) : active === "documents" ? (
             <div className="space-y-6">
               {(documents?.length || 0) > 0 ? (
                 <div>
@@ -290,21 +320,21 @@ export default function ProductTabsClient({
                 </div>
               ) : null}
 
-              {hasUsableHtml(documentsHtml) ? <HtmlContent html={documentsHtml as string} /> : null}
+              {hasUsableHtml(documentsHtml) ? <HtmlContent html={documentsHtml as string} {...contentContext} /> : null}
               {(documents?.length || 0) === 0 && !hasUsableHtml(documentsHtml) ? (
                 <div className="text-sm text-neutral-600">No documents available.</div>
               ) : null}
             </div>
           ) : active === "faqs" && hasUsableHtml(faqsHtml) ? (
-            <FaqAccordion html={faqsHtml as string} />
+            <FaqAccordion html={faqsHtml as string} contentContext={contentContext} />
           ) : active === "specs" && hasUsableHtml(specsHtml) ? (
-            <HtmlContent html={specsHtml as string} />
+            <HtmlContent html={specsHtml as string} {...contentContext} />
           ) : active === "datasheet" && hasUsableHtml(datasheetHtml) ? (
-            <HtmlContent html={datasheetHtml as string} />
+            <HtmlContent html={datasheetHtml as string} {...contentContext} />
           ) : active === "references" && hasUsableHtml(referencesHtml) ? (
-            <HtmlContent html={referencesHtml as string} />
+            <HtmlContent html={referencesHtml as string} {...contentContext} />
           ) : active === "reviews" && hasUsableHtml(reviewsHtml) ? (
-            <HtmlContent html={reviewsHtml as string} />
+            <HtmlContent html={reviewsHtml as string} {...contentContext} />
           ) : (
             <div className="text-sm text-neutral-600">No content available.</div>
           )}

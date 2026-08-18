@@ -9,6 +9,7 @@ export async function POST(req: Request) {
     const email = body.email ?? "";
     const product = body.product ?? "";
     const message = body.message ?? "";
+    const sourceUrl = body.sourceUrl ?? "";
 
     if (!email || !message) {
       return Response.json({ ok: false, error: "Email and message are required." }, { status: 400 });
@@ -27,7 +28,7 @@ export async function POST(req: Request) {
     const resend = new Resend(apiKey);
 
     const { data, error } = await resend.emails.send({
-      from: "itsbio Quote <onboarding@resend.dev>", // 도메인 인증 전 테스트용
+      from: "itsbio Quote <onboarding@resend.dev>",
       to: [toEmail],
       subject: `[Quote Request] ${product || "No product"} - ${name || "Unknown"}`,
       text: `
@@ -37,7 +38,7 @@ Name: ${name}
 Org: ${org}
 Email: ${email}
 Product/CatNo: ${product}
-
+${sourceUrl ? `Source page: ${sourceUrl}\n` : ""}
 Message:
 ${message}
       `.trim(),
@@ -45,7 +46,6 @@ ${message}
     });
 
     if (error) {
-      // ✅ Resend가 실패라고 알려주면 우리도 fail로 돌려줌
       return Response.json({ ok: false, error: error.message }, { status: 500 });
     }
 

@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
-import { sanityClient } from "@/lib/sanity/sanity.client";
+import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 
 export const revalidate = 300;
 
@@ -124,10 +124,10 @@ function KentSideNav() {
 }
 
 export default async function MobileCartsPage() {
-  const rawProducts = (await sanityClient.fetch(PRODUCT_QUERY, {
+  const rawProducts = (await sanityCdnClient.fetch(PRODUCT_QUERY, {
     productType: PRODUCT_DOC_TYPE,
     slugs: OFFICIAL_MOBILE_CARTS.map((item) => item.slug),
-  })) as MobileCartProduct[];
+  }, PUBLIC_CATALOG_CACHE)) as MobileCartProduct[];
 
   const bySlug = new Map(rawProducts.map((product) => [product.slug, product]));
   const products = OFFICIAL_MOBILE_CARTS.map((official) => {

@@ -1,0 +1,48 @@
+name: Audit Sanity document quota
+
+on:
+  push:
+    branches:
+      - agent/abm-full-rebuild
+    paths:
+      - .github/workflows/audit-sanity-document-quota.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quota:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Count production Sanity documents
+        env:
+          PROJECT_ID: 9b5twpc8
+          DATASET: production
+          API_VERSION: "2025-01-01"
+        run: |
+          node <<'NODE'
+          const project = process.env.PROJECT_ID;
+          const dataset = process.env.DATASET;
+          const version = process.env.API_VERSION;
+          const query = `{
+            "all": count(*[]),
+            "published": count(*[!(_id in path("drafts.**"))]),
+            "drafts": count(*[_id in path("drafts.**")]),
+            "products": count(*[_type=="product"]),
+            "categories": count(*[_type=="category"]),
+            "kentProducts": count(*[_type=="product" && (brandSlug=="kent" || brand->slug.current=="kent" || brand->themeKey=="kent")]),
+            "abmProducts": count(*[_type=="product" && (brandSlug=="abm" || brand->slug.current=="abm" || brand->themeKey=="abm")]),
+            "imageAssets": count(*[_type=="sanity.imageAsset"]),
+            "fileAssets": count(*[_type=="sanity.fileAsset"]),
+            "assets": count(*[_type in ["sanity.imageAsset","sanity.fileAsset"]]),
+            "nonAssetOther": count(*[!(_type in ["product","category","sanity.imageAsset","sanity.fileAsset"])])
+          }`;
+          const url = new URL(`https://${project}.api.sanity.io/v${version}/data/query/${dataset}`);
+          url.searchParams.set('query', query);
+          const res = await fetch(url);
+          if (!res.ok) throw new Error(`Sanity HTTP ${res.status}: ${await res.text()}`);
+          const body = await res.json();
+          console.log('SANITY_QUOTA_JSON=' + JSON.stringify(body.result));
+          NODE

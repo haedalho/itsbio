@@ -18,6 +18,7 @@ export type DerivedKentSourceContent = {
 
 const PRICE_COLUMN_RE = /^(?:price|pricing|unit price|list price|retail price|sale price|dealer price|your price|online price|web price|net price|msrp|cost|amount)$/i;
 const COMMERCE_TEXT_RE = /^(?:(?:login|sign in)\s+(?:to|for)\s+(?:see\s+)?prices?|add to cart|choose an option|clear|quantity|(?:call|contact us)\s+for\s+pric(?:e|ing)|price on request|buy on amazon|get your accessories|don'?t miss)$/i;
+const PRINT_UI_TEXT_RE = /^(?:print|print page|print this page)$/i;
 const PRICE_TEXT_RE = /^(?:starting\s+(?:at|from)|from\s+[$€£¥₩]|(?:price|pricing|cost|amount|msrp)\s*[:\-])/i;
 const MONEY_RE = /(?:[$€£¥₩]\s*\d[\d,.]*(?:\s*(?:USD|EUR|GBP|JPY|KRW))?|(?:USD|EUR|GBP|JPY|KRW)\s*\d[\d,.]*|\d[\d,.]*\s*(?:USD|EUR|GBP|JPY|KRW|원))/i;
 const NO_CHARGE_RE = /^(?:no charge|free|included at no charge)$/i;
@@ -111,7 +112,7 @@ function removeCommerceNoise($: cheerio.CheerioAPI, root: any) {
     const text = cleanText(element.text());
     if (!text) return;
 
-    if (COMMERCE_TEXT_RE.test(text) || PRICE_TEXT_RE.test(text) || MONEY_RE.test(text) || NO_CHARGE_RE.test(text)) {
+    if (COMMERCE_TEXT_RE.test(text) || PRINT_UI_TEXT_RE.test(text) || PRICE_TEXT_RE.test(text) || MONEY_RE.test(text) || NO_CHARGE_RE.test(text)) {
       element.remove();
       return;
     }
@@ -155,8 +156,23 @@ function dedupeRepeatedBlocks($: cheerio.CheerioAPI, root: any) {
   });
 }
 
+function decodeEscapedKentMarkup(input: string) {
+  let value = input;
+  for (let pass = 0; pass < 2; pass += 1) {
+    const ampDecoded = value.replace(/&amp;/gi, "&");
+    const hasEncodedTableMarkup = /(?:&lt;|&#0*60;|&#x0*3c;)\s*\/?\s*(?:table|thead|tbody|tfoot|tr|th|td)\b/i.test(ampDecoded);
+    if (!hasEncodedTableMarkup) break;
+    value = ampDecoded
+      .replace(/&lt;/gi, "<")
+      .replace(/&gt;/gi, ">")
+      .replace(/&quot;/gi, '"')
+      .replace(/&#(?:39|x27);/gi, "'");
+  }
+  return value;
+}
+
 export function sanitizeKentSourceHtml(input: unknown) {
-  const raw = typeof input === "string" ? input.trim() : "";
+  const raw = decodeEscapedKentMarkup(typeof input === "string" ? input.trim() : "");
   if (!raw) return "";
 
   const $ = cheerio.load(`<div id="kent-source-root">${raw}</div>`, null, false);

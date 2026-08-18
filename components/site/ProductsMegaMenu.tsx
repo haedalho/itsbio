@@ -3,738 +3,608 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-type MenuItem = { label: string; href: string; children?: MenuItem[] };
+type BrandTheme = {
+  gradient: string;
+  softBg: string;
+  activeBg: string;
+  border: string;
+  text: string;
+  hoverText: string;
+  hoverBorder: string;
+  button: string;
+  dot: string;
+};
 
-const MENU: MenuItem[] = [
-  {
-    label: "abm",
-    href: "http://itsbio.co.kr/?page_id=196",
-    children: [
-      {
-        label: "General Materials",
-        href: "https://www.abmgood.com/general-materials.html",
-        children: [
-          {
-            label: "PCR Enzymes",
-            href: "https://www.abmgood.com/PCR-Enzymes.html",
-            children: [
-              { label: "qPCR", href: "https://www.abmgood.com/qPCR-Mastermix-Plus.html" },
-              { label: "PCR Polymerase", href: "https://www.abmgood.com/PCR-Polymerase.html" },
-              { label: "RT & RT-PCR", href: "https://www.abmgood.com/Reverse-Transcriptase-PCR-cDNA-Synthesis.html" },
-            ],
-          },
-          { label: "Enzymes & Kits", href: "https://www.abmgood.com/Molecular-Biology-Enzymes-and-Kits.html" },
-          {
-            label: "Antibodies",
-            href: "https://www.abmgood.com/antibodies.html",
-            children: [
-              { label: "Tag Antibodies", href: "https://www.abmgood.com/Tag-Antibodies.html" },
-              { label: "IHC Antibodies", href: "https://www.abmgood.com/IHC-Antibodies.html" },
-              { label: "Loading Control Antibodies", href: "https://www.abmgood.com/Loading-Control-Antibodies.html" },
-              { label: "Monoclonal Antibodies", href: "https://www.abmgood.com/Monoclonal-Antibodies.html" },
-              { label: "Polyclonal Antibodies", href: "https://www.abmgood.com/Polyclonal-Antibodies.html" },
-              { label: "Primary Antibodies", href: "https://www.abmgood.com/Primary-Antibodies.html" },
-              { label: "Secondary Antibodies", href: "https://www.abmgood.com/Secondary-Antibodies.html" },
-            ],
-          },
-          {
-            label: "Biorepository",
-            href: "https://www.abmgood.com/biorepository.html",
-            children: [{ label: "FFPE Tissue Sections", href: "https://www.abmgood.com/FFPE-Tissue-Sections.html" }],
-          },
-          { label: "Transfection Reagents", href: "https://www.abmgood.com/Transfection-Reagent-Protocol-Efficiency.html" },
-          { label: "DNA/RNA Purification", href: "https://www.abmgood.com/DNA-RNA-Purification-Kits.html" },
-          {
-            label: "Gel Documentation",
-            href: "https://www.abmgood.com/Gel-Documentation.html",
-            children: [
-              { label: "Gel Imager", href: "https://www.abmgood.com/SafeViewER-Imager.html" },
-              { label: "DNA Stains", href: "https://www.abmgood.com/Gel-Documentation.html#SafeView-DNA-Stains" },
-            ],
-          },
-          { label: "RNA Tracking (RNA Mango)", href: "https://www.abmgood.com/RNA-Mango.html" },
-          { label: "Buffers & General Chemicals", href: "https://www.abmgood.com/Buffers-and-Chemicals.html" },
-          { label: "Equipment", href: "https://www.abmgood.com/lab-equipment.html" },
-          { label: "DNA & Protein Ladders", href: "https://www.abmgood.com/DNA-and-Protein-Ladders.html" },
-        ],
-      },
+type CategoryItem = {
+  label: string;
+  href: string;
+};
 
-      {
-        label: "Cellular Materials",
-        href: "https://www.abmgood.com/cellular-materials.html",
-        children: [
-          {
-            label: "Cell Library Collections",
-            href: "https://www.abmgood.com/cellular-collections.html",
-            children: [
-              { label: "Immortalized Cell Lines", href: "https://www.abmgood.com/Immortalized-Cell-Lines.html" },
-              { label: "Special Cell Line Collection", href: "https://www.abmgood.com/Special-Cell-Line-Collection.html" },
-              { label: "CRISPR KO Cell Lines", href: "https://www.abmgood.com/crispr-knockout-cell-line-library.html" },
-              { label: "Cas9 Expressing Cell Lines", href: "https://www.abmgood.com/cas9-expressing-cell-lines.html" },
-              { label: "Stable Cell Lines", href: "https://www.abmgood.com/Stable-Cell-Lines.html" },
-              { label: "Tumor Cell Lines", href: "https://www.abmgood.com/Tumor-Cell-Lines.html" },
-              { label: "Primary Cells", href: "https://www.abmgood.com/Primary-Cells.html" },
-            ],
-          },
-          {
-            label: "3D and Organoid",
-            href: "https://www.abmgood.com/3d-organoid.html",
-            children: [{ label: "3D and Organoid Products", href: "https://www.abmgood.com/3d-organoid-products.html" }],
-          },
-          { label: "Hematopoietic Cells", href: "https://www.abmgood.com/hematopoietic-cells.html" },
-          {
-            label: "Microbial Contamination",
-            href: "https://www.abmgood.com/microbial-contamination-control.html",
-            children: [
-              { label: "Mycoplasma Control", href: "https://www.abmgood.com/mycoplasma-contamination-control.html" },
-              { label: "Nanobacteria Control", href: "https://www.abmgood.com/nanobacteria.html" },
-              { label: "Bacteria Control", href: "https://www.abmgood.com/bacteria-contamination-control.html" },
-            ],
-          },
-          { label: "Cell Immortalization Reagents", href: "https://www.abmgood.com/Cell-Immortalization.html" },
-          { label: "Media & Supplements", href: "https://www.abmgood.com/Media-and-Supplements.html" },
-          { label: "Growth Factors and Cytokines", href: "https://www.abmgood.com/Growth-Factors-Cytokines.html" },
-          { label: "Cell Freezing Device and Medium", href: "https://www.abmgood.com/Cell-Freezing.html" },
-          { label: "Culture Consumables", href: "https://www.abmgood.com/Culture-Consumables.html" },
-          { label: "Cell Assay Products", href: "https://www.abmgood.com/Cell-based-Assay-Products.html" },
-          { label: "Cell Culture Equipment", href: "https://www.abmgood.com/Cell-Culture-Equipment.html" },
-        ],
-      },
+type CategoryGroup = {
+  label: string;
+  href: string;
+  items: CategoryItem[];
+};
 
-      {
-        label: "Genetic Materials",
-        href: "https://www.abmgood.com/genetic-materials.html",
-        children: [
-          {
-            label: "Expression-Ready Libraries",
-            href: "https://www.abmgood.com/expression-ready-libraries.html",
-            children: [
-              { label: "Lentiviral Vectors & Virus", href: "https://www.abmgood.com/Lentivirus-System.html" },
-              { label: "AAV Vectors & Virus", href: "https://www.abmgood.com/AAV-Adeno-Associated-Virus.html" },
-              { label: "Adenovirus", href: "https://www.abmgood.com/Adenovirus.html" },
-              { label: "siRNA", href: "https://www.abmgood.com/RNAi-shRNA-sirna-shrna-rnai-lentivirus.html" },
-              { label: "miRNA", href: "https://www.abmgood.com/miRNA-microRNA.html" },
-              { label: "ORF Vectors", href: "https://www.abmgood.com/Open-Reading-Frame-Vector.html" },
-              { label: "circRNA", href: "https://www.abmgood.com/circRNA.html" },
-              { label: "Control Vectors & Viruses", href: "https://www.abmgood.com/Control-Vectors-and-Viruses.html" },
-            ],
-          },
-          {
-            label: "CRISPR",
-            href: "https://www.abmgood.com/CRISPR-Cas9-sgRNA.html",
-            children: [
-              { label: "CRISPR KO Vectors & Virus", href: "https://www.abmgood.com/crispr-knockout-library.html" },
-              { label: "CRISPR Activation Vectors", href: "https://www.abmgood.com/crispr-activation-lentivirus-library.html" },
-              { label: "Cas9 Vectors & Virus", href: "https://www.abmgood.com/cas9-expression-vectors-and-viruses.html" },
-              { label: "Cas Proteins & CRISPR Screening", href: "https://www.abmgood.com/cas9-proteins.html" },
-            ],
-          },
-          {
-            label: "Expression Systems",
-            href: "https://www.abmgood.com/expression-systems.html",
-            children: [
-              { label: "Lentiviral Vectors", href: "https://www.abmgood.com/recombinant-lentiviral-vectors" },
-              { label: "AAV Vectors", href: "https://www.abmgood.com/recombinant-aav-vectors" },
-              { label: "Adenoviral Vectors", href: "https://www.abmgood.com/recombinant-adenoviral-vectors" },
-              { label: "Retroviral Vectors", href: "https://www.abmgood.com/recombinant-retroviral-vectors" },
-            ],
-          },
-          {
-            label: "Specialized Vectors",
-            href: "https://www.abmgood.com/Vectors.html",
-            children: [{ label: "iPSC Reporters", href: "https://www.abmgood.com/iPSC-Reporters.html" }],
-          },
-          {
-            label: "Kits for Viral Vectors",
-            href: "https://www.abmgood.com/Recombinant-Virus-Kits.html",
-            children: [
-              { label: "Virus Packaging DNA Mixes", href: "https://www.abmgood.com/virus-packaging-mixes.html" },
-              { label: "qPCR Virus Titer Kits", href: "https://www.abmgood.com/qPCR-Virus-Titer-Kits.html" },
-              { label: "Virus Transduction Enhancer", href: "https://www.abmgood.com/Transduction-Enhancers.html" },
-              { label: "Virus Purification Kits", href: "https://www.abmgood.com/virus-purification-kit.html" },
-              { label: "Lentivirus Bundles", href: "https://www.abmgood.com/Lentivirus-Bundles.html" },
-            ],
-          },
-        ],
-      },
-    ],
-  },
+type Brand = {
+  key: string;
+  name: string;
+  area: string;
+  description: string;
+  href: string;
+  searchKey: string;
+  categories: string[];
+  groups?: CategoryGroup[];
+  theme: BrandTheme;
+};
 
-  {
-    label: "Kent",
-    href: "http://itsbio.co.kr/?page_id=347",
-    children: [
-      { label: "Anesthesia", href: "http://itsbio.co.kr/?page_id=2875" },
-      { label: "Ventilation", href: "http://itsbio.co.kr/?page_id=2972" },
-      { label: "Physiological Monitoring", href: "http://itsbio.co.kr/?page_id=3000" },
-      { label: "Noninvasive Blood Pressure", href: "http://itsbio.co.kr/?page_id=3004" },
-      { label: "Surgery", href: "http://itsbio.co.kr/?page_id=3041" },
-      { label: "Warming", href: "http://itsbio.co.kr/?page_id=3072" },
-      { label: "Rodent Identification", href: "http://itsbio.co.kr/?page_id=3120" },
-      { label: "Animal Handling", href: "http://itsbio.co.kr/?page_id=3150" },
-      { label: "Syringe Pump", href: "http://itsbio.co.kr/?page_id=3173" },
-      { label: "Feeding Needles", href: "http://itsbio.co.kr/?page_id=3183" },
-    ],
+function slugify(value: string) {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/&/g, " and ")
+    .replace(/[^A-Za-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .toLowerCase();
+}
+
+function categoryItems(baseHref: string, labels: string[]): CategoryItem[] {
+  return labels.map((label) => ({ label, href: `${baseHref}/${slugify(label)}` }));
+}
+
+const THEMES: Record<string, BrandTheme> = {
+  abm: {
+    gradient: "from-orange-600 via-orange-500 to-orange-400",
+    softBg: "bg-orange-50/55",
+    activeBg: "bg-orange-50",
+    border: "border-orange-200",
+    text: "text-orange-700",
+    hoverText: "hover:text-orange-700",
+    hoverBorder: "hover:border-orange-200",
+    button: "bg-orange-600 hover:bg-orange-700",
+    dot: "bg-orange-500",
   },
-  { label: "ITSChem", href: "http://itsbio.co.kr/?page_id=656" },
+  kent: {
+    gradient: "from-blue-700 via-blue-600 to-blue-500",
+    softBg: "bg-blue-50/55",
+    activeBg: "bg-blue-50",
+    border: "border-blue-200",
+    text: "text-blue-700",
+    hoverText: "hover:text-blue-700",
+    hoverBorder: "hover:border-blue-200",
+    button: "bg-blue-600 hover:bg-blue-700",
+    dot: "bg-blue-500",
+  },
+  itschem: {
+    gradient: "from-rose-600 via-rose-500 to-rose-400",
+    softBg: "bg-rose-50/55",
+    activeBg: "bg-rose-50",
+    border: "border-rose-200",
+    text: "text-rose-700",
+    hoverText: "hover:text-rose-700",
+    hoverBorder: "hover:border-rose-200",
+    button: "bg-rose-600 hover:bg-rose-700",
+    dot: "bg-rose-500",
+  },
+  aims: {
+    gradient: "from-sky-700 via-sky-600 to-sky-500",
+    softBg: "bg-sky-50/55",
+    activeBg: "bg-sky-50",
+    border: "border-sky-200",
+    text: "text-sky-700",
+    hoverText: "hover:text-sky-700",
+    hoverBorder: "hover:border-sky-200",
+    button: "bg-sky-600 hover:bg-sky-700",
+    dot: "bg-sky-500",
+  },
+  seedburo: {
+    gradient: "from-green-700 via-green-600 to-green-500",
+    softBg: "bg-green-50/55",
+    activeBg: "bg-green-50",
+    border: "border-green-200",
+    text: "text-green-700",
+    hoverText: "hover:text-green-700",
+    hoverBorder: "hover:border-green-200",
+    button: "bg-green-600 hover:bg-green-700",
+    dot: "bg-green-500",
+  },
+  bioplastics: {
+    gradient: "from-yellow-400 via-amber-300 to-amber-200",
+    softBg: "bg-yellow-50/65",
+    activeBg: "bg-yellow-50",
+    border: "border-yellow-200",
+    text: "text-yellow-700",
+    hoverText: "hover:text-yellow-700",
+    hoverBorder: "hover:border-yellow-200",
+    button: "bg-yellow-400 hover:bg-yellow-500 text-slate-950",
+    dot: "bg-yellow-400",
+  },
+  cleaver: {
+    gradient: "from-purple-700 via-purple-600 to-purple-500",
+    softBg: "bg-purple-50/55",
+    activeBg: "bg-purple-50",
+    border: "border-purple-200",
+    text: "text-purple-700",
+    hoverText: "hover:text-purple-700",
+    hoverBorder: "hover:border-purple-200",
+    button: "bg-purple-600 hover:bg-purple-700",
+    dot: "bg-purple-500",
+  },
+  cellfree: {
+    gradient: "from-blue-950 via-blue-900 to-blue-700",
+    softBg: "bg-blue-50/50",
+    activeBg: "bg-blue-50",
+    border: "border-blue-200",
+    text: "text-blue-900",
+    hoverText: "hover:text-blue-900",
+    hoverBorder: "hover:border-blue-200",
+    button: "bg-blue-900 hover:bg-blue-950",
+    dot: "bg-blue-900",
+  },
+  plaslabs: {
+    gradient: "from-slate-950 via-slate-900 to-slate-700",
+    softBg: "bg-slate-50/75",
+    activeBg: "bg-slate-100",
+    border: "border-slate-300",
+    text: "text-slate-900",
+    hoverText: "hover:text-slate-950",
+    hoverBorder: "hover:border-slate-400",
+    button: "bg-slate-900 hover:bg-slate-950",
+    dot: "bg-slate-900",
+  },
+  affinity: {
+    gradient: "from-sky-500 via-cyan-400 to-cyan-300",
+    softBg: "bg-cyan-50/55",
+    activeBg: "bg-cyan-50",
+    border: "border-cyan-200",
+    text: "text-sky-700",
+    hoverText: "hover:text-sky-700",
+    hoverBorder: "hover:border-sky-200",
+    button: "bg-sky-500 hover:bg-sky-600",
+    dot: "bg-sky-400",
+  },
+  dogen: {
+    gradient: "from-red-950 via-red-800 to-red-700",
+    softBg: "bg-red-50/55",
+    activeBg: "bg-red-50",
+    border: "border-red-200",
+    text: "text-red-800",
+    hoverText: "hover:text-red-800",
+    hoverBorder: "hover:border-red-200",
+    button: "bg-red-800 hover:bg-red-900",
+    dot: "bg-red-800",
+  },
+};
+
+const ABM_GROUPS: CategoryGroup[] = [
   {
-    label: "AIMS",
-    href: "http://itsbio.co.kr/?page_id=392",
-    children: [
-      { label: "Lab Animal Identification System", href: "http://itsbio.co.kr/?page_id=3895" },
-      { label: "AIMS Accessories", href: "http://itsbio.co.kr/?page_id=3975" },
-    ],
+    label: "General Materials",
+    href: "/products/abm/general-materials",
+    items: categoryItems("/products/abm/general-materials", [
+      "PCR Enzymes",
+      "Enzymes & Kits",
+      "Antibodies",
+      "Biorepository",
+      "Transfection Reagents",
+      "DNA / RNA Purification",
+      "Gel Documentation",
+      "RNA Tracking",
+      "Buffers & General Chemicals",
+      "Equipment",
+      "DNA & Protein Ladders",
+    ]),
   },
   {
-    label: "SeedBuro",
-    href: "http://itsbio.co.kr/?page_id=350",
-    children: [
-      { label: "Divider", href: "http://itsbio.co.kr/?page_id=4454" },
-      { label: "Density Measurement", href: "http://itsbio.co.kr/?page_id=4548" },
-      { label: "Sieve Shakers, Test Sieves, and Screens", href: "http://itsbio.co.kr/?page_id=4125" },
-      { label: "Seed Counting and Analysis", href: "http://itsbio.co.kr/?page_id=4606" },
-      { label: "Farm and Ranch", href: "http://itsbio.co.kr/?page_id=7901" },
-      { label: "Grinders and Mills", href: "http://itsbio.co.kr/?page_id=8175" },
-      { label: "Moisture Testers", href: "http://itsbio.co.kr/?page_id=8308" },
-      { label: "Spiral Separators", href: "http://itsbio.co.kr/?page_id=10856" },
-      { label: "Sample Bags, Containers, Envelopes and Pans", href: "http://itsbio.co.kr/?page_id=8680" },
-      { label: "Sieve Shakers, Test Sieves and Screens", href: "http://itsbio.co.kr/?page_id=9275" },
-      { label: "Germination Equipment", href: "http://itsbio.co.kr/?page_id=10159" },
-      { label: "Grain and Seed Cleaners", href: "http://itsbio.co.kr/?page_id=11513" },
-    ],
+    label: "Cellular Materials",
+    href: "/products/abm/cellular-materials",
+    items: categoryItems("/products/abm/cellular-materials", [
+      "Cell Library Collections",
+      "3D & Organoid",
+      "Hematopoietic Cells",
+      "Microbial Contamination",
+      "Cell Immortalization Reagents",
+      "Media & Supplements",
+      "Growth Factors & Cytokines",
+      "Cell Freezing",
+      "Culture Consumables",
+      "Cell Assay Products",
+      "Cell Culture Equipment",
+    ]),
   },
   {
-    label: "BIOplastics",
-    href: "http://itsbio.co.kr/?page_id=355",
-    children: [
-      { label: "Single Tubes", href: "http://itsbio.co.kr/?page_id=4802" },
-      { label: "Tube strips", href: "http://itsbio.co.kr/?page_id=17724" },
-      { label: "Tube strips with caps", href: "http://itsbio.co.kr/?page_id=17738" },
-      { label: "Plates", href: "http://itsbio.co.kr/?page_id=17749" },
-      { label: "Cap strips, mats & Seals", href: "http://itsbio.co.kr/?page_id=17761" },
-    ],
+    label: "Genetic Materials",
+    href: "/products/abm/genetic-materials",
+    items: categoryItems("/products/abm/genetic-materials", [
+      "Expression-Ready Libraries",
+      "CRISPR",
+      "Expression Systems",
+      "Specialized Vectors",
+      "Kits for Viral Vectors",
+    ]),
   },
   {
-    label: "Cleaver Scientific",
-    href: "http://itsbio.co.kr/?page_id=3308",
-    children: [
-      { label: "Horizontal Gel Systems", href: "http://itsbio.co.kr/?page_id=18705" },
-      { label: "Vertical, Blotting, DGGE", href: "http://itsbio.co.kr/?page_id=5049" },
-      { label: "Power Supplies", href: "http://itsbio.co.kr/?page_id=5237" },
-      { label: "Clinical and Pharmaceutical", href: "http://itsbio.co.kr/?page_id=5175" },
-      { label: "Gel Documentation", href: "http://itsbio.co.kr/?page_id=4931" },
-    ],
-  },
-  {
-    label: "CellFree Sciences",
-    href: "http://itsbio.co.kr/?page_id=3298",
-    children: [
-      { label: "pEU Vector", href: "http://itsbio.co.kr/?page_id=5280" },
-      { label: "Protein Expression Kits", href: "http://itsbio.co.kr/?page_id=5329" },
-      { label: "Reagents", href: "http://itsbio.co.kr/?page_id=5299" },
-    ],
-  },
-  {
-    label: "PlasLabs",
-    href: "http://itsbio.co.kr/?page_id=360",
-    children: [
-      { label: "Glove Boxes", href: "http://itsbio.co.kr/?page_id=18766" },
-      { label: "Glove Box Accessories", href: "http://itsbio.co.kr/?page_id=5587" },
-      { label: "Custom Glove Boxes", href: "http://itsbio.co.kr/?page_id=18020" },
-      { label: "Animal Care & Research", href: "http://itsbio.co.kr/?page_id=5626" },
-      { label: "PCR Chambers", href: "http://itsbio.co.kr/?page_id=5628" },
-      { label: "Desiccators", href: "http://itsbio.co.kr/?page_id=18080" },
-      { label: "Ventilated Balance Enclosures", href: "http://itsbio.co.kr/?page_id=18093" },
-      { label: "Lab CO2 / Vacuum Chambers", href: "http://itsbio.co.kr/?p=18103" },
-      { label: "Tissue Culture Hoods", href: "http://itsbio.co.kr/?page_id=18112" },
-      { label: "Stream Tables", href: "http://itsbio.co.kr/?page_id=18118" },
-    ],
-  },
-  {
-    label: "Affinityimmuno",
-    href: "http://itsbio.co.kr/?page_id=7450",
-    children: [
-      { label: "ELISA", href: "http://itsbio.co.kr/?page_id=7465" },
-      { label: "ANTIBODIES", href: "http://itsbio.co.kr/?page_id=7601" },
-      { label: "COVID-19", href: "http://itsbio.co.kr/?page_id=7792" },
-      { label: "IgEasY", href: "http://itsbio.co.kr/?page_id=7881" },
-    ],
-  },
-  {
-    label: "DoGen",
-    href: "http://itsbio.co.kr/?page_id=13492",
-    children: [
-      { label: "Cell Based Assay", href: "http://itsbio.co.kr/?page_id=14006" },
-      { label: "Protein Biochemistry", href: "http://itsbio.co.kr/?page_id=13795" },
+    label: "Services",
+    href: "/products/abm/services",
+    items: [
+      { label: "Cell & Antibody Services", href: "/products/abm/services/cell-and-antibody-services" },
+      { label: "DNA & Cloning Services", href: "/products/abm/services/dna-and-cloning-services" },
+      { label: "Recombinant Virus Packaging", href: "/products/abm/services/recombinant-virus-packaging" },
     ],
   },
 ];
 
-function useClickOutside<T extends HTMLElement>(onOutside: () => void) {
-  const ref = useRef<T | null>(null);
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (!ref.current) return;
-      if (!ref.current.contains(e.target as globalThis.Node)) onOutside();
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [onOutside]);
-  return ref;
-}
+const BRANDS: Brand[] = [
+  {
+    key: "abm",
+    name: "ABM",
+    area: "Life Science",
+    description: "Research reagents, cell biology products, genetic materials, molecular tools, and custom research services.",
+    href: "/products/abm",
+    searchKey: "abm",
+    categories: [],
+    groups: ABM_GROUPS,
+    theme: THEMES.abm,
+  },
+  {
+    key: "kent",
+    name: "Kent Scientific",
+    area: "Animal Research",
+    description: "Integrated systems for laboratory animal anesthesia, ventilation, monitoring, surgery, warming, identification, and handling.",
+    href: "/products/kent",
+    searchKey: "kent",
+    categories: ["Anesthesia", "Ventilation", "Physiological Monitoring", "Noninvasive Blood Pressure", "Surgery", "Warming", "Rodent Identification", "Animal Handling", "Syringe Pump", "Feeding Needles"],
+    theme: THEMES.kent,
+  },
+  {
+    key: "itschem",
+    name: "ITSChem",
+    area: "Research Materials",
+    description: "Specialty research materials and responsive laboratory sourcing support for scientific and industrial workflows.",
+    href: "/products#brands",
+    searchKey: "itschem",
+    categories: ["Research Materials", "Laboratory Supply", "Specialty Materials", "Sourcing Support"],
+    theme: THEMES.itschem,
+  },
+  {
+    key: "aims",
+    name: "AIMS",
+    area: "Animal Identification",
+    description: "Identification systems and accessories designed to support reliable laboratory animal research and care.",
+    href: "/products#brands",
+    searchKey: "aims",
+    categories: ["Lab Animal Identification System", "AIMS Accessories"],
+    theme: THEMES.aims,
+  },
+  {
+    key: "seedburo",
+    name: "Seedburo",
+    area: "Agricultural Research",
+    description: "Specialized instruments for seed, grain, moisture, germination, cleaning, and agricultural quality testing.",
+    href: "/products#brands",
+    searchKey: "seedburo",
+    categories: ["Divider", "Density Measurement", "Sieve Shakers, Test Sieves & Screens", "Seed Counting & Analysis", "Farm & Ranch", "Grinders & Mills", "Moisture Testers", "Spiral Separators", "Sample Bags & Containers", "Germination Equipment", "Grain & Seed Cleaners"],
+    theme: THEMES.seedburo,
+  },
+  {
+    key: "bioplastics",
+    name: "BIOplastics",
+    area: "PCR & qPCR Consumables",
+    description: "Precision laboratory plastic consumables for consistent PCR, qPCR, and molecular diagnostic workflows.",
+    href: "/products#brands",
+    searchKey: "bioplastics",
+    categories: ["Single Tubes", "Tube Strips", "Tube Strips with Caps", "Plates", "Cap Strips, Mats & Seals"],
+    theme: THEMES.bioplastics,
+  },
+  {
+    key: "cleaver",
+    name: "Cleaver Scientific",
+    area: "Laboratory Equipment",
+    description: "Practical equipment for electrophoresis, gel documentation, blotting, power supply, and clinical laboratory workflows.",
+    href: "/products#brands",
+    searchKey: "cleaverscientific",
+    categories: ["Horizontal Gel Systems", "Vertical, Blotting & DGGE", "Power Supplies", "Clinical & Pharmaceutical", "Gel Documentation"],
+    theme: THEMES.cleaver,
+  },
+  {
+    key: "cellfree",
+    name: "CellFree Sciences",
+    area: "Protein Expression",
+    description: "Wheat-germ cell-free protein expression systems, vectors, reagents, kits, and services for advanced protein research.",
+    href: "/products#brands",
+    searchKey: "cellfreesciences",
+    categories: ["pEU Vector", "Protein Expression Kits", "Reagents"],
+    theme: THEMES.cellfree,
+  },
+  {
+    key: "plaslabs",
+    name: "PLAS-LABS",
+    area: "Controlled Environments",
+    description: "Controlled-atmosphere enclosures and handling systems for sensitive laboratory and animal research workflows.",
+    href: "/products#brands",
+    searchKey: "plaslabs",
+    categories: ["Glove Boxes", "Glove Box Accessories", "Custom Glove Boxes", "Animal Care & Research", "PCR Chambers", "Desiccators", "Ventilated Balance Enclosures", "Lab CO2 / Vacuum Chambers", "Tissue Culture Hoods", "Stream Tables"],
+    theme: THEMES.plaslabs,
+  },
+  {
+    key: "affinity",
+    name: "Affinity Immuno",
+    area: "Immunoassays",
+    description: "Immunoassay products and antibody solutions for life science and diagnostic research workflows.",
+    href: "/products#brands",
+    searchKey: "affinityimmuno",
+    categories: ["ELISA", "Antibodies", "COVID-19", "IgEasY"],
+    theme: THEMES.affinity,
+  },
+  {
+    key: "dogen",
+    name: "DoGen",
+    area: "Cell & Protein Research",
+    description: "Research solutions for cell-based assays and protein biochemistry applications.",
+    href: "/products#brands",
+    searchKey: "dogen",
+    categories: ["Cell Based Assay", "Protein Biochemistry"],
+    theme: THEMES.dogen,
+  },
+];
 
-function normalizeBrandKey(label: string) {
-  // "KentScientifics" -> "kentscientifics", "Cleaver Scientific" -> "cleaverscientific"
-  return label.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
-}
-
-function toSlug(label: string) {
-  // URL segment for each node (stable enough for now)
-  return label
-    .toLowerCase()
-    .replace(/&/g, " and ")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
-function buildHref(brandLabel: string, labelsPath: string[]) {
-  const brand = normalizeBrandKey(brandLabel);
-  const path = labelsPath.map(toSlug).join("/");
-  return path ? `/products/${brand}/${path}` : `/products/${brand}`;
-}
-
-type BrandTheme = {
-  headerGradientFrom: string;
-  headerGradientTo: string;
-  headerText: string;
-  accentTextHover: string;
-  accentBorderHover: string;
-  ring: string;
-  dotActive: string;
-  dotInactive: string;
-  bulletBorder: string;
-  pillBorder: string;
-  pillText: string;
-  pillHoverBg: string;
-  arrowText: string;
-};
-
-const BRAND_THEMES: Record<string, BrandTheme> = {
-  abm: {
-    headerGradientFrom: "from-orange-600",
-    headerGradientTo: "to-orange-500",
-    headerText: "text-white",
-    accentTextHover: "hover:text-orange-700",
-    accentBorderHover: "hover:border-orange-200",
-    ring: "ring-orange-200",
-    dotActive: "bg-orange-600",
-    dotInactive: "bg-slate-300",
-    bulletBorder: "border-l-orange-500",
-    pillBorder: "border-orange-200",
-    pillText: "text-orange-700",
-    pillHoverBg: "hover:bg-orange-50",
-    arrowText: "text-orange-600",
-  },
-  kentscientifics: {
-    headerGradientFrom: "from-blue-700",
-    headerGradientTo: "to-blue-500",
-    headerText: "text-white",
-    accentTextHover: "hover:text-blue-700",
-    accentBorderHover: "hover:border-blue-200",
-    ring: "ring-blue-200",
-    dotActive: "bg-blue-600",
-    dotInactive: "bg-slate-300",
-    bulletBorder: "border-l-blue-500",
-    pillBorder: "border-blue-200",
-    pillText: "text-blue-700",
-    pillHoverBg: "hover:bg-blue-50",
-    arrowText: "text-blue-600",
-  },
-  itschem: {
-    headerGradientFrom: "from-rose-600",
-    headerGradientTo: "to-rose-400",
-    headerText: "text-white",
-    accentTextHover: "hover:text-rose-700",
-    accentBorderHover: "hover:border-rose-200",
-    ring: "ring-rose-200",
-    dotActive: "bg-rose-500",
-    dotInactive: "bg-slate-300",
-    bulletBorder: "border-l-rose-500",
-    pillBorder: "border-rose-200",
-    pillText: "text-rose-700",
-    pillHoverBg: "hover:bg-rose-50",
-    arrowText: "text-rose-600",
-  },
-  aims: {
-    headerGradientFrom: "from-sky-700",
-    headerGradientTo: "to-sky-500",
-    headerText: "text-white",
-    accentTextHover: "hover:text-sky-700",
-    accentBorderHover: "hover:border-sky-200",
-    ring: "ring-sky-200",
-    dotActive: "bg-sky-600",
-    dotInactive: "bg-slate-300",
-    bulletBorder: "border-l-sky-500",
-    pillBorder: "border-sky-200",
-    pillText: "text-sky-700",
-    pillHoverBg: "hover:bg-sky-50",
-    arrowText: "text-sky-600",
-  },
-  seedburo: {
-    headerGradientFrom: "from-green-700",
-    headerGradientTo: "to-green-500",
-    headerText: "text-white",
-    accentTextHover: "hover:text-green-700",
-    accentBorderHover: "hover:border-green-200",
-    ring: "ring-green-200",
-    dotActive: "bg-green-600",
-    dotInactive: "bg-slate-300",
-    bulletBorder: "border-l-green-500",
-    pillBorder: "border-green-200",
-    pillText: "text-green-700",
-    pillHoverBg: "hover:bg-green-50",
-    arrowText: "text-green-600",
-  },
-  bioplastics: {
-    headerGradientFrom: "from-yellow-400",
-    headerGradientTo: "to-amber-300",
-    headerText: "text-slate-900",
-    accentTextHover: "hover:text-yellow-700",
-    accentBorderHover: "hover:border-yellow-200",
-    ring: "ring-yellow-200",
-    dotActive: "bg-yellow-400",
-    dotInactive: "bg-slate-300",
-    bulletBorder: "border-l-yellow-500",
-    pillBorder: "border-yellow-200",
-    pillText: "text-yellow-700",
-    pillHoverBg: "hover:bg-yellow-50",
-    arrowText: "text-yellow-700",
-  },
-  cleaverscientific: {
-    headerGradientFrom: "from-purple-700",
-    headerGradientTo: "to-purple-500",
-    headerText: "text-white",
-    accentTextHover: "hover:text-purple-700",
-    accentBorderHover: "hover:border-purple-200",
-    ring: "ring-purple-200",
-    dotActive: "bg-purple-600",
-    dotInactive: "bg-slate-300",
-    bulletBorder: "border-l-purple-500",
-    pillBorder: "border-purple-200",
-    pillText: "text-purple-700",
-    pillHoverBg: "hover:bg-purple-50",
-    arrowText: "text-purple-600",
-  },
-  cellfreesciences: {
-    headerGradientFrom: "from-blue-950",
-    headerGradientTo: "to-blue-700",
-    headerText: "text-white",
-    accentTextHover: "hover:text-blue-800",
-    accentBorderHover: "hover:border-blue-200",
-    ring: "ring-blue-200",
-    dotActive: "bg-blue-900",
-    dotInactive: "bg-slate-300",
-    bulletBorder: "border-l-blue-700",
-    pillBorder: "border-blue-200",
-    pillText: "text-blue-800",
-    pillHoverBg: "hover:bg-blue-50",
-    arrowText: "text-blue-800",
-  },
-  plaslabs: {
-    headerGradientFrom: "from-slate-950",
-    headerGradientTo: "to-slate-700",
-    headerText: "text-white",
-    accentTextHover: "hover:text-slate-900",
-    accentBorderHover: "hover:border-slate-300",
-    ring: "ring-slate-200",
-    dotActive: "bg-slate-900",
-    dotInactive: "bg-slate-300",
-    bulletBorder: "border-l-slate-900",
-    pillBorder: "border-slate-200",
-    pillText: "text-slate-900",
-    pillHoverBg: "hover:bg-slate-50",
-    arrowText: "text-slate-900",
-  },
-  affinityimmuno: {
-    headerGradientFrom: "from-sky-500",
-    headerGradientTo: "to-cyan-300",
-    headerText: "text-slate-900",
-    accentTextHover: "hover:text-sky-700",
-    accentBorderHover: "hover:border-sky-200",
-    ring: "ring-sky-200",
-    dotActive: "bg-sky-400",
-    dotInactive: "bg-slate-300",
-    bulletBorder: "border-l-sky-500",
-    pillBorder: "border-sky-200",
-    pillText: "text-sky-700",
-    pillHoverBg: "hover:bg-sky-50",
-    arrowText: "text-sky-700",
-  },
-  dogen: {
-    headerGradientFrom: "from-red-950",
-    headerGradientTo: "to-red-700",
-    headerText: "text-white",
-    accentTextHover: "hover:text-red-800",
-    accentBorderHover: "hover:border-red-200",
-    ring: "ring-red-200",
-    dotActive: "bg-red-900",
-    dotInactive: "bg-slate-300",
-    bulletBorder: "border-l-red-700",
-    pillBorder: "border-red-200",
-    pillText: "text-red-800",
-    pillHoverBg: "hover:bg-red-50",
-    arrowText: "text-red-800",
-  },
-};
-
-function getBrandTheme(label: string): BrandTheme {
-  const key = normalizeBrandKey(label);
-  return BRAND_THEMES[key] ?? BRAND_THEMES.abm;
-}
-
-function ArrowBullet({ borderClass }: { borderClass: string }) {
+function ArrowIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
-    <span
-      className={[
-        "mt-[6px] inline-block h-0 w-0",
-        "border-y-[4px] border-y-transparent border-l-[6px]",
-        borderClass,
-      ].join(" ")}
-    />
+    <svg viewBox="0 0 20 20" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <path d="M4 10h11" />
+      <path d="m11 6 4 4-4 4" />
+    </svg>
   );
 }
 
 export default function ProductsMegaMenu() {
   const [open, setOpen] = useState(false);
-  const [activeBrandIdx, setActiveBrandIdx] = useState(0);
-  const ref = useClickOutside<HTMLDivElement>(() => setOpen(false));
+  const [activeKey, setActiveKey] = useState("abm");
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const activeBrand = useMemo(() => MENU[activeBrandIdx] ?? MENU[0], [activeBrandIdx]);
-  const categories = activeBrand.children ?? [];
-  const isSectioned = categories.some((c) => (c.children?.length ?? 0) > 0);
-  const theme = useMemo(() => getBrandTheme(activeBrand.label), [activeBrand.label]);
+  const activeBrand = useMemo(() => BRANDS.find((brand) => brand.key === activeKey) ?? BRANDS[0], [activeKey]);
+  const theme = activeBrand.theme;
 
-  const closeTimer = useRef<number | null>(null);
-  const safeOpen = () => {
-    if (closeTimer.current) window.clearTimeout(closeTimer.current);
-    setOpen(true);
+  const cancelClose = () => {
+    if (!closeTimer.current) return;
+    clearTimeout(closeTimer.current);
+    closeTimer.current = null;
   };
-  const safeClose = () => {
-    if (closeTimer.current) window.clearTimeout(closeTimer.current);
-    closeTimer.current = window.setTimeout(() => setOpen(false), 170);
+
+  const scheduleClose = () => {
+    cancelClose();
+    closeTimer.current = setTimeout(() => setOpen(false), 240);
   };
+
+  const closeMenu = () => setOpen(false);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+    const onPointerDown = (event: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false);
     };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+      cancelClose();
+    };
   }, []);
 
-  const brandHref = buildHref(activeBrand.label, []);
-
   return (
-    <div ref={ref} className="relative" onMouseEnter={safeOpen} onMouseLeave={safeClose}>
-      <Link
-        href="/products"
-        className="inline-flex items-center gap-1 hover:text-slate-900"
+    <div
+      ref={rootRef}
+      className="relative"
+      onMouseEnter={() => {
+        cancelClose();
+        setOpen(true);
+      }}
+      onMouseLeave={scheduleClose}
+    >
+      <button
+        type="button"
         aria-haspopup="true"
         aria-expanded={open}
-        onMouseEnter={safeOpen}
-        onFocus={safeOpen}
+        onClick={() => setOpen((value) => !value)}
+        onFocus={() => setOpen(true)}
+        className="group inline-flex h-[76px] items-center gap-1.5 transition hover:text-orange-600 focus:outline-none"
       >
-        Products <span className={`text-xs opacity-70 transition ${open ? "rotate-180" : ""}`}>▾</span>
-      </Link>
+        Products
+        <svg
+          viewBox="0 0 20 20"
+          className={`h-4 w-4 transition-transform duration-200 ${open ? "rotate-180 text-orange-600" : "text-slate-400"}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          aria-hidden="true"
+        >
+          <path d="m5.5 7.5 4.5 4.5 4.5-4.5" />
+        </svg>
+      </button>
 
-      {open && (
-        <div className="absolute left-0 top-full z-50 pt-3">
-          <div className="w-[min(1200px,calc(100vw-2rem))] max-h-[calc(100vh-5.25rem)] overflow-hidden rounded-2xl border bg-white shadow-2xl">
-            <div
-              className={[
-                "flex items-center justify-between gap-3 px-5 py-3",
-                "bg-gradient-to-r",
-                theme.headerGradientFrom,
-                "to-white/96",
-                theme.headerText,
-              ].join(" ")}
-            >
-              <div className="min-w-0 text-sm font-semibold">
-                <span className="opacity-90">Products</span>
-                <span className="opacity-80"> / </span>
-                <span className="truncate">{activeBrand.label}</span>
+      {open ? (
+        <div
+          className="fixed left-1/2 top-[76px] z-[70] w-[min(1340px,calc(100vw-30px))] -translate-x-1/2 pt-3"
+          onMouseEnter={cancelClose}
+          onMouseLeave={scheduleClose}
+        >
+          <div className="max-h-[calc(100vh-94px)] overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_30px_90px_rgba(15,23,42,0.17)]">
+            <div className={`relative overflow-hidden bg-gradient-to-r ${theme.gradient} px-7 py-5 text-white transition-colors duration-300`}>
+              <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full border border-white/15" />
+              <div className="pointer-events-none absolute right-[23%] -bottom-24 h-44 w-44 rounded-full border border-white/10" />
+              <div className="relative flex items-center justify-between gap-6">
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/70">ITS BIO PRODUCT PORTFOLIO</div>
+                  <div className="mt-1 text-[20px] font-semibold tracking-[-0.025em]">{activeBrand.name}</div>
+                </div>
+                <Link
+                  href="/products"
+                  onClick={closeMenu}
+                  className="inline-flex h-10 items-center gap-2 rounded-full border border-white/40 bg-white/10 px-5 text-xs font-semibold text-white backdrop-blur transition hover:bg-white hover:text-slate-900"
+                >
+                  View all brands <ArrowIcon className="h-3.5 w-3.5" />
+                </Link>
               </div>
-
-              {/* ✅ 내부 라우팅으로 변경 */}
-              <Link
-                href={brandHref}
-                className={["shrink-0 text-sm font-semibold hover:underline", "text-slate-900"].join(" ")}
-                onClick={() => setOpen(false)}
-              >
-                View {activeBrand.label} →
-              </Link>
             </div>
 
-            <div className="grid grid-cols-[minmax(0,260px)_minmax(0,1fr)]">
-              {/* LEFT */}
-              <div className="min-w-0 border-r bg-slate-50">
-                <div className="px-4 py-3 text-xs font-semibold text-slate-500">Search by Product</div>
-
-                <div className="max-h-[calc(100vh-11.5rem)] overflow-y-auto px-2 pb-3">
-                  <ul className="space-y-1">
-                    {MENU.map((b, i) => {
-                      const active = i === activeBrandIdx;
-                      const bTheme = getBrandTheme(b.label);
-
-                      return (
-                        <li key={b.label} className="min-w-0">
-                          <button
-                            type="button"
-                            className={[
-                              "flex w-full min-w-0 items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition",
-                              active ? ["bg-white shadow-sm ring-1", bTheme.ring].join(" ") : "hover:bg-white hover:shadow-sm",
-                            ].join(" ")}
-                            onMouseEnter={() => setActiveBrandIdx(i)}
-                            onFocus={() => setActiveBrandIdx(i)}
-                            onClick={() => setActiveBrandIdx(i)}
-                          >
-                            <span className={["h-2 w-2 shrink-0 rounded-full", active ? bTheme.dotActive : bTheme.dotInactive].join(" ")} />
-                            <span className={["min-w-0 truncate", active ? "font-semibold text-slate-900" : "text-slate-700"].join(" ")} title={b.label}>
-                              {b.label}
-                            </span>
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-
-                  <div className="mt-3 px-2">
-                    <Link
-                      href="/products"
-                      className={[
-                        "inline-flex items-center gap-2 rounded-full border bg-white px-4 py-2 text-sm font-semibold",
-                        theme.pillBorder,
-                        theme.pillText,
-                        theme.pillHoverBg,
-                      ].join(" ")}
-                      onClick={() => setOpen(false)}
-                    >
-                      All products →
-                    </Link>
-                  </div>
+            <div className="grid min-h-[520px] lg:grid-cols-[225px_1fr_265px]">
+              <aside className={`border-b border-slate-200 p-5 transition-colors duration-300 lg:border-b-0 lg:border-r ${theme.softBg}`}>
+                <div className="px-2 pb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Browse by brand</div>
+                <div className="space-y-1">
+                  {BRANDS.map((brand) => {
+                    const active = activeBrand.key === brand.key;
+                    return (
+                      <button
+                        key={brand.key}
+                        type="button"
+                        onMouseEnter={() => setActiveKey(brand.key)}
+                        onFocus={() => setActiveKey(brand.key)}
+                        onClick={() => setActiveKey(brand.key)}
+                        className={[
+                          "group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition",
+                          active ? `${brand.theme.activeBg} ${brand.theme.text}` : "text-slate-800 hover:bg-white",
+                        ].join(" ")}
+                      >
+                        <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${brand.theme.dot}`} />
+                        <span className="min-w-0">
+                          <span className="block truncate text-[13px] font-semibold">{brand.name}</span>
+                          <span className="mt-0.5 block truncate text-[9px] uppercase tracking-[0.12em] text-slate-400">{brand.area}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
-              </div>
+              </aside>
 
-              {/* RIGHT */}
-              <div className="min-w-0 overflow-x-hidden p-5">
-                <div className="max-h-[calc(100vh-11.5rem)] overflow-y-auto pr-2">
-                  {isSectioned ? (
-                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-                      {categories.map((cat) => {
-                        const catHref = buildHref(activeBrand.label, [cat.label]);
+              <section className="min-w-0 border-b border-slate-200 p-6 lg:border-b-0 lg:border-r lg:p-7">
+                <div className="flex items-start justify-between gap-8 border-b border-slate-200 pb-5">
+                  <div>
+                    <div className={`text-[10px] font-bold uppercase tracking-[0.2em] ${theme.text}`}>{activeBrand.area}</div>
+                    <h2 className="mt-1.5 text-[27px] font-semibold tracking-[-0.035em] text-[#071d43]">{activeBrand.name}</h2>
+                  </div>
+                  <Link
+                    href={activeBrand.href}
+                    onClick={closeMenu}
+                    className={`hidden h-10 shrink-0 items-center gap-2 rounded-full border bg-white px-4 text-xs font-semibold transition xl:inline-flex ${theme.border} ${theme.text} ${theme.activeBg}`}
+                  >
+                    Explore brand <ArrowIcon className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
 
-                        return (
-                          <div key={cat.label} className="min-w-0">
-                            <Link
-                              href={catHref}
-                              className={[
-                                "group flex min-w-0 items-center justify-between gap-3 rounded-xl border bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm",
-                                theme.accentBorderHover,
-                              ].join(" ")}
-                              onClick={() => setOpen(false)}
-                              title={cat.label}
-                            >
-                              <span className="min-w-0 truncate">{cat.label}</span>
-                              <span className={["shrink-0 transition group-hover:translate-x-0.5", theme.arrowText].join(" ")}>→</span>
-                            </Link>
-
-                            <ul className="mt-3 space-y-2">
-                              {(cat.children ?? []).map((it) => {
-                                const itHref = buildHref(activeBrand.label, [cat.label, it.label]);
-
-                                return (
-                                  <li key={it.label} className="min-w-0">
-                                    <Link
-                                      href={itHref}
-                                      className={["flex min-w-0 items-start gap-2 text-sm text-slate-700", theme.accentTextHover].join(" ")}
-                                      onClick={() => setOpen(false)}
-                                    >
-                                      <ArrowBullet borderClass={theme.bulletBorder} />
-                                      <span className="min-w-0 break-words whitespace-normal leading-5">{it.label}</span>
-                                    </Link>
-
-                                    {it.children?.length ? (
-                                      <ul className="mt-2 space-y-1 pl-4">
-                                        {it.children.map((ch) => {
-                                          const chHref = buildHref(activeBrand.label, [cat.label, it.label, ch.label]);
-
-                                          return (
-                                            <li key={ch.label} className="min-w-0">
-                                              <Link
-                                                href={chHref}
-                                                className={["flex min-w-0 items-start gap-2 text-sm text-slate-600", theme.accentTextHover].join(" ")}
-                                                onClick={() => setOpen(false)}
-                                              >
-                                                <span className="mt-[7px] inline-block h-1 w-1 shrink-0 rounded-full bg-slate-300" />
-                                                <span className="min-w-0 break-words whitespace-normal leading-5">{ch.label}</span>
-                                              </Link>
-                                            </li>
-                                          );
-                                        })}
-                                      </ul>
-                                    ) : null}
-                                  </li>
-                                );
-                              })}
-                            </ul>
-                          </div>
-                        );
-                      })}
+                {activeBrand.groups ? (
+                  <div className="mt-5">
+                    <div className="mb-4">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">ABM product families</div>
+                      <div className="mt-1 text-sm text-slate-500">Start with a major family, then choose a product area.</div>
                     </div>
-                  ) : (
-                    <div className="grid grid-cols-1 gap-x-10 gap-y-3 md:grid-cols-2 lg:grid-cols-3">
-                      {categories.map((c) => {
-                        const cHref = buildHref(activeBrand.label, [c.label]);
 
+                    <div className="grid gap-x-8 gap-y-8 xl:grid-cols-2">
+                      {activeBrand.groups.map((group) => (
+                        <section key={group.label} className="min-w-0 border-t-[3px] border-orange-500 pt-3">
+                          <Link
+                            href={group.href}
+                            onClick={closeMenu}
+                            className="group/family mt-1.5 inline-flex items-center gap-3 text-[20px] font-semibold leading-tight tracking-[-0.03em] text-[#071d43] transition hover:text-orange-700"
+                          >
+                            {group.label}
+                            <ArrowIcon className="h-4 w-4 text-orange-500 transition group-hover/family:translate-x-1" />
+                          </Link>
+
+                          <div className="mt-3 grid grid-cols-2 gap-x-5">
+                            {group.items.map((item) => (
+                              <Link
+                                key={item.href}
+                                href={item.href}
+                                onClick={closeMenu}
+                                className="group/item flex min-h-8 items-start gap-2 border-b border-slate-100 py-1.5 text-[11.5px] leading-4 text-slate-600 transition hover:border-orange-100 hover:text-orange-700"
+                              >
+                                <span className="mt-[6px] h-1 w-1 shrink-0 rounded-full bg-orange-400" />
+                                <span>{item.label}</span>
+                              </Link>
+                            ))}
+                          </div>
+                        </section>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mt-5 flex items-center justify-between gap-4">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Product categories</div>
+                      <span className="text-[11px] text-slate-400">Explore products by category</span>
+                    </div>
+                    <div className="mt-3 grid gap-x-7 sm:grid-cols-2 xl:grid-cols-3">
+                      {activeBrand.categories.map((category) => {
+                        const href = activeBrand.key === "kent"
+                          ? `/products/kent/${slugify(category)}`
+                          : `/search?q=${encodeURIComponent(category)}&brand=${encodeURIComponent(activeBrand.searchKey)}`;
                         return (
                           <Link
-                            key={c.label}
-                            href={cHref}
-                            className={["flex min-w-0 items-start gap-2 text-sm text-slate-700", theme.accentTextHover].join(" ")}
-                            onClick={() => setOpen(false)}
+                            key={category}
+                            href={href}
+                            onClick={closeMenu}
+                            className={`group/category flex min-h-10 items-center justify-between gap-3 border-b border-slate-200 py-2 text-[13px] font-medium text-slate-700 transition ${theme.hoverText} ${theme.hoverBorder}`}
                           >
-                            <ArrowBullet borderClass={theme.bulletBorder} />
-                            <span className="min-w-0 break-words whitespace-normal leading-5">{c.label}</span>
+                            <span>{category}</span>
+                            <ArrowIcon className={`h-3.5 w-3.5 shrink-0 -translate-x-1 opacity-0 transition group-hover/category:translate-x-0 group-hover/category:opacity-100 ${theme.text}`} />
                           </Link>
                         );
                       })}
-                      {!categories.length && <div className="text-sm text-slate-500">No items.</div>}
                     </div>
-                  )}
+                  </>
+                )}
+              </section>
 
-                  <div className="mt-6 flex flex-wrap gap-3 border-t pt-4">
+              <aside className={`relative overflow-hidden p-7 transition-colors duration-300 ${theme.softBg}`}>
+                <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full border border-slate-200/70" />
+                <div className={`pointer-events-none absolute right-7 top-28 h-3 w-3 rounded-full ${theme.dot} opacity-20`} />
+
+                <div className="relative z-10 flex h-full flex-col">
+                  <div>
+                    <div className={`text-[10px] font-bold uppercase tracking-[0.2em] ${theme.text}`}>About the brand</div>
+                    <h3 className="mt-3 text-xl font-semibold tracking-[-0.025em] text-[#071d43]">{activeBrand.name}</h3>
+                    <p className="mt-3 text-xs leading-6 text-slate-600">{activeBrand.description}</p>
+                  </div>
+
+                  {activeBrand.groups ? (
+                    <div className="mt-7 border-t border-slate-200 pt-5">
+                      <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">Major families</div>
+                      <div className="mt-3 space-y-2">
+                        {activeBrand.groups.map((group) => (
+                          <Link
+                            key={group.label}
+                            href={group.href}
+                            onClick={closeMenu}
+                            className="group/family-side flex items-center justify-between border-b border-orange-100 pb-2 text-[12px] font-semibold text-slate-700 transition hover:text-orange-700"
+                          >
+                            <span>{group.label}</span>
+                            <ArrowIcon className="h-3.5 w-3.5 text-orange-400 transition group-hover/family-side:translate-x-0.5" />
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="mt-auto border-t border-slate-200 pt-5">
                     <Link
-                      href="/quote"
-                      className={["text-sm font-semibold text-slate-700", theme.accentTextHover, "hover:underline"].join(" ")}
-                      onClick={() => setOpen(false)}
+                      href={activeBrand.href}
+                      onClick={closeMenu}
+                      className={`inline-flex h-10 items-center gap-2 rounded-full px-4 text-xs font-semibold text-white shadow-sm ${theme.button}`}
                     >
-                      Request a Quote →
+                      Explore {activeBrand.name} <ArrowIcon className="h-3.5 w-3.5" />
                     </Link>
-                    <Link
-                      href="/resources"
-                      className={["text-sm font-semibold text-slate-700", theme.accentTextHover, "hover:underline"].join(" ")}
-                      onClick={() => setOpen(false)}
-                    >
-                      Resources →
-                    </Link>
+                    <p className="mt-4 text-[11px] leading-5 text-slate-400">Need help choosing a product? Use the Request a Quote button available throughout the site.</p>
                   </div>
                 </div>
-              </div>
+              </aside>
             </div>
-
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

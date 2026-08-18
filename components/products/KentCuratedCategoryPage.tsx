@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
-import { sanityClient } from "@/lib/sanity/sanity.client";
+import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 
 const BRAND_KEY = "kent";
 const PAGE_SHELL = "mx-auto max-w-[1320px] px-6";
@@ -404,10 +404,10 @@ export default async function KentCuratedCategoryPage({
     ]),
   );
 
-  const data = await sanityClient.fetch(PAGE_QUERY, {
+  const data = await sanityCdnClient.fetch(PAGE_QUERY, {
     brandKey: BRAND_KEY,
     slugs: allSlugs,
-  });
+  }, PUBLIC_CATALOG_CACHE);
 
   const brandTitle = data?.brand?.title || "Kent Scientific";
   const products = chooseProductMap(Array.isArray(data?.products) ? data.products : []);

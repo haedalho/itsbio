@@ -6,7 +6,7 @@ import * as cheerio from "cheerio";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
 import HtmlContent from "@/components/site/HtmlContent";
-import { sanityClient } from "@/lib/sanity/sanity.client";
+import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 import kentCurrentTaxonomy from "@/data/kent-current-taxonomy.json";
 
 export const revalidate = 300;
@@ -183,6 +183,7 @@ const PAGE_QUERY = `
       || brand->slug.current==$brandKey
       || brand->themeKey==$brandKey
     )
+    && (!$hasProductScope || slug.current in $productSlugs)
   ] | order(title asc)[0...400] {
     _id,
     title,
@@ -2223,14 +2224,19 @@ export default async function KentProductsPathPage({
   const pathArr = normalizePathSegments((resolved?.path ?? []) as string[]);
   const hasPath = pathArr.length > 0;
   const pathStr = pathArr.join("/");
+  const taxonomyCategoryForRequest = hasPath ? resolveCurrentKentCategory(pathArr) : null;
+  const productSlugs = taxonomyCategoryForRequest?.productSlugs || [];
+  const hasProductScope = productSlugs.length > 0;
 
-  const data = await sanityClient.fetch(PAGE_QUERY, {
+  const data = await sanityCdnClient.fetch(PAGE_QUERY, {
     brandKey: BRAND_KEY,
     productType: PRODUCT_DOC_TYPE,
     hasPath,
     pathStr,
     pathArr,
-  });
+    hasProductScope,
+    productSlugs,
+  }, PUBLIC_CATALOG_CACHE);
 
   const brand = data?.brand;
   if (!brand?._id) notFound();

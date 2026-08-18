@@ -6,14 +6,12 @@ import { notFound } from "next/navigation";
 import NeedAssistance from "@/components/site/NeedAssistance";
 import Breadcrumb from "@/components/site/Breadcrumb";
 
-import { sanityClient } from "@/lib/sanity/sanity.client";
+import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 import { urlFor } from "@/lib/sanity/image";
 
 import { PortableText } from "@portabletext/react";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
+export const revalidate = 300;
 
 const DETAIL_QUERY = `
 *[_type=="promotion" && slug.current==$slug][0]{
@@ -230,7 +228,7 @@ export default async function PromotionDetailPage({
   const slug = p?.slug;
   if (!slug) return notFound();
 
-  const doc = await sanityClient.fetch(DETAIL_QUERY, { slug }, { cache: "no-store" });
+  const doc = await sanityCdnClient.fetch(DETAIL_QUERY, { slug }, PUBLIC_CATALOG_CACHE);
   if (!doc) return notFound();
 
   const dateIso = (doc.publishedAt ?? doc._createdAt) as string | undefined;
@@ -242,8 +240,8 @@ export default async function PromotionDetailPage({
 
   // prev/next (notice와 동일 방식)
   const [prevDoc, nextDoc] = await Promise.all([
-    dateIso ? sanityClient.fetch(PREV_QUERY, { slug, dt: dateIso }, { cache: "no-store" }) : null,
-    dateIso ? sanityClient.fetch(NEXT_QUERY, { slug, dt: dateIso }, { cache: "no-store" }) : null,
+    dateIso ? sanityCdnClient.fetch(PREV_QUERY, { slug, dt: dateIso }, PUBLIC_CATALOG_CACHE) : null,
+    dateIso ? sanityCdnClient.fetch(NEXT_QUERY, { slug, dt: dateIso }, PUBLIC_CATALOG_CACHE) : null,
   ]);
 
   return (

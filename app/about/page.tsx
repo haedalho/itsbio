@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Breadcrumb from "@/components/site/Breadcrumb";
+import PageHero from "@/components/site/PageHero";
 
 const HIGHLIGHTS = [
   { title: "Fast, clear quotations", desc: "견적·납기 정보를 빠르게 정리해 드립니다." },
@@ -66,36 +66,19 @@ const FAQ = [
 export default function AboutPage() {
   return (
     <main className="bg-white">
-      {/* HERO BANNER (simple + low height, like ABL) */}
-      <section className="relative">
-        <div className="relative h-[220px] w-full md:h-[280px] overflow-hidden">
-          {/* you already have about-hero.png */}
-          <Image src="/about-hero.png" alt="About ITS BIO" fill priority className="object-cover" />
-          <div className="absolute inset-0 bg-black/35" />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/45 via-transparent to-transparent" />
+      <PageHero
+        eyebrow="ABOUT ITS BIO"
+        title="A trusted partner for scientific sourcing"
+        description="We connect global scientific partners with research, laboratory, and industry needs through clear sourcing, responsive support, and reliable coordination."
+        variant="about"
+        cta={{ label: "Contact our team", href: "/contact" }}
+      />
 
-          <div className="absolute inset-0">
-            <div className="mx-auto flex h-full max-w-6xl items-center px-6">
-              <div>
-                <div className="text-xs font-semibold tracking-wide text-white/80">ITS BIO</div>
-                <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white md:text-4xl">
-                  About us
-                </h1>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-white/80 md:text-base">
-                  We are a friendly supply partner for life science and biopharma teams—supporting fast
-                  sourcing, clear lead time, and reliable coordination.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      <div className="mx-auto max-w-6xl px-4 mt-6 flex justify-end">
+      <div className="mx-auto mt-6 flex max-w-6xl justify-end px-4">
         <Breadcrumb />
       </div>
-      {/* CONTENT */}
-      <section className="mx-auto max-w-6xl px-6 pb-16 pt-10 md:pt-12">
-        {/* Intro line (no big boxed card) */}
+
+      <section id="about-content" className="mx-auto max-w-6xl px-6 pb-16 pt-10 md:pt-12">
         <div className="max-w-3xl">
           <p className="text-sm leading-7 text-slate-600 md:text-base">
             ITS BIO는 “필요한 제품을 정확하게, 필요한 시점에” 공급하는 것을 목표로 합니다.
@@ -103,22 +86,15 @@ export default function AboutPage() {
           </p>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <a
-              href="/quote"
-              className="inline-flex h-11 items-center justify-center rounded-full bg-orange-600 px-6 text-sm font-semibold text-white hover:bg-orange-700 transition"
-            >
+            <a href="/quote" className="inline-flex h-11 items-center justify-center rounded-full bg-orange-600 px-6 text-sm font-semibold text-white transition hover:bg-orange-700">
               Request a Quote
             </a>
-            <a
-              href="/contact"
-              className="inline-flex h-11 items-center justify-center rounded-full border bg-white px-6 text-sm font-semibold text-slate-900 hover:bg-slate-50 transition"
-            >
+            <a href="/contact" className="inline-flex h-11 items-center justify-center rounded-full border bg-white px-6 text-sm font-semibold text-slate-900 transition hover:bg-slate-50">
               Contact
             </a>
           </div>
         </div>
 
-        {/* Highlights (light, airy) */}
         <div className="mt-12 grid gap-6 md:grid-cols-3">
           {HIGHLIGHTS.map((x) => (
             <div key={x.title} className="border-t pt-5">
@@ -130,22 +106,15 @@ export default function AboutPage() {
 
         <div className="my-12 h-px w-full bg-slate-200/70" />
 
-        {/* What we do */}
         <div className="grid gap-10 md:grid-cols-12">
           <div className="md:col-span-4">
             <h2 className="text-xl font-semibold text-slate-900 md:text-2xl">What we do</h2>
-            <p className="mt-3 text-sm leading-7 text-slate-600 md:text-base">
-              필요한 정보를 빠르게 정리하고, 선택 가능한 옵션을 명확하게 제시합니다.
-            </p>
+            <p className="mt-3 text-sm leading-7 text-slate-600 md:text-base">필요한 정보를 빠르게 정리하고, 선택 가능한 옵션을 명확하게 제시합니다.</p>
           </div>
-
-          <div className="md:col-span-8 grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:col-span-8 md:grid-cols-2">
             {WHAT_WE_DO.map((x) => (
               <div key={x.title} className="border-t pt-5">
-                <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-orange-600" />
-                  <div className="text-sm font-semibold text-slate-900">{x.title}</div>
-                </div>
+                <div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-orange-600" /><div className="text-sm font-semibold text-slate-900">{x.title}</div></div>
                 <div className="mt-2 text-sm leading-7 text-slate-600">{x.desc}</div>
               </div>
             ))}
@@ -154,23 +123,16 @@ export default function AboutPage() {
 
         <div className="my-12 h-px w-full bg-slate-200/70" />
 
-        {/* Why us */}
         <div className="grid gap-10 md:grid-cols-12">
           <div className="md:col-span-4">
             <h2 className="text-xl font-semibold text-slate-900 md:text-2xl">Why ITS BIO</h2>
-            <p className="mt-3 text-sm leading-7 text-slate-600 md:text-base">
-              “친절한 공급 파트너”라는 기준으로, 정보/속도/조율을 책임집니다.
-            </p>
+            <p className="mt-3 text-sm leading-7 text-slate-600 md:text-base">“친절한 공급 파트너”라는 기준으로, 정보/속도/조율을 책임집니다.</p>
           </div>
-
-          <div className="md:col-span-8 space-y-7">
+          <div className="space-y-7 md:col-span-8">
             {WHY_US.map((x) => (
               <div key={x.title} className="flex gap-3">
                 <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-slate-400" />
-                <div>
-                  <div className="text-sm font-semibold text-slate-900">{x.title}</div>
-                  <div className="mt-1 text-sm leading-7 text-slate-600">{x.desc}</div>
-                </div>
+                <div><div className="text-sm font-semibold text-slate-900">{x.title}</div><div className="mt-1 text-sm leading-7 text-slate-600">{x.desc}</div></div>
               </div>
             ))}
           </div>
@@ -178,62 +140,29 @@ export default function AboutPage() {
 
         <div className="my-12 h-px w-full bg-slate-200/70" />
 
-        {/* How we work */}
         <div>
           <h2 className="text-xl font-semibold text-slate-900 md:text-2xl">How we work</h2>
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600 md:text-base">
-            단순한 단계로 진행하지만, 결정에 필요한 정보(가용성/리드타임/대체 옵션)는 빠짐없이 제공합니다.
-          </p>
-
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600 md:text-base">단순한 단계로 진행하지만, 결정에 필요한 정보(가용성/리드타임/대체 옵션)는 빠짐없이 제공합니다.</p>
           <ol className="mt-7 grid gap-6 md:grid-cols-4">
             {HOW_WE_WORK.map((s) => (
-              <li key={s.n} className="border-t pt-5">
-                <div className="text-xs font-semibold text-orange-700">{s.n}</div>
-                <div className="mt-1 text-base font-semibold text-slate-900">{s.title}</div>
-                <div className="mt-2 text-sm leading-6 text-slate-600">{s.desc}</div>
-              </li>
+              <li key={s.n} className="border-t pt-5"><div className="text-xs font-semibold text-orange-700">{s.n}</div><div className="mt-1 text-base font-semibold text-slate-900">{s.title}</div><div className="mt-2 text-sm leading-6 text-slate-600">{s.desc}</div></li>
             ))}
           </ol>
         </div>
 
         <div className="my-12 h-px w-full bg-slate-200/70" />
 
-        {/* FAQ */}
         <div>
           <h2 className="text-xl font-semibold text-slate-900 md:text-2xl">FAQ</h2>
           <div className="mt-6 space-y-6">
-            {FAQ.map((x) => (
-              <div key={x.q} className="border-t pt-5">
-                <div className="text-sm font-semibold text-slate-900">{x.q}</div>
-                <div className="mt-2 text-sm leading-7 text-slate-600">{x.a}</div>
-              </div>
-            ))}
+            {FAQ.map((x) => <div key={x.q} className="border-t pt-5"><div className="text-sm font-semibold text-slate-900">{x.q}</div><div className="mt-2 text-sm leading-7 text-slate-600">{x.a}</div></div>)}
           </div>
         </div>
 
-        {/* Soft CTA (footer has NeedAssistance already) */}
         <div className="mt-12 border-t pt-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <div className="text-lg font-semibold text-slate-900">Ready to request?</div>
-              <div className="mt-2 text-sm leading-7 text-slate-600">
-                Catalog number 또는 간단한 스펙만 보내주세요. 리드타임과 옵션을 빠르게 정리해 드립니다.
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <a
-                href="/quote"
-                className="inline-flex h-11 items-center justify-center rounded-full bg-orange-600 px-6 text-sm font-semibold text-white hover:bg-orange-700 transition"
-              >
-                Request a Quote
-              </a>
-              <a
-                href="/products"
-                className="inline-flex h-11 items-center justify-center rounded-full border bg-white px-6 text-sm font-semibold text-slate-900 hover:bg-slate-50 transition"
-              >
-                Browse Products
-              </a>
-            </div>
+            <div><div className="text-lg font-semibold text-slate-900">Ready to request?</div><div className="mt-2 text-sm leading-7 text-slate-600">Catalog number 또는 간단한 스펙만 보내주세요. 리드타임과 옵션을 빠르게 정리해 드립니다.</div></div>
+            <div className="flex gap-2"><a href="/quote" className="inline-flex h-11 items-center justify-center rounded-full bg-orange-600 px-6 text-sm font-semibold text-white transition hover:bg-orange-700">Request a Quote</a><a href="/products" className="inline-flex h-11 items-center justify-center rounded-full border bg-white px-6 text-sm font-semibold text-slate-900 transition hover:bg-slate-50">Browse Products</a></div>
           </div>
         </div>
       </section>
