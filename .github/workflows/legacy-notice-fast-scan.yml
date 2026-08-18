@@ -1,0 +1,83 @@
+name: Legacy Notice Fast Scan
+
+on:
+  push:
+    branches:
+      - agent/notice-legacy-migration
+    paths:
+      - .github/workflows/legacy-notice-fast-scan.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/notice-legacy-migration
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Scan old Notice IDs
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs/promises';
+          import * as cheerio from 'cheerio';
+
+          const clean = (v) => String(v || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
+          async function fetchOne(vid) {
+            const url = `https://itsbio.co.kr/?page_id=80&vid=${vid}`;
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 6000);
+            try {
+              const r = await fetch(url, { signal: controller.signal, redirect: 'follow', headers: { 'user-agent': 'Mozilla/5.0 ITS-BIO-Migration', accept: 'text/html,*/*' } });
+              if (!r.ok) return null;
+              const html = await r.text();
+              const $ = cheerio.load(html);
+              const text = clean($('body').text());
+              if (!/작성자\s*:?\s*itsbio/i.test(text)) return null;
+              let title = '';
+              $('th,td,dt,strong,b,span,div').each((_, el) => {
+                if (title || !/^제목\s*:?$/i.test(clean($(el).text()))) return;
+                title = clean($(el).next().text()).replace(/20\d{2}-\d{2}-\d{2}[\s\S]*$/, '').trim();
+              });
+              if (!title) title = clean($('.entry-title,.view-title,.board-title,h1').first().text());
+              if (!title) title = clean($('meta[property="og:title"]').attr('content')).replace(/\s*\|\s*ITSBIO.*$/i, '');
+              const date = text.match(/20\d{2}-\d{1,2}-\d{1,2}(?:\s+\d{1,2}:\d{2})?/)?.[0] || '';
+              if (!title || /page not found|404/i.test(text)) return null;
+              return { vid, title, date, url, textLength: text.length };
+            } catch { return null; }
+            finally { clearTimeout(timer); }
+          }
+
+          const vids = Array.from({length: 30}, (_, i) => i + 1);
+          const found = [];
+          let cursor = 0;
+          await Promise.all(Array.from({length: 10}, async () => {
+            while (true) {
+              const index = cursor++;
+              if (index >= vids.length) return;
+              const result = await fetchOne(vids[index]);
+              if (result) { found.push(result); console.log(`FOUND ${result.vid}: ${result.title}`); }
+            }
+          }));
+          found.sort((a,b) => a.vid-b.vid);
+          await fs.mkdir('docs/migration-reports', {recursive:true});
+          await fs.writeFile('docs/migration-reports/legacy-notice-fast-scan.json', JSON.stringify({generatedAt:new Date().toISOString(), found}, null, 2));
+          await fs.writeFile('docs/migration-reports/legacy-notice-fast-scan.md', ['# Legacy Notice Fast Scan','',`Found: ${found.length}`,'',...found.map(x=>`- vid ${x.vid} · ${x.date || 'date unknown'} · ${x.title}`),''].join('\n'));
+          NODE
+      - name: Commit scan report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/migration-reports/legacy-notice-fast-scan.*
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Record fast legacy notice scan"
+          git push origin HEAD:agent/notice-legacy-migration
