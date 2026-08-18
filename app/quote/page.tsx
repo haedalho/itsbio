@@ -3,6 +3,7 @@
 import { useState } from "react";
 import PageHero from "@/components/site/PageHero";
 
+// Forces a fresh Preview deployment after server environment changes.
 export default function QuotePage() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState<null | "ok" | "fail">(null);
