@@ -67,6 +67,20 @@ function fmtDate(iso?: string) {
   return new Date(iso).toISOString().slice(0, 10);
 }
 
+const NOTICE_PORTABLE_COMPONENTS: any = {
+  types: {
+    image: ({ value }: { value: any }) => {
+      if (!value?.asset) return null;
+      const src = urlFor(value).width(2000).fit("max").auto("format").url();
+      return (
+        <figure className="my-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <img src={src} alt={value?.alt || ""} className="h-auto w-full object-contain" loading="lazy" />
+        </figure>
+      );
+    },
+  },
+};
+
 function PaperclipIcon({ className = "" }: { className?: string }) {
   return (
     <svg
@@ -268,7 +282,7 @@ export default async function NoticeDetailPage({
 
         {Array.isArray(doc.body) && doc.body.length > 0 ? (
           <article className="prose prose-slate mt-10 max-w-none prose-headings:text-[#071d43] prose-a:text-orange-700">
-            <PortableText value={doc.body} />
+            <PortableText value={doc.body} components={NOTICE_PORTABLE_COMPONENTS} />
           </article>
         ) : null}
 
