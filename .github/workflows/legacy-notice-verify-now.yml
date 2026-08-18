@@ -1,5 +1,6 @@
 name: Verify Legacy Notice State Now
 
+# Re-run state check after the migration progressed.
 on:
   push:
     branches:
