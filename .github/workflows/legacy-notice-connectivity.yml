@@ -1,0 +1,52 @@
+name: Legacy Notice Connectivity Probe
+
+on:
+  push:
+    branches:
+      - agent/notice-legacy-migration
+    paths:
+      - .github/workflows/legacy-notice-connectivity.yml
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/notice-legacy-migration
+          fetch-depth: 0
+      - name: Probe legacy host variants
+        run: |
+          python - <<'PY'
+          import json, urllib.request, urllib.error
+          urls = [
+            'http://itsbio.co.kr/?page_id=80&vid=18',
+            'http://www.itsbio.co.kr/?page_id=80&vid=18',
+            'https://itsbio.co.kr/?page_id=80&vid=18',
+            'https://www.itsbio.co.kr/?page_id=80&vid=18',
+          ]
+          out=[]
+          for url in urls:
+            try:
+              req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0'})
+              with urllib.request.urlopen(req,timeout=12) as r:
+                body=r.read(200000).decode('utf-8','ignore')
+                out.append({'url':url,'status':r.status,'final':r.geturl(),'length':len(body),'hasAuthor':'itsbio' in body.lower(),'sample':body[:300]})
+            except Exception as e:
+              out.append({'url':url,'error':repr(e)})
+          import os
+          os.makedirs('docs/migration-reports',exist_ok=True)
+          open('docs/migration-reports/legacy-connectivity.json','w').write(json.dumps(out,ensure_ascii=False,indent=2))
+          print(json.dumps(out,ensure_ascii=False,indent=2))
+          PY
+      - name: Commit probe
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/migration-reports/legacy-connectivity.json
+          git commit -m "Record legacy Notice connectivity probe" || exit 0
+          git push origin HEAD:agent/notice-legacy-migration
