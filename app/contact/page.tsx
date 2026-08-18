@@ -1,5 +1,6 @@
 import Breadcrumb from "@/components/site/Breadcrumb";
 import PageHero from "@/components/site/PageHero";
+import KakaoOfficeMap from "@/components/site/KakaoOfficeMap";
 
 const OFFICE = {
   addressKr: "서울특별시 강서구 양천로 551-17 (가양동 449-4) 한화비즈메트로 A동 812호",
@@ -13,11 +14,10 @@ const OFFICE = {
   },
 };
 
-const OFFICE_LAT = 37.5636;
-const OFFICE_LNG = 126.8537;
-const googleMapsEmbedWithMarker = `https://www.google.com/maps?hl=en&z=16&output=embed&q=${OFFICE_LAT},${OFFICE_LNG}&markers=${OFFICE_LAT},${OFFICE_LNG}`;
-const kakaoSearchQuery = encodeURIComponent(OFFICE.addressKr);
-const kakaoMapUrl = `https://map.kakao.com/link/search/${kakaoSearchQuery}`;
+const OFFICE_LAT = 37.559009;
+const OFFICE_LNG = 126.861094;
+const kakaoMapUrl = `https://map.kakao.com/link/map/ITS BIO,${OFFICE_LAT},${OFFICE_LNG}`;
+const kakaoDirectionsUrl = `https://map.kakao.com/link/to/ITS BIO,${OFFICE_LAT},${OFFICE_LNG}`;
 
 function DotItem({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -48,8 +48,8 @@ export default function ContactPage() {
         <section id="contact-details" className="mt-8">
           <div className="grid overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_18px_55px_rgba(15,23,42,.08)] lg:grid-cols-[1fr_320px]">
             <div className="relative h-[330px] w-full md:h-[410px]">
-              <iframe title="ITS BIO office map" className="h-full w-full" loading="lazy" referrerPolicy="no-referrer-when-downgrade" src={googleMapsEmbedWithMarker} />
-              <div className="absolute left-4 top-4 rounded-2xl border border-white/60 bg-white/95 px-4 py-3 shadow-lg backdrop-blur md:left-5 md:top-5">
+              <KakaoOfficeMap latitude={OFFICE_LAT} longitude={OFFICE_LNG} address={OFFICE.addressKr} mapUrl={kakaoMapUrl} />
+              <div className="pointer-events-none absolute left-4 top-4 z-20 rounded-2xl border border-white/60 bg-white/95 px-4 py-3 shadow-lg backdrop-blur md:left-5 md:top-5">
                 <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-orange-600">ITS BIO</div>
                 <div className="mt-1 text-sm font-semibold text-slate-950">Seoul Office</div>
               </div>
@@ -57,14 +57,14 @@ export default function ContactPage() {
 
             <div className="flex flex-col justify-between bg-[#071d43] p-6 text-white md:p-8">
               <div>
-                <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-orange-300">Visit us</div>
-                <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">Find ITS BIO in Kakao Map</h2>
-                <p className="mt-4 text-sm leading-7 text-white/65">한국에서 길찾기나 대중교통 경로를 확인할 때는 카카오맵으로 바로 열어볼 수 있습니다.</p>
+                <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#fee500]">Kakao Map</div>
+                <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">Visit ITS BIO</h2>
+                <p className="mt-4 text-sm leading-7 text-white/65">카카오맵에서 이츠바이오 서울 사무실 위치를 확인하고 바로 길찾기를 시작할 수 있습니다.</p>
               </div>
 
               <div className="mt-8 space-y-3">
-                <a className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[#fee500] px-5 text-sm font-bold text-[#191919] transition hover:brightness-95" href={kakaoMapUrl} target="_blank" rel="noreferrer">
-                  Open Kakao Map <span className="ml-3" aria-hidden>→</span>
+                <a className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[#fee500] px-5 text-sm font-bold text-[#191919] transition hover:brightness-95" href={kakaoDirectionsUrl} target="_blank" rel="noreferrer">
+                  Kakao Map 길찾기 <span className="ml-3" aria-hidden>→</span>
                 </a>
                 <a className="inline-flex h-12 w-full items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 text-sm font-semibold text-white transition hover:bg-white/10" href={`mailto:${OFFICE.email}`}>
                   Email ITS BIO
@@ -81,7 +81,7 @@ export default function ContactPage() {
               <h2 className="mt-2 text-3xl font-semibold tracking-tight text-neutral-900">Seoul Office</h2>
               <p className="mt-2 text-neutral-700">We support sourcing, quotations, product identification, and delivery coordination.</p>
             </div>
-            <a className="inline-flex h-11 items-center justify-center rounded-full border border-neutral-300 px-5 text-sm font-semibold text-neutral-900 transition hover:border-orange-300 hover:text-orange-700" href={kakaoMapUrl} target="_blank" rel="noreferrer">Directions in Kakao Map</a>
+            <a className="inline-flex h-11 items-center justify-center rounded-full border border-neutral-300 px-5 text-sm font-semibold text-neutral-900 transition hover:border-orange-300 hover:text-orange-700" href={kakaoMapUrl} target="_blank" rel="noreferrer">View in Kakao Map</a>
           </div>
 
           <div className="mt-8 grid gap-4 md:grid-cols-2">
