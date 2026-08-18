@@ -6,11 +6,11 @@
 - Apply mode: false
 
 - 2021-08-12 · vid 15 · blocks 24 · chars 1511 · images 4 · [abm] August Newsletter
-- 2021-09-09 · vid 16 · blocks 31 · chars 2206 · images 5 · [abm] September Newsletter
-- 2021-10-14 · vid 17 · blocks 23 · chars 1278 · images 4 · [abm] October Newsletter
-- 2021-11-03 · vid 18 · blocks 19 · chars 1910 · images 3 · [abm] Immortalized feline & canine cell lines now available
+- 2021-09-10 · vid 16 · blocks 31 · chars 2206 · images 5 · [abm] September Newsletter
+- 2021-10-15 · vid 17 · blocks 23 · chars 1278 · images 4 · [abm] October Newsletter
+- 2021-11-04 · vid 18 · blocks 19 · chars 1910 · images 3 · [abm] Immortalized feline & canine cell lines now available
 - 2021-11-10 · vid 19 · blocks 6 · chars 342 · images 2 · SomnoSuite, SomnoFlo 소동물 디지털 호흡마취장비 구매 시 Starter Kit 무료 증정 이벤트!! (종료)
-- 2021-11-17 · vid 20 · blocks 34 · chars 2491 · images 5 · [abm] November Newsletter
+- 2021-11-18 · vid 20 · blocks 34 · chars 2491 · images 5 · [abm] November Newsletter
 - 2021-12-21 · vid 21 · blocks 24 · chars 1860 · images 6 · [abm] CRISPR Technology Learning Resources
 - 2022-01-10 · vid 22 · blocks 21 · chars 1364 · images 1 · [abm] January Newsletter
 - 2022-01-10 · vid 23 · blocks 15 · chars 773 · images 4 · [abm] CRISPR Cas9+sgRNA All-in-One Vector/Virus Collection
