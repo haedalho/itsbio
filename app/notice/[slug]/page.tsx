@@ -4,6 +4,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import Breadcrumb from "@/components/site/Breadcrumb";
 import PageHero from "@/components/site/PageHero";
+import LegacyNoticeHtml from "@/components/site/LegacyNoticeHtml";
 
 import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 import { urlFor } from "@/lib/sanity/image";
@@ -44,7 +45,8 @@ const DETAIL_QUERY = `
     }
   },
 
-  body
+  body,
+  legacyHtml
 }
 `;
 
@@ -194,6 +196,8 @@ export default async function NoticeDetailPage({
   const dateText = fmtDate(dateIso);
   const authorText = "itsbio";
   const attachments: any[] = Array.isArray(doc.attachments) ? doc.attachments : [];
+  const legacyHtml = typeof doc.legacyHtml === "string" ? doc.legacyHtml.trim() : "";
+  const hasLegacyHtml = String(doc._id || "").startsWith("legacy-notice-") && legacyHtml.length > 0;
 
   const thumbDims = doc.thumbnail?.asset?.metadata?.dimensions;
   const thumbW = Math.max(1, Number(thumbDims?.width ?? 1600));
@@ -266,7 +270,7 @@ export default async function NoticeDetailPage({
           <div className="mt-7 h-px w-full bg-gradient-to-r from-orange-500/80 via-orange-200/60 to-transparent" />
         </header>
 
-        {thumbUrl ? (
+        {thumbUrl && !hasLegacyHtml ? (
           <div className="mt-8 overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,.06)]">
             <Image
               src={thumbUrl}
@@ -280,7 +284,9 @@ export default async function NoticeDetailPage({
           </div>
         ) : null}
 
-        {Array.isArray(doc.body) && doc.body.length > 0 ? (
+        {hasLegacyHtml ? (
+          <LegacyNoticeHtml html={legacyHtml} />
+        ) : Array.isArray(doc.body) && doc.body.length > 0 ? (
           <article className="prose prose-slate mt-10 max-w-none prose-headings:text-[#071d43] prose-a:text-orange-700">
             <PortableText value={doc.body} components={NOTICE_PORTABLE_COMPONENTS} />
           </article>
