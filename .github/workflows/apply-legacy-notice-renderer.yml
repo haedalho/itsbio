@@ -1,0 +1,65 @@
+name: Apply Legacy Notice Renderer
+
+on:
+  push:
+    branches:
+      - agent/notice-html-fidelity
+    paths:
+      - .github/workflows/apply-legacy-notice-renderer.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/notice-html-fidelity
+          fetch-depth: 0
+
+      - name: Patch Notice detail renderer
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('app/notice/[slug]/page.tsx')
+          s=p.read_text()
+
+          old='import PageHero from "@/components/site/PageHero";\n'
+          new=old+'import LegacyNoticeHtml from "@/components/site/LegacyNoticeHtml";\n'
+          assert old in s
+          s=s.replace(old,new,1)
+
+          old='  body\n}\n`;'
+          new='  body,\n  legacyHtml\n}\n`;'
+          assert old in s
+          s=s.replace(old,new,1)
+
+          old='  const attachments: any[] = Array.isArray(doc.attachments) ? doc.attachments : [];\n'
+          new=old+'  const legacyHtml = typeof doc.legacyHtml === "string" ? doc.legacyHtml.trim() : "";\n  const hasLegacyHtml = String(doc._id || "").startsWith("legacy-notice-") && legacyHtml.length > 0;\n'
+          assert old in s
+          s=s.replace(old,new,1)
+
+          old='        {thumbUrl ? (\n'
+          new='        {thumbUrl && !hasLegacyHtml ? (\n'
+          assert old in s
+          s=s.replace(old,new,1)
+
+          old='''        {Array.isArray(doc.body) && doc.body.length > 0 ? (\n          <article className="prose prose-slate mt-10 max-w-none prose-headings:text-[#071d43] prose-a:text-orange-700">\n            <PortableText value={doc.body} components={NOTICE_PORTABLE_COMPONENTS} />\n          </article>\n        ) : null}\n'''
+          new='''        {hasLegacyHtml ? (\n          <LegacyNoticeHtml html={legacyHtml} />\n        ) : Array.isArray(doc.body) && doc.body.length > 0 ? (\n          <article className="prose prose-slate mt-10 max-w-none prose-headings:text-[#071d43] prose-a:text-orange-700">\n            <PortableText value={doc.body} components={NOTICE_PORTABLE_COMPONENTS} />\n          </article>\n        ) : null}\n'''
+          assert old in s
+          s=s.replace(old,new,1)
+
+          p.write_text(s)
+          PY
+
+      - name: Commit renderer change
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/notice/'[slug]'/page.tsx
+          git commit -m "Preserve legacy Notice table layouts" || exit 0
+          git push origin HEAD:agent/notice-html-fidelity
