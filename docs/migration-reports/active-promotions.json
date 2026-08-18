@@ -1,0 +1,18 @@
+{
+  "generatedAt": "2026-08-18T07:51:06.605Z",
+  "count": 2,
+  "docs": [
+    {
+      "_id": "a2514118-adb0-450b-8b86-aa0b227ce7df",
+      "isActive": null,
+      "slug": "abm-pcr-products-1-1-20-4-28",
+      "title": "[abm] PCR Products 1+1 및 20% 할인 행사!! (~4월 28일 까지)"
+    },
+    {
+      "_id": "bcc36e15-d95e-4883-b50a-9de0e7c3cd13",
+      "isActive": null,
+      "slug": "tag-loading-control-antibodies-20-2023-12-21",
+      "title": "Tag & Loading Control Antibodies 20% 할인 행사!! (~ 2023. 12.21일 까지)"
+    }
+  ]
+}
