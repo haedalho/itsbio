@@ -15,11 +15,13 @@ type Props = {
   mapUrl: string;
 };
 
+const KAKAO_MAP_FALLBACK_KEY = "450b693c1c098ec6097cc1e5eaecbf96";
+
 export default function KakaoOfficeMap({ latitude, longitude, address, mapUrl }: Props) {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
-  const appKey = process.env.NEXT_PUBLIC_KAKAO_MAP_JAVASCRIPT_KEY;
+  const appKey = process.env.NEXT_PUBLIC_KAKAO_MAP_JAVASCRIPT_KEY || KAKAO_MAP_FALLBACK_KEY;
 
   useEffect(() => {
     if (!appKey || !mapRef.current) {
@@ -57,6 +59,7 @@ export default function KakaoOfficeMap({ latitude, longitude, address, mapUrl }:
           });
           overlay.setMap(map);
           setReady(true);
+          setFailed(false);
         } catch {
           setFailed(true);
         }
@@ -109,7 +112,7 @@ export default function KakaoOfficeMap({ latitude, longitude, address, mapUrl }:
             <a href={mapUrl} target="_blank" rel="noreferrer" className="mt-5 inline-flex h-10 items-center justify-center rounded-full bg-[#fee500] px-5 text-xs font-bold text-[#191919] transition hover:brightness-95">
               Kakao Map에서 위치 보기 →
             </a>
-            {failed && !appKey ? <div className="sr-only">Kakao Maps JavaScript key is not configured.</div> : null}
+            {failed ? <div className="mt-3 text-[11px] text-slate-500">카카오맵을 불러오지 못했습니다. Kakao Developers의 JavaScript SDK 도메인 등록을 확인해 주세요.</div> : null}
           </div>
         </div>
       ) : null}
