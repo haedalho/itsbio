@@ -16,7 +16,7 @@ permissions:
 jobs:
   migrate-preview:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 45
     environment: Production
     env:
       NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
@@ -57,7 +57,7 @@ jobs:
           fi
 
       - name: Discover legacy notices (dry run)
-        run: node scripts/migrate-legacy-notices.mjs --max-vid=250
+        run: node scripts/migrate-legacy-notices.mjs --max-vid=30
 
       - name: Print migration report
         if: always()
