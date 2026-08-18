@@ -16,7 +16,7 @@ permissions:
 jobs:
   migrate-preview:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
     environment: Production
     env:
       NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
@@ -44,15 +44,28 @@ jobs:
       - name: Apply homepage promotion coming-soon state
         run: node scripts/patch-home-promotion-coming-soon.mjs
 
-      - name: Commit homepage promotion change
+      - name: Tune legacy crawler for slow source
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('scripts/migrate-legacy-notices.mjs')
+          s = p.read_text()
+          s = s.replace('Math.max(50, Number(MAX_VID_ARG?.split("=")[1] || 250))', 'Math.max(1, Number(MAX_VID_ARG?.split("=")[1] || 30))')
+          s = s.replace('const CONCURRENCY = 4;', 'const CONCURRENCY = 10;')
+          s = s.replace('fetchWithRetry(LEGACY_BASE, { attempts: 2, timeoutMs: 25000 })', 'fetchWithRetry(LEGACY_BASE, { attempts: 1, timeoutMs: 9000 })')
+          s = s.replace('fetchWithRetry(url, { attempts: 2, timeoutMs: 16000 })', 'fetchWithRetry(url, { attempts: 1, timeoutMs: 7000 })')
+          p.write_text(s)
+          PY
+
+      - name: Commit homepage and crawler tuning
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app/page.tsx
+          git add app/page.tsx scripts/migrate-legacy-notices.mjs
           if git diff --cached --quiet; then
-            echo "Homepage promotion state already applied"
+            echo "Homepage and crawler already prepared"
           else
-            git commit -m "Show promotion coming-soon state"
+            git commit -m "Prepare promotion state and fast legacy notice discovery"
             git push origin HEAD:agent/notice-legacy-migration
           fi
 
