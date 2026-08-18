@@ -87,7 +87,10 @@ function parseDate(value) {
   const match = clean(value).match(/(20\d{2})[-./](\d{1,2})[-./](\d{1,2})(?:\s+(\d{1,2}):(\d{2}))?/);
   if (!match) return undefined;
   const [, y, m, d, hh = "00", mm = "00"] = match;
-  const iso = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}T${String(hh).padStart(2, "0")}:${mm}:00+09:00`;
+  // Keep the calendar date printed on the legacy Korean board stable. The
+  // current Notice UI formats publishedAt with toISOString(), so treating the
+  // printed board time as a display timestamp prevents a previous-day shift.
+  const iso = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}T${String(hh).padStart(2, "0")}:${mm}:00Z`;
   return Number.isNaN(Date.parse(iso)) ? undefined : new Date(iso).toISOString();
 }
 
@@ -223,19 +226,24 @@ async function writeNotice(record) {
     const image = await uploadImage(record.images[index], record.vid, index);
     if (image) uploadedImages.push(image);
   }
+  if (!record.body.length && !uploadedImages.length) {
+    throw new Error(`Refusing empty migrated Notice vid=${record.vid}: source is image-only but no image could be archived`);
+  }
   const thumbnail = uploadedImages[0]
     ? { _type: "image", asset: uploadedImages[0].asset }
     : undefined;
   const body = [
     ...record.body,
-    ...uploadedImages,
+    // The first archived image is already presented as the Notice hero/thumbnail.
+    // Keep remaining source images in the body without duplicating that hero.
+    ...uploadedImages.slice(1),
   ];
   const doc = {
     _id: `legacy-notice-${record.vid}`,
     _type: "notice",
     title: record.title,
     slug: { _type: "slug", current: record.slug },
-    publishedAt: record.publishedAt || new Date("2021-01-01T00:00:00+09:00").toISOString(),
+    publishedAt: record.publishedAt || new Date("2021-01-01T00:00:00Z").toISOString(),
     isPinned: false,
     isActive: true,
     body,
