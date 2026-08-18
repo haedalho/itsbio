@@ -8,6 +8,7 @@ const PROJECT_ID = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || "9b5twpc8";
 const DATASET = process.env.NEXT_PUBLIC_SANITY_DATASET || "production";
 const API_VERSION = process.env.NEXT_PUBLIC_SANITY_API_VERSION || "2025-01-01";
 const REPORT_DIR = path.resolve(".cache/legacy-notice-html");
+const PINNED_VIDS = new Set([26, 32, 33]);
 const TOKEN = [
   process.env.SANITY_WRITE_TOKEN,
   process.env.SANITY_API_WRITE_TOKEN,
@@ -170,12 +171,13 @@ function sanitizeLegacyContent(html, sourceUrl, archivedUrls) {
   };
 }
 
-async function patchLegacyHtml(id, legacyHtml) {
+async function patchLegacyHtml(id, legacyHtml, isPinned) {
   const endpoint = `https://${PROJECT_ID}.api.sanity.io/v${API_VERSION}/data/mutate/${DATASET}?returnIds=true`;
+  const set = { legacyHtml, ...(isPinned ? { isPinned: true } : {}) };
   const response = await fetch(endpoint, {
     method: "POST",
     headers: { authorization: `Bearer ${TOKEN}`, "content-type": "application/json" },
-    body: JSON.stringify({ mutations: [{ patch: { id, set: { legacyHtml } } }] }),
+    body: JSON.stringify({ mutations: [{ patch: { id, set } }] }),
   });
   if (!response.ok) throw new Error(`Sanity patch ${response.status}: ${await response.text()}`);
 }
@@ -201,9 +203,10 @@ async function main() {
     const archivedUrls = await getArchivedImageUrls(id);
     const sanitized = sanitizeLegacyContent(sourceHtml, sourceUrl, archivedUrls);
     if (!sanitized.html || sanitized.html.length < 20) throw new Error(`Refusing empty legacy HTML for ${id}`);
-    if (APPLY) await patchLegacyHtml(id, sanitized.html);
-    records.push({ id, vid, sourceUrl, htmlChars: sanitized.html.length, sourceImages: sanitized.usefulImages, archivedImages: archivedUrls.length });
-    console.log(`${APPLY ? "PATCHED" : "READY"} ${id} · html ${sanitized.html.length} · images ${sanitized.usefulImages}/${archivedUrls.length}`);
+    const isPinned = PINNED_VIDS.has(vid);
+    if (APPLY) await patchLegacyHtml(id, sanitized.html, isPinned);
+    records.push({ id, vid, sourceUrl, htmlChars: sanitized.html.length, sourceImages: sanitized.usefulImages, archivedImages: archivedUrls.length, isPinned });
+    console.log(`${APPLY ? "PATCHED" : "READY"} ${id} · html ${sanitized.html.length} · images ${sanitized.usefulImages}/${archivedUrls.length}${isPinned ? " · PINNED" : ""}`);
   }
 
   const report = {
@@ -220,7 +223,7 @@ async function main() {
     `- Apply: ${APPLY}`,
     `- Notices: ${records.length}`,
     "",
-    ...records.map((record) => `- ${record.id} · HTML ${record.htmlChars} chars · images ${record.sourceImages}/${record.archivedImages}`),
+    ...records.map((record) => `- ${record.id} · HTML ${record.htmlChars} chars · images ${record.sourceImages}/${record.archivedImages}${record.isPinned ? " · PINNED" : ""}`),
     "",
   ].join("\n"));
 }
