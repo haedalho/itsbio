@@ -1,0 +1,60 @@
+name: Delete Obvious Test Notices
+
+on:
+  push:
+    branches:
+      - agent/notice-html-fidelity
+    paths:
+      - .github/workflows/delete-obvious-test-notices.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  delete-tests:
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 10
+    env:
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/notice-html-fidelity
+          fetch-depth: 0
+
+      - name: Delete only confirmed obvious test notices
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs/promises';
+          const token=[process.env.SANITY_WRITE_TOKEN,process.env.SANITY_API_WRITE_TOKEN,process.env.SANITY_API_TOKEN,process.env.SANITY_TOKEN,process.env.SANITY_AUTH_TOKEN].find(Boolean);
+          if(!token) throw new Error('Missing Sanity write token');
+          const ids=[
+            '4bf74f49-f280-4e27-bbb9-8c138e5c8855',
+            'b873a0a6-9f12-441e-9234-4c5aa9ed5258',
+            '0bd11e87-59cb-4932-89d7-21d10ef4afaf'
+          ];
+          const endpoint='https://9b5twpc8.api.sanity.io/v2025-01-01/data/mutate/production?returnIds=true';
+          const r=await fetch(endpoint,{method:'POST',headers:{authorization:`Bearer ${token}`,'content-type':'application/json'},body:JSON.stringify({mutations:ids.map(id=>({delete:{id}}))})});
+          if(!r.ok) throw new Error(`${r.status} ${await r.text()}`);
+          const query='*[_type == "notice" && !(_id match "legacy-notice-*")] | order(_createdAt desc)[0...50]{_id,title,_createdAt}';
+          const q=await fetch(`https://9b5twpc8.api.sanity.io/v2025-01-01/data/query/production?query=${encodeURIComponent(query)}`,{headers:{authorization:`Bearer ${token}`}});
+          if(!q.ok) throw new Error(`${q.status} ${await q.text()}`);
+          const docs=(await q.json()).result||[];
+          await fs.mkdir('docs/migration-reports',{recursive:true});
+          await fs.writeFile('docs/migration-reports/nonlegacy-after-test-cleanup.md',['# Non-legacy Notice after test cleanup','',...docs.map(d=>`- ${d._id} · ${JSON.stringify(d.title||'')}`),''].join('\n'));
+          NODE
+
+      - name: Commit verification report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/migration-reports/nonlegacy-after-test-cleanup.md
+          git commit -m "Verify test Notice cleanup" || exit 0
+          git push origin HEAD:agent/notice-html-fidelity
