@@ -1,0 +1,107 @@
+name: Apply Legacy Notice Migration
+
+on:
+  push:
+    branches:
+      - agent/notice-legacy-migration
+    paths:
+      - .github/workflows/legacy-notice-apply.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: Production
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/notice-legacy-migration
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm install --no-audit --no-fund
+
+      - name: Migrate all legacy Notice posts and archive source images
+        run: node scripts/migrate-legacy-notices-v2.mjs --apply
+
+      - name: Verify 20 migrated Sanity documents
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs/promises';
+          const project = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
+          const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET;
+          const version = process.env.NEXT_PUBLIC_SANITY_API_VERSION;
+          const token = [process.env.SANITY_WRITE_TOKEN, process.env.SANITY_API_WRITE_TOKEN, process.env.SANITY_API_TOKEN, process.env.SANITY_TOKEN, process.env.SANITY_AUTH_TOKEN].find(Boolean);
+          if (!token) throw new Error('No Sanity token available for verification');
+          const ids = Array.from({length:20}, (_,i)=>`legacy-notice-${i+15}`);
+          const query = `*[_id in ${JSON.stringify(ids)}]{_id,title,"slug":slug.current,publishedAt,"bodyCount":count(body),"hasThumbnail":defined(thumbnail.asset._ref)}`;
+          const url = `https://${project}.api.sanity.io/v${version}/data/query/${dataset}?query=${encodeURIComponent(query)}`;
+          const response = await fetch(url, { headers: { authorization: `Bearer ${token}` } });
+          if (!response.ok) throw new Error(`Sanity verify HTTP ${response.status}: ${await response.text()}`);
+          const payload = await response.json();
+          const docs = Array.isArray(payload.result) ? payload.result : [];
+          docs.sort((a,b)=>a._id.localeCompare(b._id, undefined, {numeric:true}));
+          const missing = ids.filter(id => !docs.some(doc => doc._id === id));
+          const invalid = docs.filter(doc => !doc.title || !doc.slug || !doc.publishedAt || !(doc.bodyCount > 0));
+          const withoutThumbnail = docs.filter(doc => !doc.hasThumbnail);
+          const report = {
+            generatedAt: new Date().toISOString(),
+            expected: ids.length,
+            found: docs.length,
+            missing,
+            invalid,
+            thumbnails: docs.length - withoutThumbnail.length,
+            withoutThumbnail: withoutThumbnail.map(doc => doc._id),
+            docs,
+          };
+          await fs.mkdir('docs/migration-reports', {recursive:true});
+          await fs.writeFile('docs/migration-reports/legacy-notice-apply.json', JSON.stringify(report, null, 2));
+          await fs.writeFile('docs/migration-reports/legacy-notice-apply.md', [
+            '# Legacy Notice Apply Verification',
+            '',
+            `- Expected: ${report.expected}`,
+            `- Found: ${report.found}`,
+            `- Missing: ${report.missing.length}`,
+            `- Invalid: ${report.invalid.length}`,
+            `- With thumbnail: ${report.thumbnails}/${report.found}`,
+            '',
+            ...docs.map(doc => `- ${doc._id} · ${doc.publishedAt.slice(0,10)} · body ${doc.bodyCount} · thumbnail ${doc.hasThumbnail ? 'yes' : 'no'} · ${doc.title}`),
+            '',
+          ].join('\n'));
+          console.log(JSON.stringify(report, null, 2));
+          if (docs.length !== ids.length || missing.length || invalid.length) process.exit(1);
+          if (withoutThumbnail.length) {
+            console.error(`Missing thumbnails for ${withoutThumbnail.length} migrated notices`);
+            process.exit(2);
+          }
+          NODE
+
+      - name: Commit verification report to migration branch
+        if: always()
+        run: |
+          if [ ! -f docs/migration-reports/legacy-notice-apply.json ]; then
+            echo "Verification report was not generated"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/migration-reports/legacy-notice-apply.json docs/migration-reports/legacy-notice-apply.md
+          git commit -m "Record legacy Notice apply verification" || exit 0
+          git push origin HEAD:agent/notice-legacy-migration
