@@ -9,20 +9,22 @@ export const revalidate = 300;
 
 type SP = { q?: string; page?: string };
 const PAGE_SIZE = 10;
+const FORCED_PINNED_IDS = ["legacy-notice-33", "legacy-notice-32", "legacy-notice-26"];
+const FORCED_PINNED_GROQ = JSON.stringify(FORCED_PINNED_IDS);
 
 const PINNED_QUERY = `
-*[_type == "notice" && isPinned == true && (!defined($q) || $q == "" || title match $q)]
+*[_type == "notice" && (isPinned == true || _id in ${FORCED_PINNED_GROQ}) && (!defined($q) || $q == "" || title match $q)]
 | order(coalesce(order, 0) desc, coalesce(publishedAt, _createdAt) desc){
   _id, title, "slug": slug.current, publishedAt, _createdAt, isPinned, order, thumbnail
 }`;
 
 const NORMAL_LIST_QUERY = `
-*[_type == "notice" && (isPinned != true) && (!defined($q) || $q == "" || title match $q)]
+*[_type == "notice" && (isPinned != true) && !(_id in ${FORCED_PINNED_GROQ}) && (!defined($q) || $q == "" || title match $q)]
 | order(coalesce(publishedAt, _createdAt) desc)
 [$start...$end]{ _id, title, "slug": slug.current, publishedAt, _createdAt, thumbnail }`;
 
-const NORMAL_COUNT_QUERY = `count(*[_type == "notice" && (isPinned != true) && (!defined($q) || $q == "" || title match $q)])`;
-const GLOBAL_NORMAL_COUNT_QUERY = `count(*[_type == "notice" && (isPinned != true)])`;
+const NORMAL_COUNT_QUERY = `count(*[_type == "notice" && (isPinned != true) && !(_id in ${FORCED_PINNED_GROQ}) && (!defined($q) || $q == "" || title match $q)])`;
+const GLOBAL_NORMAL_COUNT_QUERY = `count(*[_type == "notice" && (isPinned != true) && !(_id in ${FORCED_PINNED_GROQ})])`;
 
 function fmtDate(iso?: string) {
   if (!iso) return "";
