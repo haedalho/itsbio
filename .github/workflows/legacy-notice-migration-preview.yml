@@ -66,6 +66,24 @@ jobs:
             cat .cache/legacy-notice-migration/latest.md
           fi
 
+      - name: Persist migration report on branch
+        if: always()
+        run: |
+          if [ ! -f .cache/legacy-notice-migration/latest.md ]; then
+            echo "No report generated"
+            exit 0
+          fi
+          mkdir -p docs/migration-reports
+          cp .cache/legacy-notice-migration/latest.md docs/migration-reports/legacy-notices-latest.md
+          cp .cache/legacy-notice-migration/latest.json docs/migration-reports/legacy-notices-latest.json
+          git add docs/migration-reports/legacy-notices-latest.md docs/migration-reports/legacy-notices-latest.json
+          if git diff --cached --quiet; then
+            echo "Migration report unchanged"
+          else
+            git commit -m "Record legacy notice migration dry run"
+            git push origin HEAD:agent/notice-legacy-migration
+          fi
+
       - name: Upload migration report
         if: always()
         uses: actions/upload-artifact@v4
