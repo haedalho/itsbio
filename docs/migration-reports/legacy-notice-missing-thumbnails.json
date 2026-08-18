@@ -1,0 +1,41 @@
+[
+  {
+    "vid": 31,
+    "pageStatus": 200,
+    "images": [
+      {
+        "url": "https://www.ibric.org/upload/geditor/202007/0.01692600_1595816010.png",
+        "status": 200,
+        "type": "image/png",
+        "bytes": 14180,
+        "finalUrl": "https://www.ibric.org/upload/geditor/202007/0.01692600_1595816010.png"
+      }
+    ]
+  },
+  {
+    "vid": 32,
+    "pageStatus": 200,
+    "images": [
+      {
+        "url": "https://www.ibric.org/_attach/bric/editor-image/2025/02/WNQZGhKQFgZBYCypIdWbguLRQx.jpg",
+        "status": 200,
+        "type": "image/jpeg",
+        "bytes": 97500,
+        "finalUrl": "https://www.ibric.org/_attach/bric/editor-image/2025/02/WNQZGhKQFgZBYCypIdWbguLRQx.jpg"
+      }
+    ]
+  },
+  {
+    "vid": 34,
+    "pageStatus": 200,
+    "images": [
+      {
+        "url": "https://media.licdn.com/dms/image/v2/D5610AQFp7mnBdMNvmg/image-shrink_1280/B56ZY6nCAcHoAM-/0/1744740033507?e=1745478000&v=beta&t=VRpTEZJlMDbauo4K5eBZIA3U_vXvTyDwZD1zEt5mX2g",
+        "status": 403,
+        "type": "text/plain;charset=UTF-8",
+        "bytes": 22,
+        "finalUrl": "https://media.licdn.com/dms/image/v2/D5610AQFp7mnBdMNvmg/image-shrink_1280/B56ZY6nCAcHoAM-/0/1744740033507?e=1745478000&v=beta&t=VRpTEZJlMDbauo4K5eBZIA3U_vXvTyDwZD1zEt5mX2g"
+      }
+    ]
+  }
+]
