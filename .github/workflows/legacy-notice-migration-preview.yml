@@ -1,0 +1,76 @@
+name: Legacy Notice Migration Preview
+
+on:
+  push:
+    branches:
+      - agent/notice-legacy-migration
+    paths:
+      - .github/workflows/legacy-notice-migration-preview.yml
+      - scripts/migrate-legacy-notices.mjs
+      - scripts/patch-home-promotion-coming-soon.mjs
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  migrate-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: Production
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/notice-legacy-migration
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm install --no-audit --no-fund
+
+      - name: Apply homepage promotion coming-soon state
+        run: node scripts/patch-home-promotion-coming-soon.mjs
+
+      - name: Commit homepage promotion change
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/page.tsx
+          if git diff --cached --quiet; then
+            echo "Homepage promotion state already applied"
+          else
+            git commit -m "Show promotion coming-soon state"
+            git push origin HEAD:agent/notice-legacy-migration
+          fi
+
+      - name: Discover legacy notices (dry run)
+        run: node scripts/migrate-legacy-notices.mjs --max-vid=250
+
+      - name: Print migration report
+        if: always()
+        run: |
+          if [ -f .cache/legacy-notice-migration/latest.md ]; then
+            cat .cache/legacy-notice-migration/latest.md
+          fi
+
+      - name: Upload migration report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: legacy-notice-migration-${{ github.run_id }}
+          path: .cache/legacy-notice-migration/
+          retention-days: 30
+          if-no-files-found: warn
