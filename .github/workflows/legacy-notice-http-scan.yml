@@ -1,0 +1,58 @@
+name: Legacy Notice HTTP Scan
+
+on:
+  push:
+    branches:
+      - agent/notice-legacy-migration
+    paths:
+      - .github/workflows/legacy-notice-http-scan.yml
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/notice-legacy-migration
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Point migration at the working legacy HTTP endpoint
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/migrate-legacy-notices.mjs')
+          s=p.read_text()
+          s=s.replace('Math.max(50, Number(MAX_VID_ARG?.split("=")[1] || 250))','Math.max(1, Number(MAX_VID_ARG?.split("=")[1] || 60))')
+          s=s.replace('const CONCURRENCY = 4;','const CONCURRENCY = 8;')
+          s=s.replace('const LEGACY_BASE = "https://itsbio.co.kr/?page_id=80";','const LEGACY_BASE = "http://itsbio.co.kr/?page_id=80";')
+          s=s.replace('fetchWithRetry(LEGACY_BASE, { attempts: 2, timeoutMs: 25000 })','fetchWithRetry(LEGACY_BASE, { attempts: 2, timeoutMs: 12000 })')
+          s=s.replace('fetchWithRetry(url, { attempts: 2, timeoutMs: 16000 })','fetchWithRetry(url, { attempts: 2, timeoutMs: 10000 })')
+          p.write_text(s)
+          PY
+      - name: Commit working HTTP migration source
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/migrate-legacy-notices.mjs
+          git commit -m "Use working HTTP source for legacy Notice migration" || true
+          git push origin HEAD:agent/notice-legacy-migration
+      - name: Dry-run legacy Notice migration
+        run: node scripts/migrate-legacy-notices.mjs --max-vid=60
+      - name: Persist report
+        if: always()
+        run: |
+          mkdir -p docs/migration-reports
+          test -f .cache/legacy-notice-migration/latest.md || exit 0
+          cp .cache/legacy-notice-migration/latest.md docs/migration-reports/legacy-notices-latest.md
+          cp .cache/legacy-notice-migration/latest.json docs/migration-reports/legacy-notices-latest.json
+          git add docs/migration-reports/legacy-notices-latest.*
+          git commit -m "Record legacy Notice HTTP migration dry run" || true
+          git push origin HEAD:agent/notice-legacy-migration
