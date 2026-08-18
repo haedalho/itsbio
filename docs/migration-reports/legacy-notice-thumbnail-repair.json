@@ -1,0 +1,26 @@
+{
+  "generatedAt": "2026-08-18T07:49:10.792Z",
+  "repaired": [
+    {
+      "vid": 31,
+      "source": "https://www.ibric.org/upload/geditor/202007/0.01692600_1595816010.png",
+      "asset": "image-7667408f9e36bdcea6f5b8eca15eb3d7d2b5a4a6-348x84-png",
+      "mode": "original"
+    },
+    {
+      "vid": 32,
+      "source": "https://www.ibric.org/_attach/bric/editor-image/2025/02/WNQZGhKQFgZBYCypIdWbguLRQx.jpg",
+      "asset": "image-507409082aa052fefe8362cfdb72c3a63b5a32aa-1280x669-jpg",
+      "mode": "original"
+    },
+    {
+      "vid": 34,
+      "source": "public/hero-e.png",
+      "asset": "image-96833151a4f46041ef35af01f74fa568edd875b2-1536x1024-png",
+      "mode": "ITS BIO fallback because legacy LinkedIn CDN returns 403"
+    }
+  ],
+  "found": 20,
+  "withThumbnail": 20,
+  "missing": []
+}
