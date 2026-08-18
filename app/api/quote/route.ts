@@ -85,12 +85,17 @@ function waitForResponse(socket: tls.TLSSocket, timeoutMs = 12000) {
   });
 }
 
-async function command(socket: tls.TLSSocket, value: string, expected: number[]) {
+async function command(
+  socket: tls.TLSSocket,
+  value: string,
+  expected: number[],
+  stage: string,
+) {
   socket.write(`${value}\r\n`);
   const response = await waitForResponse(socket);
   const code = responseCode(response);
   if (!expected.includes(code)) {
-    throw new Error(`SMTP command failed (${code || "unknown"}).`);
+    throw new Error(`SMTP_${stage}_${code || "UNKNOWN"}`);
   }
   return response;
 }
@@ -131,15 +136,15 @@ async function sendMailplugMail({
 
   try {
     const greeting = await waitForResponse(socket);
-    if (responseCode(greeting) !== 220) throw new Error("SMTP server did not accept the connection.");
+    if (responseCode(greeting) !== 220) throw new Error("SMTP_GREETING_FAILED");
 
-    await command(socket, "EHLO itsbio.co.kr", [250]);
-    await command(socket, "AUTH LOGIN", [334]);
-    await command(socket, Buffer.from(user, "utf8").toString("base64"), [334]);
-    await command(socket, Buffer.from(password, "utf8").toString("base64"), [235]);
-    await command(socket, `MAIL FROM:<${user}>`, [250]);
-    await command(socket, `RCPT TO:<${to}>`, [250, 251]);
-    await command(socket, "DATA", [354]);
+    await command(socket, "EHLO itsbio.co.kr", [250], "EHLO");
+    await command(socket, "AUTH LOGIN", [334], "AUTH_START");
+    await command(socket, Buffer.from(user, "utf8").toString("base64"), [334], "AUTH_USER");
+    await command(socket, Buffer.from(password, "utf8").toString("base64"), [235], "AUTH_PASSWORD");
+    await command(socket, `MAIL FROM:<${user}>`, [250], "MAIL_FROM");
+    await command(socket, `RCPT TO:<${to}>`, [250, 251], "RCPT_TO");
+    await command(socket, "DATA", [354], "DATA");
 
     const boundary = `itsbio-${Date.now().toString(36)}`;
     const message = [
@@ -167,12 +172,31 @@ async function sendMailplugMail({
 
     socket.write(`${message}\r\n.\r\n`);
     const accepted = await waitForResponse(socket);
-    if (responseCode(accepted) !== 250) throw new Error("SMTP server rejected the message.");
+    const acceptedCode = responseCode(accepted);
+    if (acceptedCode !== 250) throw new Error(`SMTP_MESSAGE_${acceptedCode || "UNKNOWN"}`);
 
     socket.write("QUIT\r\n");
   } finally {
     socket.end();
   }
+}
+
+function publicMailError(error: unknown) {
+  const reason = error instanceof Error ? error.message : "Unknown SMTP error";
+
+  if (/^SMTP_AUTH_(?:START|USER|PASSWORD)_(?:534|535|530|454)$/i.test(reason)) {
+    return "Mailplug SMTP authentication failed. Regenerate the Mailplug app password and update MAILPLUG_SMTP_PASSWORD in Vercel.";
+  }
+
+  if (/timed out|ECONN|ENOTFOUND|EAI_AGAIN|socket|connection/i.test(reason)) {
+    return "Could not connect to the Mailplug SMTP server. Please try again shortly.";
+  }
+
+  if (reason.startsWith("SMTP_")) {
+    return `Mailplug SMTP failed (${reason.replace(/^SMTP_/, "")}).`;
+  }
+
+  return "Unable to send email right now. Please try again.";
 }
 
 export async function POST(req: Request) {
@@ -249,7 +273,8 @@ export async function POST(req: Request) {
 
     return Response.json({ ok: true });
   } catch (error) {
-    console.error("Quote mail send failed:", error instanceof Error ? error.message : "Unknown SMTP error");
-    return Response.json({ ok: false, error: "Unable to send email right now. Please try again." }, { status: 500 });
+    const reason = error instanceof Error ? error.message : "Unknown SMTP error";
+    console.error("Quote mail send failed:", reason);
+    return Response.json({ ok: false, error: publicMailError(error) }, { status: 500 });
   }
 }
