@@ -1,0 +1,79 @@
+{
+  "generatedAt": "2026-08-18T07:42:54.053Z",
+  "found": 9,
+  "withThumbnail": 9,
+  "docs": [
+    {
+      "_id": "legacy-notice-15",
+      "bodyCount": 27,
+      "hasThumbnail": true,
+      "publishedAt": "2021-08-12T15:12:00.000Z",
+      "slug": "abm-august-newsletter-15",
+      "title": "[abm] August Newsletter"
+    },
+    {
+      "_id": "legacy-notice-16",
+      "bodyCount": 35,
+      "hasThumbnail": true,
+      "publishedAt": "2021-09-10T08:56:00.000Z",
+      "slug": "abm-september-newsletter-16",
+      "title": "[abm] September Newsletter"
+    },
+    {
+      "_id": "legacy-notice-17",
+      "bodyCount": 26,
+      "hasThumbnail": true,
+      "publishedAt": "2021-10-15T08:59:00.000Z",
+      "slug": "abm-october-newsletter-17",
+      "title": "[abm] October Newsletter"
+    },
+    {
+      "_id": "legacy-notice-18",
+      "bodyCount": 21,
+      "hasThumbnail": true,
+      "publishedAt": "2021-11-04T08:59:00.000Z",
+      "slug": "abm-immortalized-feline-canine-cell-lines-now-available-18",
+      "title": "[abm] Immortalized feline & canine cell lines now available"
+    },
+    {
+      "_id": "legacy-notice-19",
+      "bodyCount": 7,
+      "hasThumbnail": true,
+      "publishedAt": "2021-11-10T16:48:00.000Z",
+      "slug": "somnosuite-somnoflo-starter-kit-19",
+      "title": "SomnoSuite, SomnoFlo 소동물 디지털 호흡마취장비 구매 시 Starter Kit 무료 증정 이벤트!! (종료)"
+    },
+    {
+      "_id": "legacy-notice-20",
+      "bodyCount": 38,
+      "hasThumbnail": true,
+      "publishedAt": "2021-11-18T08:47:00.000Z",
+      "slug": "abm-november-newsletter-20",
+      "title": "[abm] November Newsletter"
+    },
+    {
+      "_id": "legacy-notice-21",
+      "bodyCount": 29,
+      "hasThumbnail": true,
+      "publishedAt": "2021-12-21T09:47:00.000Z",
+      "slug": "abm-crispr-technology-learning-resources-21",
+      "title": "[abm] CRISPR Technology Learning Resources"
+    },
+    {
+      "_id": "legacy-notice-22",
+      "bodyCount": 21,
+      "hasThumbnail": true,
+      "publishedAt": "2022-01-10T09:07:00.000Z",
+      "slug": "abm-january-newsletter-22",
+      "title": "[abm] January Newsletter"
+    },
+    {
+      "_id": "legacy-notice-23",
+      "bodyCount": 18,
+      "hasThumbnail": true,
+      "publishedAt": "2022-01-10T09:10:00.000Z",
+      "slug": "abm-crispr-cas9-sgrna-all-in-one-vector-virus-collection-23",
+      "title": "[abm] CRISPR Cas9+sgRNA All-in-One Vector/Virus Collection"
+    }
+  ]
+}
