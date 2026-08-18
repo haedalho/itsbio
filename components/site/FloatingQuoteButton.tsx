@@ -3,9 +3,101 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
-type QuoteOpenDetail = {
-  product?: string;
+type QuoteContext = {
+  productName?: string;
+  referenceNo?: string;
+  referenceLabel?: string;
 };
+
+type QuoteOpenDetail = QuoteContext & {
+  product?: string;
+  catalogNo?: string;
+  itemNo?: string;
+};
+
+function clean(value: unknown) {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function contextFromCombinedProduct(value: unknown): QuoteContext {
+  const raw = clean(value);
+  if (!raw) return {};
+
+  const catMatch = raw.match(/^(.*?)\s+[—–-]\s+Cat\.?\s*No\.?\s*[:#]?\s*(.+)$/i);
+  if (catMatch) {
+    return {
+      productName: clean(catMatch[1]),
+      referenceNo: clean(catMatch[2]),
+      referenceLabel: "Cat. No.",
+    };
+  }
+
+  const itemMatch = raw.match(/^(.*?)\s+[—–-]\s+Item\s*#?\s*[:#]?\s*(.+)$/i);
+  if (itemMatch) {
+    return {
+      productName: clean(itemMatch[1]),
+      referenceNo: clean(itemMatch[2]),
+      referenceLabel: "Item #",
+    };
+  }
+
+  return { productName: raw };
+}
+
+function contextFromDetail(detail?: QuoteOpenDetail): QuoteContext {
+  if (!detail) return {};
+  const combined = contextFromCombinedProduct(detail.product);
+  const itemNo = clean(detail.itemNo);
+  const catalogNo = clean(detail.catalogNo);
+  const explicitReference = clean(detail.referenceNo) || itemNo || catalogNo;
+
+  return {
+    productName: clean(detail.productName) || combined.productName,
+    referenceNo: explicitReference || combined.referenceNo,
+    referenceLabel:
+      clean(detail.referenceLabel) ||
+      (itemNo ? "Item #" : catalogNo ? "Cat. No." : combined.referenceLabel),
+  };
+}
+
+function findLabeledValue(labelPattern: RegExp) {
+  const candidates = Array.from(document.querySelectorAll("dt, span, strong"));
+  const label = candidates.find((element) => labelPattern.test(clean(element.textContent)));
+  if (!label) return "";
+
+  if (label.tagName.toLowerCase() === "dt") {
+    const dd = label.parentElement?.querySelector("dd");
+    if (dd) return clean(dd.textContent);
+  }
+
+  const parentText = clean(label.parentElement?.textContent);
+  const labelText = clean(label.textContent);
+  if (parentText && labelText && parentText !== labelText) {
+    return clean(parentText.slice(parentText.indexOf(labelText) + labelText.length));
+  }
+
+  return "";
+}
+
+function inferPageContext(pathname: string): QuoteContext {
+  if (!pathname.startsWith("/products")) return {};
+
+  const productName = clean(document.querySelector("h1")?.textContent);
+
+  if (pathname.startsWith("/products/kent/")) {
+    return {
+      productName,
+      referenceNo: findLabeledValue(/^Item\s*#$/i),
+      referenceLabel: "Item #",
+    };
+  }
+
+  return {
+    productName,
+    referenceNo: findLabeledValue(/^Cat\.?\s*No\.?$/i),
+    referenceLabel: "Cat. No.",
+  };
+}
 
 export default function FloatingQuoteButton() {
   const pathname = usePathname();
@@ -13,9 +105,11 @@ export default function FloatingQuoteButton() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState<null | "ok" | "fail">(null);
   const [errorMsg, setErrorMsg] = useState("");
+  const [referenceLabel, setReferenceLabel] = useState("Cat. No. / Item #");
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const productRef = useRef<HTMLInputElement | null>(null);
-  const pendingProductRef = useRef("");
+  const productNameRef = useRef<HTMLInputElement | null>(null);
+  const referenceNoRef = useRef<HTMLInputElement | null>(null);
+  const pendingContextRef = useRef<QuoteContext>({});
 
   useEffect(() => {
     if (!open) return;
@@ -31,8 +125,8 @@ export default function FloatingQuoteButton() {
   useEffect(() => {
     const onOpenQuote = (event: Event) => {
       const detail = (event as CustomEvent<QuoteOpenDetail>).detail;
-      pendingProductRef.current = String(detail?.product || "").trim();
-      openPanel(pendingProductRef.current);
+      pendingContextRef.current = contextFromDetail(detail);
+      openPanel(pendingContextRef.current);
     };
 
     window.addEventListener("itsbio:open-quote", onOpenQuote);
@@ -43,29 +137,32 @@ export default function FloatingQuoteButton() {
     setOpen(false);
     setDone(null);
     setErrorMsg("");
-    pendingProductRef.current = "";
+    setReferenceLabel("Cat. No. / Item #");
+    pendingContextRef.current = {};
   }, [pathname]);
 
-  function openPanel(productOverride = "") {
-    const explicitProduct = String(productOverride || pendingProductRef.current || "").trim();
+  function openPanel(contextOverride: QuoteContext = {}) {
+    const pending = pendingContextRef.current;
+    const inferred = inferPageContext(pathname);
+    const context = {
+      productName: clean(contextOverride.productName) || clean(pending.productName) || clean(inferred.productName),
+      referenceNo: clean(contextOverride.referenceNo) || clean(pending.referenceNo) || clean(inferred.referenceNo),
+      referenceLabel: clean(contextOverride.referenceLabel) || clean(pending.referenceLabel) || clean(inferred.referenceLabel) || "Cat. No. / Item #",
+    };
+
     setOpen(true);
     setDone(null);
     setErrorMsg("");
+    setReferenceLabel(context.referenceLabel);
 
     window.setTimeout(() => {
-      if (!productRef.current) return;
-
-      if (explicitProduct) {
-        productRef.current.value = explicitProduct;
-        pendingProductRef.current = "";
-        return;
+      if (productNameRef.current && !productNameRef.current.value.trim()) {
+        productNameRef.current.value = context.productName;
       }
-
-      if (productRef.current.value.trim()) return;
-      if (!pathname.startsWith("/products")) return;
-
-      const heading = document.querySelector("main h1")?.textContent?.trim();
-      if (heading) productRef.current.value = heading;
+      if (referenceNoRef.current && !referenceNoRef.current.value.trim()) {
+        referenceNoRef.current.value = context.referenceNo;
+      }
+      pendingContextRef.current = {};
     }, 0);
   }
 
@@ -81,7 +178,9 @@ export default function FloatingQuoteButton() {
       name: String(form.get("name") ?? ""),
       org: String(form.get("org") ?? ""),
       email: String(form.get("email") ?? ""),
-      product: String(form.get("product") ?? ""),
+      productName: String(form.get("productName") ?? ""),
+      referenceNo: String(form.get("referenceNo") ?? ""),
+      referenceLabel,
       message: String(form.get("message") ?? ""),
       sourceUrl: window.location.href,
     };
@@ -169,10 +268,17 @@ export default function FloatingQuoteButton() {
               />
 
               <input
-                ref={productRef}
-                name="product"
+                ref={productNameRef}
+                name="productName"
                 className="h-11 w-full rounded-xl border border-slate-300 px-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-                placeholder="Product name / Cat No"
+                placeholder="Product name"
+              />
+
+              <input
+                ref={referenceNoRef}
+                name="referenceNo"
+                className="h-11 w-full rounded-xl border border-slate-300 px-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                placeholder={referenceLabel}
               />
 
               <textarea
