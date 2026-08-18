@@ -35,7 +35,9 @@ function base64Lines(value: string) {
 }
 
 function responseCode(response: string) {
-  const match = response.match(/(?:^|\r?\n)(\d{3})[ -][^\r\n]*$/);
+  const lines = response.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const last = lines.at(-1) || "";
+  const match = last.match(/^(\d{3})[ -]/);
   return match ? Number(match[1]) : 0;
 }
 
@@ -85,12 +87,7 @@ function waitForResponse(socket: tls.TLSSocket, timeoutMs = 12000) {
   });
 }
 
-async function command(
-  socket: tls.TLSSocket,
-  value: string,
-  expected: number[],
-  stage: string,
-) {
+async function command(socket: tls.TLSSocket, value: string, expected: number[], stage: string) {
   socket.write(`${value}\r\n`);
   const response = await waitForResponse(socket);
   const code = responseCode(response);
@@ -120,23 +117,18 @@ async function sendMailplugMail({
   const host = process.env.MAILPLUG_SMTP_HOST || "smtp.mailplug.co.kr";
   const port = Number(process.env.MAILPLUG_SMTP_PORT || 465);
 
-  const socket = tls.connect({
-    host,
-    port,
-    servername: host,
-    rejectUnauthorized: true,
-  });
-
+  const socket = tls.connect({ host, port, servername: host, rejectUnauthorized: true });
   socket.setTimeout(15000, () => socket.destroy(new Error("SMTP connection timed out.")));
 
   await new Promise<void>((resolve, reject) => {
-    socket.once("secureConnect", () => resolve());
+    socket.once("secureConnect", resolve);
     socket.once("error", reject);
   });
 
   try {
     const greeting = await waitForResponse(socket);
-    if (responseCode(greeting) !== 220) throw new Error("SMTP_GREETING_FAILED");
+    const greetingCode = responseCode(greeting);
+    if (greetingCode !== 220) throw new Error(`SMTP_GREETING_${greetingCode || "UNKNOWN"}`);
 
     await command(socket, "EHLO itsbio.co.kr", [250], "EHLO");
     await command(socket, "AUTH LOGIN", [334], "AUTH_START");
@@ -244,16 +236,14 @@ export async function POST(req: Request) {
     const html = `
       <div style="font-family:Arial,sans-serif;color:#1f2937;line-height:1.6;max-width:680px">
         <h2 style="margin:0 0 20px;color:#111827">New ITS BIO quote request</h2>
-        <table style="width:100%;border-collapse:collapse;font-size:14px">
-          <tbody>
-            <tr><td style="padding:8px 0;font-weight:700;width:150px">Name</td><td style="padding:8px 0">${escapeHtml(name || "-")}</td></tr>
-            <tr><td style="padding:8px 0;font-weight:700">Company / Lab</td><td style="padding:8px 0">${escapeHtml(org || "-")}</td></tr>
-            <tr><td style="padding:8px 0;font-weight:700">Email</td><td style="padding:8px 0">${escapeHtml(email)}</td></tr>
-            <tr><td style="padding:8px 0;font-weight:700">Product name</td><td style="padding:8px 0">${escapeHtml(productName || "-")}</td></tr>
-            <tr><td style="padding:8px 0;font-weight:700">${escapeHtml(referenceLabel)}</td><td style="padding:8px 0">${escapeHtml(referenceNo || "-")}</td></tr>
-            ${sourceUrl ? `<tr><td style="padding:8px 0;font-weight:700">Source page</td><td style="padding:8px 0"><a href="${escapeHtml(sourceUrl)}">${escapeHtml(sourceUrl)}</a></td></tr>` : ""}
-          </tbody>
-        </table>
+        <table style="width:100%;border-collapse:collapse;font-size:14px"><tbody>
+          <tr><td style="padding:8px 0;font-weight:700;width:150px">Name</td><td style="padding:8px 0">${escapeHtml(name || "-")}</td></tr>
+          <tr><td style="padding:8px 0;font-weight:700">Company / Lab</td><td style="padding:8px 0">${escapeHtml(org || "-")}</td></tr>
+          <tr><td style="padding:8px 0;font-weight:700">Email</td><td style="padding:8px 0">${escapeHtml(email)}</td></tr>
+          <tr><td style="padding:8px 0;font-weight:700">Product name</td><td style="padding:8px 0">${escapeHtml(productName || "-")}</td></tr>
+          <tr><td style="padding:8px 0;font-weight:700">${escapeHtml(referenceLabel)}</td><td style="padding:8px 0">${escapeHtml(referenceNo || "-")}</td></tr>
+          ${sourceUrl ? `<tr><td style="padding:8px 0;font-weight:700">Source page</td><td style="padding:8px 0"><a href="${escapeHtml(sourceUrl)}">${escapeHtml(sourceUrl)}</a></td></tr>` : ""}
+        </tbody></table>
         <div style="margin-top:22px;padding-top:18px;border-top:1px solid #e5e7eb">
           <div style="font-weight:700;margin-bottom:8px">Message</div>
           <div style="white-space:pre-wrap">${escapeHtml(message)}</div>
@@ -261,16 +251,7 @@ export async function POST(req: Request) {
       </div>
     `.trim();
 
-    await sendMailplugMail({
-      user: smtpUser,
-      password: smtpPassword,
-      to: toEmail,
-      replyTo: email,
-      subject,
-      text,
-      html,
-    });
-
+    await sendMailplugMail({ user: smtpUser, password: smtpPassword, to: toEmail, replyTo: email, subject, text, html });
     return Response.json({ ok: true });
   } catch (error) {
     const reason = error instanceof Error ? error.message : "Unknown SMTP error";
