@@ -39,7 +39,7 @@ export async function POST(req: Request) {
 
     const apiKey = process.env.RESEND_API_KEY;
     const toEmail = process.env.QUOTE_TO_EMAIL || "info@itsbio.co.kr";
-    const fromEmail = process.env.QUOTE_FROM_EMAIL || "ITS BIO Website <onboarding@resend.dev>";
+    const fromEmail = process.env.QUOTE_FROM_EMAIL || "ITS BIO Website <quote@mail.itsbio.co.kr>";
 
     if (!apiKey) {
       return Response.json({ ok: false, error: "Mail service is not configured yet." }, { status: 500 });
