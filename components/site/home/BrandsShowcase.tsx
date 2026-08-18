@@ -37,6 +37,82 @@ const BRANDS: BrandItem[] = [
     href: "/products/kent",
     tags: ["Anesthesia", "Ventilation", "Monitoring"],
   },
+  {
+    key: "cleaver",
+    name: "Cleaver Scientific",
+    title: "Cleaver Scientific",
+    eyebrow: "LABORATORY EQUIPMENT",
+    description: "Electrophoresis, gel documentation and practical equipment for life science laboratories.",
+    logo: "/partners/Cleaverscientific-logo.png",
+    href: "https://www.thistlescientific.co.uk/",
+    tags: ["Electrophoresis", "Imaging", "Lab Equipment"],
+    external: true,
+  },
+  {
+    key: "seedburo",
+    name: "Seedburo",
+    title: "Seedburo Equipment Company",
+    eyebrow: "AGRICULTURAL RESEARCH",
+    description: "Specialized instruments for seed, grain and agricultural quality testing workflows.",
+    logo: "/partners/Seedburo-logo.png",
+    href: "https://seedburo.com/",
+    tags: ["Seed Testing", "Grain Analysis", "Lab Equipment"],
+    external: true,
+  },
+  {
+    key: "aims",
+    name: "AIMS",
+    title: "AIMS",
+    eyebrow: "ANIMAL IDENTIFICATION",
+    description: "Identification and data solutions that support reliable animal research and care.",
+    logo: "/partners/aims-logo.png",
+    href: "https://animalid.com/",
+    tags: ["Identification", "Data Systems", "Animal Care"],
+    external: true,
+  },
+  {
+    key: "bioplastics",
+    name: "BIOplastics",
+    title: "BIOplastics",
+    eyebrow: "MOLECULAR DIAGNOSTICS",
+    description: "Laboratory plastic consumables engineered for consistent PCR and qPCR workflows.",
+    logo: "/partners/bioplastics-logo.png",
+    href: "https://www.bioplastics.com/",
+    tags: ["PCR Plastics", "qPCR", "Consumables"],
+    external: true,
+  },
+  {
+    key: "cfs",
+    name: "CellFree Sciences",
+    title: "CellFree Sciences",
+    eyebrow: "PROTEIN EXPRESSION",
+    description: "Wheat-germ cell-free protein expression products, systems and research services.",
+    logo: "/partners/cellfreesciences-logo.png",
+    href: "https://www.cfsciences.com/eg/",
+    tags: ["Cell-free Expression", "Protein Synthesis", "Services"],
+    external: true,
+  },
+  {
+    key: "itschem",
+    name: "ITSChem",
+    title: "ITSChem",
+    eyebrow: "RESEARCH MATERIALS",
+    description: "Specialty research materials and responsive laboratory supply support.",
+    logo: "/partners/itschem-logo.png",
+    href: "/contact",
+    tags: ["Research Materials", "Laboratory", "Support"],
+  },
+  {
+    key: "plaslabs",
+    name: "PLAS-LABS",
+    title: "PLAS-LABS",
+    eyebrow: "CONTROLLED ENVIRONMENTS",
+    description: "Controlled-atmosphere enclosures and handling systems for sensitive research workflows.",
+    logo: "/partners/plaslabs-logo.png",
+    href: "https://plas-labs.com/",
+    tags: ["Glove Boxes", "Enclosures", "Animal Care"],
+    external: true,
+  },
 ];
 
 export default function BrandsShowcase() {
@@ -62,7 +138,7 @@ export default function BrandsShowcase() {
         </div>
 
         <div className="mt-8 overflow-hidden border border-slate-200 bg-white lg:grid lg:h-[600px] lg:grid-cols-[1.02fr_1fr]">
-          <div className="grid grid-cols-2 gap-px bg-slate-200 p-px lg:h-full lg:grid-cols-1 lg:grid-rows-2">
+          <div className="grid grid-cols-2 gap-px bg-slate-200 p-px sm:grid-cols-3 lg:h-full lg:grid-rows-3">
             {BRANDS.map((brand) => {
               const active = brand.key === selected.key;
               return (
@@ -73,13 +149,13 @@ export default function BrandsShowcase() {
                   aria-pressed={active}
                   aria-label={`${brand.name} 정보 보기`}
                   className={[
-                    "group relative flex min-h-[180px] flex-col items-center justify-center bg-white px-4 py-8 text-center transition lg:min-h-0",
+                    "group relative flex min-h-[150px] flex-col items-center justify-center bg-white px-4 py-6 text-center transition sm:min-h-[170px] lg:min-h-0",
                     "focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-orange-500",
                     active ? "bg-orange-50/45" : "hover:bg-slate-50",
                   ].join(" ")}
                 >
-                  <span className="relative h-20 w-full max-w-[240px]">
-                    <Image src={brand.logo} alt="" fill className="object-contain" sizes="240px" />
+                  <span className="relative h-16 w-full max-w-[190px]">
+                    <Image src={brand.logo} alt="" fill className="object-contain" sizes="190px" />
                   </span>
                   <span className="mt-4 line-clamp-2 text-xs font-semibold leading-5 text-slate-800 sm:text-[13px]">
                     {brand.name}
