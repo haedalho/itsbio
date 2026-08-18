@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-08-18T07:42:54.053Z",
-  "found": 9,
-  "withThumbnail": 9,
+  "generatedAt": "2026-08-18T07:44:30.409Z",
+  "found": 17,
+  "withThumbnail": 16,
   "docs": [
     {
       "_id": "legacy-notice-15",
@@ -74,6 +74,70 @@
       "publishedAt": "2022-01-10T09:10:00.000Z",
       "slug": "abm-crispr-cas9-sgrna-all-in-one-vector-virus-collection-23",
       "title": "[abm] CRISPR Cas9+sgRNA All-in-One Vector/Virus Collection"
+    },
+    {
+      "_id": "legacy-notice-24",
+      "bodyCount": 20,
+      "hasThumbnail": true,
+      "publishedAt": "2022-02-18T10:07:00.000Z",
+      "slug": "abm-february-newsletter-24",
+      "title": "[abm] February Newsletter"
+    },
+    {
+      "_id": "legacy-notice-25",
+      "bodyCount": 22,
+      "hasThumbnail": true,
+      "publishedAt": "2022-03-21T09:01:00.000Z",
+      "slug": "abm-march-newsletter-25",
+      "title": "[abm] March Newsletter"
+    },
+    {
+      "_id": "legacy-notice-26",
+      "bodyCount": 12,
+      "hasThumbnail": true,
+      "publishedAt": "2022-06-15T10:07:00.000Z",
+      "slug": "c-b-s-scientific-26",
+      "title": "C.B.S. Scientific 대리점"
+    },
+    {
+      "_id": "legacy-notice-27",
+      "bodyCount": 20,
+      "hasThumbnail": true,
+      "publishedAt": "2022-08-18T09:49:00.000Z",
+      "slug": "abm-new-megafitm-pro-fidelity-dna-polymerase-released-27",
+      "title": "[abm] New MegaFi™ Pro Fidelity DNA Polymerase Released!"
+    },
+    {
+      "_id": "legacy-notice-28",
+      "bodyCount": 33,
+      "hasThumbnail": true,
+      "publishedAt": "2022-09-08T09:02:00.000Z",
+      "slug": "abm-improve-your-nucleic-acid-stains-with-abm-s-safe-redtm-28",
+      "title": "[abm] Improve Your Nucleic Acid Stains with abm's Safe-Red™"
+    },
+    {
+      "_id": "legacy-notice-29",
+      "bodyCount": 36,
+      "hasThumbnail": true,
+      "publishedAt": "2022-10-19T09:31:00.000Z",
+      "slug": "abm-safe-redtm-nucleic-acid-stain-is-ready-for-you-29",
+      "title": "[abm] Safe-Red™ Nucleic Acid Stain is ready for you"
+    },
+    {
+      "_id": "legacy-notice-30",
+      "bodyCount": 7,
+      "hasThumbnail": true,
+      "publishedAt": "2024-06-11T09:42:00.000Z",
+      "slug": "abm-pcr-1-1-mycoplasma-8-30-30",
+      "title": "[abm] PCR 제품 군 1+1 행사 및 Mycoplasma 제품 군 할인 행사!! (8월 30일 까지)"
+    },
+    {
+      "_id": "legacy-notice-31",
+      "bodyCount": 44,
+      "hasThumbnail": false,
+      "publishedAt": "2024-10-21T09:42:00.000Z",
+      "slug": "abm-pdac-vector-virus-31",
+      "title": "[abm] 췌장관암(PDAC) 관련 유전자 vector 및 virus 제품 출시!!"
     }
   ]
 }
