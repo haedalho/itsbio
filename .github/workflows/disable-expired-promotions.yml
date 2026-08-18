@@ -1,0 +1,58 @@
+name: Disable Expired Promotions
+
+on:
+  push:
+    branches:
+      - agent/notice-legacy-migration
+    paths:
+      - .github/workflows/disable-expired-promotions.yml
+
+permissions:
+  contents: write
+
+jobs:
+  disable:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: Production
+    env:
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/notice-legacy-migration
+          fetch-depth: 0
+      - name: Disable only the two expired promotions
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs/promises';
+          const token=[process.env.SANITY_WRITE_TOKEN,process.env.SANITY_API_WRITE_TOKEN,process.env.SANITY_API_TOKEN,process.env.SANITY_TOKEN,process.env.SANITY_AUTH_TOKEN].find(Boolean);
+          if(!token) throw new Error('No Sanity write token');
+          const ids=['a2514118-adb0-450b-8b86-aa0b227ce7df','bcc36e15-d95e-4883-b50a-9de0e7c3cd13'];
+          const mutate='https://9b5twpc8.api.sanity.io/v2025-01-01/data/mutate/production';
+          const body={mutations:ids.map(id=>({patch:{id,set:{isActive:false}}}))};
+          const mr=await fetch(mutate,{method:'POST',headers:{authorization:`Bearer ${token}`,'content-type':'application/json'},body:JSON.stringify(body)});
+          if(!mr.ok) throw new Error(`${mr.status} ${await mr.text()}`);
+          const query='*[_type == "promotion" && coalesce(isActive, true) == true]{_id,title,isActive}';
+          const qurl=`https://9b5twpc8.api.sanity.io/v2025-01-01/data/query/production?query=${encodeURIComponent(query)}`;
+          const qr=await fetch(qurl,{headers:{authorization:`Bearer ${token}`}});
+          if(!qr.ok) throw new Error(`${qr.status} ${await qr.text()}`);
+          const active=(await qr.json()).result||[];
+          const report={generatedAt:new Date().toISOString(),disabled:ids,activeCount:active.length,active};
+          await fs.mkdir('docs/migration-reports',{recursive:true});
+          await fs.writeFile('docs/migration-reports/promotion-disable.json',JSON.stringify(report,null,2));
+          await fs.writeFile('docs/migration-reports/promotion-disable.md',['# Promotion Disable Verification','',`- Disabled: ${ids.length}`,`- Active promotions remaining: ${active.length}`,''].join('\n'));
+          console.log(JSON.stringify(report,null,2));
+          if(active.length!==0) process.exit(1);
+          NODE
+      - name: Commit verification report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/migration-reports/promotion-disable.*
+          git commit -m "Record expired promotion disable verification" || exit 0
+          git push origin HEAD:agent/notice-legacy-migration
