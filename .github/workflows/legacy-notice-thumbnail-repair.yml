@@ -1,0 +1,91 @@
+name: Repair Legacy Notice Thumbnails
+
+on:
+  push:
+    branches:
+      - agent/notice-legacy-migration
+    paths:
+      - .github/workflows/legacy-notice-thumbnail-repair.yml
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: Production
+    env:
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/notice-legacy-migration
+          fetch-depth: 0
+      - name: Upload original thumbnails for 31/32 and branded fallback for 34
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs/promises';
+          const token=[process.env.SANITY_WRITE_TOKEN,process.env.SANITY_API_WRITE_TOKEN,process.env.SANITY_API_TOKEN,process.env.SANITY_TOKEN,process.env.SANITY_AUTH_TOKEN].find(Boolean);
+          if(!token) throw new Error('No Sanity write token');
+          const project='9b5twpc8', version='2025-01-01', dataset='production';
+          const sources={
+            31:'https://www.ibric.org/upload/geditor/202007/0.01692600_1595816010.png',
+            32:'https://www.ibric.org/_attach/bric/editor-image/2025/02/WNQZGhKQFgZBYCypIdWbguLRQx.jpg',
+          };
+          async function uploadBuffer(buffer,type,name){
+            const url=`https://${project}.api.sanity.io/v${version}/assets/images/${dataset}?filename=${encodeURIComponent(name)}`;
+            const r=await fetch(url,{method:'POST',headers:{authorization:`Bearer ${token}`,'content-type':type},body:buffer});
+            if(!r.ok) throw new Error(`asset ${r.status}: ${await r.text()}`);
+            const j=await r.json();
+            return j.document?._id||j._id;
+          }
+          async function patchThumb(vid,assetId){
+            const url=`https://${project}.api.sanity.io/v${version}/data/mutate/${dataset}`;
+            const body={mutations:[{patch:{id:`legacy-notice-${vid}`,set:{thumbnail:{_type:'image',asset:{_type:'reference',_ref:assetId}}}}}]};
+            const r=await fetch(url,{method:'POST',headers:{authorization:`Bearer ${token}`,'content-type':'application/json'},body:JSON.stringify(body)});
+            if(!r.ok) throw new Error(`patch ${vid} ${r.status}: ${await r.text()}`);
+          }
+          const repaired=[];
+          for(const vid of [31,32]){
+            const source=sources[vid];
+            const r=await fetch(source,{headers:{'user-agent':'Mozilla/5.0','referer':`http://itsbio.co.kr/?page_id=80&vid=${vid}`}});
+            if(!r.ok) throw new Error(`source ${vid} ${r.status}`);
+            const type=r.headers.get('content-type')||'image/jpeg';
+            const buffer=Buffer.from(await r.arrayBuffer());
+            const asset=await uploadBuffer(buffer,type,`legacy-notice-${vid}-thumbnail`);
+            await patchThumb(vid,asset);
+            repaired.push({vid,source,asset,mode:'original'});
+          }
+          const fallback=await fs.readFile('public/hero-e.png');
+          const fallbackAsset=await uploadBuffer(fallback,'image/png','legacy-notice-34-itsbio-fallback.png');
+          await patchThumb(34,fallbackAsset);
+          repaired.push({vid:34,source:'public/hero-e.png',asset:fallbackAsset,mode:'ITS BIO fallback because legacy LinkedIn CDN returns 403'});
+
+          const ids=Array.from({length:20},(_,i)=>`legacy-notice-${i+15}`);
+          const query=`*[_id in ${JSON.stringify(ids)}]{_id,title,"hasThumbnail":defined(thumbnail.asset._ref),"thumb":thumbnail.asset._ref}`;
+          const qurl=`https://${project}.api.sanity.io/v${version}/data/query/${dataset}?query=${encodeURIComponent(query)}`;
+          const qr=await fetch(qurl,{headers:{authorization:`Bearer ${token}`}});
+          if(!qr.ok) throw new Error(`verify ${qr.status}: ${await qr.text()}`);
+          const docs=(await qr.json()).result||[];
+          const missing=docs.filter(x=>!x.hasThumbnail);
+          const report={generatedAt:new Date().toISOString(),repaired,found:docs.length,withThumbnail:docs.filter(x=>x.hasThumbnail).length,missing:missing.map(x=>x._id)};
+          await fs.mkdir('docs/migration-reports',{recursive:true});
+          await fs.writeFile('docs/migration-reports/legacy-notice-thumbnail-repair.json',JSON.stringify(report,null,2));
+          await fs.writeFile('docs/migration-reports/legacy-notice-thumbnail-repair.md',['# Legacy Notice Thumbnail Repair','',`- Found: ${report.found}/20`,`- With thumbnail: ${report.withThumbnail}/${report.found}`,`- Missing: ${report.missing.length}`,'',...repaired.map(x=>`- ${x.vid} · ${x.mode} · ${x.source}`),''].join('\n'));
+          console.log(JSON.stringify(report,null,2));
+          if(docs.length!==20||missing.length) process.exit(1);
+          NODE
+      - name: Commit repair report
+        if: always()
+        run: |
+          test -f docs/migration-reports/legacy-notice-thumbnail-repair.json || exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/migration-reports/legacy-notice-thumbnail-repair.*
+          git commit -m "Record legacy Notice thumbnail repair" || exit 0
+          git push origin HEAD:agent/notice-legacy-migration
