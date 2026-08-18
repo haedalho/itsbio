@@ -1,0 +1,62 @@
+name: Apply Legacy Notice HTML
+
+on:
+  push:
+    branches:
+      - agent/notice-html-fidelity
+    paths:
+      - .github/workflows/apply-legacy-notice-html.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/notice-html-fidelity
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Apply sanitized original legacy HTML
+        run: node scripts/backfill-legacy-notice-html.mjs --apply
+      - name: Verify all 20 documents have legacyHtml
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs/promises';
+          const token=[process.env.SANITY_WRITE_TOKEN,process.env.SANITY_API_WRITE_TOKEN,process.env.SANITY_API_TOKEN,process.env.SANITY_TOKEN,process.env.SANITY_AUTH_TOKEN].find(Boolean);
+          const query='*[_id match "legacy-notice-*"] | order(_id asc){_id,"htmlChars":length(legacyHtml)}';
+          const url=`https://9b5twpc8.api.sanity.io/v2025-01-01/data/query/production?query=${encodeURIComponent(query)}`;
+          const r=await fetch(url,{headers:{authorization:`Bearer ${token}`}});
+          if(!r.ok) throw new Error(`${r.status} ${await r.text()}`);
+          const docs=(await r.json()).result||[];
+          const valid=docs.filter(d=>Number(d.htmlChars)>20);
+          if(valid.length!==20) throw new Error(`Expected 20 legacyHtml docs, found ${valid.length}`);
+          await fs.mkdir('docs/migration-reports',{recursive:true});
+          await fs.writeFile('docs/migration-reports/legacy-notice-html-applied.md',['# Legacy Notice HTML Applied','',`- Valid: ${valid.length}/20`,'',...valid.map(d=>`- ${d._id} · ${d.htmlChars} chars`),''].join('\n'));
+          NODE
+      - name: Commit verification
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/migration-reports/legacy-notice-html-applied.md
+          git commit -m "Verify legacy Notice HTML backfill" || exit 0
+          git push origin HEAD:agent/notice-html-fidelity
