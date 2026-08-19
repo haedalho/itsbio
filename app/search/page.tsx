@@ -544,7 +544,7 @@ export default async function SearchPage({
             <nav className="mt-5 flex gap-2 overflow-x-auto pb-2 lg:hidden" aria-label="Search result brands">
               <Link
                 href={makeSearchHref(q)}
-                className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
                   !selectedBrand
                     ? "border-orange-600 bg-orange-600 text-white"
                     : "border-slate-300 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-700"
@@ -556,13 +556,19 @@ export default async function SearchPage({
                 <Link
                   key={group.key}
                   href={makeSearchHref(q, group.key)}
-                  className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                    selectedBrand === group.key
-                      ? "border-orange-600 bg-orange-600 text-white"
-                      : "border-slate-300 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-700"
+                  className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                    selectedBrand === group.key ? "text-white" : "bg-white text-slate-700 hover:bg-slate-50"
                   }`}
+                  style={selectedBrand === group.key
+                    ? { borderColor: brandTone(group.key).accent, backgroundColor: brandTone(group.key).accent }
+                    : { borderColor: `${brandTone(group.key).accent}45` }}
                 >
-                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: brandTone(group.key).accent }} /><span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: brandTone(group.key).accent }} />{group.label} <span className="opacity-70">{group.items.length}</span>
+                  <span
+                    className="h-2 w-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: selectedBrand === group.key ? "#ffffff" : brandTone(group.key).accent }}
+                  />
+                  <span>{group.label}</span>
+                  <span className="opacity-70">{group.items.length}</span>
                 </Link>
               ))}
             </nav>
