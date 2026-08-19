@@ -1,0 +1,91 @@
+name: Migrate ABM fallback 150 details
+
+on:
+  pull_request:
+    branches:
+      - agent/quote-email-fields
+    paths:
+      - data/abm-fallback-150-targets.json
+      - scripts/migrate-abm-fallback-150.mjs
+      - .github/workflows/migrate-abm-fallback-150.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: abm-fallback-150-migration
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    if: github.event_name == 'workflow_dispatch' || github.head_ref == 'agent/abm-migrate-150-details'
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 90
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm install --no-audit --no-fund
+
+      - name: Syntax check migration guard
+        run: node --check scripts/migrate-abm-fallback-150.mjs
+
+      - id: prepare
+        name: Resolve only the frozen 150 targets still missing detail
+        run: node scripts/migrate-abm-fallback-150.mjs --mode prepare
+
+      - id: collect
+        name: Collect official ABM detail for current missing targets
+        if: steps.prepare.outputs.missing_count != '0'
+        continue-on-error: true
+        env:
+          ABM_INVENTORY_FILE: ${{ steps.prepare.outputs.inventory_file }}
+        run: node scripts/abm-full-detail-collect-runner.mjs --workers 2 --gap-ms 300
+
+      - id: filter
+        name: Keep only exact-SKU, price-free successful records
+        if: steps.prepare.outputs.missing_count != '0'
+        run: node scripts/migrate-abm-fallback-150.mjs --mode filter
+
+      - name: Stage only validated target details and owned images
+        if: steps.prepare.outputs.missing_count != '0' && steps.filter.outputs.safe_count != '0'
+        run: >-
+          node scripts/stage-abm-rebuild-details.mjs
+          --products .cache/abm-fallback-150-migration/safe-products.json
+          --services .cache/abm-fallback-150-migration/empty-services.json
+          --allow-partial
+          --batch-key fallback150-${{ github.run_id }}-${{ github.run_attempt }}
+          --version 2026-08-09-search-v5
+
+      - name: Audit all frozen 150 targets after staging
+        run: node scripts/migrate-abm-fallback-150.mjs --mode audit
+
+      - name: Upload migration evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: abm-fallback-150-migration-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .cache/abm-fallback-150-migration/
+            .cache/abm-full-detail-collect/summary.json
+            .cache/abm-full-detail-collect/summary.md
+            .cache/abm-full-detail-collect/product-review.json
+            .cache/abm-rebuild-detail-staging/report.json
+          retention-days: 30
+          if-no-files-found: warn

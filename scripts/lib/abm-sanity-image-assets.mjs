@@ -5,6 +5,7 @@ import * as cheerio from "cheerio";
 
 const PROJECT_ID = "9b5twpc8";
 const MAX_IMAGE_BYTES = 25 * 1024 * 1024;
+const IMAGE_MIGRATION_ATTEMPTS = 5;
 const IMAGE_FIELDS = [
   "introHtml",
   "specificationsHtml",
@@ -15,6 +16,8 @@ const IMAGE_FIELDS = [
   "reviewsHtml",
   "serviceDetailsHtml",
 ];
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export function isManagedAbmImageUrl(value) {
   try {
@@ -84,6 +87,15 @@ async function downloadOfficialImage(sourceUrl) {
   }
 }
 
+function retryDelay(attempt) {
+  return Math.min(12_000, 1_000 * (2 ** attempt)) + Math.floor(Math.random() * 350);
+}
+
+function isRetryableImageError(error) {
+  const message = String(error?.message || error || "");
+  return /HTTP (?:408|425|429|5\d\d)\b|internal server error|fetch failed|network|socket|ECONN|ETIMEDOUT|EAI_AGAIN|aborted/i.test(message);
+}
+
 export function createAbmImageRehoster({ client, dryRun = false, logEvery = 50 } = {}) {
   if (!dryRun && !client) throw new Error("Sanity client is required for ABM image migration");
   const cache = new Map();
@@ -95,6 +107,7 @@ export function createAbmImageRehoster({ client, dryRun = false, logEvery = 50 }
     rewrittenHtmlImages: 0,
     missingOfficialImages: 0,
     failures: 0,
+    transientRetries: 0,
   };
 
   async function rehostUrl(rawUrl, baseUrl) {
@@ -115,25 +128,34 @@ export function createAbmImageRehoster({ client, dryRun = false, logEvery = 50 }
     }
 
     const task = (async () => {
-      try {
-        const downloaded = await downloadOfficialImage(sourceUrl);
-        if (!downloaded) {
-          stats.missingOfficialImages += 1;
-          return "";
+      let lastError;
+      for (let attempt = 0; attempt < IMAGE_MIGRATION_ATTEMPTS; attempt += 1) {
+        try {
+          const downloaded = await downloadOfficialImage(sourceUrl);
+          if (!downloaded) {
+            stats.missingOfficialImages += 1;
+            return "";
+          }
+          const { bytes, mimeType } = downloaded;
+          const digest = crypto.createHash("sha256").update(bytes).digest("hex").slice(0, 16);
+          const asset = await client.assets.upload("image", bytes, {
+            filename: `${digest}-${filenameFor(sourceUrl, mimeType)}`,
+          });
+          if (!isManagedAbmImageUrl(asset?.url)) throw new Error(`Sanity returned an unmanaged image URL for ${sourceUrl}`);
+          stats.uploadedAssets += 1;
+          if (stats.uploadedAssets % logEvery === 0) console.log(`[ABM assets] uploaded ${stats.uploadedAssets}`);
+          return asset.url;
+        } catch (error) {
+          lastError = error;
+          if (attempt >= IMAGE_MIGRATION_ATTEMPTS - 1 || !isRetryableImageError(error)) break;
+          stats.transientRetries += 1;
+          const delay = retryDelay(attempt);
+          console.warn(`[ABM assets] transient failure for ${sourceUrl}; retry ${attempt + 2}/${IMAGE_MIGRATION_ATTEMPTS} in ${delay}ms: ${error?.message || error}`);
+          await sleep(delay);
         }
-        const { bytes, mimeType } = downloaded;
-        const digest = crypto.createHash("sha256").update(bytes).digest("hex").slice(0, 16);
-        const asset = await client.assets.upload("image", bytes, {
-          filename: `${digest}-${filenameFor(sourceUrl, mimeType)}`,
-        });
-        if (!isManagedAbmImageUrl(asset?.url)) throw new Error(`Sanity returned an unmanaged image URL for ${sourceUrl}`);
-        stats.uploadedAssets += 1;
-        if (stats.uploadedAssets % logEvery === 0) console.log(`[ABM assets] uploaded ${stats.uploadedAssets}`);
-        return asset.url;
-      } catch (error) {
-        stats.failures += 1;
-        throw new Error(`${sourceUrl}: ${error?.message || error}`);
       }
+      stats.failures += 1;
+      throw new Error(`${sourceUrl}: ${lastError?.message || lastError}`);
     })();
     cache.set(sourceUrl, task);
     return await task;

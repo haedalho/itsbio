@@ -1,0 +1,26 @@
+name: Audit ABM fallback 150 content
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    if: github.head_ref == 'agent/abm-migrate-150-details'
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Audit actual migrated ABM content
+        run: node scripts/audit-abm-fallback-150-content.mjs
