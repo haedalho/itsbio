@@ -1,6 +1,14 @@
 name: Audit ABM incomplete staged details
 
 on:
+  pull_request:
+    branches:
+      - agent/quote-email-fields
+    types: [opened, synchronize, reopened]
+    paths:
+      - scripts/audit-abm-incomplete-details.mjs
+      - .github/workflows/audit-abm-incomplete-details.yml
+      - app/api/internal/abm-incomplete/route.ts
   push:
     branches:
       - agent/abm-incomplete-audit
