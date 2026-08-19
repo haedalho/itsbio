@@ -1,0 +1,32 @@
+name: Temporary catalog overlap check
+
+on:
+  push:
+    branches:
+      - agent/logo-loading-overlay
+
+permissions:
+  contents: write
+
+jobs:
+  overlap:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/logo-loading-overlay
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Compare ABM and Kent catalog numbers
+        run: node scripts/find-abm-kent-overlap.mjs
+      - name: Commit temporary result
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/_catalog-overlap-temp.json
+          git commit -m "chore: record temporary catalog overlap result"
+          git push origin HEAD:agent/logo-loading-overlay
