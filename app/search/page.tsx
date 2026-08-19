@@ -562,7 +562,7 @@ export default async function SearchPage({
                       : "border-slate-300 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-700"
                   }`}
                 >
-                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: brandTone(group.key).accent }} />{group.label} <span className="opacity-70">{group.items.length}</span>
+                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: brandTone(group.key).accent }} /><span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: brandTone(group.key).accent }} />{group.label} <span className="opacity-70">{group.items.length}</span>
                 </Link>
               ))}
             </nav>
@@ -591,11 +591,15 @@ export default async function SearchPage({
                         key={group.key}
                         href={makeSearchHref(q, group.key)}
                         className={`mt-1 flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
-                          selectedBrand === group.key ? "bg-orange-50 text-orange-700" : "text-slate-700 hover:bg-slate-50"
+                          selectedBrand === group.key ? "" : "text-slate-700 hover:bg-slate-50"
                         }`}
+                        style={selectedBrand === group.key ? { backgroundColor: brandTone(group.key).soft, color: brandTone(group.key).deep } : undefined}
                       >
                         <span className="flex min-w-0 items-center gap-2 truncate pr-2"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: brandTone(group.key).accent }} /><span className="truncate">{group.label}</span></span>
-                        <span className={`rounded-full px-2 py-0.5 text-xs ${selectedBrand === group.key ? "bg-white text-orange-700" : "bg-slate-100 text-slate-500"}`}>
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs ${selectedBrand === group.key ? "bg-white" : "bg-slate-100 text-slate-500"}`}
+                          style={selectedBrand === group.key ? { color: brandTone(group.key).deep } : undefined}
+                        >
                           {group.items.length}
                         </span>
                       </Link>
@@ -616,7 +620,10 @@ export default async function SearchPage({
                   <>
                     <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                       <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.16em] text-orange-600">
+                        <p
+                          className="text-xs font-bold uppercase tracking-[0.16em]"
+                          style={{ color: activeGroup ? brandTone(activeGroup.key).accent : "#ea580c" }}
+                        >
                           {activeGroup ? activeGroup.label : "All brands"}
                         </p>
                         <h2 className="mt-1 text-2xl font-semibold text-slate-950">
