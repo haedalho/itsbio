@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createClient } from "next-sanity";
-import { JSDOM } from "jsdom";
+import { load } from "cheerio";
 
 const VERSION = "2026-08-09-search-v5";
 const client = createClient({
@@ -13,24 +13,28 @@ const client = createClient({
 const collapse = (value) => String(value || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
 const commerceLabel = (value) => /^(?:(?:unit\s+)?(?:price|cost|amount)(?:\s*(?:\(|-|:)?\s*(?:usd|cad)\)?)?|qty|quantity|cart|add\s+to\s+cart|order|msrp|retail(?:\s+price)?|wholesale(?:\s+price)?|usd|cad)$/i.test(collapse(value));
 
-function directCells(row) {
-  return Array.from(row.children).filter((cell) => /^(TD|TH)$/i.test(cell.tagName));
-}
-
 function parseSpecRows(html) {
   if (!collapse(html)) return [];
-  const dom = new JSDOM(String(html));
-  const doc = dom.window.document;
-  const root = doc.querySelector(".abm-products-specification > table") || doc.querySelector("table");
-  if (!root) return [];
-  const rows = Array.from(root.querySelectorAll(":scope > tbody > tr, :scope > thead > tr, :scope > tfoot > tr, :scope > tr"));
-  return rows.map((row) => {
-    const cells = directCells(row);
-    const label = collapse(cells[0]?.textContent || "");
-    const valueText = collapse(cells.slice(1).map((cell) => cell.textContent || "").join(" "));
-    const hasMeaningfulMedia = cells.slice(1).some((cell) => cell.querySelector("img[src], a[href], video, audio"));
-    return { label, valueText, hasMeaningfulMedia, cellCount: cells.length };
-  }).filter((row) => row.label);
+  const $ = load(String(html));
+  const root = $(".abm-products-specification > table").first().length
+    ? $(".abm-products-specification > table").first()
+    : $("table").first();
+  if (!root.length) return [];
+  const rows = [];
+  root.children("thead,tbody,tfoot").children("tr").add(root.children("tr")).each((_, row) => {
+    const cells = $(row).children("td,th");
+    if (!cells.length) return;
+    const label = collapse($(cells[0]).text());
+    if (!label) return;
+    let valueText = "";
+    let hasMeaningfulMedia = false;
+    cells.slice(1).each((__, cell) => {
+      valueText += ` ${$(cell).text()}`;
+      if ($(cell).find("img[src],a[href],video,audio").length) hasMeaningfulMedia = true;
+    });
+    rows.push({ label, valueText: collapse(valueText), hasMeaningfulMedia, cellCount: cells.length });
+  });
+  return rows;
 }
 
 async function fetchOfficialRows(sourceUrl) {
@@ -42,62 +46,73 @@ async function fetchOfficialRows(sourceUrl) {
     });
     if (!response.ok) return [];
     const html = await response.text();
-    const dom = new JSDOM(html, { url: sourceUrl });
-    const doc = dom.window.document;
-    const root = doc.querySelector(".abm-products-specification > table") || doc.querySelector(".abm-products-specification table");
-    if (!root) return [];
-    return Array.from(root.querySelectorAll(":scope > tbody > tr, :scope > thead > tr, :scope > tfoot > tr, :scope > tr")).map((row) => {
-      const cells = directCells(row);
-      return {
-        label: collapse(cells[0]?.textContent || ""),
-        valueText: collapse(cells.slice(1).map((cell) => cell.textContent || "").join(" ")),
-        hasMeaningfulMedia: cells.slice(1).some((cell) => cell.querySelector("img[src], a[href], video, audio")),
-      };
-    }).filter((row) => row.label);
+    const $ = load(html);
+    const root = $(".abm-products-specification > table").first().length
+      ? $(".abm-products-specification > table").first()
+      : $(".abm-products-specification table").first();
+    if (!root.length) return [];
+    const rows = [];
+    root.children("thead,tbody,tfoot").children("tr").add(root.children("tr")).each((_, row) => {
+      const cells = $(row).children("td,th");
+      if (!cells.length) return;
+      const label = collapse($(cells[0]).text());
+      if (!label) return;
+      let valueText = "";
+      let hasMeaningfulMedia = false;
+      cells.slice(1).each((__, cell) => {
+        valueText += ` ${$(cell).text()}`;
+        if ($(cell).find("img[src],a[href],video,audio").length) hasMeaningfulMedia = true;
+      });
+      rows.push({ label, valueText: collapse(valueText), hasMeaningfulMedia });
+    });
+    return rows;
   } catch {
     return [];
   }
 }
 
-const records = await client.fetch(`*[
+const chunkIds = await client.fetch(`*[
   _type == "abmRebuildDetailChunk"
   && version == $version
   && kind == "product"
-].records[]{
-  key,
-  sku,
-  title,
-  sourceUrl,
-  specificationsHtml
-}`, { version: VERSION });
+]._id`, { version: VERSION });
 
-const all = Array.isArray(records) ? records : [];
+let totalDetailRecords = 0;
+let withParsedSpecifications = 0;
 const noSpec = [];
 const emptyRows = [];
 const suspicious = [];
 
-for (const record of all) {
-  const rows = parseSpecRows(record.specificationsHtml);
-  if (!rows.length) {
-    noSpec.push({ key: record.key, sku: record.sku, title: record.title, sourceUrl: record.sourceUrl });
-    continue;
-  }
+for (const chunkId of chunkIds || []) {
+  const records = await client.fetch(`*[_id == $id][0].records[]{
+    key, sku, title, sourceUrl, specificationsHtml
+  }`, { id: chunkId });
 
-  const dataRows = rows.filter((row) => !commerceLabel(row.label));
-  const blanks = dataRows.filter((row) => row.cellCount >= 2 && !row.valueText && !row.hasMeaningfulMedia);
-  if (blanks.length) {
-    emptyRows.push({
-      key: record.key,
-      sku: record.sku,
-      title: record.title,
-      sourceUrl: record.sourceUrl,
-      labels: blanks.map((row) => row.label),
-    });
-  }
+  for (const record of records || []) {
+    totalDetailRecords += 1;
+    const rows = parseSpecRows(record.specificationsHtml);
+    if (!rows.length) {
+      noSpec.push({ key: record.key, sku: record.sku, title: record.title, sourceUrl: record.sourceUrl });
+      continue;
+    }
+    withParsedSpecifications += 1;
 
-  const nonCommerceWithValue = dataRows.filter((row) => row.valueText || row.hasMeaningfulMedia);
-  if (dataRows.length >= 2 && nonCommerceWithValue.length === 0) {
-    suspicious.push({ key: record.key, sku: record.sku, title: record.title, sourceUrl: record.sourceUrl, issue: "all specification values blank" });
+    const dataRows = rows.filter((row) => !commerceLabel(row.label));
+    const blanks = dataRows.filter((row) => row.cellCount >= 2 && !row.valueText && !row.hasMeaningfulMedia);
+    if (blanks.length) {
+      emptyRows.push({
+        key: record.key,
+        sku: record.sku,
+        title: record.title,
+        sourceUrl: record.sourceUrl,
+        labels: blanks.map((row) => row.label),
+      });
+    }
+
+    const nonCommerceWithValue = dataRows.filter((row) => row.valueText || row.hasMeaningfulMedia);
+    if (dataRows.length >= 2 && nonCommerceWithValue.length === 0) {
+      suspicious.push({ key: record.key, sku: record.sku, title: record.title, sourceUrl: record.sourceUrl, issue: "all specification values blank" });
+    }
   }
 }
 
@@ -115,8 +130,9 @@ for (const item of emptyRows) {
 const report = {
   generatedAt: new Date().toISOString(),
   version: VERSION,
-  totalDetailRecords: all.length,
-  withParsedSpecifications: all.length - noSpec.length,
+  chunkCount: (chunkIds || []).length,
+  totalDetailRecords,
+  withParsedSpecifications,
   noSpecificationsCount: noSpec.length,
   productsWithBlankValueRows: emptyRows.length,
   productsWithAllValuesBlank: suspicious.length,
