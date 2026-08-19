@@ -25,6 +25,7 @@ const client = createClient({ projectId, dataset, apiVersion, useCdn: false });
 const clean = (value) => String(value || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
 const lower = (value) => clean(value).toLowerCase();
 const keyFor = (row) => `product:${lower(row?.sku || row?.url)}`;
+const hasCommerceText = (value) => /(?:\b(?:USD|CAD)\b\s*:?)?\s*\$\s*\d|\b(?:USD|CAD)\s+\d[\d,.]*|\badd\s+to\s+cart\b|\bprice\b/i.test(String(value || ""));
 
 function appendOutput(name, value) {
   if (!process.env.GITHUB_OUTPUT) return;
@@ -92,7 +93,7 @@ async function readState() {
     && kind == "product"
   ]{
     _id,
-    "records": records[]{key,title,sourceUrl,images,verification}
+    "records": records[]{key,title,unit,sourceUrl,images,verification}
   }`, { version: VERSION });
 
   const detailByKey = new Map();
@@ -131,6 +132,7 @@ function detailValidation(record) {
   const failures = [];
   if (!clean(record?.title)) failures.push("missing title");
   if (!clean(record?.sourceUrl)) failures.push("missing sourceUrl");
+  if (hasCommerceText(record?.unit)) failures.push("commerce text in unit");
   if (record?.verification?.skuMatches !== true) failures.push("skuMatches != true");
   if (record?.verification?.priceLeak !== false) failures.push("priceLeak != false");
   if ((record?.images || []).some((image) => !validManagedImage(image))) failures.push("unmanaged image");
@@ -175,6 +177,7 @@ function filterCollected() {
   const targetSet = new Set(loadTargets().skus.map(lower));
   const safe = [];
   const rejected = [];
+  const sanitizedCommerceUnits = [];
   for (const row of rows) {
     const sku = clean(row?.inventory?.sku);
     const reasons = [];
@@ -184,13 +187,28 @@ function filterCollected() {
     if (row?.qa?.priceLeak !== false) reasons.push("price leak");
     if (!clean(row?.detail?.title)) reasons.push("missing title");
     if (!clean(row?.detail?.sourceUrl)) reasons.push("missing sourceUrl");
+
+    if (row?.status === "ok" && row?.detail && hasCommerceText(row.detail.unit)) {
+      const inventoryUnit = clean(row?.inventory?.unit);
+      row.detail.unit = hasCommerceText(inventoryUnit) ? "" : inventoryUnit;
+      sanitizedCommerceUnits.push(sku);
+    }
+
+    if (hasCommerceText(row?.detail?.unit)) reasons.push("commerce text remains in unit");
     if (reasons.length) rejected.push({ sku, reasons, error: row?.error || null, finalUrl: row?.finalUrl || null });
     else safe.push(row);
   }
   fs.writeFileSync(path.join(OUT, "safe-products.json"), JSON.stringify(safe, null, 2));
   fs.writeFileSync(path.join(OUT, "empty-services.json"), "[]\n");
   fs.writeFileSync(path.join(OUT, "rejected-products.json"), JSON.stringify(rejected, null, 2));
-  const report = { attempted: rows.length, safe: safe.length, rejected: rejected.length, rejectedRows: rejected };
+  const report = {
+    attempted: rows.length,
+    safe: safe.length,
+    rejected: rejected.length,
+    sanitizedCommerceUnitCount: sanitizedCommerceUnits.length,
+    sanitizedCommerceUnits,
+    rejectedRows: rejected,
+  };
   fs.writeFileSync(path.join(OUT, "filter-report.json"), JSON.stringify(report, null, 2));
   appendOutput("safe_count", safe.length);
   appendOutput("rejected_count", rejected.length);
