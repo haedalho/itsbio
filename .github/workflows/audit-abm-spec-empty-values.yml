@@ -1,0 +1,27 @@
+name: Audit ABM specification value completeness
+
+on:
+  pull_request:
+    branches:
+      - agent/quote-email-fields
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Audit ABM specification values
+        run: node scripts/audit-abm-spec-empty-values.mjs
