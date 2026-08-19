@@ -89,42 +89,71 @@ const newCard = `function ResultCard({ result }: { result: SearchResult }) {
   );
 }
 `;
-
 source = source.slice(0, cardStart) + newCard + source.slice(cardEnd);
+
+const mobileStartMarker = '            <nav className="mt-5 flex gap-2 overflow-x-auto pb-2 lg:hidden" aria-label="Search result brands">';
+const mobileStart = source.indexOf(mobileStartMarker);
+const mobileEnd = mobileStart >= 0 ? source.indexOf("            </nav>", mobileStart) : -1;
+if (mobileStart < 0 || mobileEnd < 0) throw new Error("Mobile brand nav not found");
+const mobileNav = `            <nav className="mt-5 flex gap-2 overflow-x-auto pb-2 lg:hidden" aria-label="Search result brands">
+              <Link
+                href={makeSearchHref(q)}
+                className={\`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition \${
+                  !selectedBrand
+                    ? "border-orange-600 bg-orange-600 text-white"
+                    : "border-slate-300 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-700"
+                }\`}
+              >
+                All <span className="opacity-75">{sortedResults.length}</span>
+              </Link>
+              {groups.map((group) => (
+                <Link
+                  key={group.key}
+                  href={makeSearchHref(q, group.key)}
+                  className={\`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition \${
+                    selectedBrand === group.key ? "text-white" : "bg-white text-slate-700 hover:bg-slate-50"
+                  }\`}
+                  style={selectedBrand === group.key
+                    ? { borderColor: brandTone(group.key).accent, backgroundColor: brandTone(group.key).accent }
+                    : { borderColor: \`\${brandTone(group.key).accent}45\` }}
+                >
+                  <span
+                    className="h-2 w-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: selectedBrand === group.key ? "#ffffff" : brandTone(group.key).accent }}
+                  />
+                  <span>{group.label}</span>
+                  <span className="opacity-70">{group.items.length}</span>
+                </Link>
+              ))}
+            </nav>`;
+source = source.slice(0, mobileStart) + mobileNav + source.slice(mobileEnd + "            </nav>".length);
+
+const oldDesktopLink = `                        className={\`mt-1 flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold transition \${
+                          selectedBrand === group.key ? "bg-orange-50 text-orange-700" : "text-slate-700 hover:bg-slate-50"
+                        }\`}
+                      >`;
+const newDesktopLink = `                        className={\`mt-1 flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold transition \${
+                          selectedBrand === group.key ? "" : "text-slate-700 hover:bg-slate-50"
+                        }\`}
+                        style={selectedBrand === group.key ? { backgroundColor: brandTone(group.key).soft, color: brandTone(group.key).deep } : undefined}
+                      >`;
+source = source.replace(oldDesktopLink, newDesktopLink);
 
 source = source.replace(
   '<span className="truncate pr-2">{group.label}</span>',
   '<span className="flex min-w-0 items-center gap-2 truncate pr-2"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: brandTone(group.key).accent }} /><span className="truncate">{group.label}</span></span>'
 );
 
-source = source.replaceAll(
-  '{group.label} <span className="opacity-70">{group.items.length}</span>',
-  '<span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: brandTone(group.key).accent }} />{group.label} <span className="opacity-70">{group.items.length}</span>'
-);
+const oldDesktopCount = '<span className={`rounded-full px-2 py-0.5 text-xs ${selectedBrand === group.key ? "bg-white text-orange-700" : "bg-slate-100 text-slate-500"}`}>\n                          {group.items.length}\n                        </span>';
+const newDesktopCount = '<span\n                          className={`rounded-full px-2 py-0.5 text-xs ${selectedBrand === group.key ? "bg-white" : "bg-slate-100 text-slate-500"}`}\n                          style={selectedBrand === group.key ? { color: brandTone(group.key).deep } : undefined}\n                        >\n                          {group.items.length}\n                        </span>';
+source = source.replace(oldDesktopCount, newDesktopCount);
 
-source = source.replace(
-  'className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition ${\n                    selectedBrand === group.key\n                      ? "border-orange-600 bg-orange-600 text-white"\n                      : "border-slate-300 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-700"\n                  }`}\n                >\n                  <span className="inline-block h-2 w-2 rounded-full"',
-  'className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${\n                    selectedBrand === group.key\n                      ? "text-white"\n                      : "bg-white text-slate-700 hover:bg-slate-50"\n                  }`}\n                  style={selectedBrand === group.key\n                    ? { borderColor: brandTone(group.key).accent, backgroundColor: brandTone(group.key).accent }\n                    : { borderColor: `${brandTone(group.key).accent}45` }}\n                >\n                  <span className="inline-block h-2 w-2 rounded-full"'
-);
+const oldHeader = '<p className="text-xs font-bold uppercase tracking-[0.16em] text-orange-600">\n                          {activeGroup ? activeGroup.label : "All brands"}\n                        </p>';
+const newHeader = '<p\n                          className="text-xs font-bold uppercase tracking-[0.16em]"\n                          style={{ color: activeGroup ? brandTone(activeGroup.key).accent : "#ea580c" }}\n                        >\n                          {activeGroup ? activeGroup.label : "All brands"}\n                        </p>';
+source = source.replace(oldHeader, newHeader);
 
-source = source.replace(
-  'className={`mt-1 flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold transition ${\n                          selectedBrand === group.key ? "bg-orange-50 text-orange-700" : "text-slate-700 hover:bg-slate-50"\n                        }`}\n                      >\n                        <span className="flex min-w-0 items-center gap-2 truncate pr-2">',
-  'className={`mt-1 flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold transition ${\n                          selectedBrand === group.key ? "" : "text-slate-700 hover:bg-slate-50"\n                        }`}\n                        style={selectedBrand === group.key ? { backgroundColor: brandTone(group.key).soft, color: brandTone(group.key).deep } : undefined}\n                      >\n                        <span className="flex min-w-0 items-center gap-2 truncate pr-2">'
-);
-
-source = source.replace(
-  '<span className={`rounded-full px-2 py-0.5 text-xs ${selectedBrand === group.key ? "bg-white text-orange-700" : "bg-slate-100 text-slate-500"}`}>\n                          {group.items.length}\n                        </span>',
-  '<span\n                          className={`rounded-full px-2 py-0.5 text-xs ${selectedBrand === group.key ? "bg-white" : "bg-slate-100 text-slate-500"}`}\n                          style={selectedBrand === group.key ? { color: brandTone(group.key).deep } : undefined}\n                        >\n                          {group.items.length}\n                        </span>'
-);
-
-source = source.replace(
-  '<p className="text-xs font-bold uppercase tracking-[0.16em] text-orange-600">\n                          {activeGroup ? activeGroup.label : "All brands"}\n                        </p>',
-  '<p\n                          className="text-xs font-bold uppercase tracking-[0.16em]"\n                          style={{ color: activeGroup ? brandTone(activeGroup.key).accent : "#ea580c" }}\n                        >\n                          {activeGroup ? activeGroup.label : "All brands"}\n                        </p>'
-);
-
-if (source.includes("Product details available on the product page.")) {
-  throw new Error("Fallback product-details copy still present after patch");
-}
+if (source.includes("Product details available on the product page.")) throw new Error("Fallback copy still present");
+if ((source.match(/brandTone\(group\.key\)\.accent/g) || []).length < 3) throw new Error("Brand filter colors not applied");
 
 fs.writeFileSync(file, source);
 console.log("Search brand colors patched successfully.");
