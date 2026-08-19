@@ -1,0 +1,48 @@
+name: Audit ABM incomplete staged details
+
+on:
+  push:
+    branches:
+      - agent/abm-incomplete-audit
+    paths:
+      - scripts/audit-abm-incomplete-details.mjs
+      - .github/workflows/audit-abm-incomplete-details.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Audit staged records missing reviewed detail
+        run: node scripts/audit-abm-incomplete-details.mjs
+
+      - name: Print summary
+        if: always()
+        run: |
+          if [ -f .cache/abm-incomplete-details/summary.md ]; then
+            cat .cache/abm-incomplete-details/summary.md
+          fi
+
+      - name: Upload audit files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: abm-incomplete-details-${{ github.run_id }}
+          path: .cache/abm-incomplete-details/
+          if-no-files-found: error
+          retention-days: 7
