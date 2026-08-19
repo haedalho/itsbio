@@ -33,6 +33,12 @@ function isPriceOnly(value: string) {
   return /^(?:US|CA)?\$\s?\d[\d,.]*(?:\s*(?:USD|CAD))?$/i.test(collapseWs(value));
 }
 
+function hasMeaningfulValue(cell: Element) {
+  const text = collapseWs(cell.textContent || "");
+  if (text) return true;
+  return !!cell.querySelector("img[src],a[href],video[src],audio[src],source[src],svg,math");
+}
+
 function sanitizeSpecifications(rawHtml: string, baseUrl: string) {
   if (!rawHtml.trim()) return "";
 
@@ -105,7 +111,17 @@ function sanitizeSpecifications(rawHtml: string, baseUrl: string) {
         );
       });
 
-      if (cells.length === 1 && !collapseWs(cells[0].textContent || "")) row.remove();
+      if (cells.length === 1 && !collapseWs(cells[0].textContent || "")) {
+        row.remove();
+        return;
+      }
+
+      // Some official ABM product pages intentionally publish a specification
+      // label with no value (for example an empty Applications or Specificity row).
+      // Never invent content for those rows; omit the empty row from ITS BIO instead.
+      if (cells.length >= 2 && firstLabel && !cells.slice(1).some((cell) => hasMeaningfulValue(cell))) {
+        row.remove();
+      }
     });
 
     ["style", "width", "height", "bgcolor", "border", "cellpadding", "cellspacing", "align"].forEach((attribute) =>
