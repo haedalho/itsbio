@@ -1,0 +1,36 @@
+name: Patch search brand colors
+
+on:
+  pull_request:
+    branches:
+      - agent/quote-email-fields
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.event.pull_request.head.ref == 'agent/logo-loading-overlay'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Patch search page
+        run: node scripts/patch-search-brand-colors.mjs
+      - name: Commit patch when needed
+        shell: bash
+        run: |
+          if git diff --quiet -- app/search/page.tsx; then
+            echo "No search patch changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/search/page.tsx
+          git commit -m "style: use brand colors in search results"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
