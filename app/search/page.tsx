@@ -131,6 +131,27 @@ const BRAND_ALIASES: Record<string, { key: string; label: string }> = {
   dogen: { key: "dogen", label: "DoGen" },
 };
 
+type BrandTone = { accent: string; deep: string; soft: string };
+
+const BRAND_TONES: Record<string, BrandTone> = {
+  abm: { accent: "#ef6331", deep: "#c94f24", soft: "#fff7ed" },
+  kent: { accent: "#0040a8", deep: "#003783", soft: "#eff6ff" },
+  cleaverscientific: { accent: "#9333ea", deep: "#581c87", soft: "#faf5ff" },
+  seedburo: { accent: "#16a34a", deep: "#14532d", soft: "#f0fdf4" },
+  aims: { accent: "#0284c7", deep: "#0c4a6e", soft: "#f0f9ff" },
+  bioplastics: { accent: "#f59e0b", deep: "#92400e", soft: "#fffbeb" },
+  cellfreesciences: { accent: "#1d4ed8", deep: "#172554", soft: "#eff6ff" },
+  itschem: { accent: "#e11d48", deep: "#881337", soft: "#fff1f2" },
+  plaslabs: { accent: "#475569", deep: "#0f172a", soft: "#f8fafc" },
+  affinityimmuno: { accent: "#06b6d4", deep: "#164e63", soft: "#ecfeff" },
+  dogen: { accent: "#b91c1c", deep: "#450a0a", soft: "#fef2f2" },
+  other: { accent: "#f2632f", deep: "#c2410c", soft: "#fff7ed" },
+};
+
+function brandTone(key: string) {
+  return BRAND_TONES[key] || BRAND_TONES.other;
+}
+
 function normalizeCatalogNumber(value: string) {
   return value
     .normalize("NFKC")
@@ -245,16 +266,24 @@ function buildPageNumbers(current: number, total: number) {
 }
 
 function ResultCard({ result }: { result: SearchResult }) {
+  const tone = brandTone(result.brandKey);
+
   return (
-    <article className="group border-b border-slate-200 bg-white last:border-b-0 hover:bg-orange-50/30">
+    <article
+      className="group border-b border-slate-200 bg-white transition last:border-b-0 hover:bg-slate-50/80"
+      style={{ borderLeft: `3px solid ${tone.accent}` }}
+    >
       <div className="flex items-start gap-4 px-5 py-5 md:px-6 md:py-6">
-        <div className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-orange-100 bg-orange-50 text-xs font-bold tracking-wide text-orange-700 sm:flex">
+        <div
+          className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-xl border text-xs font-bold tracking-wide sm:flex"
+          style={{ borderColor: `${tone.accent}35`, backgroundColor: tone.soft, color: tone.deep }}
+        >
           {result.brandLabel.slice(0, 3).toUpperCase()}
         </div>
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs font-semibold">
-            <span className="text-orange-700">{result.brandLabel}</span>
+            <span style={{ color: tone.deep }}>{result.brandLabel}</span>
             <span className="text-slate-300">•</span>
             <span className="text-slate-500">{result.kind}</span>
             {result.sku ? (
@@ -265,21 +294,20 @@ function ResultCard({ result }: { result: SearchResult }) {
             ) : null}
           </div>
 
-          <Link href={result.href} className="mt-2 block text-lg font-semibold leading-7 text-slate-950 transition group-hover:text-orange-700">
+          <Link href={result.href} className="mt-2 block text-lg font-semibold leading-7 text-slate-950 transition group-hover:underline group-hover:underline-offset-4">
             {result.title}
           </Link>
 
           {result.description ? (
             <p className="mt-2 line-clamp-2 max-w-3xl text-sm leading-6 text-slate-600">{result.description}</p>
-          ) : (
-            <p className="mt-2 text-sm text-slate-400">Product details available on the product page.</p>
-          )}
+          ) : null}
         </div>
 
         <Link
           href={result.href}
           aria-label={`${result.direct ? "View" : "Browse"} ${result.title}`}
-          className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-lg text-slate-500 transition group-hover:border-orange-300 group-hover:bg-orange-600 group-hover:text-white"
+          className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-lg transition group-hover:translate-x-0.5"
+          style={{ borderColor: `${tone.accent}45`, backgroundColor: tone.soft, color: tone.deep }}
         >
           →
         </Link>
@@ -534,7 +562,7 @@ export default async function SearchPage({
                       : "border-slate-300 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-700"
                   }`}
                 >
-                  {group.label} <span className="opacity-70">{group.items.length}</span>
+                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: brandTone(group.key).accent }} />{group.label} <span className="opacity-70">{group.items.length}</span>
                 </Link>
               ))}
             </nav>
@@ -566,7 +594,7 @@ export default async function SearchPage({
                           selectedBrand === group.key ? "bg-orange-50 text-orange-700" : "text-slate-700 hover:bg-slate-50"
                         }`}
                       >
-                        <span className="truncate pr-2">{group.label}</span>
+                        <span className="flex min-w-0 items-center gap-2 truncate pr-2"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: brandTone(group.key).accent }} /><span className="truncate">{group.label}</span></span>
                         <span className={`rounded-full px-2 py-0.5 text-xs ${selectedBrand === group.key ? "bg-white text-orange-700" : "bg-slate-100 text-slate-500"}`}>
                           {group.items.length}
                         </span>
