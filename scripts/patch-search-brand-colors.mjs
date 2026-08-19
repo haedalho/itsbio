@@ -99,7 +99,27 @@ source = source.replace(
 
 source = source.replaceAll(
   '{group.label} <span className="opacity-70">{group.items.length}</span>',
-  '<span className="h-2 w-2 rounded-full" style={{ backgroundColor: brandTone(group.key).accent }} />{group.label} <span className="opacity-70">{group.items.length}</span>'
+  '<span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: brandTone(group.key).accent }} />{group.label} <span className="opacity-70">{group.items.length}</span>'
+);
+
+source = source.replace(
+  'className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition ${\n                    selectedBrand === group.key\n                      ? "border-orange-600 bg-orange-600 text-white"\n                      : "border-slate-300 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-700"\n                  }`}\n                >\n                  <span className="inline-block h-2 w-2 rounded-full"',
+  'className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${\n                    selectedBrand === group.key\n                      ? "text-white"\n                      : "bg-white text-slate-700 hover:bg-slate-50"\n                  }`}\n                  style={selectedBrand === group.key\n                    ? { borderColor: brandTone(group.key).accent, backgroundColor: brandTone(group.key).accent }\n                    : { borderColor: `${brandTone(group.key).accent}45` }}\n                >\n                  <span className="inline-block h-2 w-2 rounded-full"'
+);
+
+source = source.replace(
+  'className={`mt-1 flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold transition ${\n                          selectedBrand === group.key ? "bg-orange-50 text-orange-700" : "text-slate-700 hover:bg-slate-50"\n                        }`}\n                      >\n                        <span className="flex min-w-0 items-center gap-2 truncate pr-2">',
+  'className={`mt-1 flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold transition ${\n                          selectedBrand === group.key ? "" : "text-slate-700 hover:bg-slate-50"\n                        }`}\n                        style={selectedBrand === group.key ? { backgroundColor: brandTone(group.key).soft, color: brandTone(group.key).deep } : undefined}\n                      >\n                        <span className="flex min-w-0 items-center gap-2 truncate pr-2">'
+);
+
+source = source.replace(
+  '<span className={`rounded-full px-2 py-0.5 text-xs ${selectedBrand === group.key ? "bg-white text-orange-700" : "bg-slate-100 text-slate-500"}`}>\n                          {group.items.length}\n                        </span>',
+  '<span\n                          className={`rounded-full px-2 py-0.5 text-xs ${selectedBrand === group.key ? "bg-white" : "bg-slate-100 text-slate-500"}`}\n                          style={selectedBrand === group.key ? { color: brandTone(group.key).deep } : undefined}\n                        >\n                          {group.items.length}\n                        </span>'
+);
+
+source = source.replace(
+  '<p className="text-xs font-bold uppercase tracking-[0.16em] text-orange-600">\n                          {activeGroup ? activeGroup.label : "All brands"}\n                        </p>',
+  '<p\n                          className="text-xs font-bold uppercase tracking-[0.16em]"\n                          style={{ color: activeGroup ? brandTone(activeGroup.key).accent : "#ea580c" }}\n                        >\n                          {activeGroup ? activeGroup.label : "All brands"}\n                        </p>'
 );
 
 if (source.includes("Product details available on the product page.")) {
