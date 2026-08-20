@@ -65,4 +65,6 @@ const summary={
   }
 };
 fs.writeFileSync('data/_next-catalog-sections-audit-summary-temp.json',JSON.stringify(summary,null,2)+'\n');
+const categoryMap=(abmCategoryDocs||[]).map(c=>`${(c.path||[]).join('/')}\t${c.title}\t${String(c.summary||'').trim()?'summary':'no-summary'}`).join('\n')+'\n';
+fs.writeFileSync('data/_cellular-category-map-temp.txt',categoryMap);
 console.log(JSON.stringify(summary,null,2));
