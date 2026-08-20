@@ -48,4 +48,26 @@ const cellularCategories=[...cats.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeC
 
 const out={generatedAt:new Date().toISOString(),kent,cellular:{count:cellular.length,detailReady:cellular.filter(r=>r.hasDetail).length,categoryCounts:cellularCategories,examples:cellular.slice(0,80)}};
 fs.writeFileSync('data/_next-catalog-sections-audit-temp.json',JSON.stringify(out,null,2)+'\n');
-console.log(JSON.stringify({generatedAt:out.generatedAt,kent:kent.map(x=>({path:x.pathStr,categoryTitle:x.category?.title||null,productCount:x.productCount,descendantCount:x.descendantCount})),cellular:{count:out.cellular.count,detailReady:out.cellular.detailReady,topCategories:cellularCategories.slice(0,20)}},null,2));
+const summary={
+  generatedAt: out.generatedAt,
+  kent: kent.map(x=>({
+    path:x.pathStr,
+    title:x.category?.title||null,
+    hasSummary:Boolean(String(x.category?.summary||'').trim()),
+    hasStructuredBlocks:Boolean((x.category?.contentBlocks?.length||0)||(x.category?.blocks?.length||0)),
+    hasLegacyHtml:Boolean(String(x.category?.legacyHtml||'').trim()),
+    productCount:x.productCount,
+    productSamples:x.products.slice(0,12).map(p=>({title:p.title,sku:p.sku,slug:p.slug,imageCount:p.imageCount})),
+    descendantCount:x.descendantCount,
+    descendants:x.descendants.slice(0,20).map(d=>({title:d.title,path:(d.path||[]).join('/')})),
+  })),
+  cellular:{
+    count:out.cellular.count,
+    detailReady:out.cellular.detailReady,
+    missingDetail:out.cellular.count-out.cellular.detailReady,
+    topCategories:cellularCategories.slice(0,30),
+    examples:cellular.slice(0,20).map(r=>({title:r.title,sku:r.sku,searchCategory:r.searchCategory,filterTitle:r.filterTitle,hasDetail:r.hasDetail}))
+  }
+};
+fs.writeFileSync('data/_next-catalog-sections-audit-summary-temp.json',JSON.stringify(summary,null,2)+'\n');
+console.log(JSON.stringify(summary,null,2));
