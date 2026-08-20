@@ -1,0 +1,26 @@
+name: Temporary next catalog sections audit
+on:
+  push:
+    branches: [agent/logo-loading-overlay]
+permissions:
+  contents: write
+jobs:
+  run:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/logo-loading-overlay
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/_audit-next-catalog-sections.mjs
+      - shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/_next-catalog-sections-audit-temp.json
+          git commit -m 'chore: record temporary next-section audit'
+          git push origin HEAD:agent/logo-loading-overlay
