@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-20T04:19:43.467Z",
+  "generatedAt": "2026-08-20T04:26:03.116Z",
   "kent": [
     {
       "path": "physiological-monitoring/physiological-monitoring-accessories",
@@ -75,9 +75,7 @@
           "slug": "rat-paw-pulse-oximeter-sensors",
           "imageCount": 1
         }
-      ],
-      "descendantCount": 0,
-      "descendants": []
+      ]
     },
     {
       "path": "noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor",
@@ -147,9 +145,7 @@
           "slug": "replacement-bladder-kits",
           "imageCount": 8
         }
-      ],
-      "descendantCount": 0,
-      "descendants": []
+      ]
     },
     {
       "path": "noninvasive-blood-pressure/noninvasive-blood-pressure-accessories",
@@ -207,9 +203,7 @@
           "slug": "stand-for-coda-holders",
           "imageCount": 2
         }
-      ],
-      "descendantCount": 0,
-      "descendants": []
+      ]
     },
     {
       "path": "surgery/surgical-instruments",
@@ -291,9 +285,7 @@
           "slug": "mayo-operating-scissors-straight",
           "imageCount": 1
         }
-      ],
-      "descendantCount": 0,
-      "descendants": []
+      ]
     },
     {
       "path": "surgery/surgical-accessories",
@@ -375,15 +367,236 @@
           "slug": "replacement-surgical-field-covers",
           "imageCount": 2
         }
-      ],
-      "descendantCount": 0,
-      "descendants": []
+      ]
     }
   ],
   "cellular": {
     "count": 1162,
-    "detailReady": 0,
-    "missingDetail": 1162,
+    "detailReady": 1162,
+    "missingDetail": 0,
+    "categoryDocCount": 44,
+    "categoryDocs": [
+      {
+        "title": "Cellular Materials",
+        "path": "cellular-materials",
+        "hasSummary": true
+      },
+      {
+        "title": "3D and Organoid",
+        "path": "cellular-materials/3d-and-organoid",
+        "hasSummary": true
+      },
+      {
+        "title": "Cell Assay Products",
+        "path": "cellular-materials/cell-assay-products",
+        "hasSummary": true
+      },
+      {
+        "title": "Cell Culture Equipment",
+        "path": "cellular-materials/cell-culture-equipment",
+        "hasSummary": true
+      },
+      {
+        "title": "Cell Freezing Device and Medium",
+        "path": "cellular-materials/Cell-Freezing",
+        "hasSummary": false
+      },
+      {
+        "title": "Cell Immortalization Reagents",
+        "path": "cellular-materials/cell-immortalization-reagents",
+        "hasSummary": true
+      },
+      {
+        "title": "Cell Library Collections",
+        "path": "cellular-materials/cell-library-collections",
+        "hasSummary": true
+      },
+      {
+        "title": "Culture Consumables",
+        "path": "cellular-materials/Culture-Consumables",
+        "hasSummary": false
+      },
+      {
+        "title": "Growth Factors and Cytokines",
+        "path": "cellular-materials/growth-factors-and-cytokines",
+        "hasSummary": true
+      },
+      {
+        "title": "Hematopoietic Cells",
+        "path": "cellular-materials/hematopoietic-cells",
+        "hasSummary": true
+      },
+      {
+        "title": "Media and Supplements",
+        "path": "cellular-materials/Media-and-Supplements",
+        "hasSummary": false
+      },
+      {
+        "title": "Microbial Contamination",
+        "path": "cellular-materials/microbial-contamination",
+        "hasSummary": true
+      },
+      {
+        "title": "3D and Organoid Products",
+        "path": "cellular-materials/3d-and-organoid/3d-and-organoid-products",
+        "hasSummary": true
+      },
+      {
+        "title": "Antibiotics",
+        "path": "cellular-materials/Media-and-Supplements/selective-antibiotics",
+        "hasSummary": false
+      },
+      {
+        "title": "Bacteria Control",
+        "path": "cellular-materials/microbial-contamination/bacteria-control",
+        "hasSummary": true
+      },
+      {
+        "title": "CRISPR Knockout Cell Line Collection",
+        "path": "cellular-materials/cell-library-collections/crispr-ko-cell-lines",
+        "hasSummary": true
+      },
+      {
+        "title": "Cas9 Expressing Cell Lines",
+        "path": "cellular-materials/cell-library-collections/cas9-expressing-cell-lines",
+        "hasSummary": true
+      },
+      {
+        "title": "Cell Culture Vessels",
+        "path": "cellular-materials/Culture-Consumables/cell-culture-vessels",
+        "hasSummary": false
+      },
+      {
+        "title": "Centrifuge Bottles/Tubes",
+        "path": "cellular-materials/Culture-Consumables/centrifuge-bottles-tubes",
+        "hasSummary": false
+      },
+      {
+        "title": "Centrifuge Tubes",
+        "path": "cellular-materials/Culture-Consumables/centrifuge-tubes",
+        "hasSummary": false
+      },
+      {
+        "title": "Cryo Boxes",
+        "path": "cellular-materials/Cell-Freezing/Cryo-Boxes",
+        "hasSummary": false
+      },
+      {
+        "title": "Cryo Tubes",
+        "path": "cellular-materials/Cell-Freezing/Cryo-Tubes",
+        "hasSummary": false
+      },
+      {
+        "title": "Culture Inserts",
+        "path": "cellular-materials/Culture-Consumables/culture-inserts",
+        "hasSummary": false
+      },
+      {
+        "title": "Culture Medium (Nanobacteria Control)",
+        "path": "cellular-materials/Media-and-Supplements/culture-medium-nano0",
+        "hasSummary": false
+      },
+      {
+        "title": "Culture Medium Bottles",
+        "path": "cellular-materials/Culture-Consumables/culture-medium-bottles",
+        "hasSummary": false
+      },
+      {
+        "title": "Dendritic Cells",
+        "path": "cellular-materials/hematopoietic-cells/dendritic-cells",
+        "hasSummary": false
+      },
+      {
+        "title": "FBS (Nano-free)",
+        "path": "cellular-materials/Media-and-Supplements/FBS-Nanofree",
+        "hasSummary": false
+      },
+      {
+        "title": "FBS-Free Freezing Medium",
+        "path": "cellular-materials/Cell-Freezing/FBS-Freezing-Medium",
+        "hasSummary": false
+      },
+      {
+        "title": "Filtration Units",
+        "path": "cellular-materials/Culture-Consumables/filtration-units",
+        "hasSummary": false
+      },
+      {
+        "title": "Granulocytes (Neutrophils, Eosinophils, Basophils)",
+        "path": "cellular-materials/hematopoietic-cells/granulocytes-neutrophils-eosinophils-basophils",
+        "hasSummary": false
+      },
+      {
+        "title": "Hematopoietic Stem Cell (HSC)",
+        "path": "cellular-materials/hematopoietic-cells/hematopoietic-stem-cell-hsc",
+        "hasSummary": false
+      },
+      {
+        "title": "Immortalized Cell Lines",
+        "path": "cellular-materials/cell-library-collections/immortalized-cell-lines",
+        "hasSummary": true
+      },
+      {
+        "title": "Megakaryocytes & Platelets",
+        "path": "cellular-materials/hematopoietic-cells/megakaryocytes-platelets",
+        "hasSummary": false
+      },
+      {
+        "title": "Mycoplasma Control",
+        "path": "cellular-materials/microbial-contamination/mycoplasma-control",
+        "hasSummary": true
+      },
+      {
+        "title": "NK Cells",
+        "path": "cellular-materials/hematopoietic-cells/nk-cells",
+        "hasSummary": false
+      },
+      {
+        "title": "Nanobacteria Control",
+        "path": "cellular-materials/microbial-contamination/nanobacteria-control",
+        "hasSummary": true
+      },
+      {
+        "title": "Primary Cells",
+        "path": "cellular-materials/cell-library-collections/primary-cells",
+        "hasSummary": true
+      },
+      {
+        "title": "Serological Pipettes",
+        "path": "cellular-materials/Culture-Consumables/serological-pipettes",
+        "hasSummary": false
+      },
+      {
+        "title": "Special Cell Line Collection",
+        "path": "cellular-materials/cell-library-collections/special-cell-line-collection",
+        "hasSummary": true
+      },
+      {
+        "title": "Stable Cell Lines",
+        "path": "cellular-materials/cell-library-collections/stable-cell-lines",
+        "hasSummary": true
+      },
+      {
+        "title": "Supplements",
+        "path": "cellular-materials/Media-and-Supplements/Supplements",
+        "hasSummary": false
+      },
+      {
+        "title": "T Cells (CD4⁺, CD8⁺, Treg, γδ)",
+        "path": "cellular-materials/hematopoietic-cells/t-cells-cd4-cd8-treg",
+        "hasSummary": false
+      },
+      {
+        "title": "Trypsin",
+        "path": "cellular-materials/Media-and-Supplements/Trypsin",
+        "hasSummary": false
+      },
+      {
+        "title": "Tumor Cell Lines – In Vitro Models for Cutting-Edge Research",
+        "path": "cellular-materials/cell-library-collections/tumor-cell-lines",
+        "hasSummary": true
+      }
+    ],
     "topCategories": [
       [
         "Growth Factors & Cytokines",
@@ -504,6 +717,38 @@
       [
         "FBS (Nano-free)",
         2
+      ],
+      [
+        "Renal Organoid Media & Kits",
+        2
+      ],
+      [
+        "3D and Organoid",
+        1
+      ],
+      [
+        "Buffers & General Chemicals",
+        1
+      ],
+      [
+        "Cell-based Assay Products",
+        1
+      ],
+      [
+        "Centrifuge Tubes",
+        1
+      ],
+      [
+        "Mycoplasma Elimination",
+        1
+      ],
+      [
+        "Mycoplasma Kits",
+        1
+      ],
+      [
+        "Nanobacteria Control",
+        1
       ]
     ],
     "examples": [
@@ -512,140 +757,140 @@
         "sku": "TM210",
         "searchCategory": "Renal Organoid Media & Kits",
         "filterTitle": "3D and Organoid",
-        "hasDetail": null
+        "detailReady": true
       },
       {
         "title": "SafeBath™",
         "sku": "G7020",
         "searchCategory": "Bacteria Control",
         "filterTitle": "Microbial Contamination",
-        "hasDetail": null
+        "detailReady": true
       },
       {
         "title": "NanOut™ 1000X",
         "sku": "G7002",
         "searchCategory": "Nanobacteria Control",
         "filterTitle": "Microbial Contamination",
-        "hasDetail": null
+        "detailReady": true
       },
       {
         "title": "BacOut™ Antibiotics",
         "sku": "G7000",
         "searchCategory": "Bacteria Control",
         "filterTitle": "Microbial Contamination",
-        "hasDetail": null
+        "detailReady": true
       },
       {
         "title": "MycOut™ 1000X – Culture Guard",
         "sku": "G7001",
         "searchCategory": "Mycoplasma Elimination",
         "filterTitle": "Microbial Contamination",
-        "hasDetail": null
+        "detailReady": true
       },
       {
         "title": "MycoAway™ 1000X Mycoplasma Cocktail",
         "sku": "G398",
         "searchCategory": "Mycoplasma Kits",
         "filterTitle": "Microbial Contamination",
-        "hasDetail": null
+        "detailReady": true
       },
       {
         "title": "Mycoplasma PCR Detection Kit",
         "sku": "G238",
         "searchCategory": "Mycoplasma Detection",
         "filterTitle": "Microbial Contamination",
-        "hasDetail": null
+        "detailReady": true
       },
       {
         "title": "Mycoplasma PCR Detection & Elimination Bundle",
         "sku": "G238-G398",
         "searchCategory": "Mycoplasma Detection",
         "filterTitle": "Microbial Contamination",
-        "hasDetail": null
+        "detailReady": true
       },
       {
         "title": "Mycoplasma Pro PCR Detection & Elimination Bundle",
         "sku": "G239-G398",
         "searchCategory": "Mycoplasma Detection",
         "filterTitle": "Microbial Contamination",
-        "hasDetail": null
+        "detailReady": true
       },
       {
         "title": "Mycoplasma qPCR Detection & Elimination Bundle",
         "sku": "G240-G398",
         "searchCategory": "Mycoplasma Detection",
         "filterTitle": "Microbial Contamination",
-        "hasDetail": null
+        "detailReady": true
       },
       {
         "title": "Mycoplasma Pro PCR Detection Kit",
         "sku": "G239",
         "searchCategory": "Mycoplasma Detection",
         "filterTitle": "Microbial Contamination",
-        "hasDetail": null
+        "detailReady": true
       },
       {
         "title": "Mycoplasma qPCR Detection Kit",
         "sku": "G240",
         "searchCategory": "Mycoplasma Detection",
         "filterTitle": "Microbial Contamination",
-        "hasDetail": null
+        "detailReady": true
       },
       {
         "title": "Lenti-hTERT Virus",
         "sku": "LV674",
         "searchCategory": "Viruses for Cell Immortalization",
         "filterTitle": "Cell Immortalization Reagents",
-        "hasDetail": null
+        "detailReady": true
       },
       {
         "title": "Lenti-hTERT (Puro) Virus, High Titer",
         "sku": "LV615",
         "searchCategory": "Viruses for Cell Immortalization",
         "filterTitle": "Cell Immortalization Reagents",
-        "hasDetail": null
+        "detailReady": true
       },
       {
         "title": "Lenti-hTERT-Neo Virus, High Titer",
         "sku": "LV622",
         "searchCategory": "Viruses for Cell Immortalization",
         "filterTitle": "Cell Immortalization Reagents",
-        "hasDetail": null
+        "detailReady": true
       },
       {
         "title": "Lenti-EF1α-hTERT Virus, High Titer",
         "sku": "LV616",
         "searchCategory": "Viruses for Cell Immortalization",
         "filterTitle": "Cell Immortalization Reagents",
-        "hasDetail": null
+        "detailReady": true
       },
       {
         "title": "Lenti-EF1a-hTERT-Hygro Virus, High Titer",
         "sku": "LV632",
         "searchCategory": "Viruses for Cell Immortalization",
         "filterTitle": "Cell Immortalization Reagents",
-        "hasDetail": null
+        "detailReady": true
       },
       {
         "title": "Adeno-hTERT Antisense Virus",
         "sku": "G208",
         "searchCategory": "Viruses for Cell Immortalization",
         "filterTitle": "Cell Immortalization Reagents",
-        "hasDetail": null
+        "detailReady": true
       },
       {
         "title": "Adeno-hTERT Virus",
         "sku": "G205",
         "searchCategory": "Viruses for Cell Immortalization",
         "filterTitle": "Cell Immortalization Reagents",
-        "hasDetail": null
+        "detailReady": true
       },
       {
         "title": "Lenti-hTERT-2A-CDK4 Virus, High Titer",
         "sku": "LV677",
         "searchCategory": "Viruses for Cell Immortalization",
         "filterTitle": "Cell Immortalization Reagents",
-        "hasDetail": null
+        "detailReady": true
       }
     ]
   }
