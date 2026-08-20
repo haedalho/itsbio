@@ -1,7 +1,7 @@
 // app/products/abm/[[...path]]/page.tsx
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
 import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
@@ -90,6 +90,16 @@ function buildHref(brandKey: string, path: string[]) {
 
 function humanizeSegment(seg: string) {
   return (seg || "").replaceAll("-", " ").replaceAll("_", " ").trim();
+}
+
+function canonicalizeCellularPath(path: string[]) {
+  if (!Array.isArray(path) || path[0]?.toLowerCase() !== "cellular-materials") return path;
+  return path.map((segment) => String(segment || "").trim().toLowerCase());
+}
+
+function canonicalizeCellularCategory<T extends { path?: string[] }>(category: T): T {
+  if (!Array.isArray(category?.path) || category.path[0]?.toLowerCase() !== "cellular-materials") return category;
+  return { ...category, path: canonicalizeCellularPath(category.path) };
 }
 
 function decodeHtmlEntities(input: string) {
@@ -206,7 +216,7 @@ const PAGE_QUERY = `
         || brand->themeKey == $brandKey
         || brand->slug.current == $brandKey
       )
-      && array::join(path, "/") == $pathStr
+      && lower(array::join(path, "/")) == lower($pathStr)
       && ($isAbm == false || path[0] in $abmRoots)
     ][0]{
       _id,
@@ -995,7 +1005,9 @@ export default async function AbmProductsPathPage({
   const theme = getTheme(brandKey);
   const isKent = brandKey === "kent";
 
-  const path = (resolved?.path ?? []) as string[];
+  const rawPath = (resolved?.path ?? []) as string[];
+  const path = canonicalizeCellularPath(rawPath);
+  if (rawPath.join("/") !== path.join("/")) redirect(buildHref("abm", path));
   const activeRoot = path[0] || "";
   const hasPath = path.length > 0;
   const hasActiveRoot = !!activeRoot;
@@ -1016,9 +1028,11 @@ export default async function AbmProductsPathPage({
   const brand = data?.brand;
   if (!brand?._id) notFound();
 
-  const roots: CatLite[] = Array.isArray(data?.roots) ? data.roots : [];
-  const descendants: CatLite[] = Array.isArray(data?.descendants) ? data.descendants : [];
-  const category = data?.category || null;
+  const roots: CatLite[] = (Array.isArray(data?.roots) ? data.roots : []).map(canonicalizeCellularCategory);
+  const descendants: CatLite[] = (Array.isArray(data?.descendants) ? data.descendants : []).map(canonicalizeCellularCategory);
+  const category = data?.category
+    ? canonicalizeCellularCategory(data.category)
+    : null;
 
   const productsInCategory: Array<{
     _id: string;

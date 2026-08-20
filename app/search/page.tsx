@@ -131,6 +131,27 @@ const BRAND_ALIASES: Record<string, { key: string; label: string }> = {
   dogen: { key: "dogen", label: "DoGen" },
 };
 
+type BrandTone = { accent: string; deep: string; soft: string };
+
+const BRAND_TONES: Record<string, BrandTone> = {
+  abm: { accent: "#ef6331", deep: "#c94f24", soft: "#fff7ed" },
+  kent: { accent: "#0040a8", deep: "#003783", soft: "#eff6ff" },
+  cleaverscientific: { accent: "#9333ea", deep: "#581c87", soft: "#faf5ff" },
+  seedburo: { accent: "#16a34a", deep: "#14532d", soft: "#f0fdf4" },
+  aims: { accent: "#0284c7", deep: "#0c4a6e", soft: "#f0f9ff" },
+  bioplastics: { accent: "#f59e0b", deep: "#92400e", soft: "#fffbeb" },
+  cellfreesciences: { accent: "#1d4ed8", deep: "#172554", soft: "#eff6ff" },
+  itschem: { accent: "#e11d48", deep: "#881337", soft: "#fff1f2" },
+  plaslabs: { accent: "#475569", deep: "#0f172a", soft: "#f8fafc" },
+  affinityimmuno: { accent: "#06b6d4", deep: "#164e63", soft: "#ecfeff" },
+  dogen: { accent: "#b91c1c", deep: "#450a0a", soft: "#fef2f2" },
+  other: { accent: "#f2632f", deep: "#c2410c", soft: "#fff7ed" },
+};
+
+function brandTone(key: string) {
+  return BRAND_TONES[key] || BRAND_TONES.other;
+}
+
 function normalizeCatalogNumber(value: string) {
   return value
     .normalize("NFKC")
@@ -245,20 +266,50 @@ function buildPageNumbers(current: number, total: number) {
 }
 
 function ResultCard({ result }: { result: SearchResult }) {
+  const tone = brandTone(result.brandKey);
+
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-orange-200 hover:shadow-md">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">{result.kind}</span>
-        {result.sku ? <span className="text-xs font-semibold text-slate-500">Catalog #: {result.sku}</span> : null}
-      </div>
-      <h3 className="mt-3 text-lg font-semibold leading-7 text-slate-950">{result.title}</h3>
-      {result.description ? <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">{result.description}</p> : null}
-      <div className="mt-5">
+    <article
+      className="group border-b border-slate-200 bg-white transition last:border-b-0 hover:bg-slate-50/80"
+      style={{ borderLeft: `3px solid ${tone.accent}` }}
+    >
+      <div className="flex items-start gap-4 px-5 py-5 md:px-6 md:py-6">
+        <div
+          className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-xl border text-xs font-bold tracking-wide sm:flex"
+          style={{ borderColor: `${tone.accent}35`, backgroundColor: tone.soft, color: tone.deep }}
+        >
+          {result.brandLabel.slice(0, 3).toUpperCase()}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs font-semibold">
+            <span style={{ color: tone.deep }}>{result.brandLabel}</span>
+            <span className="text-slate-300">•</span>
+            <span className="text-slate-500">{result.kind}</span>
+            {result.sku ? (
+              <>
+                <span className="text-slate-300">•</span>
+                <span className="font-mono text-slate-600">Cat. No. {result.sku}</span>
+              </>
+            ) : null}
+          </div>
+
+          <Link href={result.href} className="mt-2 block text-lg font-semibold leading-7 text-slate-950 transition group-hover:underline group-hover:underline-offset-4">
+            {result.title}
+          </Link>
+
+          {result.description ? (
+            <p className="mt-2 line-clamp-2 max-w-3xl text-sm leading-6 text-slate-600">{result.description}</p>
+          ) : null}
+        </div>
+
         <Link
           href={result.href}
-          className="inline-flex items-center rounded-full bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-700"
+          aria-label={`${result.direct ? "View" : "Browse"} ${result.title}`}
+          className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-lg transition group-hover:translate-x-0.5"
+          style={{ borderColor: `${tone.accent}45`, backgroundColor: tone.soft, color: tone.deep }}
         >
-          {result.direct ? "View product" : "View matching products"}
+          →
         </Link>
       </div>
     </article>
@@ -270,11 +321,11 @@ function Pagination({ query, brand, current, total }: { query: string; brand: st
   const pages = buildPageNumbers(current, total);
 
   return (
-    <nav className="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="Search result pages">
+    <nav className="mt-7 flex flex-wrap items-center justify-center gap-2" aria-label="Search result pages">
       <Link
         href={makeSearchHref(query, brand, Math.max(1, current - 1))}
         aria-disabled={current === 1}
-        className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+        className={`rounded-lg border px-3.5 py-2 text-sm font-semibold transition ${
           current === 1
             ? "pointer-events-none border-slate-200 bg-slate-50 text-slate-300"
             : "border-slate-300 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-700"
@@ -285,13 +336,13 @@ function Pagination({ query, brand, current, total }: { query: string; brand: st
 
       {pages.map((page, index) =>
         page === "..." ? (
-          <span key={`ellipsis-${index}`} className="px-2 text-sm text-slate-400">…</span>
+          <span key={`ellipsis-${index}`} className="px-1.5 text-sm text-slate-400">…</span>
         ) : (
           <Link
             key={page}
             href={makeSearchHref(query, brand, page)}
             aria-current={page === current ? "page" : undefined}
-            className={`flex h-10 min-w-10 items-center justify-center rounded-full border px-3 text-sm font-semibold transition ${
+            className={`flex h-9 min-w-9 items-center justify-center rounded-lg border px-2.5 text-sm font-semibold transition ${
               page === current
                 ? "border-orange-600 bg-orange-600 text-white"
                 : "border-slate-300 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-700"
@@ -305,7 +356,7 @@ function Pagination({ query, brand, current, total }: { query: string; brand: st
       <Link
         href={makeSearchHref(query, brand, Math.min(total, current + 1))}
         aria-disabled={current === total}
-        className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+        className={`rounded-lg border px-3.5 py-2 text-sm font-semibold transition ${
           current === total
             ? "pointer-events-none border-slate-200 bg-slate-50 text-slate-300"
             : "border-slate-300 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-700"
@@ -422,8 +473,9 @@ export default async function SearchPage({
     if (!existing || result.score > existing.score || (result.direct && !existing.direct)) deduped.set(key, result);
   }
 
+  const sortedResults = [...deduped.values()].sort((a, b) => b.score - a.score || a.title.localeCompare(b.title));
   const grouped = new Map<string, SearchGroup>();
-  for (const result of [...deduped.values()].sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))) {
+  for (const result of sortedResults) {
     const group = grouped.get(result.brandKey) || { key: result.brandKey, label: result.brandLabel, items: [] };
     group.items.push(result);
     grouped.set(result.brandKey, group);
@@ -434,128 +486,185 @@ export default async function SearchPage({
     return scoreDiff || a.label.localeCompare(b.label);
   });
   const activeGroup = selectedBrand ? groups.find((group) => group.key === selectedBrand) : undefined;
-  const totalPages = activeGroup ? Math.max(1, Math.ceil(activeGroup.items.length / PAGE_SIZE)) : 1;
+  const filteredItems = selectedBrand ? (activeGroup?.items || []) : sortedResults;
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE));
   const currentPage = Math.min(requestedPage, totalPages);
   const pageStart = (currentPage - 1) * PAGE_SIZE;
-  const pageItems = activeGroup ? activeGroup.items.slice(pageStart, pageStart + PAGE_SIZE) : [];
+  const pageItems = filteredItems.slice(pageStart, pageStart + PAGE_SIZE);
+  const rangeStart = filteredItems.length ? pageStart + 1 : 0;
+  const rangeEnd = filteredItems.length ? Math.min(pageStart + PAGE_SIZE, filteredItems.length) : 0;
 
   return (
-    <main className="min-h-[calc(100vh-76px)] bg-slate-50/70 px-6 py-12 md:py-16">
-      <div className="mx-auto max-w-6xl">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-orange-600">ITS BIO Search</p>
-          <div className="mt-2 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Search results</h1>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                Results for <span className="font-semibold text-slate-950">“{q}”</span> are separated by brand so similar product names do not send you to the wrong catalog.
-              </p>
+    <main className="min-h-[calc(100vh-76px)] bg-[#f7f8fa] px-4 py-8 sm:px-6 md:py-12">
+      <div className="mx-auto max-w-7xl">
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-l-4 border-orange-500 px-5 py-6 sm:px-7 md:px-9 md:py-8">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-600">Product search</p>
+                <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
+                  Results for “{q}”
+                </h1>
+                <p className="mt-2 text-sm leading-6 text-slate-500">
+                  {sortedResults.length} matching result{sortedResults.length === 1 ? "" : "s"}. Search by product name or catalog number, then narrow the list by brand.
+                </p>
+              </div>
+
+              <form action="/search" method="get" className="flex w-full max-w-2xl gap-2">
+                <label className="relative min-w-0 flex-1">
+                  <span className="sr-only">Search by product name or catalog number</span>
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+                  >
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m20 20-3.5-3.5" />
+                  </svg>
+                  <input
+                    name="q"
+                    defaultValue={q}
+                    className="h-12 w-full rounded-xl border border-slate-300 bg-white pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                    placeholder="Product name or catalog number"
+                  />
+                </label>
+                <button className="h-12 shrink-0 rounded-xl bg-orange-600 px-6 text-sm font-semibold text-white transition hover:bg-orange-700">
+                  Search
+                </button>
+              </form>
             </div>
-            <form action="/search" method="get" className="flex w-full max-w-xl gap-2">
-              <input
-                name="q"
-                defaultValue={q}
-                aria-label="Search by product name or catalog number"
-                className="h-11 min-w-0 flex-1 rounded-full border border-slate-300 bg-white px-5 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-                placeholder="Product name or catalog number"
-              />
-              <button className="h-11 shrink-0 rounded-full bg-orange-600 px-6 text-sm font-semibold text-white transition hover:bg-orange-700">
-                Search
-              </button>
-            </form>
           </div>
-        </div>
+        </section>
 
         {groups.length ? (
           <>
-            <nav className="mt-6 flex gap-2 overflow-x-auto pb-2" aria-label="Search result brands">
+            <nav className="mt-5 flex gap-2 overflow-x-auto pb-2 lg:hidden" aria-label="Search result brands">
               <Link
                 href={makeSearchHref(q)}
-                className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
                   !selectedBrand
                     ? "border-orange-600 bg-orange-600 text-white"
                     : "border-slate-300 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-700"
                 }`}
               >
-                All brands
+                All <span className="opacity-75">{sortedResults.length}</span>
               </Link>
               {groups.map((group) => (
                 <Link
                   key={group.key}
                   href={makeSearchHref(q, group.key)}
-                  className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                    selectedBrand === group.key
-                      ? "border-orange-600 bg-orange-600 text-white"
-                      : "border-slate-300 bg-white text-slate-700 hover:border-orange-300 hover:text-orange-700"
+                  className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                    selectedBrand === group.key ? "text-white" : "bg-white text-slate-700 hover:bg-slate-50"
                   }`}
+                  style={selectedBrand === group.key
+                    ? { borderColor: brandTone(group.key).accent, backgroundColor: brandTone(group.key).accent }
+                    : { borderColor: `${brandTone(group.key).accent}45` }}
                 >
-                  {group.label} <span className="opacity-70">{group.items.length}</span>
+                  <span
+                    className="h-2 w-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: selectedBrand === group.key ? "#ffffff" : brandTone(group.key).accent }}
+                  />
+                  <span>{group.label}</span>
+                  <span className="opacity-70">{group.items.length}</span>
                 </Link>
               ))}
             </nav>
 
-            {!selectedBrand ? (
-              <section className="mt-5 grid gap-5 md:grid-cols-2">
-                {groups.map((group) => {
-                  const top = group.items[0];
-                  return (
-                    <div key={group.key} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
-                      <div className="flex items-center justify-between gap-4">
-                        <div>
-                          <p className="text-xs font-bold uppercase tracking-[0.18em] text-orange-600">Brand</p>
-                          <h2 className="mt-1 text-xl font-semibold text-slate-950">{group.label}</h2>
-                        </div>
-                        {group.items.length > 1 ? (
-                          <Link href={makeSearchHref(q, group.key)} className="text-sm font-semibold text-orange-600 hover:text-orange-700">
-                            View {group.items.length} matches →
-                          </Link>
-                        ) : null}
+            <div className="mt-7 grid gap-7 lg:grid-cols-[230px_minmax(0,1fr)]">
+              <aside className="hidden lg:block">
+                <div className="sticky top-28 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                  <div className="border-b border-slate-200 px-5 py-4">
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Filter by</p>
+                    <h2 className="mt-1 text-lg font-semibold text-slate-950">Brand</h2>
+                  </div>
+                  <nav className="p-2" aria-label="Search result brands">
+                    <Link
+                      href={makeSearchHref(q)}
+                      className={`flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                        !selectedBrand ? "bg-orange-50 text-orange-700" : "text-slate-700 hover:bg-slate-50"
+                      }`}
+                    >
+                      <span>All brands</span>
+                      <span className={`rounded-full px-2 py-0.5 text-xs ${!selectedBrand ? "bg-white text-orange-700" : "bg-slate-100 text-slate-500"}`}>
+                        {sortedResults.length}
+                      </span>
+                    </Link>
+                    {groups.map((group) => (
+                      <Link
+                        key={group.key}
+                        href={makeSearchHref(q, group.key)}
+                        className={`mt-1 flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                          selectedBrand === group.key ? "" : "text-slate-700 hover:bg-slate-50"
+                        }`}
+                        style={selectedBrand === group.key ? { backgroundColor: brandTone(group.key).soft, color: brandTone(group.key).deep } : undefined}
+                      >
+                        <span className="flex min-w-0 items-center gap-2 truncate pr-2"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: brandTone(group.key).accent }} /><span className="truncate">{group.label}</span></span>
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs ${selectedBrand === group.key ? "bg-white" : "bg-slate-100 text-slate-500"}`}
+                          style={selectedBrand === group.key ? { color: brandTone(group.key).deep } : undefined}
+                        >
+                          {group.items.length}
+                        </span>
+                      </Link>
+                    ))}
+                  </nav>
+                </div>
+              </aside>
+
+              <section className="min-w-0">
+                {selectedBrand && !activeGroup ? (
+                  <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+                    <p className="text-slate-600">That brand has no matching results for this search.</p>
+                    <Link href={makeSearchHref(q)} className="mt-4 inline-flex font-semibold text-orange-600 hover:text-orange-700">
+                      View all brands
+                    </Link>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+                      <div>
+                        <p
+                          className="text-xs font-bold uppercase tracking-[0.16em]"
+                          style={{ color: activeGroup ? brandTone(activeGroup.key).accent : "#ea580c" }}
+                        >
+                          {activeGroup ? activeGroup.label : "All brands"}
+                        </p>
+                        <h2 className="mt-1 text-2xl font-semibold text-slate-950">
+                          {activeGroup ? `${activeGroup.label} results` : "Matching products & services"}
+                        </h2>
                       </div>
-                      <div className="mt-5">
-                        <ResultCard result={top} />
+                      <div className="text-right text-sm text-slate-500">
+                        <p>{rangeStart}–{rangeEnd} of {filteredItems.length}</p>
+                        <p className="mt-0.5 text-xs text-slate-400">Sorted by relevance</p>
                       </div>
                     </div>
-                  );
-                })}
+
+                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                      {pageItems.map((result) => <ResultCard key={result.id} result={result} />)}
+                    </div>
+
+                    <Pagination query={q} brand={activeGroup?.key || ""} current={currentPage} total={totalPages} />
+                  </>
+                )}
               </section>
-            ) : activeGroup ? (
-              <section className="mt-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-7">
-                <div className="flex flex-wrap items-end justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-orange-600">Brand results</p>
-                    <h2 className="mt-1 text-2xl font-semibold text-slate-950">{activeGroup.label}</h2>
-                  </div>
-                  <p className="text-sm text-slate-500">
-                    {activeGroup.items.length} matching result{activeGroup.items.length === 1 ? "" : "s"} · Page {currentPage} of {totalPages}
-                  </p>
-                </div>
-                <div className="mt-6 grid gap-4 md:grid-cols-2">
-                  {pageItems.map((result) => <ResultCard key={result.id} result={result} />)}
-                </div>
-                <Pagination query={q} brand={activeGroup.key} current={currentPage} total={totalPages} />
-              </section>
-            ) : (
-              <section className="mt-5 rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-                <p className="text-slate-600">That brand has no matching results for this search.</p>
-                <Link href={makeSearchHref(q)} className="mt-4 inline-flex font-semibold text-orange-600 hover:text-orange-700">
-                  View all brands
-                </Link>
-              </section>
-            )}
+            </div>
           </>
         ) : (
-          <section className="mx-auto mt-8 max-w-2xl rounded-3xl border border-slate-200 bg-white px-6 py-14 text-center shadow-[0_20px_60px_rgba(15,23,42,0.07)] md:px-12">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-orange-50 text-2xl font-semibold text-orange-600">?</div>
-            <p className="mt-6 text-xs font-bold uppercase tracking-[0.22em] text-orange-600">ITS BIO Search</p>
-            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">No matching product found</h2>
-            <p className="mt-4 text-slate-600">
+          <section className="mx-auto mt-8 max-w-2xl rounded-2xl border border-slate-200 bg-white px-6 py-14 text-center shadow-sm md:px-12">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-50 text-xl font-semibold text-orange-600">?</div>
+            <p className="mt-5 text-xs font-bold uppercase tracking-[0.2em] text-orange-600">Product search</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">No matching product found</h2>
+            <p className="mt-3 text-slate-600">
               We couldn&apos;t find a match for <span className="font-semibold text-slate-950">“{q}”</span>.
             </p>
             <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">
               Try another product name or catalog number. If you still can&apos;t find what you need, contact us and we&apos;ll help.
             </p>
-            <div className="mt-8 flex justify-center">
-              <Link href="/contact" className="rounded-full bg-orange-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-700">
+            <div className="mt-7 flex justify-center">
+              <Link href="/contact" className="rounded-xl bg-orange-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-700">
                 Contact us
               </Link>
             </div>

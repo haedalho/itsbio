@@ -350,6 +350,13 @@ const STATIC_LABEL_BY_PATH = new Map(
 );
 
 const LANDING_FALLBACK_PATHS = new Set(["anesthesia"]);
+const CLEAN_CATEGORY_LANDING_PATHS = new Set([
+  "physiological-monitoring/physiological-monitoring-accessories",
+  "noninvasive-blood-pressure/noninvasive-blood-pressure-accessories",
+  "noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor",
+  "surgery/surgical-instruments",
+  "surgery/surgical-accessories",
+]);
 
 function buildCategoryHref(path: string[]) {
   return path.length ? `/products/${BRAND_KEY}/${path.join("/")}` : `/products/${BRAND_KEY}`;
@@ -2346,6 +2353,18 @@ export default async function KentProductsPathPage({
   if (pageType === "landing") {
     if (renderedBlocks) {
       mainContent = <div className="mt-4">{renderedBlocks}</div>;
+    } else if (CLEAN_CATEGORY_LANDING_PATHS.has(pathStr) && directChildren.length) {
+      mainContent = (
+        <>
+          <KentChildCategoryGrid items={directChildren} products={allProducts} title="Explore categories" theme={THEME_KENT} />
+          {productsInCategory.length ? (
+            <>
+              <ListingHeader count={officialProductCount} theme={THEME_KENT} />
+              <KentProductGrid products={productsInCategory} theme={THEME_KENT} />
+            </>
+          ) : null}
+        </>
+      );
     } else if (hasFallbackHtml) {
       mainContent = <KentHtmlFallback html={fallbackHtml} />;
     } else if (directChildren.length) {

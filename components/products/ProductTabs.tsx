@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import HtmlContent from "@/components/site/HtmlContent";
+import AbmSpecificationsContent from "@/components/products/AbmSpecificationsContent";
 
 type Doc = { url: string; label: string };
 type FaqItem = { q: string; aHtml: string };
@@ -328,7 +329,7 @@ export default function ProductTabsClient({
           ) : active === "faqs" && hasUsableHtml(faqsHtml) ? (
             <FaqAccordion html={faqsHtml as string} contentContext={contentContext} />
           ) : active === "specs" && hasUsableHtml(specsHtml) ? (
-            <HtmlContent html={specsHtml as string} {...contentContext} />
+            <AbmSpecificationsContent html={specsHtml as string} baseUrl={sourceUrl} />
           ) : active === "datasheet" && hasUsableHtml(datasheetHtml) ? (
             <HtmlContent html={datasheetHtml as string} {...contentContext} />
           ) : active === "references" && hasUsableHtml(referencesHtml) ? (
