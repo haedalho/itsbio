@@ -2,10 +2,12 @@
 
 import { createHash } from "node:crypto";
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { gunzipSync } from "node:zlib";
 
-import { createClient } from "next-sanity";
+const require = createRequire(import.meta.url);
+const { createClient } = require("@sanity/client");
 
 const argv = process.argv.slice(2);
 const hasArg = (name) => argv.includes(name);
