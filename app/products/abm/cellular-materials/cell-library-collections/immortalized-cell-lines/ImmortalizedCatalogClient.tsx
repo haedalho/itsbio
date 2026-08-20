@@ -22,7 +22,11 @@ type Product = {
   cellTypes?: string[];
 };
 
-type Facets = { species: string[]; bioSystems: string[]; cellTypes: string[] };
+type Facets = {
+  species: string[];
+  bioSystems: string[];
+  cellTypes: string[];
+};
 
 const SPECIES: readonly FacetRule[] = [
   ["Human (H. sapiens)", /\bhuman\b|h\.\s*sapiens/i],
@@ -60,20 +64,55 @@ const SYSTEMS: readonly FacetRule[] = [
 ];
 
 const CELL_TYPES: readonly FacetRule[] = [
-  ["Skin", /skin|keratinocyte/i], ["Liver", /hepatocyte|hepatic|\bliver\b/i], ["Bone Marrow", /bone marrow|promyelocyte/i],
-  ["Cartilage", /cartilage|chondrocyte|chondroblast/i], ["Skeletal Muscle", /skeletal muscle|myoblast|myocyte/i], ["Smooth Muscle", /smooth muscle/i],
-  ["Umbilical Cord", /umbilical cord|umbilical artery|umbilical vein/i], ["Mouth/Oral", /mouth|oral|lingual|periodontal/i],
-  ["Cervix", /cervix|cervical/i], ["Colon", /\bcolon\b|colonic/i], ["Connective Tissue", /connective|fibroblast/i], ["Cord Blood", /cord blood/i],
-  ["Ear", /\bear\b|auditory/i], ["Kidney", /kidney|renal/i], ["Lung", /\blung\b|pulmonary|bronch|airway/i], ["Brain", /\bbrain\b|cerebral/i],
-  ["Neuron", /neuron|neuronal|neural/i], ["Astrocyte", /astrocyte|astroglia/i], ["Microglia", /microglia/i], ["Endothelial", /endothelial/i],
-  ["Epithelial", /epithelial|epithelium/i], ["Fibroblast", /fibroblast/i], ["Melanocyte", /melanocyte/i], ["Mast Cell", /mast cell/i],
-  ["T Cell", /t cell|t-cell/i], ["B Cell", /b cell|b-cell/i], ["Macrophage", /macrophage/i], ["Stem / Progenitor", /stem|progenitor/i],
-  ["Embryo", /embryo|embryonic/i], ["Adipose", /adipocyte|adipose/i], ["Pancreas", /pancrea/i], ["Prostate", /prostate/i],
-  ["Ovary", /ovary|ovarian/i], ["Placenta", /placenta/i], ["Retina / Eye", /retina|retinal|ocular|cornea|\beye\b/i], ["Testes", /testis|testicular|testes/i],
+  ["Skin", /skin|keratinocyte/i],
+  ["Liver", /hepatocyte|hepatic|\bliver\b/i],
+  ["Bone Marrow", /bone marrow|promyelocyte/i],
+  ["Cartilage", /cartilage|chondrocyte|chondroblast/i],
+  ["Skeletal Muscle", /skeletal muscle|myoblast|myocyte/i],
+  ["Smooth Muscle", /smooth muscle/i],
+  ["Umbilical Cord", /umbilical cord|umbilical artery|umbilical vein/i],
+  ["Mouth/Oral", /mouth|oral|lingual|periodontal/i],
+  ["Cervix", /cervix|cervical/i],
+  ["Colon", /\bcolon\b|colonic/i],
+  ["Connective Tissue", /connective|fibroblast/i],
+  ["Cord Blood", /cord blood/i],
+  ["Ear", /\bear\b|auditory/i],
+  ["Kidney", /kidney|renal/i],
+  ["Lung", /\blung\b|pulmonary|bronch|airway/i],
+  ["Brain", /\bbrain\b|cerebral/i],
+  ["Neuron", /neuron|neuronal|neural/i],
+  ["Astrocyte", /astrocyte|astroglia/i],
+  ["Microglia", /microglia/i],
+  ["Endothelial", /endothelial/i],
+  ["Epithelial", /epithelial|epithelium/i],
+  ["Fibroblast", /fibroblast/i],
+  ["Melanocyte", /melanocyte/i],
+  ["Mast Cell", /mast cell/i],
+  ["T Cell", /t cell|t-cell/i],
+  ["B Cell", /b cell|b-cell/i],
+  ["Macrophage", /macrophage/i],
+  ["Stem / Progenitor", /stem|progenitor/i],
+  ["Embryo", /embryo|embryonic/i],
+  ["Adipose", /adipocyte|adipose/i],
+  ["Pancreas", /pancrea/i],
+  ["Prostate", /prostate/i],
+  ["Ovary", /ovary|ovarian/i],
+  ["Placenta", /placenta/i],
+  ["Retina / Eye", /retina|retinal|ocular|cornea|\beye\b/i],
+  ["Testes", /testis|testicular|testes/i],
 ];
 
 function fullText(product: Product) {
-  return [product.title, product.sku, product.searchCategory, product.filterTitle, ...(product.filterPath || []), ...(product.listingFilters || []).flatMap((f) => [f.title, ...(f.path || [])])].filter(Boolean).join(" ");
+  return [
+    product.title,
+    product.sku,
+    product.searchCategory,
+    product.filterTitle,
+    ...(product.filterPath || []),
+    ...(product.listingFilters || []).flatMap((filter) => [filter.title, ...(filter.path || [])]),
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
 
 function fallbackLabels(product: Product, rules: readonly FacetRule[]) {
@@ -93,23 +132,35 @@ function productHref(product: Product) {
   return `/products/abm/staged/product/${encodeURIComponent(product.sku || product.url)}`;
 }
 
-function countFacet(rows: Array<{ facets: Facets }>, key: keyof Facets) {
-  const counts = new Map<string, number>();
-  for (const row of rows) for (const value of row.facets[key]) counts.set(value, (counts.get(value) || 0) + 1);
-  return counts;
-}
-
-function FacetList({ label, rules, active, counts, onSelect }: { label: string; rules: readonly FacetRule[]; active: string; counts: Map<string, number>; onSelect: (value: string) => void }) {
+function FacetList({
+  label,
+  rules,
+  active,
+  onSelect,
+}: {
+  label: string;
+  rules: readonly FacetRule[];
+  active: string;
+  onSelect: (value: string) => void;
+}) {
   return (
     <div>
       <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.15em] text-[#ef5a29]">{label}</div>
       <div className="h-[198px] overflow-y-auto rounded-[15px] border border-[#eee6e1] bg-white py-2 shadow-[0_4px_14px_rgba(44,28,18,0.025)]">
         {rules.map(([value]) => {
-          const count = counts.get(value) || 0;
           const selected = active === value;
           return (
-            <button key={value} type="button" disabled={!count && !selected} onClick={() => onSelect(selected ? "" : value)} className={`flex w-full items-center justify-between gap-3 px-5 py-2.5 text-left text-[12px] leading-4 transition ${selected ? "bg-[#fff1ea] font-bold text-[#ed5a29]" : count ? "text-[#272727] hover:bg-[#fff7f3]" : "cursor-not-allowed text-neutral-300"}`}>
-              <span>{value}</span>{count ? <span className="text-[10px] font-normal text-neutral-400">{count}</span> : null}
+            <button
+              key={value}
+              type="button"
+              onClick={() => onSelect(selected ? "" : value)}
+              className={`block w-full px-5 py-2.5 text-left text-[12px] leading-4 transition ${
+                selected
+                  ? "bg-[#fff1ea] font-bold text-[#ed5a29]"
+                  : "text-[#272727] hover:bg-[#fff7f3] hover:text-[#ed5a29]"
+              }`}
+            >
+              {value}
             </button>
           );
         })}
@@ -120,12 +171,17 @@ function FacetList({ label, rules, active, counts, onSelect }: { label: string; 
 
 function MetaChip({ label, value }: { label: string; value?: string }) {
   if (!value) return null;
-  return <span className="inline-flex rounded-full border border-[#e8dfda] bg-white px-2.5 py-1 text-[10px] text-[#555]"><span className="mr-1 text-[#777]">{label}:</span>{value}</span>;
+  return (
+    <span className="inline-flex rounded-full border border-[#e8dfda] bg-white px-2.5 py-1 text-[10px] text-[#555]">
+      <span className="mr-1 text-[#777]">{label}:</span>
+      {value}
+    </span>
+  );
 }
 
 export default function ImmortalizedCatalogClient({ products: initialProducts }: { products: Product[] }) {
   const [products, setProducts] = useState<Product[]>(initialProducts || []);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState((initialProducts || []).length === 0);
   const [loadError, setLoadError] = useState(false);
   const [draftQuery, setDraftQuery] = useState("");
   const [query, setQuery] = useState("");
@@ -137,14 +193,24 @@ export default function ImmortalizedCatalogClient({ products: initialProducts }:
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+
+    const load = async () => {
       try {
         const response = await fetch("/api/abm/cell-model-catalog", { cache: "no-store" });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const payload = await response.json() as { items?: Product[] };
+        const payload = (await response.json()) as { items?: Product[] };
         if (cancelled) return;
+
         const apiItems = Array.isArray(payload.items) ? payload.items : [];
-        const merged = Array.from(new Map([...(initialProducts || []), ...apiItems].map((item) => [`${item.modelType}:${item.sku || item.url}`, item])).values());
+        const merged = Array.from(
+          new Map(
+            [...(initialProducts || []), ...apiItems].map((item) => [
+              `${item.modelType}:${item.sku || item.url}`,
+              item,
+            ]),
+          ).values(),
+        );
+
         setProducts(merged);
         setLoadError(false);
       } catch {
@@ -152,74 +218,226 @@ export default function ImmortalizedCatalogClient({ products: initialProducts }:
       } finally {
         if (!cancelled) setLoading(false);
       }
-    })();
-    return () => { cancelled = true; };
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+    };
   }, [initialProducts]);
 
-  const rows = useMemo(() => products.map((product) => ({ product, facets: facetsFor(product) })), [products]);
-  const searchRows = useMemo(() => {
+  const rows = useMemo(
+    () => products.map((product) => ({ product, facets: facetsFor(product) })),
+    [products],
+  );
+
+  const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    return rows.filter(({ product }) => product.modelType === modelType && (!needle || fullText(product).toLowerCase().includes(needle)));
-  }, [rows, modelType, query]);
 
-  const speciesRows = useMemo(() => searchRows.filter(({ facets }) => (!bioSystem || facets.bioSystems.includes(bioSystem)) && (!cellType || facets.cellTypes.includes(cellType))), [searchRows, bioSystem, cellType]);
-  const systemRows = useMemo(() => searchRows.filter(({ facets }) => (!species || facets.species.includes(species)) && (!cellType || facets.cellTypes.includes(cellType))), [searchRows, species, cellType]);
-  const cellTypeRows = useMemo(() => searchRows.filter(({ facets }) => (!species || facets.species.includes(species)) && (!bioSystem || facets.bioSystems.includes(bioSystem))), [searchRows, species, bioSystem]);
-  const speciesCounts = useMemo(() => countFacet(speciesRows, "species"), [speciesRows]);
-  const systemCounts = useMemo(() => countFacet(systemRows, "bioSystems"), [systemRows]);
-  const cellTypeCounts = useMemo(() => countFacet(cellTypeRows, "cellTypes"), [cellTypeRows]);
+    return rows.filter(({ product, facets }) => {
+      if (product.modelType !== modelType) return false;
+      if (needle && !fullText(product).toLowerCase().includes(needle)) return false;
+      if (species && !facets.species.includes(species)) return false;
+      if (bioSystem && !facets.bioSystems.includes(bioSystem)) return false;
+      if (cellType && !facets.cellTypes.includes(cellType)) return false;
+      return true;
+    });
+  }, [rows, modelType, query, species, bioSystem, cellType]);
 
-  const filtered = useMemo(() => searchRows.filter(({ facets }) => (!species || facets.species.includes(species)) && (!bioSystem || facets.bioSystems.includes(bioSystem)) && (!cellType || facets.cellTypes.includes(cellType))), [searchRows, species, bioSystem, cellType]);
   const visible = filtered.slice(0, visibleCount);
 
   const resetVisible = () => setVisibleCount(12);
-  const clearAll = () => { setDraftQuery(""); setQuery(""); setModelType("Immortalized Cells"); setSpecies(""); setBioSystem(""); setCellType(""); resetVisible(); };
-  const switchModel = (next: ModelType) => { setModelType(next); setSpecies(""); setBioSystem(""); setCellType(""); resetVisible(); };
+
+  const clearAll = () => {
+    setDraftQuery("");
+    setQuery("");
+    setModelType("Immortalized Cells");
+    setSpecies("");
+    setBioSystem("");
+    setCellType("");
+    resetVisible();
+  };
+
+  const switchModel = (next: ModelType) => {
+    setModelType(next);
+    setSpecies("");
+    setBioSystem("");
+    setCellType("");
+    resetVisible();
+  };
 
   return (
     <section id="catalog" className="mt-10">
       <div className="rounded-[20px] border border-[#ebe1dc] bg-[#fffaf7] p-6 md:p-7">
-        <form className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_112px]" onSubmit={(e) => { e.preventDefault(); setQuery(draftQuery); resetVisible(); }}>
-          <input value={draftQuery} onChange={(e) => setDraftQuery(e.target.value)} placeholder="Name, cat. no., or keyword..." className="h-11 rounded-full border border-[#efd5c8] bg-white px-4 text-[12px] outline-none focus:border-[#ef5a29]" />
-          <button className="h-11 rounded-full bg-[#f15a24] text-[12px] font-bold text-white hover:bg-[#dd4c18]">Search</button>
+        <form
+          className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_112px]"
+          onSubmit={(event) => {
+            event.preventDefault();
+            setQuery(draftQuery);
+            resetVisible();
+          }}
+        >
+          <input
+            value={draftQuery}
+            onChange={(event) => setDraftQuery(event.target.value)}
+            placeholder="Name, cat. no., or keyword..."
+            className="h-11 rounded-full border border-[#efd5c8] bg-white px-4 text-[12px] outline-none focus:border-[#ef5a29]"
+          />
+          <button className="h-11 rounded-full bg-[#f15a24] text-[12px] font-bold text-white hover:bg-[#dd4c18]">
+            Search
+          </button>
         </form>
 
-        <div className="mt-4 flex flex-wrap gap-2">{(["Immortalized Cells", "Tumor Cells", "Primary Cells"] as const).map((type) => <button key={type} type="button" onClick={() => switchModel(type)} className={`rounded-full border px-4 py-2 text-[12px] font-semibold ${modelType === type ? "border-[#f15a24] bg-[#f15a24] text-white" : "border-[#efd5c8] bg-white text-neutral-800"}`}>{type}</button>)}</div>
-
-        <div className="mt-5 grid gap-4 md:grid-cols-3">
-          <FacetList label="Species" rules={SPECIES} active={species} counts={speciesCounts} onSelect={(value) => { setSpecies(value); resetVisible(); }} />
-          <FacetList label="Bio System" rules={SYSTEMS} active={bioSystem} counts={systemCounts} onSelect={(value) => { setBioSystem(value); resetVisible(); }} />
-          <FacetList label="Cell Type" rules={CELL_TYPES} active={cellType} counts={cellTypeCounts} onSelect={(value) => { setCellType(value); resetVisible(); }} />
+        <div className="mt-4 flex flex-wrap gap-2">
+          {(["Immortalized Cells", "Tumor Cells", "Primary Cells"] as const).map((type) => (
+            <button
+              key={type}
+              type="button"
+              onClick={() => switchModel(type)}
+              className={`rounded-full border px-4 py-2 text-[12px] font-semibold ${
+                modelType === type
+                  ? "border-[#f15a24] bg-[#f15a24] text-white"
+                  : "border-[#efd5c8] bg-white text-neutral-800 hover:border-[#f15a24] hover:text-[#f15a24]"
+              }`}
+            >
+              {type}
+            </button>
+          ))}
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="text-[11px] text-neutral-500">{filtered.length.toLocaleString()} matching products{species ? ` · ${species}` : ""}{bioSystem ? ` · ${bioSystem}` : ""}{cellType ? ` · ${cellType}` : ""}</div>
-          <button type="button" onClick={clearAll} className="min-w-[112px] rounded-full border border-[#f09a78] bg-white px-5 py-2.5 text-[11px] text-[#ee7a52] hover:bg-[#fff3ed]">Clear All</button>
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          <FacetList
+            label="Species"
+            rules={SPECIES}
+            active={species}
+            onSelect={(value) => {
+              setSpecies(value);
+              resetVisible();
+            }}
+          />
+          <FacetList
+            label="Bio System"
+            rules={SYSTEMS}
+            active={bioSystem}
+            onSelect={(value) => {
+              setBioSystem(value);
+              resetVisible();
+            }}
+          />
+          <FacetList
+            label="Cell Type"
+            rules={CELL_TYPES}
+            active={cellType}
+            onSelect={(value) => {
+              setCellType(value);
+              resetVisible();
+            }}
+          />
+        </div>
+
+        <div className="mt-4 flex justify-end">
+          <button
+            type="button"
+            onClick={clearAll}
+            className="min-w-[112px] rounded-full border border-[#f09a78] bg-white px-5 py-2.5 text-[11px] text-[#ee7a52] hover:bg-[#fff3ed]"
+          >
+            Clear All
+          </button>
         </div>
       </div>
 
-      <div className="mt-7 flex items-center justify-between gap-3"><div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#ef5a29]">Search Result</div><div className="text-[11px] text-neutral-500">{filtered.length.toLocaleString()} products</div></div>
+      <div className="mt-7 flex items-center justify-between gap-3">
+        <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#ef5a29]">Search Result</div>
+        <div className="text-[11px] text-neutral-500">{filtered.length.toLocaleString()} products</div>
+      </div>
 
-      {loading && !visible.length ? <div className="mt-4 rounded-[18px] border border-[#eee4df] bg-white px-5 py-8 text-center text-sm text-neutral-500">Loading cell lines...</div> : null}
-      {!loading && loadError && !visible.length ? <div className="mt-4 rounded-[18px] border border-[#eee4df] bg-white px-5 py-8 text-center text-sm text-neutral-500">Cell-line results could not be loaded. Please refresh once.</div> : null}
-      {!loading && !loadError && !visible.length ? <div className="mt-4 rounded-[18px] border border-[#eee4df] bg-white px-5 py-8 text-center text-sm text-neutral-500">No products match the selected filters.</div> : null}
+      {loading && !visible.length ? (
+        <div className="mt-4 rounded-[18px] border border-[#eee4df] bg-white px-5 py-8 text-center text-sm text-neutral-500">
+          Loading cell lines...
+        </div>
+      ) : null}
+
+      {!loading && loadError && !visible.length ? (
+        <div className="mt-4 rounded-[18px] border border-[#eee4df] bg-white px-5 py-8 text-center text-sm text-neutral-500">
+          Cell-line results could not be loaded. Please refresh once.
+        </div>
+      ) : null}
+
+      {!loading && !loadError && !visible.length ? (
+        <div className="mt-4 rounded-[18px] border border-[#eee4df] bg-white px-5 py-8 text-center text-sm text-neutral-500">
+          No products match the selected filters.
+        </div>
+      ) : null}
 
       <div className="mt-4 space-y-3">
         {visible.map(({ product, facets }) => (
-          <article key={`${product.modelType}:${product.sku || product.url}`} className="rounded-[18px] border border-[#eadfd9] bg-white p-4 shadow-[0_5px_15px_rgba(35,22,16,0.025)] md:p-5">
+          <article
+            key={`${product.modelType}:${product.sku || product.url}`}
+            className="rounded-[18px] border border-[#eadfd9] bg-white p-4 shadow-[0_5px_15px_rgba(35,22,16,0.025)] md:p-5"
+          >
             <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_94px]">
               <div className="min-w-0">
-                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#eee7e3] pb-3"><h3 className="text-[14px] font-bold leading-5 text-[#f15a24]">{product.title}</h3><Link href={productHref(product)} prefetch={false} className="shrink-0 rounded-full bg-[#f15a24] px-4 py-2 text-[11px] font-bold text-white hover:bg-[#dc4d19]">View Product</Link></div>
-                <div className="mt-3 flex flex-wrap gap-2"><span className="rounded-full border border-[#f0d8cc] bg-[#fffaf7] px-2.5 py-1 text-[10px]"><span className="mr-1 text-[#ef5a29]">Cat. No.:</span>{product.sku || "—"}</span><span className="rounded-full border border-[#f0d8cc] bg-[#fffaf7] px-2.5 py-1 text-[10px]"><span className="mr-1 text-[#ef5a29]">Unit:</span>{product.unit || "—"}</span><span className="rounded-full border border-[#f0d8cc] bg-[#fffaf7] px-2.5 py-1 text-[10px]"><span className="mr-1 text-[#ef5a29]">Price:</span>Inquiry</span></div>
-                <div className="mt-3 flex flex-wrap gap-2"><MetaChip label="Species" value={facets.species[0]} /><MetaChip label="Bio system" value={facets.bioSystems[0]} /><MetaChip label="Cell type" value={facets.cellTypes[0]} /></div>
+                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#eee7e3] pb-3">
+                  <h3 className="text-[14px] font-bold leading-5 text-[#f15a24]">{product.title}</h3>
+                  <Link
+                    href={productHref(product)}
+                    prefetch={false}
+                    className="shrink-0 rounded-full bg-[#f15a24] px-4 py-2 text-[11px] font-bold text-white hover:bg-[#dc4d19]"
+                  >
+                    View Product
+                  </Link>
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="rounded-full border border-[#f0d8cc] bg-[#fffaf7] px-2.5 py-1 text-[10px]">
+                    <span className="mr-1 text-[#ef5a29]">Cat. No.:</span>
+                    {product.sku || "—"}
+                  </span>
+                  <span className="rounded-full border border-[#f0d8cc] bg-[#fffaf7] px-2.5 py-1 text-[10px]">
+                    <span className="mr-1 text-[#ef5a29]">Unit:</span>
+                    {product.unit || "—"}
+                  </span>
+                  <span className="rounded-full border border-[#f0d8cc] bg-[#fffaf7] px-2.5 py-1 text-[10px]">
+                    <span className="mr-1 text-[#ef5a29]">Price:</span>
+                    Inquiry
+                  </span>
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <MetaChip label="Species" value={facets.species[0]} />
+                  <MetaChip label="Bio system" value={facets.bioSystems[0]} />
+                  <MetaChip label="Cell type" value={facets.cellTypes[0]} />
+                </div>
               </div>
-              <div className="flex min-h-[90px] items-center justify-center overflow-hidden rounded-[12px] border border-[#eee9e6] bg-[#fbfbfb]">{product.previewImage ? <img src={product.previewImage} alt="" className="h-[86px] w-full object-contain p-2" loading="lazy" /> : <span className="px-2 text-center text-[9px] text-neutral-400">Product image</span>}</div>
+
+              <div className="flex min-h-[90px] items-center justify-center overflow-hidden rounded-[12px] border border-[#eee9e6] bg-[#fbfbfb]">
+                {product.previewImage ? (
+                  <img
+                    src={product.previewImage}
+                    alt=""
+                    className="h-[86px] w-full object-contain p-2"
+                    loading="lazy"
+                  />
+                ) : (
+                  <span className="px-2 text-center text-[9px] text-neutral-400">Product image</span>
+                )}
+              </div>
             </div>
           </article>
         ))}
       </div>
 
-      {visibleCount < filtered.length ? <div className="mt-5 text-center"><button type="button" onClick={() => setVisibleCount((count) => count + 12)} className="rounded-full border border-[#f15a24] bg-white px-6 py-2.5 text-[12px] font-semibold text-[#f15a24] hover:bg-[#fff6f1]">Load More</button></div> : null}
+      {visibleCount < filtered.length ? (
+        <div className="mt-5 text-center">
+          <button
+            type="button"
+            onClick={() => setVisibleCount((count) => count + 12)}
+            className="rounded-full border border-[#f15a24] bg-white px-6 py-2.5 text-[12px] font-semibold text-[#f15a24] hover:bg-[#fff6f1]"
+          >
+            Load More
+          </button>
+        </div>
+      ) : null}
     </section>
   );
 }
