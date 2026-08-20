@@ -8,21 +8,33 @@ const MENU = [
   ["Immortalized Cell Lines", "immortalized-cell-lines"],
   ["CRISPR KO Cell Lines", "crispr-ko-cell-lines"],
   ["Cas9 Expressing Cell Lines", "cas9-expressing-cell-lines"],
-  ["Stem Cell-Derived Cells", "stem-cell-derived-cells"],
   ["Hematopoietic Cells", "hematopoietic-cells"],
+  ["Stem Cell-Derived Cells", "stem-cell-derived-cells"],
   ["Stable Cell Lines", "stable-cell-lines"],
   ["Tumor Cell Lines", "tumor-cell-lines"],
   ["Primary Cells", "primary-cells"],
 ] as const;
 
 const STEM_CHILDREN = [["Cardiovascular", "cardiovascular"], ["Neurological", "neurological"]] as const;
+const HEMA_CHILDREN = [
+  ["Hematopoietic Stem Cell (HSC)", "hematopoietic-stem-cell-hsc"],
+  ["T Cells (CD4⁺, CD8⁺, Treg, γδ)", "t-cells-cd4-cd8-treg"],
+  ["NK Cells", "nk-cells"],
+  ["Dendritic Cells", "dendritic-cells"],
+  ["Granulocytes", "granulocytes"],
+] as const;
 
 export function CellLibraryShell({ title, active, subActive, children }: { title: string; active: string; subActive?: string; children: ReactNode }) {
+  const parentCrumb = active === "stem-cell-derived-cells" && subActive
+    ? { label: "Stem Cell-Derived Cells", href: "/products/abm/cellular-materials/cell-library-collections/stem-cell-derived-cells" }
+    : active === "hematopoietic-cells" && subActive
+      ? { label: "Hematopoietic Cells", href: "/products/abm/cellular-materials/cell-library-collections/hematopoietic-cells" }
+      : null;
   return (
     <div className="bg-white">
       <AbmHeroBanner title="Applied Biological Materials (abm) Products & Services" />
       <div className="mx-auto max-w-[1320px] px-6">
-        <div className="mt-4"><Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Cellular Materials", href: "/products/abm/cellular-materials" }, { label: "Cell Library Collections", href: "/products/abm/cellular-materials/cell-library-collections" }, ...(active === "stem-cell-derived-cells" && subActive ? [{ label: "Stem Cell-Derived Cells", href: "/products/abm/cellular-materials/cell-library-collections/stem-cell-derived-cells" }] : []), { label: title }]} /></div>
+        <div className="mt-4"><Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Cellular Materials", href: "/products/abm/cellular-materials" }, { label: "Cell Library Collections", href: "/products/abm/cellular-materials/cell-library-collections" }, ...(parentCrumb ? [parentCrumb] : []), { label: title }]} /></div>
         <div className="mt-5 grid gap-8 pb-20 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[296px_minmax(0,1fr)]">
           <aside className="self-start lg:sticky lg:top-24"><CellLibrarySideNav active={active} subActive={subActive} /></aside>
           <main className="min-w-0">{children}</main>
@@ -45,9 +57,11 @@ function CellLibrarySideNav({ active, subActive }: { active: string; subActive?:
             {MENU.map(([label, slug]) => {
               const selected = active === slug;
               const stem = slug === "stem-cell-derived-cells";
+              const hema = slug === "hematopoietic-cells";
+              const children = stem ? STEM_CHILDREN : hema ? HEMA_CHILDREN : [];
               return <div key={slug}>
-                <Link href={`/products/abm/cellular-materials/cell-library-collections/${slug}`} className={`flex items-center justify-between px-2 py-1.5 ${selected ? "font-semibold text-[#f15a29]" : "hover:text-[#f15a29]"}`}><span>{label}</span>{stem ? <span className="text-[#0d9bd7]">{selected ? "⌃" : "⌄"}</span> : null}</Link>
-                {stem && selected ? <div className="pl-3 text-[12px]">{STEM_CHILDREN.map(([child, childSlug]) => <Link key={childSlug} href={`/products/abm/cellular-materials/cell-library-collections/stem-cell-derived-cells/${childSlug}`} className={`block px-2 py-1.5 ${subActive === childSlug ? "font-semibold text-[#f15a29]" : "text-neutral-700 hover:text-[#f15a29]"}`}>{child}</Link>)}</div> : null}
+                <Link href={`/products/abm/cellular-materials/cell-library-collections/${slug}`} className={`flex items-center justify-between px-2 py-1.5 ${selected ? "font-semibold text-[#f15a29]" : "hover:text-[#f15a29]"}`}><span>{label}</span>{(stem || hema) ? <span className="text-[#0d9bd7]">{selected ? "⌃" : "⌄"}</span> : null}</Link>
+                {children.length && selected ? <div className="pl-3 text-[12px]">{children.map(([child, childSlug]) => <Link key={childSlug} href={`/products/abm/cellular-materials/cell-library-collections/${slug}/${childSlug}`} className={`block px-2 py-1.5 ${subActive === childSlug ? "font-semibold text-[#f15a29]" : "text-neutral-700 hover:text-[#f15a29]"}`}>{child}</Link>)}</div> : null}
               </div>;
             })}
           </div>
