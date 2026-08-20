@@ -50,6 +50,24 @@ const clean = (value) => String(value || "").normalize("NFKC").replace(/\u00a0/g
 const normalized = (value) => clean(value).toLowerCase();
 const digest = (value) => createHash("sha256").update(String(value)).digest("hex");
 const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+async function withSanityRetry(label, operation) {
+  let lastError;
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      const status = Number(error?.statusCode || error?.response?.statusCode || 0);
+      const retryable = status === 408 || status === 409 || status === 429 || status >= 500;
+      if (!retryable || attempt === 7) throw error;
+      const waitMs = Math.min(30_000, 1_000 * (2 ** attempt)) + Math.floor(Math.random() * 500);
+      console.warn(`[ABM CELL Sanity] retry ${attempt + 1}/8 ${label} after HTTP ${status || "unknown"} (${waitMs}ms)`);
+      await delay(waitMs);
+    }
+  }
+  throw lastError;
+}
 const PRODUCT_ID_PREFIX = "product-abm-celllib-20260820-";
 const MIGRATION_KEY = "abm-cell-products-2026-08-20";
 const ABM_BRAND_ID = "brand-abm";
@@ -273,10 +291,12 @@ async function uploadProductImages(product, imageRecord, existingDocument) {
       continue;
     }
     const fetched = await fetchImageBytes(sourceUrl);
-    const asset = await client.assets.upload("image", fetched.bytes, {
-      filename: filenameFor(sourceUrl, product.sku, fetched.contentType),
-      source: { id: sourceUrl, name: "Official ABM product page", url: sourceUrl },
-    });
+    const asset = await withSanityRetry(`${product.sku} image upload`, () => (
+      client.assets.upload("image", fetched.bytes, {
+        filename: filenameFor(sourceUrl, product.sku, fetched.contentType),
+        source: { id: sourceUrl, name: "Official ABM product page", url: sourceUrl },
+      })
+    ));
     if (!asset?._id || !asset?.url || !String(asset.url).includes("cdn.sanity.io")) {
       throw new Error(`${product.sku}: Sanity did not return a managed image asset`);
     }
@@ -472,7 +492,9 @@ if (AUDIT_ONLY) {
       if (existing && normalized(existing.sku) !== sku) throw new Error(`${product.sku}: scoped ID is owned by another SKU`);
       const media = await uploadProductImages(product, imageRecord, existing);
       const document = buildProductDocument(product, detail, category, local.products.indexOf(product), media);
-      await client.createOrReplace(document, { visibility: "async" });
+      await withSanityRetry(`${product.sku} document write`, () => (
+        client.createOrReplace(document, { visibility: "async" })
+      ));
       completed += 1;
       if (completed % 10 === 0 || completed === selected.length) console.log(`[ABM CELL Sanity] ${completed}/${selected.length}`);
       return { sku: product.sku, id: document._id, images: media.images.length, uploaded: media.uploaded, reused: media.reused };
