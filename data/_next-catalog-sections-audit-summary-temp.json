@@ -1,0 +1,652 @@
+{
+  "generatedAt": "2026-08-20T04:19:43.467Z",
+  "kent": [
+    {
+      "path": "physiological-monitoring/physiological-monitoring-accessories",
+      "title": "Physiological Monitoring / Physiological Monitoring Accessories",
+      "hasSummary": false,
+      "hasStructuredBlocks": false,
+      "hasLegacyHtml": true,
+      "productCount": 11,
+      "productSamples": [
+        {
+          "title": "Analog Output Cable",
+          "sku": "CBL-ANAOUT-MINI",
+          "slug": "analog-output-cable",
+          "imageCount": 1
+        },
+        {
+          "title": "Cannula Adapter",
+          "sku": "3468ADH",
+          "slug": "cannula-adapter",
+          "imageCount": 1
+        },
+        {
+          "title": "Large Animal Sensors",
+          "sku": "MSTAT-SENSOR-LG",
+          "slug": "large-animal-sensors",
+          "imageCount": 2
+        },
+        {
+          "title": "Mouse Paw Pulse Oximeter Sensors",
+          "sku": "MSTAT-SENSOR-MSE",
+          "slug": "mouse-paw-pulse-oximeter-sensors",
+          "imageCount": 1
+        },
+        {
+          "title": "MouseSTAT® Pulse Oximeter Whole Body Sensor for Mouse Pups",
+          "sku": "SPO2-9MM",
+          "slug": "mousestat-pulse-oximeter-whole-body-sensors-for-mouse-pups",
+          "imageCount": 1
+        },
+        {
+          "title": "MouseSTAT® Pulse Oximeter Whole Body Sensors for Rat Pups",
+          "sku": "SPO2-5MM",
+          "slug": "mousestat-pulse-oximeter-whole-body-sensors-for-rat-pups",
+          "imageCount": 1
+        },
+        {
+          "title": "Non-Contact Infrared Thermometer with Laser Sight for Rodent Temperature Monitoring",
+          "sku": "CODA-IRT",
+          "slug": "non-contact-infrared-thermometer-with-laser-sight",
+          "imageCount": 1
+        },
+        {
+          "title": "Pulse Oximeter Paw Sensors MRI Compatible",
+          "sku": "SPO2-5MM-MRI",
+          "slug": "pulse-oximeter-paw-sensors-mri-compatible",
+          "imageCount": 2
+        },
+        {
+          "title": "Pulse Oximeter Sensor Extension Cable",
+          "sku": "CBL-03-EXT-12",
+          "slug": "pulse-oximeter-sensor-extension-cable",
+          "imageCount": 1
+        },
+        {
+          "title": "Pulse Oximeter Whole Body Sensors MRI Compatible",
+          "sku": "SPO2-9MM-MRI",
+          "slug": "pulse-oximeter-whole-body-sensors-mri-compatible",
+          "imageCount": 1
+        },
+        {
+          "title": "Rat Paw Pulse Oximeter Sensors",
+          "sku": "MSTAT-SENSOR-RAT",
+          "slug": "rat-paw-pulse-oximeter-sensors",
+          "imageCount": 1
+        }
+      ],
+      "descendantCount": 0,
+      "descendants": []
+    },
+    {
+      "path": "noninvasive-blood-pressure/noninvasive-blood-pressure-accessories/accessories-for-coda-monitor",
+      "title": "Noninvasive Blood Pressure / Noninvasive Blood Pressure Accessories / Accessories For Coda Monitor",
+      "hasSummary": false,
+      "hasStructuredBlocks": false,
+      "hasLegacyHtml": true,
+      "productCount": 10,
+      "productSamples": [
+        {
+          "title": "CODA® Cuff Storage Container",
+          "sku": "CODA-CSC",
+          "slug": "coda-cuff-storage-container",
+          "imageCount": 2
+        },
+        {
+          "title": "CODA® Data Acquisition Software",
+          "sku": "CODA-PCS42",
+          "slug": "coda-data-acquisition-software",
+          "imageCount": 1
+        },
+        {
+          "title": "CODA® High Throughput Cuff Kits",
+          "sku": "MSE-CUFFKIT",
+          "slug": "coda-high-throughput-cuff-kits",
+          "imageCount": 4
+        },
+        {
+          "title": "CODA® High Throughput Occlusion Cuffs",
+          "sku": "N/A",
+          "slug": "coda-high-throughput-occlusion-cuffs",
+          "imageCount": 5
+        },
+        {
+          "title": "CODA® High Throughput VPR Cuffs",
+          "sku": "N/A",
+          "slug": "coda-high-throughput-vpr-cuffs",
+          "imageCount": 4
+        },
+        {
+          "title": "CODA® Monitor Animal Holders",
+          "sku": "HLD-ML-T",
+          "slug": "nose-cone-animal-holders-with-stand",
+          "imageCount": 8
+        },
+        {
+          "title": "CODA® Monitor Cuff Kits",
+          "sku": "M-OCC-L",
+          "slug": "coda-monitor-cuff-kits",
+          "imageCount": 4
+        },
+        {
+          "title": "CODA® Monitor Occlusion Cuff Kits",
+          "sku": "M-OCC-XS",
+          "slug": "coda-monitor-occlusion-cuff-kits",
+          "imageCount": 5
+        },
+        {
+          "title": "CODA® Monitor VPR Cuff Kits",
+          "sku": "M-OCC-L-1",
+          "slug": "coda-monitor-vpr-cuff-kits",
+          "imageCount": 4
+        },
+        {
+          "title": "Replacement Bladder Kits",
+          "sku": "OCC-L-BLAD",
+          "slug": "replacement-bladder-kits",
+          "imageCount": 8
+        }
+      ],
+      "descendantCount": 0,
+      "descendants": []
+    },
+    {
+      "path": "noninvasive-blood-pressure/noninvasive-blood-pressure-accessories",
+      "title": "Non-invasive blood pressure accessories",
+      "hasSummary": false,
+      "hasStructuredBlocks": false,
+      "hasLegacyHtml": true,
+      "productCount": 8,
+      "productSamples": [
+        {
+          "title": "CODA® Animal Holders",
+          "sku": "HLD-ML",
+          "slug": "coda-animal-holders",
+          "imageCount": 8
+        },
+        {
+          "title": "CODA® Data Acquisition Software",
+          "sku": "CODA-PCS42",
+          "slug": "coda-data-acquisition-software",
+          "imageCount": 1
+        },
+        {
+          "title": "CODA® High Throughput Cuff Kits",
+          "sku": "MSE-CUFFKIT",
+          "slug": "coda-high-throughput-cuff-kits",
+          "imageCount": 4
+        },
+        {
+          "title": "CODA® High Throughput Occlusion Cuffs",
+          "sku": "N/A",
+          "slug": "coda-high-throughput-occlusion-cuffs",
+          "imageCount": 5
+        },
+        {
+          "title": "CODA® High Throughput VPR Cuffs",
+          "sku": "N/A",
+          "slug": "coda-high-throughput-vpr-cuffs",
+          "imageCount": 4
+        },
+        {
+          "title": "MRI Tubing Kit",
+          "sku": "CODA-MRI",
+          "slug": "mri-tubing-kit",
+          "imageCount": 1
+        },
+        {
+          "title": "Replacement Bladder Kits",
+          "sku": "OCC-L-BLAD",
+          "slug": "replacement-bladder-kits",
+          "imageCount": 8
+        },
+        {
+          "title": "Stand for CODA® Holders",
+          "sku": "10-1000-179",
+          "slug": "stand-for-coda-holders",
+          "imageCount": 2
+        }
+      ],
+      "descendantCount": 0,
+      "descendants": []
+    },
+    {
+      "path": "surgery/surgical-instruments",
+      "title": "Surgery / Surgical Instruments",
+      "hasSummary": false,
+      "hasStructuredBlocks": false,
+      "hasLegacyHtml": true,
+      "productCount": 31,
+      "productSamples": [
+        {
+          "title": "Angled 5 Tweezer Kit",
+          "sku": "INS750-KIT",
+          "slug": "angled-5-tweezer-kit",
+          "imageCount": 1
+        },
+        {
+          "title": "Autoclip Applier for Laboratory Animal Wound Clips",
+          "sku": "INS750545",
+          "slug": "autoclip-applier",
+          "imageCount": 1
+        },
+        {
+          "title": "Autoclips 9 mm",
+          "sku": "INS750546",
+          "slug": "autoclips-9-mm",
+          "imageCount": 1
+        },
+        {
+          "title": "Castroviejo Needle Holder – Serrated, 14 cm for Rodent Microsurgery",
+          "sku": "INS600137",
+          "slug": "castroviejo-needle-holder-serrated",
+          "imageCount": 1
+        },
+        {
+          "title": "Dissecting Scissors Straight 10 cm Long",
+          "sku": "INS600393-4",
+          "slug": "dissecting-scissors-straight-10-cm-long",
+          "imageCount": 1
+        },
+        {
+          "title": "Fine Dressing Forceps 10 cm Long",
+          "sku": "INS650914-4",
+          "slug": "fine-dressing-forceps-10-cm-long",
+          "imageCount": 1
+        },
+        {
+          "title": "Fine Dressing Forceps, 15.5 cm Long",
+          "sku": "INS750363-4",
+          "slug": "fine-dressing-forceps-155-cm-long",
+          "imageCount": 1
+        },
+        {
+          "title": "Hartman Mosquito Hemostatic Forceps Curved",
+          "sku": "INS750452-2",
+          "slug": "hartman-mosquito-hemostatic-forceps-curved",
+          "imageCount": 1
+        },
+        {
+          "title": "Hartman Mosquito Hemostatic Forceps, Straight",
+          "sku": "INS750451-2",
+          "slug": "hartman-mosquito-hemostatic-forceps-straight",
+          "imageCount": 1
+        },
+        {
+          "title": "Iris Dressing Forceps",
+          "sku": "INS650915-4",
+          "slug": "iris-dressing-forceps",
+          "imageCount": 1
+        },
+        {
+          "title": "Iris Scissors Straight 11 cm Long",
+          "sku": "INS750216-2",
+          "slug": "iris-scissors-straight-11-cm-long",
+          "imageCount": 1
+        },
+        {
+          "title": "Mayo Operating Scissors Straight",
+          "sku": "INS700540",
+          "slug": "mayo-operating-scissors-straight",
+          "imageCount": 1
+        }
+      ],
+      "descendantCount": 0,
+      "descendants": []
+    },
+    {
+      "path": "surgery/surgical-accessories",
+      "title": "Surgery / Surgical Accessories",
+      "hasSummary": false,
+      "hasStructuredBlocks": false,
+      "hasLegacyHtml": true,
+      "productCount": 28,
+      "productSamples": [
+        {
+          "title": "Elastic Wire Positioners",
+          "sku": "SURGI-5019-3",
+          "slug": "elastic-wire-positioner",
+          "imageCount": 1
+        },
+        {
+          "title": "LED Lighting and Magnification Kit",
+          "sku": "SURGI-5003",
+          "slug": "led-lighting-kit",
+          "imageCount": 1
+        },
+        {
+          "title": "Magnetic Fixators with Spring Locks",
+          "sku": "SURGI-5010-2",
+          "slug": "magnetic-fixators-with-spring-locks",
+          "imageCount": 3
+        },
+        {
+          "title": "Magnetic Positioners and Stabilizers",
+          "sku": "SURGI-5030-2",
+          "slug": "magnetic-positioners-and-stabilizers",
+          "imageCount": 1
+        },
+        {
+          "title": "Mouse Retractor Set",
+          "sku": "SURGI-5001",
+          "slug": "mouse-retractor-set",
+          "imageCount": 2
+        },
+        {
+          "title": "Mouse Surgical Kit – 7 Piece Essential Instruments for Rodent Surgery",
+          "sku": "INSMOUSEKIT",
+          "slug": "mouse-surgical-kit",
+          "imageCount": 1
+        },
+        {
+          "title": "Procedure Bowl",
+          "sku": "SURGI-5020-3",
+          "slug": "procedure-bowl",
+          "imageCount": 2
+        },
+        {
+          "title": "Rat Retractor Set",
+          "sku": "SURGI-5002",
+          "slug": "rat-retractor-set",
+          "imageCount": 2
+        },
+        {
+          "title": "Reflex Clip Applier",
+          "sku": "INS750343",
+          "slug": "reflex-clip-applier",
+          "imageCount": 1
+        },
+        {
+          "title": "Reflex Clips 7 mm",
+          "sku": "INS750344",
+          "slug": "reflex-clips-7-mm",
+          "imageCount": 1
+        },
+        {
+          "title": "Reflex Clips 9 mm",
+          "sku": "INS750346",
+          "slug": "reflex-clips-9-mm",
+          "imageCount": 1
+        },
+        {
+          "title": "Replacement Surgical Field Covers",
+          "sku": "SURGI-5021-2",
+          "slug": "replacement-surgical-field-covers",
+          "imageCount": 2
+        }
+      ],
+      "descendantCount": 0,
+      "descendants": []
+    }
+  ],
+  "cellular": {
+    "count": 1162,
+    "detailReady": 0,
+    "missingDetail": 1162,
+    "topCategories": [
+      [
+        "Growth Factors & Cytokines",
+        700
+      ],
+      [
+        "Growth Factors and Cytokines",
+        700
+      ],
+      [
+        "Media & Supplements",
+        360
+      ],
+      [
+        "Media, Reagents, Kits & Plastics",
+        160
+      ],
+      [
+        "Specialized Medium and Kits",
+        100
+      ],
+      [
+        "Culture Consumables",
+        48
+      ],
+      [
+        "Cell Immortalization Reagents",
+        41
+      ],
+      [
+        "Media and Supplements",
+        41
+      ],
+      [
+        "Viruses for Cell Immortalization",
+        41
+      ],
+      [
+        "Supplements",
+        23
+      ],
+      [
+        "Cell Culture Vessels",
+        16
+      ],
+      [
+        "Microbial Contamination",
+        11
+      ],
+      [
+        "Culture Medium (Nanobacteria Control)",
+        8
+      ],
+      [
+        "Coating Solutions",
+        7
+      ],
+      [
+        "Culture Medium",
+        6
+      ],
+      [
+        "Culture Medium Bottles",
+        6
+      ],
+      [
+        "Mycoplasma Detection",
+        6
+      ],
+      [
+        "Centrifuge Bottles/Tubes",
+        5
+      ],
+      [
+        "3D Culture Platforms",
+        4
+      ],
+      [
+        "Antibiotics",
+        4
+      ],
+      [
+        "Trypsin",
+        4
+      ],
+      [
+        "Cell Freezing Media and Cryo Supplies",
+        3
+      ],
+      [
+        "Centrifuge tubes",
+        3
+      ],
+      [
+        "Filtration Units",
+        3
+      ],
+      [
+        "Serological Pipettes",
+        3
+      ],
+      [
+        "Serum-Free Media",
+        3
+      ],
+      [
+        "Bacteria Control",
+        2
+      ],
+      [
+        "Cell Assay Products",
+        2
+      ],
+      [
+        "Culture Inserts",
+        2
+      ],
+      [
+        "FBS (Nano-free)",
+        2
+      ]
+    ],
+    "examples": [
+      {
+        "title": "Human Kidney Organoid Maintenance Medium",
+        "sku": "TM210",
+        "searchCategory": "Renal Organoid Media & Kits",
+        "filterTitle": "3D and Organoid",
+        "hasDetail": null
+      },
+      {
+        "title": "SafeBath™",
+        "sku": "G7020",
+        "searchCategory": "Bacteria Control",
+        "filterTitle": "Microbial Contamination",
+        "hasDetail": null
+      },
+      {
+        "title": "NanOut™ 1000X",
+        "sku": "G7002",
+        "searchCategory": "Nanobacteria Control",
+        "filterTitle": "Microbial Contamination",
+        "hasDetail": null
+      },
+      {
+        "title": "BacOut™ Antibiotics",
+        "sku": "G7000",
+        "searchCategory": "Bacteria Control",
+        "filterTitle": "Microbial Contamination",
+        "hasDetail": null
+      },
+      {
+        "title": "MycOut™ 1000X – Culture Guard",
+        "sku": "G7001",
+        "searchCategory": "Mycoplasma Elimination",
+        "filterTitle": "Microbial Contamination",
+        "hasDetail": null
+      },
+      {
+        "title": "MycoAway™ 1000X Mycoplasma Cocktail",
+        "sku": "G398",
+        "searchCategory": "Mycoplasma Kits",
+        "filterTitle": "Microbial Contamination",
+        "hasDetail": null
+      },
+      {
+        "title": "Mycoplasma PCR Detection Kit",
+        "sku": "G238",
+        "searchCategory": "Mycoplasma Detection",
+        "filterTitle": "Microbial Contamination",
+        "hasDetail": null
+      },
+      {
+        "title": "Mycoplasma PCR Detection & Elimination Bundle",
+        "sku": "G238-G398",
+        "searchCategory": "Mycoplasma Detection",
+        "filterTitle": "Microbial Contamination",
+        "hasDetail": null
+      },
+      {
+        "title": "Mycoplasma Pro PCR Detection & Elimination Bundle",
+        "sku": "G239-G398",
+        "searchCategory": "Mycoplasma Detection",
+        "filterTitle": "Microbial Contamination",
+        "hasDetail": null
+      },
+      {
+        "title": "Mycoplasma qPCR Detection & Elimination Bundle",
+        "sku": "G240-G398",
+        "searchCategory": "Mycoplasma Detection",
+        "filterTitle": "Microbial Contamination",
+        "hasDetail": null
+      },
+      {
+        "title": "Mycoplasma Pro PCR Detection Kit",
+        "sku": "G239",
+        "searchCategory": "Mycoplasma Detection",
+        "filterTitle": "Microbial Contamination",
+        "hasDetail": null
+      },
+      {
+        "title": "Mycoplasma qPCR Detection Kit",
+        "sku": "G240",
+        "searchCategory": "Mycoplasma Detection",
+        "filterTitle": "Microbial Contamination",
+        "hasDetail": null
+      },
+      {
+        "title": "Lenti-hTERT Virus",
+        "sku": "LV674",
+        "searchCategory": "Viruses for Cell Immortalization",
+        "filterTitle": "Cell Immortalization Reagents",
+        "hasDetail": null
+      },
+      {
+        "title": "Lenti-hTERT (Puro) Virus, High Titer",
+        "sku": "LV615",
+        "searchCategory": "Viruses for Cell Immortalization",
+        "filterTitle": "Cell Immortalization Reagents",
+        "hasDetail": null
+      },
+      {
+        "title": "Lenti-hTERT-Neo Virus, High Titer",
+        "sku": "LV622",
+        "searchCategory": "Viruses for Cell Immortalization",
+        "filterTitle": "Cell Immortalization Reagents",
+        "hasDetail": null
+      },
+      {
+        "title": "Lenti-EF1α-hTERT Virus, High Titer",
+        "sku": "LV616",
+        "searchCategory": "Viruses for Cell Immortalization",
+        "filterTitle": "Cell Immortalization Reagents",
+        "hasDetail": null
+      },
+      {
+        "title": "Lenti-EF1a-hTERT-Hygro Virus, High Titer",
+        "sku": "LV632",
+        "searchCategory": "Viruses for Cell Immortalization",
+        "filterTitle": "Cell Immortalization Reagents",
+        "hasDetail": null
+      },
+      {
+        "title": "Adeno-hTERT Antisense Virus",
+        "sku": "G208",
+        "searchCategory": "Viruses for Cell Immortalization",
+        "filterTitle": "Cell Immortalization Reagents",
+        "hasDetail": null
+      },
+      {
+        "title": "Adeno-hTERT Virus",
+        "sku": "G205",
+        "searchCategory": "Viruses for Cell Immortalization",
+        "filterTitle": "Cell Immortalization Reagents",
+        "hasDetail": null
+      },
+      {
+        "title": "Lenti-hTERT-2A-CDK4 Virus, High Titer",
+        "sku": "LV677",
+        "searchCategory": "Viruses for Cell Immortalization",
+        "filterTitle": "Cell Immortalization Reagents",
+        "hasDetail": null
+      }
+    ]
+  }
+}
