@@ -20,13 +20,25 @@ function recordText(record: Awaited<ReturnType<typeof getAbmStagedRecords>>[numb
 
 function classify(record: Awaited<ReturnType<typeof getAbmStagedRecords>>[number]): ModelType | undefined {
   const title = String(record.title || "").toLowerCase();
+  const sku = String(record.sku || "").trim();
   const text = recordText(record);
-  const looksLikeCellProduct = /^t\d{3,}/i.test(String(record.sku || "")) || /\bcell(?:s| line| lines)?\b/i.test(text);
+  const isTSeries = /^t\d{3,}/i.test(sku);
+  const looksLikeCellProduct = isTSeries || /\bcell(?:s| line| lines)?\b/i.test(text);
   if (!looksLikeCellProduct) return undefined;
 
-  if (/\bimmortalized\b/i.test(title) || /immortalized cell lines?/i.test(text)) return "Immortalized Cells";
-  if (/\b(?:tumou?r|cancer)\b/i.test(title) || /tumou?r cell lines?|cancer cell lines?/i.test(text)) return "Tumor Cells";
   if (/\bprimary\b/i.test(title) || /primary cells?/i.test(text)) return "Primary Cells";
+  if (/\b(?:tumou?r|cancer)\b/i.test(title) || /tumou?r cell lines?|cancer cell lines?/i.test(text)) return "Tumor Cells";
+  if (/\bimmortalized\b/i.test(title) || /immortalized cell lines?/i.test(text)) return "Immortalized Cells";
+
+  // T-series ABM cell products make up the core cell-line catalogue. Exclude
+  // clearly separate engineered/special collections, then treat the remaining
+  // T-series cell products as Immortalized Cells so the landing page has the
+  // same populated default result state as the supplier site.
+  if (isTSeries) {
+    const separateCollection = /\b(crispr|knockout|ko cell|cas9|stable cell|reporter|overexpress|stem cell[- ]derived|hematopoietic|organoid|3d cell)\b/i.test(text);
+    if (!separateCollection) return "Immortalized Cells";
+  }
+
   return undefined;
 }
 
@@ -57,6 +69,6 @@ export async function GET() {
 
   return NextResponse.json(
     { items: unique },
-    { headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=3600" } },
+    { headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=300" } },
   );
 }
