@@ -1,0 +1,26 @@
+{
+  "source": "Official ABM product pages via Jina Reader HTML passthrough",
+  "generatedAt": "2026-08-20T16:17:02.286Z",
+  "expectedTotal": 1629,
+  "collected": 1629,
+  "complete": true,
+  "modelTypes": {
+    "Tumor Cells": 592,
+    "Immortalized Cells": 634,
+    "Primary Cells": 403
+  },
+  "fields": {
+    "descriptions": 1368,
+    "specifications": 1629,
+    "datasheets": 1629,
+    "documents": 1629,
+    "faqs": 1629,
+    "references": 1629,
+    "reviews": 1629,
+    "officialImagesPendingSanity": 1627
+  },
+  "shardCount": 16,
+  "skuChecksum": "c78cdec72d70877a9e988cfcc4da677cbe70f8d79f49402efe9574b69fd645ce",
+  "sanityWrites": 0,
+  "externalProductImagesStored": 0
+}

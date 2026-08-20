@@ -27,6 +27,8 @@
     "abm:product:audit": "node scripts/product-quality-audit.mjs --brand=abm",
     "abm:rebuild:parser:qa": "node scripts/abm-rebuild-parser-qa.mjs",
     "abm:rebuild:details:stage:dry": "node scripts/stage-abm-rebuild-details.mjs --dry",
+    "abm:cell:details:collect": "node scripts/collect-abm-cell-details.mjs",
+    "abm:cell:details:audit": "node scripts/audit-abm-cell-details.mjs",
     "abm:staged-links:audit": "node scripts/audit-abm-staged-links.mjs",
     "kent:product:census": "node scripts/kent-product-census-v2.mjs",
     "kent:product:census:refresh": "node -e \"console.error('Disabled: Kent live refresh is blocked by security checks and is not an approved source.'); process.exit(1)\"",

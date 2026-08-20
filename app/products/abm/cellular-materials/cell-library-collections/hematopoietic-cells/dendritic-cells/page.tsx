@@ -1,0 +1,10 @@
+import Link from "next/link";
+
+import { CellLibraryShell } from "../../_cellLibraryShared";
+
+export default function DendriticCellsPage() {
+  return <CellLibraryShell title="Dendritic Cells" active="hematopoietic-cells" subActive="dendritic-cells">
+    <section className="border-b border-neutral-200 pb-8"><h1 className="text-[29px] font-semibold tracking-[-0.025em] text-[#414b55]">Dendritic Cells</h1><h2 className="mt-3 text-[21px] font-semibold text-[#414b55]">Potent Antigen Presenters for Immunology, Vaccine, and Tolerance Research</h2><p className="mt-4 max-w-4xl text-[13px] leading-6 text-neutral-700">Primary human dendritic cells are generated from peripheral-blood CD14⁺ monocytes under defined conditions to produce immature or mature monocyte-derived DCs. Each lot is characterized for phenotype and functional antigen-presentation workflows.</p><p className="mt-4 max-w-4xl text-[13px] leading-6 text-neutral-700">PrimGrow D Xpan™ is a serum-free, xeno-free culture medium formulated for reproducible differentiation, expansion, and activation of human dendritic cells from peripheral-blood monocytes.</p></section>
+    <section className="mt-7"><h2 className="text-[22px] font-semibold text-[#414b55]">Product List</h2><div className="mt-4 overflow-hidden rounded-md border border-neutral-200"><table className="w-full text-left text-[13px]"><thead><tr className="bg-neutral-50"><th className="px-4 py-3">Product Name</th><th className="px-4 py-3">Cat. No.</th><th className="px-4 py-3">Unit</th></tr></thead><tbody>{[["Dendritic Cells","T4168","1×10⁶ Cells"],["PrimGrow D Xpan™ Medium Kit","TM184","100 ml"]].map(([name,sku,unit]) => <tr key={sku} className="border-t border-neutral-200"><td className="px-4 py-3"><Link href={`/products/abm/staged/product/${sku}`} className="font-semibold text-[#d95628]">{name}</Link></td><td className="px-4 py-3">{sku}</td><td className="px-4 py-3">{unit}</td></tr>)}</tbody></table></div></section>
+  </CellLibraryShell>;
+}

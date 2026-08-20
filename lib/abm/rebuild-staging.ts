@@ -1,4 +1,6 @@
 import { PUBLIC_CATALOG_CACHE, sanityCdnClient, sanityClient } from "@/lib/sanity/sanity.client";
+import { findOfficialAbmCellModelProduct } from "@/lib/abm/cell-model-data";
+import { findOfficialAbmCellDetail } from "@/lib/abm/cell-detail-data";
 
 export const ABM_REBUILD_VERSION = "2026-08-09-search-v5";
 
@@ -181,13 +183,41 @@ const STAGED_RECORD_QUERY = `*[
   && count(records[lower(sku) == lower($key) || lower(url) == lower($key)]) > 0
 ][0].records[lower(sku) == lower($key) || lower(url) == lower($key)][0]`;
 
+function officialCellRecord(key: string): AbmStagedRecord | undefined {
+  const officialCell = findOfficialAbmCellModelProduct(key);
+  if (!officialCell) return undefined;
+  return {
+    kind: "product",
+    sku: officialCell.sku || "",
+    title: officialCell.title,
+    url: officialCell.url,
+    unit: officialCell.unit,
+    searchCategory: officialCell.modelType,
+    filterTitle: officialCell.modelType,
+    filterPath: ["Cellular Materials", "Cell Library Collections", officialCell.modelType],
+    listingFilters: [
+      {
+        id: `cell-model:${officialCell.modelType}`,
+        title: officialCell.modelType,
+        path: ["Cellular Materials", "Cell Library Collections", officialCell.modelType],
+      },
+    ],
+    hasDetail: Boolean(findOfficialAbmCellDetail(officialCell.sku || key)),
+  };
+}
+
 export async function getAbmStagedRecord(kind: AbmStagedRecord["kind"], key: string) {
   const decodedKey = decodeURIComponent(key);
-  return sanityCdnClient.fetch<AbmStagedRecord | null>(STAGED_RECORD_QUERY, {
+  if (kind === "product") {
+    const cellRecord = officialCellRecord(decodedKey);
+    if (cellRecord) return cellRecord;
+  }
+  const staged = await sanityCdnClient.fetch<AbmStagedRecord | null>(STAGED_RECORD_QUERY, {
     version: ABM_REBUILD_VERSION,
     kind,
     key: decodedKey,
   }, PUBLIC_CATALOG_CACHE);
+  return staged;
 }
 
 export function stagedRecordKey(row: AbmStagedRecord) {
@@ -245,6 +275,22 @@ function mergeNonEmpty<T extends Record<string, unknown>>(base: T, extra: Record
 
 /** Resolve reviewed staging content. Existing Product may contribute managed Sanity images only. */
 export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: string): Promise<AbmStagedDetail | undefined> {
+  const decodedKey = decodeURIComponent(key);
+  if (kind === "product") {
+    const cellRecord = officialCellRecord(decodedKey);
+    const cellDetail = cellRecord ? findOfficialAbmCellDetail(cellRecord.sku || decodedKey) : undefined;
+    if (cellRecord && cellDetail) {
+      return {
+        ...cellRecord,
+        ...cellDetail,
+        kind,
+        sourceUrl: String(cellDetail.sourceUrl || cellRecord.url || "").trim(),
+        hasDetail: true,
+        images: normalizedDetailImages(cellDetail.previewImage, cellDetail.images),
+      } as AbmStagedDetail;
+    }
+  }
+
   const record = await getAbmStagedRecord(kind, key);
   if (!record) return undefined;
 
@@ -261,6 +307,17 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
   }, PUBLIC_CATALOG_CACHE);
 
   if (!staged) {
+    const officialCellDetail = kind === "product" ? findOfficialAbmCellDetail(record.sku || decodedKey) : undefined;
+    if (officialCellDetail) {
+      return {
+        ...record,
+        ...officialCellDetail,
+        kind,
+        sourceUrl: String(officialCellDetail.sourceUrl || record.url || "").trim(),
+        hasDetail: true,
+        images: normalizedDetailImages(officialCellDetail.previewImage, officialCellDetail.images),
+      } as AbmStagedDetail;
+    }
     let images = normalizedDetailImages(record.previewImage);
     if (!images.length) images = await getExistingManagedProductImages(record);
     return {

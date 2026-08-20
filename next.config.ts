@@ -2,6 +2,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  outputFileTracingIncludes: {
+    "/products/abm/staged/[kind]/[key]": ["./data/abm-cell-details/**/*.json.gz"],
+  },
   images: {
     remotePatterns: [
       {
