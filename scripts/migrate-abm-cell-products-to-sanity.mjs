@@ -227,7 +227,7 @@ async function fetchImageBytes(imageUrl) {
       if (!contentType.startsWith("image/")) throw new Error(`Unexpected content type ${contentType || "unknown"}`);
       const bytes = Buffer.from(await response.arrayBuffer());
       if (bytes.length < 128) throw new Error(`Image is unexpectedly small (${bytes.length} bytes)`);
-      if (bytes.length > 30_000_000) throw new Error(`Image exceeds 30 MB (${bytes.length} bytes)`);
+      if (bytes.length > 95_000_000) throw new Error(`Image exceeds the 95 MB upload safety limit (${bytes.length} bytes)`);
       return { bytes, contentType };
     } catch (error) {
       clearTimeout(timeout);
