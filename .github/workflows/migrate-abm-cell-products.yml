@@ -50,7 +50,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci --no-audit --no-fund
+      - run: npm install --no-audit --no-fund --package-lock=false
       - name: Validate the full migration without writes
         run: node scripts/migrate-abm-cell-products-to-sanity.mjs
       - uses: actions/upload-artifact@v4
@@ -103,7 +103,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci --no-audit --no-fund
+      - run: npm install --no-audit --no-fund --package-lock=false
       - name: Create this deterministic CELL product batch and upload official images
         run: >-
           node scripts/migrate-abm-cell-products-to-sanity.mjs
@@ -130,7 +130,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci --no-audit --no-fund
+      - run: npm install --no-audit --no-fund --package-lock=false
       - name: Audit all 1,629 documents, 2,089 image references, and preserved legacy ABM products
         run: node scripts/migrate-abm-cell-products-to-sanity.mjs --audit-only
       - uses: actions/upload-artifact@v4
