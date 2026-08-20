@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type ModelType = "Immortalized Cells" | "Tumor Cells" | "Primary Cells";
 type FacetRule = readonly [label: string, matcher: RegExp];
@@ -40,10 +41,17 @@ const SPECIES: readonly FacetRule[] = [
   ["Cow (Bovine)", /bovine|\bcow\b/i],
   ["Pig (Porcine)", /porcine|\bpig\b/i],
   ["Rabbit", /rabbit/i],
-  ["Chicken / Avian", /avian|chicken|\bbird\b/i],
+  ["Chicken (Galline)", /avian|chicken|\bbird\b/i],
   ["Horse (Equine)", /equine|\bhorse\b/i],
-  ["Sheep / Ovine", /ovine|\bsheep\b/i],
+  ["Sheep (Ovine)", /ovine|\bsheep\b/i],
   ["Fish", /zebrafish|\bfish\b/i],
+  ["Deer (Cervidae)", /deer|cervidae/i],
+  ["Duck (Anas)", /duck|anas/i],
+  ["Goat (Capra)", /goat|capra/i],
+  ["Golden Hamster (M. auratus)", /hamster|auratus/i],
+  ["Insect (Insecta)", /insect/i],
+  ["Lizard (Dactyloidae)", /lizard|dactyloidae/i],
+  ["Mink (N. vison)", /mink|vison/i],
 ];
 
 const SYSTEMS: readonly FacetRule[] = [
@@ -58,9 +66,10 @@ const SYSTEMS: readonly FacetRule[] = [
   ["Embryonic System", /embryo|embryonic|umbilical|cord/i],
   ["Integumentary System", /skin|dermal|keratin|melanocyte|hair|follicle/i],
   ["Immune System", /immune|blood|mast|t cell|b cell|myeloid|hematopo|promyelocyte/i],
-  ["Urinary System", /urinary|kidney|renal|bladder/i],
+  ["Excretory System", /excretory|urinary|kidney|renal|bladder/i],
   ["Endocrine System", /endocrine|thyroid|adrenal|pituitary/i],
-  ["Sensory System", /retina|retinal|cornea|ocular|eye|ear|auditory/i],
+  ["Auditory System", /auditory|\bear\b/i],
+  ["Visual System", /retina|retinal|cornea|ocular|\beye\b/i],
 ];
 
 const CELL_TYPES: readonly FacetRule[] = [
@@ -179,91 +188,91 @@ function MetaChip({ label, value }: { label: string; value?: string }) {
   );
 }
 
-export default function ImmortalizedCatalogClient({ products: initialProducts }: { products: Product[] }) {
-  const [products, setProducts] = useState<Product[]>(initialProducts || []);
-  const [loading, setLoading] = useState((initialProducts || []).length === 0);
-  const [loadError, setLoadError] = useState(false);
+export default function ImmortalizedCatalogClient({
+  products: initialProducts,
+  initialTotal,
+  initialModelType = "Immortalized Cells",
+}: {
+  products: Product[];
+  initialTotal: number;
+  initialModelType?: ModelType;
+}) {
   const [draftQuery, setDraftQuery] = useState("");
   const [query, setQuery] = useState("");
-  const [modelType, setModelType] = useState<ModelType>("Immortalized Cells");
+  const [modelType, setModelType] = useState<ModelType>(initialModelType);
   const [species, setSpecies] = useState("");
   const [bioSystem, setBioSystem] = useState("");
   const [cellType, setCellType] = useState("");
-  const [visibleCount, setVisibleCount] = useState(12);
+  const [products, setProducts] = useState(initialProducts);
+  const [total, setTotal] = useState(initialTotal);
+  const [offset, setOffset] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState("");
+  const initialRequest = useRef(true);
 
   useEffect(() => {
-    let cancelled = false;
+    if (initialRequest.current) {
+      initialRequest.current = false;
+      return;
+    }
 
-    const load = async () => {
-      try {
-        const response = await fetch("/api/abm/cell-model-catalog", { cache: "no-store" });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const payload = (await response.json()) as { items?: Product[] };
-        if (cancelled) return;
+    const controller = new AbortController();
+    const params = new URLSearchParams({ modelType, offset: String(offset), limit: "12" });
+    if (query) params.set("q", query);
+    if (species) params.set("species", species);
+    if (bioSystem) params.set("bioSystem", bioSystem);
+    if (cellType) params.set("cellType", cellType);
 
-        const apiItems = Array.isArray(payload.items) ? payload.items : [];
-        const merged = Array.from(
-          new Map(
-            [...(initialProducts || []), ...apiItems].map((item) => [
-              `${item.modelType}:${item.sku || item.url}`,
-              item,
-            ]),
-          ).values(),
-        );
+    fetch(`/api/abm/cell-model-catalog?${params}`, { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error("Catalog request failed");
+        return response.json() as Promise<{ items?: Product[]; total?: number }>;
+      })
+      .then((payload) => {
+        const nextItems = Array.isArray(payload.items) ? payload.items : [];
+        setProducts((current) => (offset > 0 ? [...current, ...nextItems] : nextItems));
+        setTotal(Number(payload.total) || 0);
+      })
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setLoadError("The catalog could not be updated. Please try again.");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
 
-        setProducts(merged);
-        setLoadError(false);
-      } catch {
-        if (!cancelled) setLoadError(true);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [initialProducts]);
+    return () => controller.abort();
+  }, [modelType, query, species, bioSystem, cellType, offset]);
 
   const rows = useMemo(
     () => products.map((product) => ({ product, facets: facetsFor(product) })),
     [products],
   );
 
-  const filtered = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-
-    return rows.filter(({ product, facets }) => {
-      if (product.modelType !== modelType) return false;
-      if (needle && !fullText(product).toLowerCase().includes(needle)) return false;
-      if (species && !facets.species.includes(species)) return false;
-      if (bioSystem && !facets.bioSystems.includes(bioSystem)) return false;
-      if (cellType && !facets.cellTypes.includes(cellType)) return false;
-      return true;
-    });
-  }, [rows, modelType, query, species, bioSystem, cellType]);
-
-  const visible = filtered.slice(0, visibleCount);
-
-  const resetVisible = () => setVisibleCount(12);
+  const resetResults = () => setOffset(0);
+  const startRequest = () => {
+    setLoading(true);
+    setLoadError("");
+  };
 
   const clearAll = () => {
+    if (draftQuery || query || modelType !== initialModelType || species || bioSystem || cellType || offset) startRequest();
     setDraftQuery("");
     setQuery("");
-    setModelType("Immortalized Cells");
+    setModelType(initialModelType);
     setSpecies("");
     setBioSystem("");
     setCellType("");
-    resetVisible();
+    resetResults();
   };
 
   const switchModel = (next: ModelType) => {
+    if (next !== modelType || species || bioSystem || cellType || offset) startRequest();
     setModelType(next);
     setSpecies("");
     setBioSystem("");
     setCellType("");
-    resetVisible();
+    resetResults();
   };
 
   return (
@@ -273,8 +282,9 @@ export default function ImmortalizedCatalogClient({ products: initialProducts }:
           className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_112px]"
           onSubmit={(event) => {
             event.preventDefault();
+            if (draftQuery !== query || offset) startRequest();
             setQuery(draftQuery);
-            resetVisible();
+            resetResults();
           }}
         >
           <input
@@ -311,8 +321,9 @@ export default function ImmortalizedCatalogClient({ products: initialProducts }:
             rules={SPECIES}
             active={species}
             onSelect={(value) => {
+              if (value !== species || offset) startRequest();
               setSpecies(value);
-              resetVisible();
+              resetResults();
             }}
           />
           <FacetList
@@ -320,8 +331,9 @@ export default function ImmortalizedCatalogClient({ products: initialProducts }:
             rules={SYSTEMS}
             active={bioSystem}
             onSelect={(value) => {
+              if (value !== bioSystem || offset) startRequest();
               setBioSystem(value);
-              resetVisible();
+              resetResults();
             }}
           />
           <FacetList
@@ -329,8 +341,9 @@ export default function ImmortalizedCatalogClient({ products: initialProducts }:
             rules={CELL_TYPES}
             active={cellType}
             onSelect={(value) => {
+              if (value !== cellType || offset) startRequest();
               setCellType(value);
-              resetVisible();
+              resetResults();
             }}
           />
         </div>
@@ -348,34 +361,36 @@ export default function ImmortalizedCatalogClient({ products: initialProducts }:
 
       <div className="mt-7 flex items-center justify-between gap-3">
         <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#ef5a29]">Search Result</div>
-        <div className="text-[11px] text-neutral-500">{filtered.length.toLocaleString()} products</div>
+        <div className="text-[11px] text-neutral-500">{total.toLocaleString()} products</div>
       </div>
 
-      {loading && !visible.length ? (
-        <div className="mt-4 rounded-[18px] border border-[#eee4df] bg-white px-5 py-8 text-center text-sm text-neutral-500">
-          Loading cell lines...
+      {loadError ? (
+        <div className="mt-4 rounded-[18px] border border-red-200 bg-red-50 px-5 py-4 text-center text-sm text-red-700">
+          {loadError}
         </div>
       ) : null}
 
-      {!loading && loadError && !visible.length ? (
-        <div className="mt-4 rounded-[18px] border border-[#eee4df] bg-white px-5 py-8 text-center text-sm text-neutral-500">
-          Cell-line results could not be loaded. Please refresh once.
-        </div>
-      ) : null}
-
-      {!loading && !loadError && !visible.length ? (
+      {!rows.length && !loading ? (
         <div className="mt-4 rounded-[18px] border border-[#eee4df] bg-white px-5 py-8 text-center text-sm text-neutral-500">
           No products match the selected filters.
         </div>
       ) : null}
 
-      <div className="mt-4 space-y-3">
-        {visible.map(({ product, facets }) => (
+      <div className="relative mt-4 min-h-[120px] space-y-3">
+        {loading ? (
+          <div className="absolute inset-0 z-10 flex items-start justify-center rounded-[18px] bg-white/85 pt-10 backdrop-blur-[1px]" role="status" aria-live="polite">
+            <div className="flex items-center gap-3 rounded-full border border-[#f0d8cc] bg-white px-5 py-3 text-[12px] font-semibold text-[#e35422] shadow-sm">
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#f2b7a0] border-t-[#e35422]" />
+              Loading catalog...
+            </div>
+          </div>
+        ) : null}
+        {rows.map(({ product, facets }) => (
           <article
             key={`${product.modelType}:${product.sku || product.url}`}
             className="rounded-[18px] border border-[#eadfd9] bg-white p-4 shadow-[0_5px_15px_rgba(35,22,16,0.025)] md:p-5"
           >
-            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_94px]">
+            <div className={`grid gap-4 ${product.previewImage ? "md:grid-cols-[minmax(0,1fr)_94px]" : ""}`}>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#eee7e3] pb-3">
                   <h3 className="text-[14px] font-bold leading-5 text-[#f15a24]">{product.title}</h3>
@@ -397,10 +412,6 @@ export default function ImmortalizedCatalogClient({ products: initialProducts }:
                     <span className="mr-1 text-[#ef5a29]">Unit:</span>
                     {product.unit || "—"}
                   </span>
-                  <span className="rounded-full border border-[#f0d8cc] bg-[#fffaf7] px-2.5 py-1 text-[10px]">
-                    <span className="mr-1 text-[#ef5a29]">Price:</span>
-                    Inquiry
-                  </span>
                 </div>
 
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -410,28 +421,31 @@ export default function ImmortalizedCatalogClient({ products: initialProducts }:
                 </div>
               </div>
 
-              <div className="flex min-h-[90px] items-center justify-center overflow-hidden rounded-[12px] border border-[#eee9e6] bg-[#fbfbfb]">
-                {product.previewImage ? (
-                  <img
+              {product.previewImage ? (
+                <div className="flex min-h-[90px] items-center justify-center overflow-hidden rounded-[12px] border border-[#eee9e6] bg-[#fbfbfb]">
+                  <Image
                     src={product.previewImage}
                     alt=""
+                    width={86}
+                    height={86}
                     className="h-[86px] w-full object-contain p-2"
-                    loading="lazy"
                   />
-                ) : (
-                  <span className="px-2 text-center text-[9px] text-neutral-400">Product image</span>
-                )}
-              </div>
+                </div>
+              ) : null}
             </div>
           </article>
         ))}
       </div>
 
-      {visibleCount < filtered.length ? (
+      {products.length < total ? (
         <div className="mt-5 text-center">
           <button
             type="button"
-            onClick={() => setVisibleCount((count) => count + 12)}
+            onClick={() => {
+              startRequest();
+              setOffset(products.length);
+            }}
+            disabled={loading}
             className="rounded-full border border-[#f15a24] bg-white px-6 py-2.5 text-[12px] font-semibold text-[#f15a24] hover:bg-[#fff6f1]"
           >
             Load More

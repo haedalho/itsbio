@@ -1,15 +1,8 @@
 import Link from "next/link";
 
-import { abmRecordBelongsToProductPath } from "@/lib/abm/catalog-taxonomy";
-import { getAbmStagedRecords } from "@/lib/abm/rebuild-staging";
+import { getOfficialAbmCellModelCatalog } from "@/lib/abm/cell-model-data";
 import { CellLibraryShell, SectionTitle, SmallCard, Stat } from "../_cellLibraryShared";
 import ImmortalizedCatalogClient from "./ImmortalizedCatalogClient";
-
-const modelPaths = {
-  "Immortalized Cells": ["cellular-materials", "cell-library-collections", "immortalized-cell-lines"],
-  "Tumor Cells": ["cellular-materials", "cell-library-collections", "tumor-cell-lines"],
-  "Primary Cells": ["cellular-materials", "cell-library-collections", "primary-cells"],
-} as const;
 
 const applications = [
   ["Drug development & toxicology", "Renewable liver and kidney models support repeatable ADMET, toxicity, and mechanistic screening without recurring donor variation."],
@@ -58,25 +51,7 @@ const faqs = [
 ] as const;
 
 export default async function ImmortalizedCellLinesPage() {
-  const all = await getAbmStagedRecords("product");
-  const catalogProducts = Object.entries(modelPaths).flatMap(([modelType, path]) =>
-    all
-      .filter((record) => abmRecordBelongsToProductPath(record, [...path], modelType))
-      .map((record) => ({
-        title: record.title,
-        sku: record.sku,
-        url: record.url,
-        unit: record.unit,
-        previewImage: record.previewImage,
-        searchCategory: record.searchCategory,
-        filterTitle: record.filterTitle,
-        filterPath: record.filterPath,
-        listingFilters: record.listingFilters,
-        modelType: modelType as "Immortalized Cells" | "Tumor Cells" | "Primary Cells",
-      })),
-  );
-
-  const uniqueProducts = Array.from(new Map(catalogProducts.map((product) => [`${product.modelType}:${product.sku || product.url}`, product])).values());
+  const catalogProducts = getOfficialAbmCellModelCatalog().filter((product) => product.modelType === "Immortalized Cells");
 
   return (
     <CellLibraryShell title="Immortalized Cell Lines" active="immortalized-cell-lines">
@@ -112,7 +87,7 @@ export default async function ImmortalizedCellLinesPage() {
         <div className="mt-4 text-[12px] text-neutral-600">Need primary cells? <Link href="/products/abm/cellular-materials/cell-library-collections/primary-cells" className="font-semibold text-[#e35422] underline underline-offset-4">Browse the Primary Cells collection</Link>.</div>
       </section>
 
-      <ImmortalizedCatalogClient products={uniqueProducts} />
+      <ImmortalizedCatalogClient products={catalogProducts.slice(0, 12)} initialTotal={catalogProducts.length} />
 
       <section className="mt-8 rounded-[22px] border border-[#eadfd9] bg-white p-7">
         <SectionTitle eyebrow="FAQ" title="Frequently asked questions" text="Common questions about immortalized cell lines, available models, gene editing, custom immortalization, and cell handling." />

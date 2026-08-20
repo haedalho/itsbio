@@ -1,4 +1,5 @@
 import { PUBLIC_CATALOG_CACHE, sanityCdnClient, sanityClient } from "@/lib/sanity/sanity.client";
+import { findOfficialAbmCellModelProduct } from "@/lib/abm/cell-model-data";
 
 export const ABM_REBUILD_VERSION = "2026-08-09-search-v5";
 
@@ -183,11 +184,33 @@ const STAGED_RECORD_QUERY = `*[
 
 export async function getAbmStagedRecord(kind: AbmStagedRecord["kind"], key: string) {
   const decodedKey = decodeURIComponent(key);
-  return sanityCdnClient.fetch<AbmStagedRecord | null>(STAGED_RECORD_QUERY, {
+  const staged = await sanityCdnClient.fetch<AbmStagedRecord | null>(STAGED_RECORD_QUERY, {
     version: ABM_REBUILD_VERSION,
     kind,
     key: decodedKey,
   }, PUBLIC_CATALOG_CACHE);
+  if (staged || kind !== "product") return staged;
+
+  const officialCell = findOfficialAbmCellModelProduct(decodedKey);
+  if (!officialCell) return null;
+  return {
+    kind: "product",
+    sku: officialCell.sku || "",
+    title: officialCell.title,
+    url: officialCell.url,
+    unit: officialCell.unit,
+    searchCategory: officialCell.modelType,
+    filterTitle: officialCell.modelType,
+    filterPath: ["Cellular Materials", "Cell Library Collections", officialCell.modelType],
+    listingFilters: [
+      {
+        id: `cell-model:${officialCell.modelType}`,
+        title: officialCell.modelType,
+        path: ["Cellular Materials", "Cell Library Collections", officialCell.modelType],
+      },
+    ],
+    hasDetail: false,
+  } satisfies AbmStagedRecord;
 }
 
 export function stagedRecordKey(row: AbmStagedRecord) {

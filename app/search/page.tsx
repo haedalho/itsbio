@@ -7,6 +7,7 @@ import {
   stagedRecordPath,
   type AbmStagedRecord,
 } from "@/lib/abm/rebuild-staging";
+import { OFFICIAL_ABM_CELL_MODEL_PRODUCTS } from "@/lib/abm/cell-model-data";
 import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 
 export const revalidate = 300;
@@ -412,6 +413,30 @@ export default async function SearchPage({
       kind: row.kind === "service" ? "Service" : "Product",
       direct: true,
       score: scoreMatch(title, sku, q) + 2,
+    });
+  }
+
+  const normalizedQuery = normalizeText(q);
+  for (const row of OFFICIAL_ABM_CELL_MODEL_PRODUCTS) {
+    const title = stringValue(row.title);
+    const sku = stringValue(row.sku) || undefined;
+    if (!normalizeText(`${title} ${sku || ""}`).includes(normalizedQuery)) continue;
+    results.push({
+      id: `abm-cell-model:${sku || row.url}`,
+      title,
+      sku,
+      description: row.modelType,
+      brandKey: "abm",
+      brandLabel: "ABM",
+      href: stagedRecordPath("product", {
+        kind: "product",
+        sku: sku || "",
+        title,
+        url: row.url,
+      }),
+      kind: "Product",
+      direct: true,
+      score: scoreMatch(title, sku, q) + 3,
     });
   }
 
