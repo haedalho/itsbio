@@ -1,0 +1,30 @@
+name: Temporary patch ABM Cellular canonical paths
+on:
+  push:
+    branches: [agent/logo-loading-overlay]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/logo-loading-overlay
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/_patch-abm-cellular-canonical-paths.mjs
+      - shell: bash
+        run: |
+          if git diff --quiet -- 'app/products/abm/[[...path]]/page.tsx'; then
+            echo 'No ABM Cellular path changes needed.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add 'app/products/abm/[[...path]]/page.tsx'
+          git commit -m 'fix: canonicalize ABM Cellular category paths'
+          git push origin HEAD:agent/logo-loading-overlay
