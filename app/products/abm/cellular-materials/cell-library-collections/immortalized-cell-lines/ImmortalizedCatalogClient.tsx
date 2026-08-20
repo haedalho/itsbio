@@ -29,6 +29,20 @@ type Facets = {
   cellTypes: string[];
 };
 
+const PAGE_SIZE = 12;
+
+function paginationItems(currentPage: number, totalPages: number) {
+  const pages = new Set([1, totalPages, currentPage - 1, currentPage, currentPage + 1]);
+  const visiblePages = [...pages]
+    .filter((page) => page >= 1 && page <= totalPages)
+    .sort((left, right) => left - right);
+
+  return visiblePages.flatMap<number | "ellipsis">((page, index) => {
+    const previousPage = visiblePages[index - 1];
+    return previousPage && page - previousPage > 1 ? ["ellipsis", page] : [page];
+  });
+}
+
 const SPECIES: readonly FacetRule[] = [
   ["Human (H. sapiens)", /\bhuman\b|h\.\s*sapiens/i],
   ["Mouse (M. musculus)", /\bmouse\b|m\.\s*musculus/i],
@@ -209,6 +223,7 @@ export default function ImmortalizedCatalogClient({
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
   const initialRequest = useRef(true);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (initialRequest.current) {
@@ -217,7 +232,7 @@ export default function ImmortalizedCatalogClient({
     }
 
     const controller = new AbortController();
-    const params = new URLSearchParams({ modelType, offset: String(offset), limit: "12" });
+    const params = new URLSearchParams({ modelType, offset: String(offset), limit: String(PAGE_SIZE) });
     if (query) params.set("q", query);
     if (species) params.set("species", species);
     if (bioSystem) params.set("bioSystem", bioSystem);
@@ -230,7 +245,7 @@ export default function ImmortalizedCatalogClient({
       })
       .then((payload) => {
         const nextItems = Array.isArray(payload.items) ? payload.items : [];
-        setProducts((current) => (offset > 0 ? [...current, ...nextItems] : nextItems));
+        setProducts(nextItems);
         setTotal(Number(payload.total) || 0);
       })
       .catch((error: unknown) => {
@@ -248,11 +263,25 @@ export default function ImmortalizedCatalogClient({
     () => products.map((product) => ({ product, facets: facetsFor(product) })),
     [products],
   );
+  const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const pageItems = paginationItems(currentPage, totalPages);
+  const firstResult = total ? offset + 1 : 0;
+  const lastResult = Math.min(offset + products.length, total);
 
   const resetResults = () => setOffset(0);
   const startRequest = () => {
     setLoading(true);
     setLoadError("");
+  };
+
+  const goToPage = (page: number) => {
+    if (page === currentPage || page < 1 || page > totalPages || loading) return;
+    startRequest();
+    setOffset((page - 1) * PAGE_SIZE);
+    window.requestAnimationFrame(() => {
+      resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   };
 
   const clearAll = () => {
@@ -359,9 +388,11 @@ export default function ImmortalizedCatalogClient({
         </div>
       </div>
 
-      <div className="mt-7 flex items-center justify-between gap-3">
+      <div ref={resultsRef} className="mt-7 flex scroll-mt-28 items-center justify-between gap-3">
         <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#ef5a29]">Search Result</div>
-        <div className="text-[11px] text-neutral-500">{total.toLocaleString()} products</div>
+        <div className="text-right text-[11px] text-neutral-500">
+          {firstResult.toLocaleString()}–{lastResult.toLocaleString()} of {total.toLocaleString()} products
+        </div>
       </div>
 
       {loadError ? (
@@ -437,20 +468,50 @@ export default function ImmortalizedCatalogClient({
         ))}
       </div>
 
-      {products.length < total ? (
-        <div className="mt-5 text-center">
+      {totalPages > 1 ? (
+        <nav aria-label="Catalog pagination" className="mt-6 flex flex-wrap items-center justify-center gap-2">
           <button
             type="button"
-            onClick={() => {
-              startRequest();
-              setOffset(products.length);
-            }}
-            disabled={loading}
-            className="rounded-full border border-[#f15a24] bg-white px-6 py-2.5 text-[12px] font-semibold text-[#f15a24] hover:bg-[#fff6f1]"
+            onClick={() => goToPage(currentPage - 1)}
+            disabled={currentPage === 1 || loading}
+            className="h-10 rounded-full border border-[#eadfd9] bg-white px-4 text-[11px] font-semibold text-neutral-700 transition hover:border-[#f15a24] hover:text-[#f15a24] disabled:cursor-not-allowed disabled:opacity-35"
           >
-            Load More
+            Previous
           </button>
-        </div>
+
+          {pageItems.map((item, index) =>
+            item === "ellipsis" ? (
+              <span key={`ellipsis-${index}`} className="flex h-10 min-w-7 items-center justify-center text-sm text-neutral-400">
+                …
+              </span>
+            ) : (
+              <button
+                key={item}
+                type="button"
+                onClick={() => goToPage(item)}
+                disabled={loading}
+                aria-current={item === currentPage ? "page" : undefined}
+                aria-label={`Go to page ${item}`}
+                className={`h-10 min-w-10 rounded-full border px-3 text-[12px] font-bold transition ${
+                  item === currentPage
+                    ? "border-[#f15a24] bg-[#f15a24] text-white"
+                    : "border-[#eadfd9] bg-white text-neutral-700 hover:border-[#f15a24] hover:text-[#f15a24]"
+                } disabled:cursor-not-allowed disabled:opacity-50`}
+              >
+                {item}
+              </button>
+            ),
+          )}
+
+          <button
+            type="button"
+            onClick={() => goToPage(currentPage + 1)}
+            disabled={currentPage === totalPages || loading}
+            className="h-10 rounded-full border border-[#eadfd9] bg-white px-4 text-[11px] font-semibold text-neutral-700 transition hover:border-[#f15a24] hover:text-[#f15a24] disabled:cursor-not-allowed disabled:opacity-35"
+          >
+            Next
+          </button>
+        </nav>
       ) : null}
     </section>
   );
