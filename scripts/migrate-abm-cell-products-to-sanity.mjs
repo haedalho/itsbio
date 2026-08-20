@@ -38,7 +38,14 @@ const token = [
 if (APPLY && !token) throw new Error("--apply requires a Sanity write token");
 if (APPLY && AUDIT_ONLY) throw new Error("--apply and --audit-only cannot be combined");
 
-const client = createClient({ projectId, dataset, apiVersion, token: token || undefined, useCdn: false });
+const client = createClient({
+  projectId,
+  dataset,
+  apiVersion,
+  token: token || undefined,
+  useCdn: false,
+  perspective: "published",
+});
 const clean = (value) => String(value || "").normalize("NFKC").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
 const normalized = (value) => clean(value).toLowerCase();
 const digest = (value) => createHash("sha256").update(String(value)).digest("hex");
