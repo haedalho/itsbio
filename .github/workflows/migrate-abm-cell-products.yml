@@ -52,8 +52,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - &install-migration-dependency
-        name: Install the pinned Sanity migration client
+      - name: Install the pinned Sanity migration client
         run: |
           for attempt in 1 2 3 4 5; do
             if npm install --prefix "$RUNNER_TEMP/abm-cell-sanity-deps" --no-audit --no-fund --package-lock=false @sanity/client@7.14.1; then
@@ -115,7 +114,15 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - *install-migration-dependency
+      - name: Install the pinned Sanity migration client
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if npm install --prefix "$RUNNER_TEMP/abm-cell-sanity-deps" --no-audit --no-fund --package-lock=false @sanity/client@7.14.1; then
+              exit 0
+            fi
+            sleep $((attempt * 5))
+          done
+          exit 1
       - name: Create this deterministic CELL product batch and upload official images
         run: >-
           node scripts/migrate-abm-cell-products-to-sanity.mjs
@@ -144,7 +151,15 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - *install-migration-dependency
+      - name: Install the pinned Sanity migration client
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if npm install --prefix "$RUNNER_TEMP/abm-cell-sanity-deps" --no-audit --no-fund --package-lock=false @sanity/client@7.14.1; then
+              exit 0
+            fi
+            sleep $((attempt * 5))
+          done
+          exit 1
       - name: Audit all 1,629 documents, 2,089 image references, and preserved legacy ABM products
         run: node scripts/migrate-abm-cell-products-to-sanity.mjs --audit-only
       - uses: actions/upload-artifact@v4
