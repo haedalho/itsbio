@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 
 type ModelType = "Immortalized Cells" | "Tumor Cells" | "Primary Cells";
 
@@ -19,7 +19,7 @@ type Product = {
 };
 
 type FacetRule = readonly [label: string, rule: RegExp];
-type ProductFacets = { species?: string; system?: string; cellType?: string };
+type Facets = { species: string[]; systems: string[]; cellTypes: string[] };
 
 const SPECIES: readonly FacetRule[] = [
   ["Human (H. sapiens)", /\bhuman\b|h\.\s*sapiens/i],
@@ -77,7 +77,7 @@ const CELL_TYPES: readonly FacetRule[] = [
   ["T Cell", /t cell|t-cell/i],
   ["B Cell", /b cell|b-cell/i],
   ["Macrophage", /macrophage/i],
-  ["Muscle", /myocyte|myoblast|muscle/i],
+  ["Myocyte / Muscle", /myocyte|myoblast|muscle/i],
   ["Stem / Progenitor", /stem|progenitor/i],
   ["Adipose", /adipocyte|adipose/i],
   ["Pancreas", /pancrea/i],
@@ -98,16 +98,16 @@ function fullText(product: Product) {
   ].filter(Boolean).join(" ");
 }
 
-function firstFacet(text: string, rules: readonly FacetRule[]) {
-  return rules.find(([, rule]) => rule.test(text))?.[0];
+function labelsFor(text: string, rules: readonly FacetRule[]) {
+  return rules.filter(([, rule]) => rule.test(text)).map(([label]) => label);
 }
 
-function facetsFor(product: Product): ProductFacets {
+function productFacets(product: Product): Facets {
   const text = fullText(product);
   return {
-    species: firstFacet(text, SPECIES),
-    system: firstFacet(text, SYSTEMS),
-    cellType: firstFacet(text, CELL_TYPES),
+    species: labelsFor(text, SPECIES),
+    systems: labelsFor(text, SYSTEMS),
+    cellTypes: labelsFor(text, CELL_TYPES),
   };
 }
 
@@ -115,214 +115,152 @@ function productHref(product: Product) {
   return `/products/abm/staged/product/${encodeURIComponent(product.sku || product.url)}`;
 }
 
-function FacetList({
-  label,
-  rules,
-  value,
-  onChange,
-}: {
+function toggle(current: string[], value: string) {
+  return current.includes(value) ? current.filter((item) => item !== value) : [...current, value];
+}
+
+function matches(values: string[], selected: string[]) {
+  return !selected.length || selected.some((value) => values.includes(value));
+}
+
+function FacetList({ label, rules, selected, onToggle }: {
   label: string;
   rules: readonly FacetRule[];
-  value: string;
-  onChange: (value: string) => void;
+  selected: string[];
+  onToggle: (value: string) => void;
 }) {
   return (
     <div>
-      <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.15em] text-[#ef592a]">{label}</div>
-      <div className="h-[200px] overflow-y-auto rounded-[15px] border border-[#eee5df] bg-white py-2 shadow-[0_5px_18px_rgba(30,18,10,0.035)]">
-        {rules.map(([option]) => {
-          const active = value === option;
-          return (
-            <button
-              key={option}
-              type="button"
-              onClick={() => onChange(active ? "" : option)}
-              className={`block w-full px-5 py-[9px] text-left text-[12px] leading-[1.35] transition ${
-                active ? "bg-[#fff0e8] font-semibold text-[#e85320]" : "text-[#282828] hover:bg-[#fff8f4]"
-              }`}
-            >
-              {option}
-            </button>
-          );
+      <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.15em] text-[#ef5a29]">{label}</div>
+      <div className="h-[198px] overflow-y-auto rounded-[15px] border border-[#eee6e1] bg-white py-2 shadow-[0_4px_14px_rgba(44,28,18,0.025)]">
+        {rules.map(([value]) => {
+          const active = selected.includes(value);
+          return <button key={value} type="button" onClick={() => onToggle(value)} className={`block w-full px-5 py-2.5 text-left text-[12px] leading-4 transition ${active ? "bg-[#fff1ea] font-semibold text-[#ed5a29]" : "text-[#272727] hover:bg-[#fff7f3]"}`}>{value}</button>;
         })}
       </div>
     </div>
   );
 }
 
-function MetaPill({ label, value }: { label: string; value?: string }) {
+function MetaChip({ label, value }: { label: string; value?: string }) {
   if (!value) return null;
-  return (
-    <span className="inline-flex rounded-full border border-[#e7e2df] bg-white px-2.5 py-1 text-[10px] leading-4 text-[#585858]">
-      <span className="mr-1 text-[#777]">{label}:</span>{value}
-    </span>
-  );
+  return <span className="inline-flex rounded-full border border-[#e8dfda] bg-white px-2.5 py-1 text-[10px] text-[#555]"><span className="mr-1 text-[#777]">{label}:</span>{value}</span>;
 }
 
-export default function ImmortalizedCatalogClient({ products }: { products: Product[] }) {
-  const [liveProducts, setLiveProducts] = useState<Product[]>(products);
-  const [loading, setLoading] = useState(products.length === 0);
+export default function ImmortalizedCatalogClient({ products: initialProducts }: { products: Product[] }) {
+  const [products, setProducts] = useState<Product[]>(initialProducts || []);
+  const [loading, setLoading] = useState((initialProducts || []).length === 0);
+  const [loadError, setLoadError] = useState(false);
   const [draftQuery, setDraftQuery] = useState("");
   const [query, setQuery] = useState("");
   const [modelType, setModelType] = useState<ModelType>("Immortalized Cells");
-  const [species, setSpecies] = useState("");
-  const [system, setSystem] = useState("");
-  const [cellType, setCellType] = useState("");
+  const [species, setSpecies] = useState<string[]>([]);
+  const [systems, setSystems] = useState<string[]>([]);
+  const [cellTypes, setCellTypes] = useState<string[]>([]);
   const [visibleCount, setVisibleCount] = useState(12);
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    fetch("/api/abm/cell-model-catalog", { cache: "force-cache" })
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
-      .then((payload: { items?: Product[] }) => {
+    const load = async () => {
+      try {
+        const response = await fetch("/api/abm/cell-model-catalog", { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const payload = await response.json() as { items?: Product[] };
         if (cancelled) return;
-        if (Array.isArray(payload.items) && payload.items.length) setLiveProducts(payload.items);
-      })
-      .catch(() => undefined)
-      .finally(() => { if (!cancelled) setLoading(false); });
+        const apiItems = Array.isArray(payload.items) ? payload.items : [];
+        const merged = Array.from(new Map([...(initialProducts || []), ...apiItems].map((item) => [`${item.modelType}:${item.sku || item.url}`, item])).values());
+        setProducts(merged);
+        setLoadError(false);
+      } catch {
+        if (!cancelled) setLoadError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    load();
     return () => { cancelled = true; };
-  }, []);
+  }, [initialProducts]);
 
-  const withFacets = useMemo(
-    () => liveProducts.map((product) => ({ product, facets: facetsFor(product) })),
-    [liveProducts],
-  );
-
+  const rows = useMemo(() => products.map((product) => ({ product, facets: productFacets(product) })), [products]);
+  const modelRows = useMemo(() => rows.filter(({ product }) => product.modelType === modelType), [rows, modelType]);
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    return withFacets.filter(({ product, facets }) => {
-      if (product.modelType !== modelType) return false;
+    return modelRows.filter(({ product, facets }) => {
       if (needle && !fullText(product).toLowerCase().includes(needle)) return false;
-      if (species && facets.species !== species) return false;
-      if (system && facets.system !== system) return false;
-      if (cellType && facets.cellType !== cellType) return false;
+      if (!matches(facets.species, species)) return false;
+      if (!matches(facets.systems, systems)) return false;
+      if (!matches(facets.cellTypes, cellTypes)) return false;
       return true;
     });
-  }, [withFacets, modelType, query, species, system, cellType]);
+  }, [modelRows, query, species, systems, cellTypes]);
 
   const visible = filtered.slice(0, visibleCount);
-  const resetResults = () => setVisibleCount(12);
-
-  const switchModel = (next: ModelType) => {
-    setModelType(next);
-    setSpecies("");
-    setSystem("");
-    setCellType("");
-    resetResults();
-  };
-
+  const resetVisible = () => setVisibleCount(12);
   const clearAll = () => {
-    setDraftQuery("");
-    setQuery("");
-    setModelType("Immortalized Cells");
-    setSpecies("");
-    setSystem("");
-    setCellType("");
-    resetResults();
+    setDraftQuery(""); setQuery(""); setModelType("Immortalized Cells");
+    setSpecies([]); setSystems([]); setCellTypes([]); resetVisible();
+  };
+  const switchModel = (next: ModelType) => {
+    setModelType(next); setSpecies([]); setSystems([]); setCellTypes([]); resetVisible();
   };
 
   return (
-    <section id="catalog" className="mt-9">
-      <div className="rounded-[20px] border border-[#eee3dd] bg-[#fdfbf9] px-6 py-6 md:px-7 md:py-7">
-        <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#ef592a]">Find your cell line</div>
-        <h2 className="mt-1 text-[23px] font-semibold tracking-[-0.025em] text-[#3e4750]">Search and filter immortalized cell lines</h2>
-        <p className="mt-2 text-[12px] leading-5 text-[#666]">Browse by keyword, species, bio system, or cell type.</p>
-
-        <form
-          className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_112px]"
-          onSubmit={(event) => {
-            event.preventDefault();
-            setQuery(draftQuery.trim());
-            resetResults();
-          }}
-        >
-          <input
-            value={draftQuery}
-            onChange={(event) => setDraftQuery(event.target.value)}
-            placeholder="Name, cat. no., or keyword..."
-            className="h-10 min-w-0 rounded-full border border-[#efd6ca] bg-white px-4 text-[12px] outline-none focus:border-[#f15a29]"
-          />
-          <button type="submit" className="h-10 rounded-full bg-[#f15a24] text-[11px] font-bold text-white transition hover:bg-[#d94e1c]">Search</button>
+    <section id="catalog" className="mt-10">
+      <div className="rounded-[20px] border border-[#ebe1dc] bg-[#fffaf7] p-6 md:p-7">
+        <form className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_112px]" onSubmit={(event) => { event.preventDefault(); setQuery(draftQuery); resetVisible(); }}>
+          <input value={draftQuery} onChange={(event) => setDraftQuery(event.target.value)} placeholder="Name, cat. no., or keyword..." className="h-11 rounded-full border border-[#efd5c8] bg-white px-4 text-[12px] outline-none focus:border-[#ef5a29]" />
+          <button className="h-11 rounded-full bg-[#f15a24] text-[12px] font-bold text-white hover:bg-[#dd4c18]">Search</button>
         </form>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          {(["Immortalized Cells", "Tumor Cells", "Primary Cells"] as const).map((type) => (
-            <button
-              key={type}
-              type="button"
-              onClick={() => switchModel(type)}
-              className={`rounded-full border px-4 py-2 text-[11px] font-semibold transition ${
-                modelType === type
-                  ? "border-[#f15a24] bg-[#f15a24] text-white"
-                  : "border-[#efd6ca] bg-white text-[#333] hover:border-[#f15a24]"
-              }`}
-            >
-              {type}
-            </button>
-          ))}
+          {(["Immortalized Cells", "Tumor Cells", "Primary Cells"] as const).map((type) => <button key={type} type="button" onClick={() => switchModel(type)} className={`rounded-full border px-4 py-2 text-[12px] font-semibold ${modelType === type ? "border-[#f15a24] bg-[#f15a24] text-white" : "border-[#efd5c8] bg-white text-neutral-800"}`}>{type}</button>)}
         </div>
 
         <div className="mt-5 grid gap-4 md:grid-cols-3">
-          <FacetList label="Species" rules={SPECIES} value={species} onChange={(next) => { setSpecies(next); resetResults(); }} />
-          <FacetList label="Bio System" rules={SYSTEMS} value={system} onChange={(next) => { setSystem(next); resetResults(); }} />
-          <FacetList label="Cell Type" rules={CELL_TYPES} value={cellType} onChange={(next) => { setCellType(next); resetResults(); }} />
+          <FacetList label="Species" rules={SPECIES} selected={species} onToggle={(value) => { setSpecies((current) => toggle(current, value)); resetVisible(); }} />
+          <FacetList label="Bio System" rules={SYSTEMS} selected={systems} onToggle={(value) => { setSystems((current) => toggle(current, value)); resetVisible(); }} />
+          <FacetList label="Cell Type" rules={CELL_TYPES} selected={cellTypes} onToggle={(value) => { setCellTypes((current) => toggle(current, value)); resetVisible(); }} />
         </div>
 
-        <div className="mt-4 flex justify-end">
-          <button type="button" onClick={clearAll} className="min-w-[112px] rounded-full border border-[#f39a78] bg-white px-5 py-2.5 text-[11px] font-medium text-[#ee7b52] hover:bg-[#fff5f0]">Clear All</button>
-        </div>
+        <div className="mt-4 flex justify-end"><button type="button" onClick={clearAll} className="min-w-[112px] rounded-full border border-[#f09a78] bg-white px-5 py-2.5 text-[11px] text-[#ee7a52] hover:bg-[#fff3ed]">Clear All</button></div>
       </div>
 
-      <div className="mt-7 text-[10px] font-bold uppercase tracking-[0.14em] text-[#ef592a]">Search Result</div>
+      <div className="mt-7 text-[10px] font-bold uppercase tracking-[0.14em] text-[#ef5a29]">Search Result</div>
+
+      {loading && !visible.length ? <div className="mt-4 rounded-[18px] border border-[#eee4df] bg-white px-5 py-8 text-center text-sm text-neutral-500">Loading cell lines...</div> : null}
+      {!loading && loadError && !visible.length ? <div className="mt-4 rounded-[18px] border border-[#eee4df] bg-white px-5 py-8 text-center text-sm text-neutral-500">Cell-line results could not be loaded. Please refresh once.</div> : null}
 
       <div className="mt-4 space-y-3">
-        {loading && visible.length === 0 ? (
-          <div className="rounded-[18px] border border-[#eee3dd] bg-white px-5 py-10 text-center text-[12px] text-neutral-500">Loading cell lines…</div>
-        ) : visible.length ? (
-          visible.map(({ product, facets }) => (
-            <article key={`${product.modelType}-${product.sku || product.url}`} className="rounded-[18px] border border-[#eaded8] bg-white px-4 py-4 shadow-[0_4px_14px_rgba(30,18,10,0.02)] md:px-5">
-              <div className="flex items-start justify-between gap-4 border-b border-[#eee8e4] pb-3">
-                <Link href={productHref(product)} prefetch={false} className="min-w-0 text-[14px] font-semibold leading-5 text-[#f15a24] hover:underline">
-                  {product.title}
-                </Link>
-                <Link href={productHref(product)} prefetch={false} className="shrink-0 rounded-full bg-[#f15a24] px-4 py-2 text-[10px] font-bold text-white hover:bg-[#da4d1b]">View Product</Link>
-              </div>
-
-              <div className="mt-3 grid gap-4 md:grid-cols-[minmax(0,1fr)_96px] md:items-start">
-                <div>
-                  <div className="flex flex-wrap gap-2">
-                    <MetaPill label="Cat. No." value={product.sku || "—"} />
-                    <MetaPill label="Unit" value={product.unit || "—"} />
-                    <MetaPill label="Price" value="Inquiry" />
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <MetaPill label="Species" value={facets.species} />
-                    <MetaPill label="Bio system" value={facets.system} />
-                    <MetaPill label="Cell type" value={facets.cellType} />
-                  </div>
+        {visible.map(({ product, facets }) => (
+          <article key={`${product.modelType}:${product.sku || product.url}`} className="rounded-[18px] border border-[#eadfd9] bg-white p-4 shadow-[0_5px_15px_rgba(35,22,16,0.025)] md:p-5">
+            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_94px]">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#eee7e3] pb-3">
+                  <h3 className="text-[14px] font-bold leading-5 text-[#f15a24]">{product.title}</h3>
+                  <Link href={productHref(product)} prefetch={false} className="shrink-0 rounded-full bg-[#f15a24] px-4 py-2 text-[11px] font-bold text-white hover:bg-[#dc4d19]">View Product</Link>
                 </div>
-
-                <div className="flex h-[96px] items-center justify-center overflow-hidden rounded-[12px] border border-[#eee8e4] bg-[#fbfbfb]">
-                  {product.previewImage ? (
-                    <img src={product.previewImage} alt="" loading="lazy" className="h-full w-full object-contain p-2" />
-                  ) : (
-                    <span className="text-[9px] uppercase tracking-[0.08em] text-neutral-300">No image</span>
-                  )}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="rounded-full border border-[#f0d8cc] bg-[#fffaf7] px-2.5 py-1 text-[10px]"><span className="mr-1 text-[#ef5a29]">Cat. No.:</span>{product.sku || "—"}</span>
+                  <span className="rounded-full border border-[#f0d8cc] bg-[#fffaf7] px-2.5 py-1 text-[10px]"><span className="mr-1 text-[#ef5a29]">Unit:</span>{product.unit || "Inquiry"}</span>
+                  <span className="rounded-full border border-[#f0d8cc] bg-[#fffaf7] px-2.5 py-1 text-[10px]"><span className="mr-1 text-[#ef5a29]">Price:</span>Inquiry</span>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <MetaChip label="Species" value={facets.species[0]} />
+                  <MetaChip label="Bio system" value={facets.systems[0]} />
+                  <MetaChip label="Cell type" value={facets.cellTypes[0]} />
                 </div>
               </div>
-            </article>
-          ))
-        ) : (
-          <div className="rounded-[18px] border border-[#eee3dd] bg-white px-5 py-10 text-center text-[12px] text-neutral-500">No matching cell lines found.</div>
-        )}
+              <div className="flex min-h-[94px] items-center justify-center rounded-[12px] border border-[#eee8e4] bg-[#fcfcfc]">
+                {product.previewImage ? <img src={product.previewImage} alt="" className="h-[86px] w-[86px] object-contain p-2" loading="lazy" /> : <span className="text-[10px] text-neutral-300">No image</span>}
+              </div>
+            </div>
+          </article>
+        ))}
       </div>
 
-      {visibleCount < filtered.length ? (
-        <div className="mt-5 text-center">
-          <button type="button" onClick={() => setVisibleCount((count) => count + 12)} className="rounded-full border border-[#f15a24] bg-white px-6 py-2.5 text-[11px] font-semibold text-[#f15a24] hover:bg-[#fff5f0]">Load More</button>
-        </div>
-      ) : null}
+      {!loading && !loadError && !filtered.length ? <div className="mt-4 rounded-[18px] border border-dashed border-neutral-300 px-5 py-10 text-center text-sm text-neutral-500">No matching cell lines found.</div> : null}
+      {filtered.length > visibleCount ? <div className="mt-5 text-center"><button type="button" onClick={() => setVisibleCount((count) => count + 12)} className="rounded-full border border-[#ef5a29] bg-white px-6 py-2.5 text-[12px] font-semibold text-[#ef5a29] hover:bg-[#fff6f1]">Load More</button></div> : null}
+      {filtered.length ? <div className="mt-3 text-center text-[11px] text-neutral-400">Showing {Math.min(visibleCount, filtered.length)} of {filtered.length} results</div> : null}
     </section>
   );
 }
