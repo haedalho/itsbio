@@ -1,4 +1,4 @@
-import { getOfficialAbmCellModelCatalog } from "@/lib/abm/cell-model-data";
+import { getOfficialAbmCellModelCatalog, getOfficialAbmCellModelFacets } from "@/lib/abm/cell-model-data";
 import { withManagedAbmCellProductImages } from "@/lib/abm/cell-product-images";
 import { CellLibraryShell } from "../_cellLibraryShared";
 import ImmortalizedCatalogClient from "../immortalized-cell-lines/ImmortalizedCatalogClient";
@@ -13,6 +13,11 @@ export default async function TumorCellLinesPage() {
       <p className="mt-4 max-w-4xl text-[13px] leading-6 text-neutral-700">abm offers a broad collection of tumour cell lines for cancer research and therapeutic drug development, including human, mouse, canine, and other mammalian models as well as specialty collections such as mast cells.</p>
       <p className="mt-3 max-w-4xl text-[13px] leading-6 text-neutral-700">Use the filters below to narrow the collection by category, species, biological system, and cell type.</p>
     </section>
-    <ImmortalizedCatalogClient products={initialProducts} initialTotal={products.length} initialModelType="Tumor Cells" />
+    <ImmortalizedCatalogClient
+      products={initialProducts}
+      initialTotal={products.length}
+      initialFacets={getOfficialAbmCellModelFacets("Tumor Cells")}
+      initialModelType="Tumor Cells"
+    />
   </CellLibraryShell>;
 }
