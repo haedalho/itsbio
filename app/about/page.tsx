@@ -4,7 +4,7 @@ import PartnersCarousel from "@/components/site/PartnersCarousel";
 
 export default function AboutPage() {
   return (
-    <main className="bg-white">
+    <main className="-mb-16 bg-white md:-mb-24">
       <PageHero
         eyebrow="ABOUT ITS BIO"
         title="A trusted partner for better science"
