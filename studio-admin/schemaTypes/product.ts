@@ -100,6 +100,15 @@ export default defineType({
     }),
 
     defineField({
+      name: "migrationKey",
+      title: "Migration Key",
+      type: "string",
+      readOnly: true,
+      hidden: ({ document }) => !document?.migrationKey,
+      description: "Deterministic scope marker used to keep reviewed bulk imports isolated from existing products.",
+    }),
+
+    defineField({
       name: "brand",
       title: "Brand(공급사)",
       type: "reference",

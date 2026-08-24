@@ -1,0 +1,167 @@
+name: Migrate ABM CELL products to Sanity
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/migrate-abm-cell-products.yml
+      - scripts/collect-abm-cell-image-sources.mjs
+      - scripts/migrate-abm-cell-products-to-sanity.mjs
+      - data/abm-cell-image-sources.json.gz
+      - data/abm-cell-details/**
+      - data/abm-cell-model-catalog.json
+      - studio-admin/schemaTypes/product.ts
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Dry-run first; apply writes only product-abm-cell-* documents and owned images"
+        required: true
+        default: dry-run
+        type: choice
+        options:
+          - dry-run
+          - apply
+      workers:
+        description: "Concurrent products per batch (1-6)"
+        required: true
+        default: "3"
+        type: choice
+        options:
+          - "1"
+          - "2"
+          - "3"
+          - "4"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: abm-cell-sanity-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install the pinned Sanity migration client
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if npm install --prefix "$RUNNER_TEMP/abm-cell-sanity-deps" --no-audit --no-fund --package-lock=false @sanity/client@7.14.1; then
+              exit 0
+            fi
+            sleep $((attempt * 5))
+          done
+          exit 1
+      - name: Validate the full migration without writes
+        run: NODE_PATH="$RUNNER_TEMP/abm-cell-sanity-deps/node_modules" node scripts/migrate-abm-cell-products-to-sanity.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: abm-cell-sanity-preflight-${{ github.run_id }}
+          path: .cache/abm-cell-sanity-migration/
+          retention-days: 30
+          if-no-files-found: error
+
+  apply:
+    if: github.event_name == 'pull_request' || inputs.mode == 'apply'
+    needs: preflight
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        batch:
+          - { start: 0, limit: 102 }
+          - { start: 102, limit: 102 }
+          - { start: 204, limit: 102 }
+          - { start: 306, limit: 102 }
+          - { start: 408, limit: 102 }
+          - { start: 510, limit: 102 }
+          - { start: 612, limit: 102 }
+          - { start: 714, limit: 102 }
+          - { start: 816, limit: 102 }
+          - { start: 918, limit: 102 }
+          - { start: 1020, limit: 102 }
+          - { start: 1122, limit: 102 }
+          - { start: 1224, limit: 102 }
+          - { start: 1326, limit: 102 }
+          - { start: 1428, limit: 102 }
+          - { start: 1530, limit: 99 }
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install the pinned Sanity migration client
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if npm install --prefix "$RUNNER_TEMP/abm-cell-sanity-deps" --no-audit --no-fund --package-lock=false @sanity/client@7.14.1; then
+              exit 0
+            fi
+            sleep $((attempt * 5))
+          done
+          exit 1
+      - name: Create this deterministic CELL product batch and upload official images
+        run: >-
+          NODE_PATH="$RUNNER_TEMP/abm-cell-sanity-deps/node_modules"
+          node scripts/migrate-abm-cell-products-to-sanity.mjs
+          --apply
+          --start ${{ matrix.batch.start }}
+          --limit ${{ matrix.batch.limit }}
+          --workers ${{ inputs.workers }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: abm-cell-sanity-apply-${{ matrix.batch.start }}-${{ github.run_id }}
+          path: .cache/abm-cell-sanity-migration/
+          retention-days: 30
+          if-no-files-found: warn
+
+  audit:
+    if: always() && needs.apply.result == 'success'
+    needs: apply
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install the pinned Sanity migration client
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if npm install --prefix "$RUNNER_TEMP/abm-cell-sanity-deps" --no-audit --no-fund --package-lock=false @sanity/client@7.14.1; then
+              exit 0
+            fi
+            sleep $((attempt * 5))
+          done
+          exit 1
+      - name: Audit all 1,629 documents, 2,089 image references, and preserved legacy ABM products
+        run: NODE_PATH="$RUNNER_TEMP/abm-cell-sanity-deps/node_modules" node scripts/migrate-abm-cell-products-to-sanity.mjs --audit-only
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: abm-cell-sanity-audit-${{ github.run_id }}
+          path: .cache/abm-cell-sanity-migration/
+          retention-days: 30
+          if-no-files-found: error

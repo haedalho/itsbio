@@ -1,4 +1,6 @@
 import { PUBLIC_CATALOG_CACHE, sanityCdnClient, sanityClient } from "@/lib/sanity/sanity.client";
+import { findOfficialAbmCellModelProduct } from "@/lib/abm/cell-model-data";
+import { findOfficialAbmCellDetail } from "@/lib/abm/cell-detail-data";
 
 export const ABM_REBUILD_VERSION = "2026-08-09-search-v5";
 
@@ -181,13 +183,41 @@ const STAGED_RECORD_QUERY = `*[
   && count(records[lower(sku) == lower($key) || lower(url) == lower($key)]) > 0
 ][0].records[lower(sku) == lower($key) || lower(url) == lower($key)][0]`;
 
+function officialCellRecord(key: string): AbmStagedRecord | undefined {
+  const officialCell = findOfficialAbmCellModelProduct(key);
+  if (!officialCell) return undefined;
+  return {
+    kind: "product",
+    sku: officialCell.sku || "",
+    title: officialCell.title,
+    url: officialCell.url,
+    unit: officialCell.unit,
+    searchCategory: officialCell.modelType,
+    filterTitle: officialCell.modelType,
+    filterPath: ["Cellular Materials", "Cell Library Collections", officialCell.modelType],
+    listingFilters: [
+      {
+        id: `cell-model:${officialCell.modelType}`,
+        title: officialCell.modelType,
+        path: ["Cellular Materials", "Cell Library Collections", officialCell.modelType],
+      },
+    ],
+    hasDetail: Boolean(findOfficialAbmCellDetail(officialCell.sku || key)),
+  };
+}
+
 export async function getAbmStagedRecord(kind: AbmStagedRecord["kind"], key: string) {
   const decodedKey = decodeURIComponent(key);
-  return sanityCdnClient.fetch<AbmStagedRecord | null>(STAGED_RECORD_QUERY, {
+  if (kind === "product") {
+    const cellRecord = officialCellRecord(decodedKey);
+    if (cellRecord) return cellRecord;
+  }
+  const staged = await sanityCdnClient.fetch<AbmStagedRecord | null>(STAGED_RECORD_QUERY, {
     version: ABM_REBUILD_VERSION,
     kind,
     key: decodedKey,
   }, PUBLIC_CATALOG_CACHE);
+  return staged;
 }
 
 export function stagedRecordKey(row: AbmStagedRecord) {
@@ -211,7 +241,8 @@ const STAGED_DETAIL_QUERY = `*[
 const EXISTING_ABM_IMAGE_QUERY = `*[
   _type == "product"
   && (
-    brandSlug == "abm"
+    brand._ref == "brand-abm"
+    || brandSlug == "abm"
     || brand->slug.current == "abm"
     || brand->themeKey == "abm"
   )
@@ -221,9 +252,9 @@ const EXISTING_ABM_IMAGE_QUERY = `*[
     || ($title != "" && lower(title) == lower($title))
     || ($sourceUrl != "" && sourceUrl == $sourceUrl)
   )
-][0]{ imageUrls }`;
+][0]{ imageUrls, "assetUrls": images[].asset->url }`;
 
-type ExistingAbmImages = { imageUrls?: string[] };
+type ExistingAbmImages = { imageUrls?: string[]; assetUrls?: string[] };
 
 async function getExistingManagedProductImages(record: AbmStagedRecord) {
   if (record.kind !== "product") return [];
@@ -232,7 +263,10 @@ async function getExistingManagedProductImages(record: AbmStagedRecord) {
     title: String(record.title || "").trim(),
     sourceUrl: String(record.url || "").trim(),
   }, PUBLIC_CATALOG_CACHE);
-  return normalizedDetailImages(undefined, result?.imageUrls);
+  return normalizedDetailImages(undefined, [
+    ...(result?.assetUrls || []),
+    ...(result?.imageUrls || []),
+  ]);
 }
 
 function mergeNonEmpty<T extends Record<string, unknown>>(base: T, extra: Record<string, unknown>) {
@@ -245,6 +279,24 @@ function mergeNonEmpty<T extends Record<string, unknown>>(base: T, extra: Record
 
 /** Resolve reviewed staging content. Existing Product may contribute managed Sanity images only. */
 export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: string): Promise<AbmStagedDetail | undefined> {
+  const decodedKey = decodeURIComponent(key);
+  if (kind === "product") {
+    const cellRecord = officialCellRecord(decodedKey);
+    const cellDetail = cellRecord ? findOfficialAbmCellDetail(cellRecord.sku || decodedKey) : undefined;
+    if (cellRecord && cellDetail) {
+      let images = normalizedDetailImages(cellDetail.previewImage, cellDetail.images);
+      if (!images.length) images = await getExistingManagedProductImages(cellRecord);
+      return {
+        ...cellRecord,
+        ...cellDetail,
+        kind,
+        sourceUrl: String(cellDetail.sourceUrl || cellRecord.url || "").trim(),
+        hasDetail: true,
+        images,
+      } as AbmStagedDetail;
+    }
+  }
+
   const record = await getAbmStagedRecord(kind, key);
   if (!record) return undefined;
 
@@ -261,6 +313,19 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
   }, PUBLIC_CATALOG_CACHE);
 
   if (!staged) {
+    const officialCellDetail = kind === "product" ? findOfficialAbmCellDetail(record.sku || decodedKey) : undefined;
+    if (officialCellDetail) {
+      let images = normalizedDetailImages(officialCellDetail.previewImage, officialCellDetail.images);
+      if (!images.length) images = await getExistingManagedProductImages(record);
+      return {
+        ...record,
+        ...officialCellDetail,
+        kind,
+        sourceUrl: String(officialCellDetail.sourceUrl || record.url || "").trim(),
+        hasDetail: true,
+        images,
+      } as AbmStagedDetail;
+    }
     let images = normalizedDetailImages(record.previewImage);
     if (!images.length) images = await getExistingManagedProductImages(record);
     return {
