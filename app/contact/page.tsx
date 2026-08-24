@@ -8,8 +8,9 @@ const OFFICE = {
   fax: "02-3462-8659",
   email: "info@itsbio.co.kr",
   hours: {
-    weekdays: "09:00–18:00",
-    lunch: "12:00–13:00",
+    weekdays: "08:30–17:30",
+    friday: "08:30–17:00",
+    lunch: "11:30–12:30",
     note: "Closed on weekends & holidays",
   },
 };
@@ -86,7 +87,11 @@ export default function ContactPage() {
 
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             <DotItem title="Address">{OFFICE.addressKr}</DotItem>
-            <DotItem title="Business hours">Weekdays: {OFFICE.hours.weekdays}<div className="mt-1 text-sm text-neutral-600">Lunch: {OFFICE.hours.lunch} / {OFFICE.hours.note}</div></DotItem>
+            <DotItem title="Business hours">
+              <div>Weekdays: {OFFICE.hours.weekdays}</div>
+              <div>Friday: {OFFICE.hours.friday}</div>
+              <div className="mt-1 text-sm text-neutral-600">Lunch: {OFFICE.hours.lunch} / {OFFICE.hours.note}</div>
+            </DotItem>
             <DotItem title="Phone"><a className="hover:text-orange-700" href={`tel:${OFFICE.tel.replace(/-/g, "")}`}>{OFFICE.tel}</a></DotItem>
             <DotItem title="Fax">{OFFICE.fax}</DotItem>
             <DotItem title="E-mail"><a className="hover:text-orange-700" href={`mailto:${OFFICE.email}`}>{OFFICE.email}</a></DotItem>
