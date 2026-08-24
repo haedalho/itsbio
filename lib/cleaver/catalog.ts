@@ -28,6 +28,8 @@ export type CleaverProduct = {
   overviewHtml?: string;
   specsHtml?: string;
   documentsHtml?: string;
+  highlights?: string[];
+  specRows?: Array<{ label: string; value: string }>;
   docs?: Array<{ title?: string; label?: string; url?: string }>;
 };
 

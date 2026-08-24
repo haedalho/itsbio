@@ -1,0 +1,43 @@
+name: Publish verified Cleaver specifications, manuals, and galleries
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/migrate-cleaver-content.yml
+      - scripts/migrate-cleaver-content-to-sanity.mjs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cleaver-product-content-production
+  cancel-in-progress: false
+
+jobs:
+  publish-reviewed-cleaver-content:
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 120
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install reviewed project dependencies
+        run: npm install --no-audit --no-fund
+      - name: Import exact-SKU manufacturer descriptions, specifications, PDFs, and high-resolution galleries
+        run: node scripts/migrate-cleaver-content-to-sanity.mjs --apply

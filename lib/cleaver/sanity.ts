@@ -36,6 +36,8 @@ const PRODUCT_PROJECTION = `{
   overviewHtml,
   specsHtml,
   documentsHtml,
+  highlights,
+  specRows[]{label, value},
   docs[]{title, label, url}
 }`;
 
@@ -135,5 +137,19 @@ export async function getCleaverCategoryCovers() {
     return covers;
   } catch {
     return {};
+  }
+}
+
+export async function getCleaverShowcase() {
+  const featured = ["MSMINI10", "POWERPRO300", "CVS10DSYS", "MSMAXI10"];
+
+  try {
+    const rows = await sanityCdnClient.fetch<CleaverProduct[]>(`
+      *[${CLEAVER_FILTER} && sku in $featured && defined(images[0].asset->url)] ${PRODUCT_PROJECTION}
+    `, { featured }, CLEAVER_CATALOG_CACHE);
+    const bySku = new Map((Array.isArray(rows) ? rows : []).map((product) => [product.sku, product]));
+    return featured.map((sku) => bySku.get(sku)).filter((product): product is CleaverProduct => Boolean(product));
+  } catch {
+    return [];
   }
 }
