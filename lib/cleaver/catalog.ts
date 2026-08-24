@@ -31,12 +31,26 @@ export type CleaverProduct = {
   highlights?: string[];
   specRows?: Array<{ label: string; value: string }>;
   docs?: Array<{ title?: string; label?: string; url?: string }>;
+  cleaverContent?: {
+    sourceUrl?: string;
+    familyId?: string;
+    videos?: Array<{ title: string; url: string; embedUrl: string }>;
+    included?: Array<{
+      sku: string;
+      title: string;
+      quantity?: number;
+      href?: string;
+    }>;
+    variants?: Array<{ sku: string; title: string; href: string }>;
+    accessories?: Array<{ sku: string; title: string; href: string }>;
+  };
 };
 
 export const CLEAVER_CATEGORIES = categories as CleaverCategory[];
 
 export function slugifyCleaver(value: string) {
-  return value.normalize("NFKD")
+  return value
+    .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -45,38 +59,76 @@ export function slugifyCleaver(value: string) {
 
 export function cleaverProductSlug(title: string, sku: string) {
   const suffix = slugifyCleaver(sku.replace(/\$/g, "-variant"));
-  const base = slugifyCleaver(title).slice(0, Math.max(20, 145 - suffix.length)).replace(/-+$/g, "");
+  const base = slugifyCleaver(title)
+    .slice(0, Math.max(20, 145 - suffix.length))
+    .replace(/-+$/g, "");
   return `${base || "cleaver-product"}-${suffix}`;
 }
 
-export function classifyCleaverProduct(sku: string, title: string): [string, string] {
+export function classifyCleaverProduct(
+  sku: string,
+  title: string,
+): [string, string] {
   const value = `${sku} ${title}`.toLowerCase();
 
   if (/\bstudent\b|\beducation\b|\bteaching\b|^tgt|^labset/.test(value)) {
-    return ["teaching-and-education", /student|^tgt/.test(value) ? "student-electrophoresis-systems" : "teaching-kits-and-accessories"];
+    return [
+      "teaching-and-education",
+      /student|^tgt/.test(value)
+        ? "student-electrophoresis-systems"
+        : "teaching-kits-and-accessories",
+    ];
   }
-  if (/^csr-|\bbeta\s+(?:radiation\s+)?shield|\bgamma\s+(?:radiation\s+)?shield|radiation shield|pipette shield/.test(value)) {
+  if (
+    /^csr-|\bbeta\s+(?:radiation\s+)?shield|\bgamma\s+(?:radiation\s+)?shield|radiation shield|pipette shield/.test(
+      value,
+    )
+  ) {
     return ["general-laboratory-products", "radiation-protection"];
   }
-  if (/glove\s*box|uv\s*(?:sterili[sz]ation\s*)?cabinet|pcr\s*(?:cabinet|hood|chamber)|^csl-gb|^csl-uvcab/.test(value)) {
+  if (
+    /glove\s*box|uv\s*(?:sterili[sz]ation\s*)?cabinet|pcr\s*(?:cabinet|hood|chamber)|^csl-gb|^csl-uvcab/.test(
+      value,
+    )
+  ) {
     return ["general-laboratory-products", "glove-boxes-and-pcr-cabinets"];
   }
-  if (/safe\s*tray|spill\s*tray|biohazard|\btray\s*liner|^t[oy]\d/.test(value)) {
+  if (
+    /safe\s*tray|spill\s*tray|biohazard|\btray\s*liner|^t[oy]\d/.test(value)
+  ) {
     return ["general-laboratory-products", "laboratory-safety-and-accessories"];
   }
-  if (/omnipette|ezeepette|epette|\bpipett(?:e|or|ing)\b|^cv(?:-|\d)|multichannel pipette/.test(value)) {
+  if (
+    /omnipette|ezeepette|epette|\bpipett(?:e|or|ing)\b|^cv(?:-|\d)|multichannel pipette/.test(
+      value,
+    )
+  ) {
     return ["general-laboratory-products", "liquid-handling"];
   }
-  if (/vortex|shaker|\bmixer\b|hybridisation|hybridization|\bincubat|orbital|rocker|rotator|^si-/.test(value)) {
+  if (
+    /vortex|shaker|\bmixer\b|hybridisation|hybridization|\bincubat|orbital|rocker|rotator|^si-/.test(
+      value,
+    )
+  ) {
     return ["general-laboratory-products", "mixers-shakers-and-incubators"];
   }
-  if (/water\s*bath|\bstirring\s*bath|aqualab|water\s*still|water distill/.test(value)) {
+  if (
+    /water\s*bath|\bstirring\s*bath|aqualab|water\s*still|water distill/.test(
+      value,
+    )
+  ) {
     return ["general-laboratory-products", "water-baths-and-stills"];
   }
-  if (/centrifuge|ezeefuge|\bph\s*meter|portable meter|conductivity meter|magnetic stirr/.test(value)) {
+  if (
+    /centrifuge|ezeefuge|\bph\s*meter|portable meter|conductivity meter|magnetic stirr/.test(
+      value,
+    )
+  ) {
     return ["general-laboratory-products", "centrifuges-and-meters"];
   }
-  if (/cellulose acetate|haemoglobin|hemoglobin|cellas|^csl-ca(?:hb)?/.test(value)) {
+  if (
+    /cellulose acetate|haemoglobin|hemoglobin|cellas|^csl-ca(?:hb)?/.test(value)
+  ) {
     return ["electrophoresis-equipment", "cellulose-acetate"];
   }
   if (/comet\s*assay|^csl-com/.test(value)) {
@@ -85,31 +137,76 @@ export function classifyCleaverProduct(sku: string, title: string): [string, str
   if (/\bdgge\b|isoelectric|\bief\b|dna sequencing|^csq/.test(value)) {
     return ["electrophoresis-equipment", "dgge-and-sequencing"];
   }
-  if (/power\s*supply|powerpro|nanopac|power\s*pro|^pp\d|^eps\d/.test(value) && !/with (?:a |\d+v )?power supply|package with power supply/.test(value)) {
+  if (
+    /power\s*supply|powerpro|nanopac|power\s*pro|^pp\d|^eps\d/.test(value) &&
+    !/with (?:a |\d+v )?power supply|package with power supply/.test(value)
+  ) {
     return ["electrophoresis-equipment", "power-supplies"];
   }
-  if (/omniblot|miniblot|\bblotter\b|semi[ -]?dry|electroblot|western blot|vacuum blot|^sd\d/.test(value)) {
+  if (
+    /omniblot|miniblot|\bblotter\b|semi[ -]?dry|electroblot|western blot|vacuum blot|^sd\d/.test(
+      value,
+    )
+  ) {
     return ["electrophoresis-equipment", "electroblotters"];
   }
-  if (/transilluminator|blue light illuminator|uv illuminator|^csl-uvt/.test(value)) {
+  if (
+    /transilluminator|blue light illuminator|uv illuminator|^csl-uvt/.test(
+      value,
+    )
+  ) {
     return ["gel-documentation", "transilluminators"];
   }
-  if (/microdoc|omnidoc|gelone|gellite|gelpro|gel documentation|chemidoc|geldoc|gel imaging|camera|imaging filter|^mu-/.test(value)) {
-    return ["gel-documentation", /filter|camera|hood|replacement|accessor|^mu-/.test(value) ? "imaging-accessories" : "gel-documentation-systems"];
+  if (
+    /microdoc|omnidoc|gelone|gellite|gelpro|gel documentation|chemidoc|geldoc|gel imaging|camera|imaging filter|^mu-/.test(
+      value,
+    )
+  ) {
+    return [
+      "gel-documentation",
+      /filter|camera|hood|replacement|accessor|^mu-/.test(value)
+        ? "imaging-accessories"
+        : "gel-documentation-systems",
+    ];
   }
-  if (/dna ladder|dna marker|protein marker|loading dye|gel stain|\brunsafe\b|sybr|ethidium|\bagarose\s*(?:powder|tablet|gel reagent)|^csl-mdna|^csl-ag\d/.test(value)) {
-    return ["electrophoresis-reagents", /ladder|marker|stain|dye|runsafe|sybr|ethidium/.test(value) ? "dna-ladders-and-stains" : "agarose-and-gel-reagents"];
+  if (
+    /dna ladder|dna marker|protein marker|loading dye|gel stain|\brunsafe\b|sybr|ethidium|\bagarose\s*(?:powder|tablet|gel reagent)|^csl-mdna|^csl-ag\d/.test(
+      value,
+    )
+  ) {
+    return [
+      "electrophoresis-reagents",
+      /ladder|marker|stain|dye|runsafe|sybr|ethidium/.test(value)
+        ? "dna-ladders-and-stains"
+        : "agarose-and-gel-reagents",
+    ];
   }
-  if (/\btbe\b|\btae\b|running buffer|transfer buffer|buffer concentrate|^csl-tbep/.test(value)) {
+  if (
+    /\btbe\b|\btae\b|running buffer|transfer buffer|buffer concentrate|^csl-tbep/.test(
+      value,
+    )
+  ) {
     return ["electrophoresis-reagents", "buffers-and-components"];
   }
-  if (/omnipage|propage|\bpage\s+system|vertical electrophoresis|vertical gel|glass plates?|bonded spacer|^vs\d|^cvs\d|^hpage/.test(value)) {
+  if (
+    /omnipage|propage|\bpage\s+system|vertical electrophoresis|vertical gel|glass plates?|bonded spacer|^vs\d|^cvs\d|^hpage/.test(
+      value,
+    )
+  ) {
     return ["electrophoresis-equipment", "page-tanks"];
   }
-  if (/multisub|runview|runstation|clearsight|agarose electrophoresis|horizontal electrophoresis|gel tray|flexicaster|^ms(?:mini|midi|choice|maxi|screen|\d)|^cs[lt]-rv/.test(value)) {
+  if (
+    /multisub|runview|runstation|clearsight|agarose electrophoresis|horizontal electrophoresis|gel tray|flexicaster|^ms(?:mini|midi|choice|maxi|screen|\d)|^cs[lt]-rv/.test(
+      value,
+    )
+  ) {
     return ["electrophoresis-equipment", "agarose-gel-tanks"];
   }
-  if (/comb|electrode|casting|platinum wire|gel scoop|electrophoresis cable/.test(value)) {
+  if (
+    /comb|electrode|casting|platinum wire|gel scoop|electrophoresis cable/.test(
+      value,
+    )
+  ) {
     return ["electrophoresis-equipment", "spares-and-accessories"];
   }
   if (/reagent|agarose|buffer|precast|lysis|gel pack/.test(value)) {
@@ -129,7 +226,9 @@ export function cleaverCategory(path: string[]) {
 export function cleaverCategoryTitles(path: string[]) {
   const match = cleaverCategory(path);
   if (!match) return [];
-  return match.root.slug === match.current.slug ? [match.root.title] : [match.root.title, match.current.title];
+  return match.root.slug === match.current.slug
+    ? [match.root.title]
+    : [match.root.title, match.current.title];
 }
 
 export const CLEAVER_INVENTORY: CleaverProduct[] = inventory.map((row) => {
@@ -150,12 +249,23 @@ export function cleaverProductHref(product: Pick<CleaverProduct, "slug">) {
 }
 
 export function findLocalCleaverProduct(value: string) {
-  const normalized = decodeURIComponent(value).normalize("NFKC").trim().toLowerCase();
-  return CLEAVER_INVENTORY.find((product) => product.slug.toLowerCase() === normalized || product.sku.toLowerCase() === normalized);
+  const normalized = decodeURIComponent(value)
+    .normalize("NFKC")
+    .trim()
+    .toLowerCase();
+  return CLEAVER_INVENTORY.find(
+    (product) =>
+      product.slug.toLowerCase() === normalized ||
+      product.sku.toLowerCase() === normalized,
+  );
 }
 
 export function searchLocalCleaverProducts(query: string) {
   const normalized = query.normalize("NFKC").trim().toLowerCase();
   if (!normalized) return [];
-  return CLEAVER_INVENTORY.filter((product) => product.sku.toLowerCase().includes(normalized) || product.title.toLowerCase().includes(normalized));
+  return CLEAVER_INVENTORY.filter(
+    (product) =>
+      product.sku.toLowerCase().includes(normalized) ||
+      product.title.toLowerCase().includes(normalized),
+  );
 }
