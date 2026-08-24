@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import KentProductDetailClient from "@/components/products/KentProductDetailClient";
 import Breadcrumb from "@/components/site/Breadcrumb";
+import kentCurrentTaxonomy from "@/data/kent-current-taxonomy.json";
 import { getKentOfficialProductOverride } from "@/lib/kent/official-product-overrides";
 import {
   deriveKentSourceContent,
@@ -17,6 +18,9 @@ const PRODUCT_DOC_TYPE =
   process.env.VERCEL_ENV === "preview" && String(process.env.VERCEL_GIT_COMMIT_REF || "").startsWith("agent/kent")
     ? "kentPreviewProduct"
     : "product";
+const CURRENT_KENT_PRODUCT_SLUGS = new Set(
+  kentCurrentTaxonomy.products.map((product) => product.slug.toLowerCase()),
+);
 
 const ITEM_PAGE_QUERY = `
 {
@@ -388,7 +392,7 @@ export default async function KentProductDetailPage({
   const resolved = await Promise.resolve(params as any);
   const slugParts = Array.isArray(resolved?.slug) ? resolved.slug.filter(Boolean) : [];
   const slug = slugParts.join("/");
-  if (!slug) notFound();
+  if (!slug || !CURRENT_KENT_PRODUCT_SLUGS.has(slug.toLowerCase())) notFound();
 
   const bundle = await sanityCdnClient.fetch(ITEM_PAGE_QUERY, {
     brandKey: BRAND_KEY,

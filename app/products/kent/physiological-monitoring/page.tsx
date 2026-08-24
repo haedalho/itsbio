@@ -38,13 +38,13 @@ export default function PhysiologicalMonitoringPage() {
         },
         {
           title: "Anesthesia Accessories for SomnoSuite®",
-          href: "/products/kent/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnosuite",
+          href: "/products/kent/anesthesia/anesthesia-accessories-for-somnosuite",
           count: 13,
           representativeSlug: "low-cost-chambers-for-somnosuite",
         },
         {
           title: "Anesthesia Accessories for SomnoFlo®",
-          href: "/products/kent/anesthesia/anesthesia-accessories/anesthesia-accessories-for-somnoflo",
+          href: "/products/kent/anesthesia/anesthesia-accessories-for-somnoflo",
           count: 15,
           representativeSlug: "3-accessory-connector",
         },

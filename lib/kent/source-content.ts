@@ -3,6 +3,8 @@ import "server-only";
 import * as cheerio from "cheerio";
 import sanitizeHtml from "sanitize-html";
 
+import kentCurrentTaxonomy from "@/data/kent-current-taxonomy.json";
+
 export type DerivedKentSection = {
   _key: string;
   type: string;
@@ -24,6 +26,10 @@ const MONEY_RE = /(?:[$€£¥₩]\s*\d[\d,.]*(?:\s*(?:USD|EUR|GBP|JPY|KRW))?|(?
 const NO_CHARGE_RE = /^(?:no charge|free|included at no charge)$/i;
 const SUPPLIER_SUPPORT_HEADING_RE = /^(?:need\s+help(?:\s+with\s+your\s+order)?\??|help\s*&\s*support|we(?:'|’)?re\s+here\s+for\s+you|chat\s+with\s+an\s+expert|call\s+us|contact\s+us|ask\s+for\s+support|we\s+reply\s+fast.*|not\s+sure\s+which\s+.*\s+right\s+for\s+you\??|want\s+to\s+see\s+how\s+.*\s+could\s+work\s+in\s+your\s+lab\??)$/i;
 const EXCLUDED_PRODUCT_SECTION_RE = /^(?:how\s+much\s+could\s+you\s+save(?:\s+with\s+.*)?\??|calculate\s+your\s+savings.*|estimated\s+yearly\s+operational\s+savings.*|get\s+early\s+access.*|newsletter|supplier\s+support)$/i;
+const CURRENT_KENT_PRODUCT_SLUGS = new Set(
+  kentCurrentTaxonomy.products.map((product) => product.slug.toLowerCase()),
+);
+const LEGACY_KENT_PRODUCT_SLUGS = new Map([["mousestat", "mousestat-jr"]]);
 
 function cleanText(input?: unknown) {
   return String(input || "")
@@ -125,13 +131,31 @@ function removeCommerceNoise($: cheerio.CheerioAPI, root: any) {
 function internalKentHref(input: unknown) {
   const raw = String(input || "").trim();
   if (!raw) return "";
+
+  if (/^\/products\/kent(?:\/|$)/i.test(raw)) {
+    const match = raw.match(/^\/products\/kent\/item\/([^/?#]+)/i);
+    if (!match?.[1]) return raw;
+
+    const slug = match[1].toLowerCase();
+    const currentSlug = LEGACY_KENT_PRODUCT_SLUGS.get(slug) || slug;
+    return CURRENT_KENT_PRODUCT_SLUGS.has(currentSlug)
+      ? `/products/kent/item/${currentSlug}`
+      : "/products/kent";
+  }
+
   try {
     const parsed = new URL(raw, "https://www.kentscientific.com");
     const hostname = parsed.hostname.toLowerCase();
     if (hostname !== "kentscientific.com" && hostname !== "www.kentscientific.com") return raw;
 
     const productMatch = parsed.pathname.match(/^\/products\/([^/]+)\/?$/i);
-    if (productMatch?.[1]) return `/products/kent/item/${productMatch[1]}`;
+    if (productMatch?.[1]) {
+      const slug = productMatch[1].toLowerCase();
+      const currentSlug = LEGACY_KENT_PRODUCT_SLUGS.get(slug) || slug;
+      return CURRENT_KENT_PRODUCT_SLUGS.has(currentSlug)
+        ? `/products/kent/item/${currentSlug}`
+        : "/products/kent";
+    }
 
     const categoryMatch = parsed.pathname.match(/^\/product\/(.+?)\/?$/i);
     if (categoryMatch?.[1]) return `/products/kent/${categoryMatch[1]}`;
