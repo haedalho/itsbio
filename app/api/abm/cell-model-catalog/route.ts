@@ -4,6 +4,7 @@ import {
   getOfficialAbmCellModelCatalog,
   type OfficialAbmCellModelType,
 } from "@/lib/abm/cell-model-data";
+import { withManagedAbmCellProductImages } from "@/lib/abm/cell-product-images";
 
 const MODEL_TYPES = new Set<OfficialAbmCellModelType>(["Immortalized Cells", "Tumor Cells", "Primary Cells"]);
 
@@ -32,7 +33,7 @@ export async function GET(request: Request) {
     if (!includesNormalized(product.cellTypes, cellType)) return false;
     return true;
   });
-  const items = filtered.slice(offset, offset + limit);
+  const items = await withManagedAbmCellProductImages(filtered.slice(offset, offset + limit));
 
   return NextResponse.json(
     { items, total: filtered.length, offset, hasMore: offset + items.length < filtered.length },

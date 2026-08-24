@@ -241,7 +241,8 @@ const STAGED_DETAIL_QUERY = `*[
 const EXISTING_ABM_IMAGE_QUERY = `*[
   _type == "product"
   && (
-    brandSlug == "abm"
+    brand._ref == "brand-abm"
+    || brandSlug == "abm"
     || brand->slug.current == "abm"
     || brand->themeKey == "abm"
   )
@@ -251,9 +252,9 @@ const EXISTING_ABM_IMAGE_QUERY = `*[
     || ($title != "" && lower(title) == lower($title))
     || ($sourceUrl != "" && sourceUrl == $sourceUrl)
   )
-][0]{ imageUrls }`;
+][0]{ imageUrls, "assetUrls": images[].asset->url }`;
 
-type ExistingAbmImages = { imageUrls?: string[] };
+type ExistingAbmImages = { imageUrls?: string[]; assetUrls?: string[] };
 
 async function getExistingManagedProductImages(record: AbmStagedRecord) {
   if (record.kind !== "product") return [];
@@ -262,7 +263,10 @@ async function getExistingManagedProductImages(record: AbmStagedRecord) {
     title: String(record.title || "").trim(),
     sourceUrl: String(record.url || "").trim(),
   }, PUBLIC_CATALOG_CACHE);
-  return normalizedDetailImages(undefined, result?.imageUrls);
+  return normalizedDetailImages(undefined, [
+    ...(result?.assetUrls || []),
+    ...(result?.imageUrls || []),
+  ]);
 }
 
 function mergeNonEmpty<T extends Record<string, unknown>>(base: T, extra: Record<string, unknown>) {
@@ -280,13 +284,15 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
     const cellRecord = officialCellRecord(decodedKey);
     const cellDetail = cellRecord ? findOfficialAbmCellDetail(cellRecord.sku || decodedKey) : undefined;
     if (cellRecord && cellDetail) {
+      let images = normalizedDetailImages(cellDetail.previewImage, cellDetail.images);
+      if (!images.length) images = await getExistingManagedProductImages(cellRecord);
       return {
         ...cellRecord,
         ...cellDetail,
         kind,
         sourceUrl: String(cellDetail.sourceUrl || cellRecord.url || "").trim(),
         hasDetail: true,
-        images: normalizedDetailImages(cellDetail.previewImage, cellDetail.images),
+        images,
       } as AbmStagedDetail;
     }
   }
@@ -309,13 +315,15 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
   if (!staged) {
     const officialCellDetail = kind === "product" ? findOfficialAbmCellDetail(record.sku || decodedKey) : undefined;
     if (officialCellDetail) {
+      let images = normalizedDetailImages(officialCellDetail.previewImage, officialCellDetail.images);
+      if (!images.length) images = await getExistingManagedProductImages(record);
       return {
         ...record,
         ...officialCellDetail,
         kind,
         sourceUrl: String(officialCellDetail.sourceUrl || record.url || "").trim(),
         hasDetail: true,
-        images: normalizedDetailImages(officialCellDetail.previewImage, officialCellDetail.images),
+        images,
       } as AbmStagedDetail;
     }
     let images = normalizedDetailImages(record.previewImage);
