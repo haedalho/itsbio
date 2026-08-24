@@ -486,6 +486,10 @@ function rewriteRelativeUrls(html: string, baseUrl: string) {
   if (!baseUrl) return html;
 
   let out = html.replace(/\s(href|src)=["'](\/(?!\/)[^"']*)["']/gi, (_m, attr, p) => {
+    if (attr.toLowerCase() === "href" && /^\/products\/kent(?:\/|$|\?)/i.test(p)) {
+      return ` ${attr}="${p}"`;
+    }
+
     return ` ${attr}="${baseUrl}${p}"`;
   });
 
