@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import CleaverHeroBanner from "@/components/products/CleaverHeroBanner";
 import CleaverProductGallery from "@/components/products/CleaverProductGallery";
 import Breadcrumb from "@/components/site/Breadcrumb";
 import HtmlContent from "@/components/site/HtmlContent";
@@ -47,6 +48,7 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
 
   return (
     <main className="bg-white pb-20">
+      <CleaverHeroBanner title={product.title} eyebrow="Cleaver Scientific product" />
       <section className="border-b border-slate-200 bg-[#fbfafc]"><div className="mx-auto max-w-[1260px] px-6 py-6"><Breadcrumb items={crumbs} /></div></section>
       <div className="mx-auto max-w-[1260px] px-6 pt-10 md:pt-16">
         <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.04fr)_minmax(0,.9fr)] lg:gap-16">

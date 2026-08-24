@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Props = {
   title: string;
@@ -10,7 +10,18 @@ type Props = {
 
 export default function CleaverProductGallery({ title, images }: Props) {
   const [selected, setSelected] = useState(0);
+  const [zoomed, setZoomed] = useState(false);
   const active = images[selected] || images[0];
+  const dimensions = active?.match(/-(\d+)x(\d+)\.[a-z]+(?:\?|$)/i);
+
+  useEffect(() => {
+    if (!zoomed) return;
+    const dismiss = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setZoomed(false);
+    };
+    window.addEventListener("keydown", dismiss);
+    return () => window.removeEventListener("keydown", dismiss);
+  }, [zoomed]);
 
   if (!active) {
     return (
@@ -31,15 +42,23 @@ export default function CleaverProductGallery({ title, images }: Props) {
           alt={title}
           fill
           priority
-          quality={90}
+          unoptimized
           sizes="(max-width: 768px) 94vw, (max-width: 1280px) 48vw, 650px"
-          className="object-contain p-5 md:p-7"
+          className="object-contain p-3 md:p-4"
         />
         {images.length > 1 ? (
           <div className="absolute right-4 top-4 rounded-full bg-[#281335]/80 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm">
             {selected + 1} / {images.length}
           </div>
         ) : null}
+        <button
+          type="button"
+          onClick={() => setZoomed(true)}
+          className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/95 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-[#be9dce] hover:text-[#61247b]"
+        >
+          <span aria-hidden>↗</span>
+          View original{dimensions ? ` · ${dimensions[1]} × ${dimensions[2]}` : ""}
+        </button>
       </div>
 
       {images.length > 1 ? (
@@ -56,6 +75,28 @@ export default function CleaverProductGallery({ title, images }: Props) {
               <Image src={image} alt="" fill quality={85} sizes="(max-width: 640px) 18vw, 100px" className="object-contain p-1.5" />
             </button>
           ))}
+        </div>
+      ) : null}
+
+      {zoomed ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${title} full-resolution product photograph`}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/85 p-4 md:p-10"
+          onClick={() => setZoomed(false)}
+        >
+          <button
+            type="button"
+            onClick={() => setZoomed(false)}
+            aria-label="Close full-resolution product photograph"
+            className="absolute right-5 top-5 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white text-xl text-slate-800 transition hover:bg-slate-100"
+          >
+            ×
+          </button>
+          <div className="relative h-[min(88vh,1200px)] w-[min(92vw,1500px)]" onClick={(event) => event.stopPropagation()}>
+            <Image src={active} alt={title} fill unoptimized sizes="92vw" className="object-contain" />
+          </div>
         </div>
       ) : null}
     </div>

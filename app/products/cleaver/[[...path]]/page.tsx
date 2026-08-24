@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import CleaverHeroBanner from "@/components/products/CleaverHeroBanner";
 import Breadcrumb from "@/components/site/Breadcrumb";
 import {
   CLEAVER_BRAND_NAME,
@@ -13,7 +14,7 @@ import {
   cleaverProductHref,
   type CleaverProduct,
 } from "@/lib/cleaver/catalog";
-import { getCleaverCategoryCovers, getCleaverProductPage, getCleaverShowcase } from "@/lib/cleaver/sanity";
+import { getCleaverCategoryCovers, getCleaverProductPage } from "@/lib/cleaver/sanity";
 
 export const revalidate = 30;
 
@@ -124,10 +125,9 @@ export default async function CleaverCatalogPage({ params, searchParams }: PageP
 
   const query = String(search.q || "").trim();
   const requestedPage = Math.max(1, Number.parseInt(String(search.page || "1"), 10) || 1);
-  const [listing, covers, showcase] = await Promise.all([
+  const [listing, covers] = await Promise.all([
     getCleaverProductPage(path, query, requestedPage),
     path.length ? Promise.resolve({} as Record<string, string>) : getCleaverCategoryCovers(),
-    getCleaverShowcase(),
   ]);
   const heading = match?.current.title || CLEAVER_BRAND_NAME;
   const breadcrumbs = [
@@ -139,36 +139,7 @@ export default async function CleaverCatalogPage({ params, searchParams }: PageP
 
   return (
     <main className="bg-white pb-20">
-      <section className="relative isolate overflow-hidden bg-[#251133] text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(133,78,173,0.6),transparent_38%),radial-gradient(circle_at_92%_78%,rgba(149,88,160,0.32),transparent_36%)]" />
-        <div className="pointer-events-none absolute inset-0 opacity-[0.14] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:54px_54px]" />
-        <div className="relative mx-auto grid min-h-[400px] max-w-[1380px] items-center gap-10 px-6 py-14 md:min-h-[450px] lg:grid-cols-[minmax(0,.92fr)_minmax(460px,1.08fr)] lg:gap-14 lg:py-16">
-          <div className="max-w-[650px]">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/85">
-              <span className="h-2 w-2 rounded-full bg-[#bfd776]" /> Precision laboratory instruments
-            </div>
-            <h1 className="mt-7 max-w-[580px] text-[42px] font-semibold leading-[1.04] tracking-[-0.055em] md:text-[62px]">Electrophoresis, <span className="text-[#cfb4df]">made exceptional.</span></h1>
-            <p className="mt-6 max-w-[540px] text-[15px] leading-8 text-white/76">Explore the Cleaver Scientific range of horizontal and vertical electrophoresis systems, gel imaging, power supplies and practical laboratory equipment.</p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link href="/products/cleaver/electrophoresis-equipment" className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#472058] transition hover:bg-[#efe6f4]">Explore electrophoresis</Link>
-              <Link href="/contact" className="rounded-full border border-white/35 px-6 py-3 text-sm font-medium text-white transition hover:bg-white/10">Talk to a specialist</Link>
-            </div>
-            <div className="mt-9 flex flex-wrap gap-6 text-[12px] text-white/70"><span><strong className="text-white">1,432</strong> catalog products</span><span><strong className="text-white">23</strong> specialist ranges</span><span>Cleaver Scientific equipment</span></div>
-          </div>
-
-          {showcase.length ? (
-            <div className="relative hidden h-[365px] lg:block" aria-label="Featured Cleaver Scientific laboratory equipment">
-              <div className="absolute inset-y-5 left-4 right-12 rounded-[36px] border border-white/10 bg-white/[0.055] backdrop-blur-sm" />
-              <div className="absolute left-0 top-4 h-[315px] w-[62%] overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-2xl">
-                <Image src={showcase[0].image!} alt={showcase[0].title} fill priority quality={90} sizes="420px" className="object-contain p-4" />
-                <div className="absolute bottom-3 left-3 rounded-full bg-[#3e1d50]/90 px-3 py-1.5 text-[11px] font-semibold text-white">multiSUB® electrophoresis</div>
-              </div>
-              {showcase[1] ? <div className="absolute right-0 top-0 h-[165px] w-[35%] overflow-hidden rounded-[24px] border border-white/75 bg-white shadow-2xl"><Image src={showcase[1].image!} alt={showcase[1].title} fill quality={90} sizes="230px" className="object-contain p-2" /></div> : null}
-              {showcase[2] ? <div className="absolute bottom-0 right-0 h-[175px] w-[38%] overflow-hidden rounded-[24px] border border-white/75 bg-white shadow-2xl"><Image src={showcase[2].image!} alt={showcase[2].title} fill quality={90} sizes="250px" className="object-contain p-2" /></div> : null}
-            </div>
-          ) : null}
-        </div>
-      </section>
+      <CleaverHeroBanner />
 
       <div className="mx-auto max-w-[1320px] px-6">
         <div className="py-6"><Breadcrumb items={breadcrumbs} /></div>
