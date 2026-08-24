@@ -38,6 +38,6 @@ jobs:
           node-version: 22
           cache: npm
       - name: Install reviewed project dependencies
-        run: npm ci --no-audit --no-fund
+        run: npm install --no-audit --no-fund
       - name: Upload official ABM category and specialty-cell images into Sanity
         run: node scripts/migrate-abm-category-images-to-sanity.mjs --brand abm
