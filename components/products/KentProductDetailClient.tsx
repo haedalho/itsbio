@@ -286,7 +286,11 @@ function resolveSelectedGalleryImage({
       .filter(Boolean),
   );
 
-  if (selectedVariantImage && distinctVariantImages.size > 1) {
+  if (
+    selectedVariantImage &&
+    distinctVariantImages.size > 1 &&
+    (selectedVariantImage.startsWith("/") || new URL(selectedVariantImage).hostname === "cdn.sanity.io")
+  ) {
     return { url: selectedVariantImage, alt: selectedVariant?.title, sourceUrl: selectedVariantImage };
   }
 
@@ -350,14 +354,24 @@ export default function KentProductDetailClientV2({
   optionGroups?: OptionGroup[];
   variants?: Variant[];
 }) {
-  const safeGroups = React.useMemo(
-    () => (Array.isArray(optionGroups) ? optionGroups.filter((row) => (row.options || []).length > 0) : []),
-    [optionGroups],
-  );
   const safeVariants = React.useMemo(
     () => (Array.isArray(variants) ? variants.filter((row) => row?.variantId || row?.sku || row?.catNo || row?.optionSummary) : []),
     [variants],
   );
+  const safeGroups = React.useMemo(() => {
+    const groups = Array.isArray(optionGroups)
+      ? optionGroups.filter((group) => (group.options || []).length > 0)
+      : [];
+    if (!safeVariants.length) return groups;
+
+    return groups.filter((group) => {
+      const key = normalizeKey(group.key || group.name || group.label || "option");
+      return (group.options || []).some((option) => {
+        const value = normalizeValue(String(option?.value || option?.label || ""));
+        return value && safeVariants.some((variant) => variantMatchesSelections(variant, { [key]: value }));
+      });
+    });
+  }, [optionGroups, safeVariants]);
   const [selections, setSelections] = React.useState<Record<string, string>>(() => buildInitialSelections(safeGroups, safeVariants, defaultVariantId));
 
   React.useEffect(() => {
@@ -372,12 +386,45 @@ export default function KentProductDetailClientV2({
   const isOptionAvailable = React.useCallback(
     (groupKey: string, value: string) => {
       if (!safeVariants.length) return true;
-      return safeVariants.some((variant) => variantMatchesSelections(variant, { ...selections, [groupKey]: value }));
+      return safeVariants.some((variant) => variantMatchesSelections(variant, { [groupKey]: value }));
     },
-    [safeVariants, selections],
+    [safeVariants],
   );
+  const updateSelection = React.useCallback((groupKey: string, value: string) => {
+    setSelections((current) => {
+      const next = { ...current, [groupKey]: value };
+      if (!safeVariants.length) return next;
 
-  const itemNo = selectedVariant?.catNo || selectedVariant?.sku || (!hasVariantControls ? sku : "") || "";
+      const matches = safeVariants.filter((variant) =>
+        variantMatchesSelections(variant, { [groupKey]: value }),
+      );
+      if (!matches.length) return current;
+
+      const remaining = selectionEntries(current).filter(([key]) => key !== groupKey);
+      const bestMatch = [...matches].sort((left, right) => {
+        const score = (variant: Variant) => remaining.filter(([key, selected]) =>
+          variantMatchesSelections(variant, { [key]: selected }),
+        ).length;
+        return score(right) - score(left);
+      })[0];
+      const lookup = buildVariantLookup(bestMatch);
+
+      for (const group of safeGroups) {
+        const key = normalizeKey(group.key || group.name || group.label || "option");
+        if (key === groupKey) continue;
+
+        const option = (group.options || []).find((candidate) => {
+          const optionValue = normalizeValue(String(candidate?.value || candidate?.label || ""));
+          return lookup[key] === optionValue || Object.values(lookup).includes(optionValue);
+        });
+        if (option) next[key] = normalizeValue(String(option.value || option.label || ""));
+      }
+
+      return next;
+    });
+  }, [safeGroups, safeVariants]);
+
+  const itemNo = selectedVariant?.catNo || selectedVariant?.sku || (!safeVariants.length ? sku : "") || "";
   const selectedSummary = selectedVariant?.optionSummary || "";
   const invalidCombination = hasVariantControls && safeVariants.length > 0 && !selectedVariant;
   const galleryImages = React.useMemo(() => {
@@ -443,7 +490,7 @@ export default function KentProductDetailClientV2({
                     <div key={key}>
                       <label className="mb-2 block text-sm font-semibold uppercase tracking-wide text-slate-900">{group.label || group.name || "Option"}</label>
                       {shouldUseSelect(group) ? (
-                        <select value={selected} onChange={(event) => setSelections((prev) => ({ ...prev, [key]: event.target.value }))} className="min-h-[46px] w-full border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-[#0b5baa]">
+                        <select value={selected} onChange={(event) => updateSelection(key, event.target.value)} className="min-h-[46px] w-full border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-[#0b5baa]">
                           {options.map((row, index) => {
                             const value = normalizeValue(String(row?.value || row?.label || `option-${index}`));
                             const label = row?.label || row?.value || `Option ${index + 1}`;
@@ -458,7 +505,7 @@ export default function KentProductDetailClientV2({
                             const available = isOptionAvailable(key, value);
                             const label = row?.label || row?.value || `Option ${index + 1}`;
                             return (
-                              <button key={`${key}-${value}-${index}`} type="button" disabled={!available} onClick={() => setSelections((prev) => ({ ...prev, [key]: value }))} className={`inline-flex min-h-[42px] items-center justify-center border px-4 py-2 text-sm transition ${active ? "border-[#0b5baa] bg-[#0b5baa] text-white" : available ? "border-slate-300 bg-white text-slate-800 hover:border-[#0b5baa]" : "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"}`}>
+                              <button key={`${key}-${value}-${index}`} type="button" disabled={!available} onClick={() => updateSelection(key, value)} className={`inline-flex min-h-[42px] items-center justify-center border px-4 py-2 text-sm transition ${active ? "border-[#0b5baa] bg-[#0b5baa] text-white" : available ? "border-slate-300 bg-white text-slate-800 hover:border-[#0b5baa]" : "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"}`}>
                                 {label}
                               </button>
                             );
