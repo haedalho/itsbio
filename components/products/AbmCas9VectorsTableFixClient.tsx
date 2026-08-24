@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { abmResourceImagePath } from "@/lib/abm/resource-links";
 
 const TARGET_PATH = "/products/abm/genetic-materials/crispr/cas9-vectors-and-virus";
 const PRICE_TEXT = /^(?:(?:US|CA)?\$\s?\d[\d,.]*(?:\s*(?:USD|CAD))?|price|pricing|inquiry)$/i;
@@ -9,7 +10,7 @@ const SECTION_LABELS = /^(?:Cas9 Nuclease|Cas9 Nickase|dCas9 \(double mutant\)|O
 const ADDITIONAL_ID = "itsbio-cas9-additional-info";
 const STYLE_ID = "itsbio-cas9-page-style";
 const MODAL_ID = "itsbio-cas9-workflow-modal";
-const WORKFLOW_IMAGE = "https://www.abmgood.com/assets/images/category/cas9_vectors_viruses/CRISPR_Virus_vector_simple_workflow-updated.png";
+const WORKFLOW_IMAGE = abmResourceImagePath("https://www.abmgood.com/assets/images/category/cas9_vectors_viruses/CRISPR_Virus_vector_simple_workflow-updated.png");
 const METHODS_SOURCE_URL = "https://info.abmgood.com/crispr-cas9-methods-tools";
 const DCAS9_SOURCE_URL = "https://info.abmgood.com/crispr-cas9-gene-regulation-dCas9";
 const METHODS_URL = `/products/abm/resource?u=${encodeURIComponent(METHODS_SOURCE_URL)}`;

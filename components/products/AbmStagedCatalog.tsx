@@ -15,12 +15,14 @@ export default function AbmStagedCatalog({
   query,
   page,
   basePath,
+  hideSearch = false,
 }: {
   kind: AbmStagedRecord["kind"];
   records: AbmStagedRecord[];
   query: string;
   page: number;
   basePath?: string;
+  hideSearch?: boolean;
 }) {
   const normalizedQuery = query.trim().toLowerCase();
   const filtered = normalizedQuery
@@ -51,7 +53,7 @@ export default function AbmStagedCatalog({
             {normalizedQuery ? ` matching “${query}”` : ""}
           </p>
         </div>
-        <form action={base} className="flex w-full max-w-md gap-2 sm:w-auto">
+        {!hideSearch ? <form action={base} className="flex w-full max-w-md gap-2 sm:w-auto">
           <label htmlFor={`abm-${kind}-search`} className="sr-only">
             {kind === "product" ? "Search product name or catalog number" : "Search service name"}
           </label>
@@ -65,7 +67,7 @@ export default function AbmStagedCatalog({
           <button className="h-10 bg-[#f2632f] px-5 text-sm font-semibold text-white transition hover:bg-[#d95221]" type="submit">
             Search
           </button>
-        </form>
+        </form> : null}
       </div>
 
       {visible.length ? (

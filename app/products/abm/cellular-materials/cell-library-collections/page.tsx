@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import AbmHeroBanner from "@/components/products/AbmHeroBanner";
 import Breadcrumb from "@/components/site/Breadcrumb";
+import { abmResourceImagePath } from "@/lib/abm/resource-links";
 
 const PAGE_SHELL = "mx-auto max-w-[1320px] px-6";
 
@@ -285,7 +286,7 @@ export default function CellLibraryCollectionsPage() {
                   >
                     <div className="relative aspect-[16/9] overflow-hidden bg-[#f4f4f4]">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={category.image} alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]" loading="lazy" />
+                      <img src={abmResourceImagePath(category.image)} alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]" loading="lazy" />
                     </div>
                     <div className="p-4">
                       <div className="text-[10px] font-bold uppercase tracking-[0.09em] text-[#ef5b2a]">{category.eyebrow}</div>

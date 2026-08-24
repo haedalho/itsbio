@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { isOfficialAbmResourceImageUrl } from "@/lib/abm/resource-links";
+import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,18 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const managedImageUrl = await sanityCdnClient.fetch<string | null>(
+      '*[_type == "sanity.imageAsset" && source.id == $sourceUrl][0].url',
+      { sourceUrl },
+      PUBLIC_CATALOG_CACHE,
+    ).catch(() => null);
+    if (managedImageUrl?.startsWith("https://cdn.sanity.io/images/")) {
+      return NextResponse.redirect(managedImageUrl, {
+        status: 307,
+        headers: { "Cache-Control": "public, max-age=86400, s-maxage=604800" },
+      });
+    }
+
     const response = await fetch(sourceUrl, {
       headers: { "User-Agent": "ITSBIO-ABM-Resource/1.0" },
       next: { revalidate: 604800 },

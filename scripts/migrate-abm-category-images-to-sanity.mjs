@@ -31,7 +31,13 @@ const LIMIT = Number(getArg("--limit") || 0) || 0;
 
 const PROJECT_ID = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
 const DATASET = process.env.NEXT_PUBLIC_SANITY_DATASET;
-const WRITE_TOKEN = process.env.SANITY_WRITE_TOKEN;
+const WRITE_TOKEN = [
+  process.env.SANITY_WRITE_TOKEN,
+  process.env.SANITY_API_WRITE_TOKEN,
+  process.env.SANITY_API_TOKEN,
+  process.env.SANITY_TOKEN,
+  process.env.SANITY_AUTH_TOKEN,
+].find((value) => typeof value === "string" && value.trim());
 
 if (!PROJECT_ID || !DATASET) throw new Error("Missing NEXT_PUBLIC_SANITY_PROJECT_ID / NEXT_PUBLIC_SANITY_DATASET");
 if (!WRITE_TOKEN) throw new Error("Missing SANITY_WRITE_TOKEN (write permission needed)");
@@ -45,6 +51,17 @@ const sanity = createClient({
 });
 
 const CACHE_PATH = path.resolve(".cache/abm-image-upload-cache.json");
+const ABM_IMAGE_HOSTS = new Set(["abmgood.com", "www.abmgood.com", "info.abmgood.com"]);
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const STATIC_ABM_IMAGE_FILES = [
+  "app/products/abm/cellular-materials/cell-library-collections/page.tsx",
+  "app/products/abm/cellular-materials/cell-library-collections/crispr-ko-cell-lines/page.tsx",
+  "app/products/abm/cellular-materials/cell-library-collections/cas9-expressing-cell-lines/page.tsx",
+  "app/products/abm/cellular-materials/cell-library-collections/stem-cell-derived-cells/page.tsx",
+  "app/products/abm/cellular-materials/cell-library-collections/stem-cell-derived-cells/neurological/page.tsx",
+  "app/products/abm/cellular-materials/cell-library-collections/stem-cell-derived-cells/cardiovascular/page.tsx",
+  "components/products/AbmCas9VectorsTableFixClient.tsx",
+];
 
 function readCache() {
   try {
@@ -67,11 +84,17 @@ function normalizeAbmUrl(src, baseUrl = "https://www.abmgood.com") {
   if (!src) return "";
   const s = String(src).trim();
   if (!s) return "";
-  if (s.startsWith("http://") || s.startsWith("https://")) return s;
-  if (s.startsWith("//")) return `https:${s}`;
-  if (s.startsWith("/")) return `${baseUrl}${s}`;
-  // relative like assets/... (rare)
-  return `${baseUrl}/${s.replace(/^\.?\//, "")}`;
+  try {
+    const parsed = new URL(s, baseUrl);
+    if (!ABM_IMAGE_HOSTS.has(parsed.hostname.toLowerCase())) return "";
+    if (!/\/(?:assets\/images|assets\/img|assets\/product\/upload|uploads\/images|hubfs)\//i.test(parsed.pathname)) return "";
+    if (!/\.(?:avif|gif|jpe?g|png|webp)$/i.test(parsed.pathname)) return "";
+    parsed.protocol = "https:";
+    parsed.hash = "";
+    return parsed.toString();
+  } catch {
+    return "";
+  }
 }
 
 async function fetchBinary(url) {
@@ -82,10 +105,15 @@ async function fetchBinary(url) {
       "User-Agent": "itsbio-migrator/1.0",
       Accept: "image/*,*/*;q=0.8",
     },
+    signal: AbortSignal.timeout(30000),
   });
   if (!res.ok) throw new Error(`Fetch failed ${res.status} ${res.statusText}: ${url}`);
   const ct = res.headers.get("content-type") || "";
+  if (!ct.toLowerCase().startsWith("image/")) throw new Error(`Unsupported image response: ${url}`);
+  const expectedBytes = Number.parseInt(res.headers.get("content-length") || "0", 10);
+  if (expectedBytes > MAX_IMAGE_BYTES) throw new Error(`Image exceeds 8 MB: ${url}`);
   const buf = Buffer.from(await res.arrayBuffer());
+  if (buf.length > MAX_IMAGE_BYTES) throw new Error(`Image exceeds 8 MB: ${url}`);
   return { buf, contentType: ct };
 }
 
@@ -117,6 +145,7 @@ async function uploadImageFromUrl(url, cache) {
   const asset = await sanity.assets.upload("image", buf, {
     filename,
     contentType: contentType || undefined,
+    source: { id: u, name: "Official ABM product and category image" },
   });
 
   const out = { assetId: asset._id, assetUrl: asset.url };
@@ -147,16 +176,15 @@ async function migrateDocImages(doc, cache) {
       // 이미 asset 있으면 스킵
       if (hasAsset) continue;
 
-      if (typeof imgUrl === "string" && imgUrl.trim()) {
+      if (typeof imgUrl === "string" && normalizeAbmUrl(imgUrl)) {
         const uploaded = await uploadImageFromUrl(imgUrl.trim(), cache);
         if (uploaded?.assetId) {
           it.image = {
             _type: "image",
             asset: { _type: "reference", _ref: uploaded.assetId },
           };
-          // imageUrl은 남겨둬도 되고(백업), 원하면 지워도 됨
-          // it.imageUrl = uploaded.assetUrl;  // ❌ 이렇게 하면 의미가 "원본 URL"이 아니라서 혼란
-          it.assetUrl = uploaded.assetUrl;    // ✅ 우리가 쓸 URL(안전)
+          it.imageUrl = uploaded.assetUrl;
+          it.assetUrl = uploaded.assetUrl;
           changed = true;
         }
       }
@@ -169,27 +197,24 @@ async function migrateDocImages(doc, cache) {
     const html = typeof b?.html === "string" ? b.html : "";
     if (!html.trim()) continue;
 
-    const $ = cheerio.load(html, { decodeEntities: false });
+    const $ = cheerio.load(html, { decodeEntities: false }, false);
 
     const imgs = $("img").toArray();
     if (!imgs.length) continue;
 
     for (const el of imgs) {
-      const src = $(el).attr("src") || "";
-      const abs = normalizeAbmUrl(src);
+      const src = $(el).attr("src") || $(el).attr("data-src") || $(el).attr("data-original") || "";
+      const abs = normalizeAbmUrl(src, doc?.sourceUrl || "https://www.abmgood.com");
       if (!abs) continue;
-
-      // 이미 sanity cdn이면 스킵
-      if (abs.includes("cdn.sanity.io/images/")) continue;
-
-      // abm 이외도 있을 수 있는데, 원하면 여기서 필터링 가능
-      // if (!abs.includes("abmgood.com")) continue;
-
-      const uploaded = await uploadImageFromUrl(abs, cache);
-      if (uploaded?.assetUrl) {
-        $(el).attr("data-original-src", src);
-        $(el).attr("src", uploaded.assetUrl);
-        changed = true;
+      try {
+        const uploaded = await uploadImageFromUrl(abs, cache);
+        if (uploaded?.assetUrl) {
+          $(el).attr("src", uploaded.assetUrl);
+          $(el).removeAttr("srcset data-srcset data-src data-original");
+          changed = true;
+        }
+      } catch (error) {
+        console.warn(`! IMAGE ${doc._id} ${abs}: ${error?.message || error}`);
       }
     }
 
@@ -201,13 +226,86 @@ async function migrateDocImages(doc, cache) {
   return { changed, contentBlocks };
 }
 
+async function cachePreviouslyManagedImages(cache) {
+  const assets = await sanity.fetch(
+    '*[_type == "sanity.imageAsset" && defined(source.id) && source.id match "*abmgood.com*"]{_id,url,"sourceUrl":source.id}',
+  );
+  for (const asset of assets || []) {
+    const sourceUrl = normalizeAbmUrl(asset?.sourceUrl);
+    if (sourceUrl && asset?._id && asset?.url) {
+      cache.byUrl[sourceUrl] = { assetId: asset._id, assetUrl: asset.url };
+    }
+  }
+}
+
+async function migrateStaticCellImages(cache) {
+  const imageUrls = new Set();
+  for (const filename of STATIC_ABM_IMAGE_FILES) {
+    const source = fs.readFileSync(path.resolve(filename), "utf8");
+    for (const match of source.matchAll(/https:\/\/(?:www\.)?abmgood\.com\/[\w%./-]+\.(?:avif|gif|jpe?g|png|webp)/gi)) {
+      const normalized = normalizeAbmUrl(match[0]);
+      if (normalized) imageUrls.add(normalized);
+    }
+  }
+
+  for (const imageUrl of imageUrls) {
+    try {
+      await uploadImageFromUrl(imageUrl, cache);
+    } catch (error) {
+      console.warn(`! STATIC ${imageUrl}: ${error?.message || error}`);
+    }
+  }
+  console.log(`Static ABM cell illustrations reviewed: ${imageUrls.size}`);
+}
+
+async function migrateSpecialtyProductImages(cache) {
+  const products = await sanity.fetch(`*[
+    _type == "product"
+    && (brandSlug == "abm" || brand._ref == "brand-abm" || brand->slug.current == "abm")
+    && sku match "T*"
+    && (title match "*Cas9*" || title match "*CRISPR*" || title match "*Knockout*" || title match "*Stable*" || title match "*Stem*" || title match "*Cardiomyocyte*" || title match "*Neuron*")
+    && defined(imageUrls)
+  ][0...250]{_id,title,imageUrls,images}`);
+
+  let patched = 0;
+  for (const product of products || []) {
+    const nextUrls = [...(Array.isArray(product.imageUrls) ? product.imageUrls : [])];
+    const nextImages = [...(Array.isArray(product.images) ? product.images : [])];
+    let changed = false;
+
+    for (let index = 0; index < nextUrls.length; index += 1) {
+      const sourceUrl = normalizeAbmUrl(nextUrls[index]);
+      if (!sourceUrl) continue;
+      try {
+        const asset = await uploadImageFromUrl(sourceUrl, cache);
+        if (!asset?.assetId) continue;
+        nextUrls[index] = asset.assetUrl;
+        if (!nextImages.some((image) => image?.asset?._ref === asset.assetId)) {
+          nextImages.push({ _type: "image", _key: sha1(`${product._id}:${asset.assetId}`).slice(0, 12), asset: { _type: "reference", _ref: asset.assetId } });
+        }
+        changed = true;
+      } catch (error) {
+        console.warn(`! PRODUCT ${product._id} ${sourceUrl}: ${error?.message || error}`);
+      }
+    }
+
+    if (changed && !DRY) {
+      await sanity.patch(product._id).set({ imageUrls: nextUrls, images: nextImages }).commit({ autoGenerateArrayKeys: true });
+      patched += 1;
+      console.log(`- PRODUCT ${product._id} (${product.title})`);
+    }
+  }
+  console.log(`Specialty ABM cell products repaired: ${patched}`);
+}
+
 async function main() {
   const cache = readCache();
+  await cachePreviouslyManagedImages(cache);
 
   let docs = [];
   if (ID) {
     const d = await sanity.fetch(
-      `*[_type=="category" && _id==$id][0]{_id,title,contentBlocks}`,
+      `*[_type=="category" && _id==$id][0]{_id,title,sourceUrl,contentBlocks}`,
       { id: ID }
     );
     if (d?._id) docs = [d];
@@ -216,7 +314,7 @@ async function main() {
     docs = await sanity.fetch(
       `*[_type=="category" && (themeKey==$brand || brandKey==$brand || brand->themeKey==$brand || brand->slug.current==$brand)]
       | order(_createdAt asc){
-        _id,title,contentBlocks
+        _id,title,sourceUrl,contentBlocks
       }`,
       { brand: BRAND }
     );
@@ -260,6 +358,11 @@ async function main() {
       console.error(`! FAIL ${d._id} (${d.title})`, e?.message || e);
       // 실패해도 다음 문서 계속
     }
+  }
+
+  if (BRAND === "abm" && !ID) {
+    await migrateStaticCellImages(cache);
+    await migrateSpecialtyProductImages(cache);
   }
 
   writeCache(cache);
