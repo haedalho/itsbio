@@ -79,7 +79,20 @@ export default function NeedAssistance() {
       setForm({ name: "", company: "", field: "", phone: "", dept: "", email: "", stage: "", type: "", message: "" });
     } catch (error) {
       setResult("fail");
-      setErrorMessage(error instanceof Error ? error.message : "Failed to send your message.");
+      const subject = `[ITS BIO] ${form.type || "Website inquiry"} - ${form.name || "New inquiry"}`;
+      const body = [
+        `Name: ${form.name}`,
+        `Company: ${form.company}`,
+        `Field: ${form.field}`,
+        `Phone: ${form.phone}`,
+        `Department: ${form.dept}`,
+        `Email: ${form.email}`,
+        `Inquiry type: ${form.type}`,
+        "",
+        form.message,
+      ].join("\n");
+      window.location.href = `mailto:info@itsbio.co.kr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      setErrorMessage("Direct sending is temporarily unavailable, so your email app has been opened with the message filled in.");
     } finally {
       setLoading(false);
     }

@@ -44,6 +44,10 @@ export default function QuotePage() {
     } catch (err) {
       console.error("Send failed:", err);
       setDone("fail");
+      const subject = `[ITS BIO] Quote request - ${payload.product || payload.name || "New inquiry"}`;
+      const body = [`Name: ${payload.name}`, `Company / Lab: ${payload.org}`, `Email: ${payload.email}`, `Product / Cat No: ${payload.product}`, "", payload.message].join("\n");
+      window.location.href = `mailto:info@itsbio.co.kr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      setErrorMsg("Direct sending is temporarily unavailable. Your email app has been opened with the request filled in.");
     } finally {
       setLoading(false);
     }
