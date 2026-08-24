@@ -73,7 +73,7 @@ const categories = [
   {
     eyebrow: "Specialty",
     title: "Special Cell Line Collections",
-    href: "/products/abm/cellular-materials/special-cell-line-collections",
+    href: "/products/abm/cellular-materials/cell-library-collections/special-cell-line-collection",
     image: "https://www.abmgood.com/assets/images/tinymce/VJNQNC82ZB6xVfHDvAll5qJtOhackLfeA3qeXdiS.png",
   },
 ] as const;
@@ -124,7 +124,9 @@ function SideNav() {
             {cellularSections.map(([label, slug]) => (
               <Link
                 key={slug}
-                href={`/products/abm/cellular-materials/${slug}`}
+                href={slug === "special-cell-line-collections"
+                  ? "/products/abm/cellular-materials/cell-library-collections/special-cell-line-collection"
+                  : `/products/abm/cellular-materials/${slug}`}
                 className="flex items-center justify-between px-2 py-1.5 text-neutral-900 hover:text-[#f15a29]"
               >
                 <span>{label}</span>
