@@ -159,6 +159,39 @@ function signature(input?: unknown) {
     .trim();
 }
 
+function heroSummaryForDisplay(summary: unknown, leadHtml: unknown) {
+  const summaryText = cleanText(summary);
+  if (!summaryText) return "";
+
+  const summarySignature = signature(summaryText);
+  const leadSignature = signature(leadHtml);
+  if (!summarySignature || !leadSignature) return summaryText;
+
+  if (
+    summarySignature.length >= 30 &&
+    (leadSignature === summarySignature || leadSignature.startsWith(`${summarySignature} `))
+  ) {
+    return "";
+  }
+
+  if (summarySignature.length >= 70) {
+    const prefix = summarySignature.slice(0, Math.min(120, summarySignature.length)).trim();
+    if (prefix.length >= 60 && leadSignature.startsWith(prefix)) return "";
+
+    const summaryWords = summarySignature.split(" ");
+    const leadWords = leadSignature.split(" ");
+    const limit = Math.min(summaryWords.length, leadWords.length, 32);
+    let commonWords = 0;
+    while (commonWords < limit && summaryWords[commonWords] === leadWords[commonWords]) {
+      commonWords += 1;
+    }
+    const commonPrefix = summaryWords.slice(0, commonWords).join(" ");
+    if (commonPrefix.length >= 80) return "";
+  }
+
+  return summaryText;
+}
+
 function kentProductSlugFromUrl(input?: unknown) {
   const raw = String(input || "").trim();
   if (!raw) return "";
@@ -422,6 +455,10 @@ export default async function KentProductDetailPage({
 
   const universal = universalProductContent(product, title);
   const leadHtml = official?.leadHtml || universal.leadHtml;
+  const summary = heroSummaryForDisplay(
+    official ? official.summary : product?.summary,
+    leadHtml,
+  );
   const kentSections = hydrateRelatedProductSections(
     sanitizeKentSections(official?.sections || universal.sections) as Section[],
     bundle?.relatedProductPool,
@@ -473,7 +510,7 @@ export default async function KentProductDetailPage({
         <KentProductDetailClient
           slug={product.slug}
           title={title}
-          summary={official ? official.summary : cleanText(product?.summary)}
+          summary={summary}
           sku={official ? official.sku : product?.sku || ""}
           badge={official?.badge}
           leadHtml={leadHtml}
