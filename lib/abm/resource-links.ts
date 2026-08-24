@@ -1,6 +1,6 @@
 const RESOURCE_PAGE_HOSTS = new Set(["info.abmgood.com"]);
 const RESOURCE_IMAGE_HOSTS = new Set(["abmgood.com", "www.abmgood.com", "info.abmgood.com"]);
-const RESOURCE_IMAGE_PATH = /\/(?:assets\/images|assets\/img|uploads\/images|hubfs)\//i;
+const RESOURCE_IMAGE_PATH = /\/(?:assets\/images|assets\/img|assets\/product\/upload|uploads\/images|hubfs)\//i;
 const IMAGE_EXTENSION = /\.(?:avif|gif|jpe?g|png|webp)$/i;
 
 function cleanUrl(rawValue: string) {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
+import { abmResourceImagePath } from "@/lib/abm/resource-links";
 import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 
 
@@ -422,7 +423,7 @@ function normalizeImages(product: AbmProductDocument, title: string) {
     const cleaned = urls.filter((u) => !isGalleryNoiseUrl(u));
     const seen = new Set<string>();
     return cleaned
-      .map((u) => ({ url: u.trim(), alt: title }))
+      .map((u) => ({ url: abmResourceImagePath(u.trim()) || u.trim(), alt: title }))
       .filter((x) => (seen.has(x.url) ? false : (seen.add(x.url), true)));
   }
 

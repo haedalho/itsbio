@@ -1037,10 +1037,15 @@ export default async function AbmProductsPathPage({
   const activePageNode = path.length > 1 ? findTreeNodeByPath(activeRootTree, path) : undefined;
   const childCategoryNodes = path.length === 1 ? activeRootTree : activePageNode?.children || [];
   const isProductListPage = path.length >= 3 || (path.length > 1 && childCategoryNodes.length === 0);
+  const isPrimaryAntibodyPage = pathStr === "general-materials/antibodies/primary-antibodies";
   const stagedProductsInCategory = isProductListPage && ABM_ROOTS.includes(path[0] as (typeof ABM_ROOTS)[number])
-    ? (await getAbmStagedRecords("product")).filter((record) =>
-        abmRecordBelongsToProductPath(record, path, category?.title || humanizeSegment(path.at(-1) || "")),
-      )
+    ? (await getAbmStagedRecords("product")).filter((record) => {
+        if (isPrimaryAntibodyPage) {
+          const antibodyCategory = `${record.searchCategory || ""} ${record.filterTitle || ""}`;
+          return /antibod/i.test(antibodyCategory) && !/secondary/i.test(antibodyCategory);
+        }
+        return abmRecordBelongsToProductPath(record, path, category?.title || humanizeSegment(path.at(-1) || ""));
+      })
     : [];
 
   const stagedKind = path[0] === "products" ? "product" : path[0] === "services" ? "service" : null;
@@ -1387,6 +1392,29 @@ export default async function AbmProductsPathPage({
               </div>
             )}
 
+            {isPrimaryAntibodyPage ? (
+              <form
+                action={`/products/abm/${path.join("/")}`}
+                className="mt-6 flex max-w-2xl flex-wrap items-end gap-3"
+              >
+                <label className="min-w-[220px] flex-1 text-sm font-semibold text-neutral-800">
+                  Search our collection using antibody name or catalog number
+                  <input
+                    name="q"
+                    defaultValue={stagedQuery}
+                    placeholder="Search primary antibodies"
+                    className="mt-2 h-11 w-full border border-neutral-300 bg-white px-3 text-sm font-normal outline-none focus:border-[#f2632f]"
+                  />
+                </label>
+                <button
+                  type="submit"
+                  className="h-11 bg-[#f2632f] px-6 text-sm font-semibold text-white transition hover:bg-[#d95221]"
+                >
+                  Search
+                </button>
+              </form>
+            ) : null}
+
             {stagedProductsInCategory.length && !hasEmbeddedProductTable ? (
               <section className="mt-10" aria-label="ABM product list">
                 <AbmStagedCatalog
@@ -1395,6 +1423,7 @@ export default async function AbmProductsPathPage({
                   query={stagedQuery}
                   page={stagedPage}
                   basePath={`/products/abm/${path.join("/")}`}
+                  hideSearch={isPrimaryAntibodyPage}
                 />
               </section>
             ) : null}

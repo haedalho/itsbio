@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { internalizeAbmHref, isOfficialAbmUrl } from "@/lib/abm/internal-links";
+import { abmResourceImagePath } from "@/lib/abm/resource-links";
 
 type Props = {
   html: string;
@@ -441,11 +442,19 @@ function fixMediaAndLinks(doc: Document, baseUrl: string, internalizeAbm: boolea
 
     // src 절대경로
     const src = (img.getAttribute("src") || "").trim();
-    if (src && baseUrl && !isInternalItsbioMediaUrl(src)) img.setAttribute("src", resolveUrl(src, baseUrl));
+    const resolvedSrc = src && baseUrl && !isInternalItsbioMediaUrl(src) ? resolveUrl(src, baseUrl) : src;
+    const internalImage = internalizeAbm ? abmResourceImagePath(resolvedSrc) : "";
+    if (resolvedSrc) img.setAttribute("src", internalImage || resolvedSrc);
 
     // srcset 절대경로
     const ss = (img.getAttribute("srcset") || "").trim();
-    if (ss && baseUrl) img.setAttribute("srcset", resolveSrcset(ss, baseUrl));
+    if (internalImage) {
+      img.removeAttribute("srcset");
+      img.removeAttribute("data-srcset");
+      img.removeAttribute("data-src");
+    } else if (ss && baseUrl) {
+      img.setAttribute("srcset", resolveSrcset(ss, baseUrl));
+    }
 
     // (가끔 핫링크/리퍼러 이슈 완화용)
     img.setAttribute("referrerpolicy", "no-referrer");
