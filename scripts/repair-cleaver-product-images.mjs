@@ -246,6 +246,8 @@ for (const members of officialFamilies.values()) {
 }
 
 function shouldRepair(row, candidate) {
+  const current = Array.isArray(row?.images) ? row.images[0] : undefined;
+  if (current?.sourceUrl === candidate.image || (candidate.assetRef && current?.asset?._ref === candidate.assetRef)) return false;
   const width = Number(row?.width || 0);
   if (!width) return true;
   if (candidate.width >= 950 && width < 950 && candidate.width > width * 1.15) return true;
@@ -359,7 +361,13 @@ await pooled(repairs, 6, async (candidate) => {
   }
 });
 
-const final = await client.fetch(`{"total":count(*[_type == "product" && migrationKey == $key]),"photographs":count(*[_type == "product" && migrationKey == $key && defined(images[0].asset)]),"lowResolution":count(*[_type == "product" && migrationKey == $key && images[0].asset->metadata.dimensions.width < 1000]),"dna":*[_type == "product" && migrationKey == $key && sku == "CSLDNAKIT1"][0]{"images":count(images),"width":images[0].asset->metadata.dimensions.width},"loadingGuides":*[_type == "product" && migrationKey == $key && sku == "MS7-LG"][0]{"width":images[0].asset->metadata.dimensions.width}}`, { key: MIGRATION_KEY });
+const verificationQuery = `{"total":count(*[_type == "product" && migrationKey == $key]),"photographs":count(*[_type == "product" && migrationKey == $key && defined(images[0].asset)]),"lowResolution":count(*[_type == "product" && migrationKey == $key && images[0].asset->metadata.dimensions.width < 1000]),"dna":*[_type == "product" && migrationKey == $key && sku == "CSLDNAKIT1"][0]{"images":count(images),"width":images[0].asset->metadata.dimensions.width},"loadingGuides":*[_type == "product" && migrationKey == $key && sku == "MS7-LG"][0]{"width":images[0].asset->metadata.dimensions.width}}`;
+let final;
+for (let attempt = 0; attempt < 8; attempt += 1) {
+  final = await client.fetch(verificationQuery, { key: MIGRATION_KEY });
+  if (final.photographs >= 1200 && final.dna?.images && Number(final.loadingGuides?.width || 0) >= 950) break;
+  if (attempt < 7) await new Promise((resolve) => setTimeout(resolve, 1200));
+}
 console.log(JSON.stringify({ published, failures, uploadedManagedAssets: uploaded, before: { photographs: inventory.length - missingBefore, lowResolution: lowBefore }, after: final }));
 if (final.photographs < 1200 || !final.dna?.images || Number(final.loadingGuides?.width || 0) < 950 || failures > Math.max(15, repairs.length * 0.08)) {
   throw new Error(`Cleaver image repair verification failed: ${final.photographs} products, ${failures} failures.`);
