@@ -38,7 +38,15 @@ const PRODUCT_PROJECTION = `{
   documentsHtml,
   highlights,
   specRows[]{label, value},
-  docs[]{title, label, url}
+  docs[]{title, label, url},
+  cleaverContent{
+    sourceUrl,
+    familyId,
+    videos[]{title, url, embedUrl},
+    included[]{sku, title, quantity, href},
+    variants[]{sku, title, href},
+    accessories[]{sku, title, href}
+  }
 }`;
 
 type ProductPage = {
@@ -48,27 +56,49 @@ type ProductPage = {
   pageCount: number;
 };
 
-function localProductPage(path: string[], query: string, requestedPage: number): ProductPage {
+function localProductPage(
+  path: string[],
+  query: string,
+  requestedPage: number,
+): ProductPage {
   const needle = query.trim().toLowerCase();
   const matches = CLEAVER_INVENTORY.filter((product) => {
-    const inCategory = path.every((segment, index) => product.categoryPath[index] === segment);
-    const matchesQuery = !needle || product.title.toLowerCase().includes(needle) || product.sku.toLowerCase().includes(needle);
+    const inCategory = path.every(
+      (segment, index) => product.categoryPath[index] === segment,
+    );
+    const matchesQuery =
+      !needle ||
+      product.title.toLowerCase().includes(needle) ||
+      product.sku.toLowerCase().includes(needle);
     return inCategory && matchesQuery;
   });
   const pageCount = Math.max(1, Math.ceil(matches.length / CLEAVER_PAGE_SIZE));
   const page = Math.min(Math.max(1, requestedPage), pageCount);
   const start = (page - 1) * CLEAVER_PAGE_SIZE;
-  return { products: matches.slice(start, start + CLEAVER_PAGE_SIZE), total: matches.length, page, pageCount };
+  return {
+    products: matches.slice(start, start + CLEAVER_PAGE_SIZE),
+    total: matches.length,
+    page,
+    pageCount,
+  };
 }
 
-export async function getCleaverProductPage(path: string[], query: string, requestedPage = 1): Promise<ProductPage> {
+export async function getCleaverProductPage(
+  path: string[],
+  query: string,
+  requestedPage = 1,
+): Promise<ProductPage> {
   const page = Math.max(1, requestedPage);
   const start = (page - 1) * CLEAVER_PAGE_SIZE;
   const category = path.join("/");
   const match = `*${query.replace(/\*/g, "").trim()}*`;
 
   try {
-    const result = await sanityCdnClient.fetch<{ products?: CleaverProduct[]; total?: number }>(`
+    const result = await sanityCdnClient.fetch<{
+      products?: CleaverProduct[];
+      total?: number;
+    }>(
+      `
       {
         "total": count(*[
           ${CLEAVER_FILTER}
@@ -81,7 +111,16 @@ export async function getCleaverProductPage(path: string[], query: string, reque
           && ($searchTerm == "" || title match $match || sku match $match)
         ] | order(order asc, title asc)[$start...$end] ${PRODUCT_PROJECTION}
       }
-    `, { category, searchTerm: query, match, start, end: start + CLEAVER_PAGE_SIZE }, CLEAVER_CATALOG_CACHE);
+    `,
+      {
+        category,
+        searchTerm: query,
+        match,
+        start,
+        end: start + CLEAVER_PAGE_SIZE,
+      },
+      CLEAVER_CATALOG_CACHE,
+    );
 
     const total = Number(result?.total || 0);
     if (total > 0) {
@@ -93,46 +132,70 @@ export async function getCleaverProductPage(path: string[], query: string, reque
       };
     }
   } catch (error) {
-    console.error("Unable to load Cleaver catalog from Sanity:", error instanceof Error ? error.message : error);
+    console.error(
+      "Unable to load Cleaver catalog from Sanity:",
+      error instanceof Error ? error.message : error,
+    );
   }
 
   return localProductPage(path, query, requestedPage);
 }
 
-export const getCleaverProduct = cache(async (slugOrSku: string): Promise<CleaverProduct | null> => {
-  const local = findLocalCleaverProduct(slugOrSku);
+export const getCleaverProduct = cache(
+  async (slugOrSku: string): Promise<CleaverProduct | null> => {
+    const local = findLocalCleaverProduct(slugOrSku);
 
-  try {
-    const product = await sanityCdnClient.fetch<CleaverProduct | null>(`
+    try {
+      const product = await sanityCdnClient.fetch<CleaverProduct | null>(
+        `
       *[${CLEAVER_FILTER} && (slug.current == $slug || lower(sku) == lower($slug))][0] ${PRODUCT_PROJECTION}
-    `, { slug: decodeURIComponent(slugOrSku) }, CLEAVER_CATALOG_CACHE);
-    if (product) {
-      const categoryPath = Array.isArray(product.categoryPath) && product.categoryPath.length ? product.categoryPath : local?.categoryPath || [];
-      return {
-        ...local,
-        ...product,
-        categoryPath,
-        categoryPathTitles: product.categoryPathTitles?.length ? product.categoryPathTitles : cleaverCategoryTitles(categoryPath),
-      };
+    `,
+        { slug: decodeURIComponent(slugOrSku) },
+        CLEAVER_CATALOG_CACHE,
+      );
+      if (product) {
+        const categoryPath =
+          Array.isArray(product.categoryPath) && product.categoryPath.length
+            ? product.categoryPath
+            : local?.categoryPath || [];
+        return {
+          ...local,
+          ...product,
+          categoryPath,
+          categoryPathTitles: product.categoryPathTitles?.length
+            ? product.categoryPathTitles
+            : cleaverCategoryTitles(categoryPath),
+        };
+      }
+    } catch (error) {
+      console.error(
+        "Unable to load Cleaver product from Sanity:",
+        error instanceof Error ? error.message : error,
+      );
     }
-  } catch (error) {
-    console.error("Unable to load Cleaver product from Sanity:", error instanceof Error ? error.message : error);
-  }
 
-  return local || null;
-});
+    return local || null;
+  },
+);
 
 export async function getCleaverCategoryCovers() {
   try {
-    const rows = await sanityCdnClient.fetch<Array<{ category?: string; image?: string }>>(`
+    const rows = await sanityCdnClient.fetch<
+      Array<{ category?: string; image?: string }>
+    >(
+      `
       *[${CLEAVER_FILTER} && defined(images[0].asset->url)] | order(order asc)[0...500]{
         "category": categoryPath[0],
         "image": images[0].asset->url
       }
-    `, {}, CLEAVER_CATALOG_CACHE);
+    `,
+      {},
+      CLEAVER_CATALOG_CACHE,
+    );
     const covers: Record<string, string> = {};
     for (const row of Array.isArray(rows) ? rows : []) {
-      if (row.category && row.image && !covers[row.category]) covers[row.category] = row.image;
+      if (row.category && row.image && !covers[row.category])
+        covers[row.category] = row.image;
     }
     return covers;
   } catch {
@@ -144,11 +207,22 @@ export async function getCleaverShowcase() {
   const featured = ["MSMINI10", "POWERPRO300", "CVS10DSYS", "MSMAXI10"];
 
   try {
-    const rows = await sanityCdnClient.fetch<CleaverProduct[]>(`
+    const rows = await sanityCdnClient.fetch<CleaverProduct[]>(
+      `
       *[${CLEAVER_FILTER} && sku in $featured && defined(images[0].asset->url)] ${PRODUCT_PROJECTION}
-    `, { featured }, CLEAVER_CATALOG_CACHE);
-    const bySku = new Map((Array.isArray(rows) ? rows : []).map((product) => [product.sku, product]));
-    return featured.map((sku) => bySku.get(sku)).filter((product): product is CleaverProduct => Boolean(product));
+    `,
+      { featured },
+      CLEAVER_CATALOG_CACHE,
+    );
+    const bySku = new Map(
+      (Array.isArray(rows) ? rows : []).map((product) => [
+        product.sku,
+        product,
+      ]),
+    );
+    return featured
+      .map((sku) => bySku.get(sku))
+      .filter((product): product is CleaverProduct => Boolean(product));
   } catch {
     return [];
   }
