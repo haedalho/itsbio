@@ -4,10 +4,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
+import QuoteTriggerButton from "@/components/site/QuoteTriggerButton";
 import { abmResourceImagePath } from "@/lib/abm/resource-links";
 import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 
 
+import AbmCatalogSideNav from "@/components/products/AbmCatalogSideNav";
+import AbmHeroBanner from "@/components/products/AbmHeroBanner";
 import ProductGalleryClient from "@/components/products/ProductGalleryClient";
 import ProductTabsClient from "@/components/products/ProductTabs";
 
@@ -136,6 +139,8 @@ const ITEM_PAGE_QUERY = `
     title,
     "slug": slug.current,
     sku,
+    unit,
+    storage,
     sourceUrl,
     categoryPath,
     categoryPathTitles,
@@ -200,8 +205,11 @@ type AbmProductDocument = {
   title?: string;
   slug: string;
   sku?: string;
+  unit?: string;
+  storage?: string;
   sourceUrl?: string;
   categoryPath?: string[];
+  categoryPathTitles?: string[];
   specsHtml?: string;
   extraHtml?: string;
   legacyHtml?: string;
@@ -438,6 +446,23 @@ function normalizeImages(product: AbmProductDocument, title: string) {
   return out.filter((x) => (seen.has(x.url) ? false : (seen.add(x.url), true)));
 }
 
+function specificationValue(html: string, labels: string[]) {
+  const acceptedLabels = new Set(labels.map((label) => label.toLowerCase()));
+  const rows = html.match(/<tr\b[^>]*>[\s\S]*?<\/tr>/gi) || [];
+
+  for (const row of rows) {
+    const cells = Array.from(row.matchAll(/<t[dh]\b[^>]*>([\s\S]*?)<\/t[dh]>/gi))
+      .map((cell) => decodeHtmlEntities(cell[1]
+        .replace(/<(?:br|\/p|\/div)\b[^>]*>/gi, " ")
+        .replace(/<[^>]*>/g, ""))
+        .replace(/\s+/g, " ")
+        .trim());
+    if (cells.length >= 2 && acceptedLabels.has(cells[0].toLowerCase())) return cells[1];
+  }
+
+  return "";
+}
+
 /** -------------------- Hero -------------------- */
 function HeroBanner({ brandTitle }: { brandTitle: string }) {
   return (
@@ -489,24 +514,31 @@ export default async function AbmProductDetailPage({
   const product = bundle?.product;
   if (!product?._id) notFound();
 
-  const categoryPath: string[] = Array.isArray(product?.categoryPath) ? product.categoryPath : [];
+  const title = stripBrandSuffix(product?.title || "");
+  const catNo = decodeHtmlEntities((product?.sku || "").trim());
+  const isCas9CellProduct = /^T\d/i.test(catNo) && /cas9/i.test(title);
+  const savedCategoryPath: string[] = Array.isArray(product?.categoryPath) ? product.categoryPath : [];
+  const categoryPath = savedCategoryPath.length
+    ? savedCategoryPath
+    : isCas9CellProduct
+      ? ["cellular-materials", "cell-library-collections", "cas9-expressing-cell-lines"]
+      : [];
   const activeRoot = categoryPath[0] || "";
 
   // Fetch only navigation categories after the product reveals its active root.
   // The former implementation downloaded the complete product document twice.
-  const data2 = await sanityCdnClient.fetch<AbmItemBundle>(NAV_QUERY, {
-    brandKey,
-    isAbm: brandKey === "abm",
-    abmRoots: ABM_ROOTS,
-    hasActiveRoot: !!activeRoot,
-    activeRoot,
-  }, PUBLIC_CATALOG_CACHE);
+  const data2 = isCas9CellProduct
+    ? {}
+    : await sanityCdnClient.fetch<AbmItemBundle>(NAV_QUERY, {
+        brandKey,
+        isAbm: brandKey === "abm",
+        abmRoots: ABM_ROOTS,
+        hasActiveRoot: !!activeRoot,
+        activeRoot,
+      }, PUBLIC_CATALOG_CACHE);
 
   const roots: CatLite[] = Array.isArray(data2?.roots) ? data2.roots : [];
   const descendants: CatLite[] = Array.isArray(data2?.descendants) ? data2.descendants : [];
-
-  const title = stripBrandSuffix(product?.title || "");
-  const catNo = decodeHtmlEntities((product?.sku || "").trim());
 
   const categoryHref = buildHref(brandKey, categoryPath);
 
@@ -559,6 +591,92 @@ export default async function AbmProductDetailPage({
         })
         .filter(Boolean)
     : [];
+
+  if (isCas9CellProduct) {
+    const unit = product.unit || specificationValue(specsHtml, ["Unit"]);
+    const storage = product.storage || specificationValue(specsHtml, ["Storage", "Storage Condition"]);
+    const hasGallery = images.length > 0;
+    const quoteProduct = `${title}${catNo ? ` — Cat. No. ${catNo}` : ""}`;
+    const infoRowClass = hasGallery
+      ? "grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"
+      : "grid grid-cols-[120px_1fr] gap-3 border-b border-orange-50 py-4 text-sm last:border-b-0";
+
+    return (
+      <div className="bg-white">
+        <AbmHeroBanner title={title} eyebrow="ABM product" />
+        <div className="border-b border-neutral-200 bg-neutral-50">
+          <div className="mx-auto max-w-[1320px] px-6 py-4">
+            <Breadcrumb items={[
+              { label: "Home", href: "/" },
+              { label: "Products", href: "/products" },
+              { label: "ABM", href: "/products/abm" },
+              { label: title, href: `/products/abm/item/${encodeURIComponent(product.slug)}` },
+            ]} />
+          </div>
+        </div>
+
+        <main className="mx-auto max-w-[1320px] px-6 py-10">
+          <div className="grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[296px_minmax(0,1fr)]">
+            <aside className="self-start lg:sticky lg:top-24">
+              <AbmCatalogSideNav mode="product" activeProductRoot="cellular-materials" />
+            </aside>
+
+            <section className="min-w-0">
+              <h1 className="max-w-4xl text-3xl font-bold leading-tight tracking-tight text-neutral-950">{title}</h1>
+
+              <div className={[
+                "mt-6 grid gap-8 border-t border-neutral-200 pt-7",
+                hasGallery ? "md:grid-cols-[minmax(0,1fr)_400px]" : "grid-cols-1",
+              ].join(" ")}>
+                {hasGallery ? (
+                  <div className="min-h-[320px]">
+                    <ProductGalleryClient images={images} title={title} />
+                  </div>
+                ) : null}
+
+                <aside className={`self-start overflow-hidden rounded-xl border-2 border-[#f2632f] bg-white ${hasGallery ? "" : "w-full"}`}>
+                  <div className="border-b border-orange-100 px-6 py-4">
+                    <h2 className="text-lg font-semibold text-[#dc5a2b]">Product Information</h2>
+                  </div>
+
+                  <div className={hasGallery ? "" : "md:grid md:grid-cols-[minmax(0,1.35fr)_minmax(280px,.65fr)]"}>
+                    <dl className={hasGallery ? "px-6 py-2" : "px-6 py-3 md:border-r md:border-orange-100 md:px-7"}>
+                      {catNo ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Cat. No.</dt><dd className="font-medium text-slate-700">{catNo}</dd></div> : null}
+                      {unit ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Unit</dt><dd className="text-slate-700">{unit}</dd></div> : null}
+                      <div className={infoRowClass}><dt className="font-semibold text-slate-900">Category</dt><dd className="text-slate-700">Cas9 Expressing Cell Lines</dd></div>
+                      {storage ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Storage</dt><dd className="text-slate-700">{storage}</dd></div> : null}
+                    </dl>
+
+                    <div className={hasGallery ? "border-t border-orange-100 p-5" : "bg-orange-50/35 p-6 md:flex md:flex-col md:justify-center"}>
+                      <p className="mb-4 text-sm leading-6 text-slate-600">For availability, lead time, and technical questions, contact ITS BIO.</p>
+                      <QuoteTriggerButton
+                        product={quoteProduct}
+                        className="inline-flex w-full items-center justify-center bg-[#f2632f] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#d95221]"
+                      />
+                      <Link href="/contact" className="mt-3 inline-flex w-full items-center justify-center border border-[#f2632f] bg-white px-4 py-3 text-sm font-semibold text-[#dc5a2b] transition hover:bg-orange-50">Contact ITS BIO</Link>
+                    </div>
+                  </div>
+                </aside>
+              </div>
+
+              <div className="mt-10 itsbio-product-tabs">
+                <ProductTabsClient
+                  specsHtml={specsHtml}
+                  datasheetHtml={datasheetHtml}
+                  documentsHtml={documentsHtml}
+                  faqsHtml={faqsHtml}
+                  referencesHtml={referencesHtml}
+                  reviewsHtml={reviewsHtml}
+                  documents={documents.filter((document): document is { url: string; label: string } => Boolean(document))}
+                  sourceUrl={openOriginalUrl}
+                />
+              </div>
+            </section>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div>
