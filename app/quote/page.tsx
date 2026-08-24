@@ -22,7 +22,9 @@ export default function QuotePage() {
       email: String(form.get("email") ?? ""),
       product: String(form.get("product") ?? ""),
       message: String(form.get("message") ?? ""),
-      sourcePage: typeof window !== "undefined" ? window.location.href : "",
+      privacyAccepted: form.get("privacyAccepted") === "on",
+      website: String(form.get("website") ?? ""),
+      sourceUrl: typeof window !== "undefined" ? window.location.href : "",
     };
 
     try {
@@ -31,7 +33,7 @@ export default function QuotePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const data = await res.json().catch(() => ({} as any));
+      const data = await res.json().catch(() => ({} as { ok?: boolean; error?: string }));
       if (!res.ok || data.ok !== true) {
         const msg = data?.error || `Request failed (status ${res.status})`;
         setErrorMsg(msg);
@@ -80,6 +82,15 @@ export default function QuotePage() {
             <input name="email" type="email" className={`${fieldClass} mt-3`} placeholder="Email *" required />
             <input name="product" className={`${fieldClass} mt-3`} placeholder="Product name / Catalog No." />
             <textarea name="message" className="mt-3 min-h-[150px] w-full resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-50" placeholder="Message *" required />
+            <input name="website" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />
+
+            <label className="mt-4 flex items-start gap-2 text-xs leading-5 text-slate-600">
+              <input name="privacyAccepted" type="checkbox" required className="mt-1 accent-orange-600" />
+              <span>
+                I agree to the collection and use of my information for quotation and inquiry handling. See the{" "}
+                <a href="/privacy" className="font-medium text-slate-900 underline underline-offset-2">Privacy Policy</a>.
+              </span>
+            </label>
 
             <button type="submit" disabled={loading} className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-xl bg-orange-600 px-5 text-sm font-semibold text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-60">
               {loading ? "Sending..." : "Send request"}
