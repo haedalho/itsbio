@@ -52,10 +52,20 @@ function normalizeImageUrl(value) {
 async function fetchPublic(url, accept = "application/json,text/html;q=0.9,*/*;q=0.8") {
   const parsed = new URL(url);
   if (parsed.protocol !== "https:" || !SOURCE_HOSTS.has(parsed.hostname)) throw new Error(`Unapproved Cleaver image source: ${url}`);
-  const response = await fetch(parsed, { headers: { Accept: accept }, signal: AbortSignal.timeout(45_000), redirect: "follow" });
-  if (response.status === 401 || response.status === 403) throw new Error(`Public Cleaver catalog access denied (HTTP ${response.status}): ${parsed.hostname}`);
-  if (!response.ok) throw new Error(`Public Cleaver catalog returned HTTP ${response.status}: ${parsed.hostname}`);
-  return response;
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const response = await fetch(parsed, { headers: { Accept: accept }, signal: AbortSignal.timeout(45_000), redirect: "follow" });
+    if (response.status === 401 || response.status === 403) throw new Error(`Public Cleaver catalog access denied (HTTP ${response.status}): ${parsed.hostname}`);
+    if (response.status === 429 && attempt < 4) {
+      const requestedWait = Number.parseInt(response.headers.get("retry-after") || "0", 10) * 1000;
+      const wait = Math.min(30_000, Math.max(requestedWait || 0, 1200 * (2 ** attempt)));
+      console.warn(`[Cleaver images] respecting ${parsed.hostname} rate limit for ${wait}ms`);
+      await new Promise((resolve) => setTimeout(resolve, wait));
+      continue;
+    }
+    if (!response.ok) throw new Error(`Public Cleaver catalog returned HTTP ${response.status}: ${parsed.hostname}`);
+    return response;
+  }
+  throw new Error(`Public Cleaver catalog remained rate-limited: ${parsed.hostname}`);
 }
 
 async function pooled(items, limit, worker) {
@@ -110,7 +120,7 @@ async function collectShopifySource({ name, origin, vendor, pages, acceptTags })
 
   let accepted = 0;
   let failures = 0;
-  await pooled([...handles], 8, async (handle) => {
+  await pooled([...handles], acceptTags ? 3 : 6, async (handle) => {
     try {
       const page = `${origin}/products/${handle}`;
       const product = await (await fetchPublic(`${page}.js`)).json();
