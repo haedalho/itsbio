@@ -83,6 +83,8 @@ export default function FloatingQuoteButton() {
       email: String(form.get("email") ?? ""),
       product: String(form.get("product") ?? ""),
       message: String(form.get("message") ?? ""),
+      privacyAccepted: form.get("privacyAccepted") === "on",
+      website: String(form.get("website") ?? ""),
       sourceUrl: window.location.href,
     };
 
@@ -182,6 +184,15 @@ export default function FloatingQuoteButton() {
                 className="w-full resize-y rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
                 placeholder="Message *"
               />
+
+              <input name="website" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />
+              <label className="flex items-start gap-2 text-xs leading-5 text-slate-600">
+                <input name="privacyAccepted" type="checkbox" required className="mt-1 accent-orange-600" />
+                <span>
+                  I agree to the use of my information for this inquiry. See the{" "}
+                  <a href="/privacy" className="font-medium text-slate-900 underline underline-offset-2">Privacy Policy</a>.
+                </span>
+              </label>
 
               <button
                 type="submit"

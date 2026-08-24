@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 const QUICK_LINKS = [
   {
@@ -31,6 +31,10 @@ const QUICK_LINKS = [
 ];
 
 export default function NeedAssistance() {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<null | "ok" | "fail">(null);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [form, setForm] = useState({
     name: "",
     company: "",
@@ -43,25 +47,43 @@ export default function NeedAssistance() {
     message: "",
   });
 
-  const mailto = useMemo(() => {
-    const subject = `[ITS BIO] Online Message - ${form.name || "New Inquiry"}`;
-    const body = [
-      `Name: ${form.name}`,
-      `Company: ${form.company}`,
-      `Field: ${form.field}`,
-      `Phone: ${form.phone}`,
-      `Department: ${form.dept}`,
-      `Email: ${form.email}`,
-      `Stage: ${form.stage}`,
-      `Type: ${form.type}`,
-      "",
-      "Message:",
-      form.message,
-    ].join("\n");
-    return `mailto:info@itsbio.co.kr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
-      body
-    )}`;
-  }, [form]);
+  async function submitMessage(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLoading(true);
+    setResult(null);
+    setErrorMessage("");
+
+    try {
+      const response = await fetch("/api/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          org: form.company,
+          field: form.field,
+          phone: form.phone,
+          department: form.dept,
+          email: form.email,
+          inquiryType: form.type,
+          message: form.message,
+          privacyAccepted,
+          sourceUrl: window.location.href,
+          website: "",
+        }),
+      });
+      const data = await response.json().catch(() => ({} as { ok?: boolean; error?: string }));
+      if (!response.ok || data.ok !== true) throw new Error(data.error || "Failed to send your message.");
+
+      setResult("ok");
+      setPrivacyAccepted(false);
+      setForm({ name: "", company: "", field: "", phone: "", dept: "", email: "", stage: "", type: "", message: "" });
+    } catch (error) {
+      setResult("fail");
+      setErrorMessage(error instanceof Error ? error.message : "Failed to send your message.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     // ✅ 아래쪽 여백을 섹션 자체에 추가해서 "NeedAssistance와 페이지 하단"이 딱 붙는 문제 해결
@@ -148,7 +170,7 @@ export default function NeedAssistance() {
                 <div className="text-xs text-white/50">Send to info@itsbio.co.kr</div>
               </div>
 
-              <div className="mt-4 grid gap-3">
+              <form onSubmit={submitMessage} className="mt-4 grid gap-3">
                 <div className="grid grid-cols-2 gap-3">
                   <Input placeholder="Name" value={form.name} onChange={(v) => setForm((p) => ({ ...p, name: v }))} />
                   <Input
@@ -194,17 +216,31 @@ export default function NeedAssistance() {
 
                 <Textarea placeholder="Message" value={form.message} onChange={(v) => setForm((p) => ({ ...p, message: v }))} />
 
-                <a
-                  href={mailto}
-                  className="mt-1 inline-flex h-11 items-center justify-center rounded-xl bg-orange-600 px-4 text-sm font-semibold text-white transition hover:bg-orange-700"
-                >
-                  Send
-                </a>
+                <label className="flex items-start gap-2 text-xs leading-5 text-white/65">
+                  <input
+                    type="checkbox"
+                    checked={privacyAccepted}
+                    onChange={(event) => setPrivacyAccepted(event.target.checked)}
+                    required
+                    className="mt-1 accent-orange-600"
+                  />
+                  <span>
+                    I agree to the collection and use of my information for this inquiry. See the{" "}
+                    <a href="/privacy" className="underline underline-offset-2 hover:text-white">Privacy Policy</a>.
+                  </span>
+                </label>
 
-                <div className="text-xs text-white/50">
-                  * For now this opens your email app (mailto). Later we can connect it to a DB/API.
-                </div>
-              </div>
+                <button
+                  type="submit"
+                  disabled={loading || !privacyAccepted || !form.email.trim() || !form.message.trim()}
+                  className="mt-1 inline-flex h-11 items-center justify-center rounded-xl bg-orange-600 px-4 text-sm font-semibold text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {loading ? "Sending..." : "Send"}
+                </button>
+
+                {result === "ok" ? <div className="rounded-xl bg-emerald-500/15 p-3 text-xs text-emerald-200">Your message has been sent. We will contact you soon.</div> : null}
+                {result === "fail" ? <div className="rounded-xl bg-red-500/15 p-3 text-xs text-red-200">{errorMessage || "Could not send. Please email info@itsbio.co.kr."}</div> : null}
+              </form>
             </div>
           </div>
         </div>
