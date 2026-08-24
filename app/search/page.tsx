@@ -8,6 +8,7 @@ import {
   type AbmStagedRecord,
 } from "@/lib/abm/rebuild-staging";
 import { OFFICIAL_ABM_CELL_MODEL_PRODUCTS } from "@/lib/abm/cell-model-data";
+import { cleaverProductHref, findLocalCleaverProduct, searchLocalCleaverProducts } from "@/lib/cleaver/catalog";
 import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 
 export const revalidate = 300;
@@ -62,9 +63,9 @@ const FIND_EXACT_CATALOG_NUMBER = `
   _type == "product"
   && (!defined(isActive) || isActive == true)
   && (
-    brandSlug in ["abm", "kent"]
-    || brand->slug.current in ["abm", "kent"]
-    || brand->themeKey in ["abm", "kent"]
+    brandSlug in ["abm", "kent", "cleaver", "cleaverscientific"]
+    || brand->slug.current in ["abm", "kent", "cleaver", "cleaverscientific"]
+    || brand->themeKey in ["abm", "kent", "cleaver", "cleaverscientific"]
   )
   && (
     lower(sku) == lower($catalogNumber)
@@ -125,6 +126,7 @@ const BRAND_ALIASES: Record<string, { key: string; label: string }> = {
   aims: { key: "aims", label: "AIMS" },
   seedburo: { key: "seedburo", label: "SeedBuro" },
   bioplastics: { key: "bioplastics", label: "BIOplastics" },
+  cleaver: { key: "cleaverscientific", label: "Cleaver Scientific" },
   cleaverscientific: { key: "cleaverscientific", label: "Cleaver Scientific" },
   cellfreesciences: { key: "cellfreesciences", label: "CellFree Sciences" },
   plaslabs: { key: "plaslabs", label: "PLAS-LABS" },
@@ -183,6 +185,9 @@ function exactCatalogHref(doc: ExactCatalogMatch) {
   if (brandKey === "abm" || brandKey === "appliedbiologicalmaterials") {
     return `/products/abm/item/${encodeURIComponent(doc.slug)}`;
   }
+  if (brandKey === "cleaver" || brandKey === "cleaverscientific") {
+    return `/products/cleaver/item/${encodeURIComponent(doc.slug)}`;
+  }
   return "";
 }
 
@@ -207,6 +212,7 @@ function liveResultHref(row: LiveSearchRow, brandKey: string) {
   const slug = stringValue(row.slug);
   if (slug && brandKey === "abm") return { href: `/products/abm/item/${encodeURIComponent(slug)}`, direct: true };
   if (slug && brandKey === "kent") return { href: `/products/kent/item/${encodeURIComponent(slug)}`, direct: true };
+  if (slug && (brandKey === "cleaver" || brandKey === "cleaverscientific")) return { href: `/products/cleaver/item/${encodeURIComponent(slug)}`, direct: true };
 
   const title = stringValue(row.title);
   return {
@@ -346,6 +352,16 @@ export default async function SearchPage({
       .filter(Boolean);
     exactTargets.push(...kentTargets);
 
+    const cleaverTargets = (Array.isArray(exactDocs) ? exactDocs : [])
+      .filter((doc) => normalizeBrandToken(String(doc.brandKey || "")).startsWith("cleaver"))
+      .map(exactCatalogHref)
+      .filter(Boolean);
+    exactTargets.push(...cleaverTargets);
+    if (!cleaverTargets.length) {
+      const localCleaver = findLocalCleaverProduct(catalogNumber);
+      if (localCleaver) exactTargets.push(cleaverProductHref(localCleaver));
+    }
+
     if (stagedProduct) exactTargets.push(stagedRecordPath("product", stagedProduct));
     if (stagedService) exactTargets.push(stagedRecordPath("service", stagedService));
 
@@ -392,6 +408,21 @@ export default async function SearchPage({
       kind: "Product",
       direct: target.direct,
       score: scoreMatch(title, sku, q),
+    });
+  }
+
+  for (const row of searchLocalCleaverProducts(q)) {
+    results.push({
+      id: row._id,
+      title: row.title,
+      sku: row.sku,
+      description: row.categoryPathTitles.at(-1),
+      brandKey: "cleaverscientific",
+      brandLabel: "Cleaver Scientific",
+      href: cleaverProductHref(row),
+      kind: "Product",
+      direct: true,
+      score: scoreMatch(row.title, row.sku, q),
     });
   }
 

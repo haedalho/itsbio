@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 
 import { OFFICIAL_ABM_CELL_MODEL_PRODUCTS } from "@/lib/abm/cell-model-data";
 import { ABM_REBUILD_VERSION, stagedRecordPath, type AbmStagedRecord } from "@/lib/abm/rebuild-staging";
+import { CLEAVER_CATEGORIES, CLEAVER_INVENTORY, cleaverProductHref } from "@/lib/cleaver/catalog";
 import { absoluteSiteUrl } from "@/lib/site-url";
 import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 
@@ -41,6 +42,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   for (const row of kentProducts) if (row.slug) entries.push({ url: absoluteSiteUrl(`/products/kent/item/${encodeURIComponent(row.slug)}`), lastModified: row.updatedAt, changeFrequency: "monthly", priority: 0.7 });
+  for (const category of CLEAVER_CATEGORIES) {
+    entries.push({ url: absoluteSiteUrl(`/products/cleaver/${category.slug}`), changeFrequency: "monthly", priority: 0.7 });
+    for (const child of category.children) entries.push({ url: absoluteSiteUrl(`/products/cleaver/${category.slug}/${child.slug}`), changeFrequency: "monthly", priority: 0.7 });
+  }
+  for (const product of CLEAVER_INVENTORY) entries.push({ url: absoluteSiteUrl(cleaverProductHref(product)), changeFrequency: "monthly", priority: 0.7 });
   for (const row of notices) if (row.slug) entries.push({ url: absoluteSiteUrl(`/notice/${encodeURIComponent(row.slug)}`), lastModified: row.updatedAt, changeFrequency: "monthly", priority: 0.5 });
   for (const row of promotions) if (row.slug) entries.push({ url: absoluteSiteUrl(`/promotions/${encodeURIComponent(row.slug)}`), lastModified: row.updatedAt, changeFrequency: "weekly", priority: 0.6 });
 

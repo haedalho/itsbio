@@ -1,0 +1,7162 @@
+[
+  {
+    "sku": "MSMINI7",
+    "title": "multiSUB Mini with 7 x 7cm Gel tray",
+    "order": 0
+  },
+  {
+    "sku": "MSMINI10",
+    "title": "multiSUB Mini with 7 x 10cm Gel tray",
+    "order": 1
+  },
+  {
+    "sku": "MSMINIDUO",
+    "title": "multiSUB Mini with 7 x 7cm & 7 x 10cm Gel tray",
+    "order": 2
+  },
+  {
+    "sku": "MINIAGAROSEPACK",
+    "title": "Complete Mini agarose gel kit with reagents",
+    "order": 3
+  },
+  {
+    "sku": "MINIAGAROSEPACK500",
+    "title": "Complete Mini agarose gel kit with reagents w/PP500",
+    "order": 4
+  },
+  {
+    "sku": "MS7-UV7",
+    "title": "multiSUB Mini - 7 x 7cm Gel tray",
+    "order": 5
+  },
+  {
+    "sku": "MS7-UV10",
+    "title": "multiSUB Mini - 7 x 10cm Gel tray",
+    "order": 6
+  },
+  {
+    "sku": "MS7-UVDAM",
+    "title": "multiSUB Mini - Gel tray Dams",
+    "order": 7
+  },
+  {
+    "sku": "MS7-PE",
+    "title": "multiSUB Mini - Positive Electrode",
+    "order": 8
+  },
+  {
+    "sku": "MS7-NE",
+    "title": "multiSUB Mini - Negative Electrode",
+    "order": 9
+  },
+  {
+    "sku": "MS7-LG",
+    "title": "multiSUB Mini - Loading Guides",
+    "order": 10
+  },
+  {
+    "sku": "MS7-WP",
+    "title": "multiSUB Mini - Viewing Platform",
+    "order": 11
+  },
+  {
+    "sku": "MSMINICP",
+    "title": "multiSUB Mini - Cool-pack and platform",
+    "order": 12
+  },
+  {
+    "sku": "MSMINIBSB",
+    "title": "multiSUB Mini Buffer Saver Blocks",
+    "order": 13
+  },
+  {
+    "sku": "MS7/10-FC",
+    "title": "multiSUB Mini/Midi Flexi caster",
+    "order": 14
+  },
+  {
+    "sku": "MS7-UVS",
+    "title": "multiSUB Mini - 7cm UV Gel Scoop",
+    "order": 15
+  },
+  {
+    "sku": "MS7-1-0.75",
+    "title": "multiSUB Mini Comb, Prep 1, Marker 1, 0.75mm thick",
+    "order": 16
+  },
+  {
+    "sku": "MS7-2-0.75",
+    "title": "multiSUB Mini Comb, Prep 2, Marker 2, 0.75mm thick",
+    "order": 17
+  },
+  {
+    "sku": "MS7-4-0.75",
+    "title": "multiSUB Mini Comb, Prep 4, Marker 2, 0.75mm thick",
+    "order": 18
+  },
+  {
+    "sku": "MS7-8-0.75",
+    "title": "multiSUB Mini Comb, 8 sample, 0.75mm thick",
+    "order": 19
+  },
+  {
+    "sku": "MS7-10-0.75",
+    "title": "multiSUB Mini Comb, 10 sample, 0.75mm thick",
+    "order": 20
+  },
+  {
+    "sku": "MS7-12-0.75",
+    "title": "multiSUB Mini Comb, 12 sample, 0.75mm thick",
+    "order": 21
+  },
+  {
+    "sku": "MS7-16-0.75",
+    "title": "multiSUB Mini Comb, 16 sample, 0.75mm thick",
+    "order": 22
+  },
+  {
+    "sku": "MS7-1-1",
+    "title": "multiSUB Mini Comb, Prep 1, Marker 1, 1mm thick",
+    "order": 23
+  },
+  {
+    "sku": "MS7-2-1",
+    "title": "multiSUB Mini Comb, Prep 2, Marker 2, 1mm thick",
+    "order": 24
+  },
+  {
+    "sku": "MS7-4-1",
+    "title": "multiSUB Mini Comb, Prep 4, Marker 2, 1mm thick",
+    "order": 25
+  },
+  {
+    "sku": "MS7-8-1",
+    "title": "multiSUB Mini Comb, 8 sample, 1mm thick",
+    "order": 26
+  },
+  {
+    "sku": "MS7-10-1",
+    "title": "multiSUB Mini Comb, 10 sample, 1mm thick",
+    "order": 27
+  },
+  {
+    "sku": "MS7-12-1",
+    "title": "multiSUB Mini Comb, 12 sample, 1mm thick",
+    "order": 28
+  },
+  {
+    "sku": "MS7-16-1",
+    "title": "multiSUB Mini Comb, 16 sample, 1mm thick",
+    "order": 29
+  },
+  {
+    "sku": "MS7-1-1.5",
+    "title": "multiSUB Mini Comb, Prep 1, Marker 1, 1.5mm thick",
+    "order": 30
+  },
+  {
+    "sku": "MS7-2-1.5",
+    "title": "multiSUB Mini Comb, Prep 2, Marker 2, 1.5mm thick",
+    "order": 31
+  },
+  {
+    "sku": "MS7-4-1.5",
+    "title": "multiSUB Mini Comb, Prep 4, Marker 2, 1.5mm thick",
+    "order": 32
+  },
+  {
+    "sku": "MS7-8-1.5",
+    "title": "multiSUB Mini Comb, 8 sample, 1.5mm thick",
+    "order": 33
+  },
+  {
+    "sku": "MS7-10-1.5",
+    "title": "multiSUB Mini Comb, 10 sample, 1.5mm thick",
+    "order": 34
+  },
+  {
+    "sku": "MS7-12-1.5",
+    "title": "multiSUB Mini Comb, 12 sample, 1.5mm thick",
+    "order": 35
+  },
+  {
+    "sku": "MS7-16-1.5",
+    "title": "multiSUB Mini Comb, 16 sample, 1.5mm thick",
+    "order": 36
+  },
+  {
+    "sku": "MS7-1-2",
+    "title": "multiSUB Mini Comb, Prep 1, Marker 1, 2mm thick",
+    "order": 37
+  },
+  {
+    "sku": "MS7-2-2",
+    "title": "multiSUB Mini Comb, Prep 2, Marker 2, 2mm thick",
+    "order": 38
+  },
+  {
+    "sku": "MS7-4-2",
+    "title": "multiSUB Mini Comb, Prep 4, Marker 2, 2mm thick",
+    "order": 39
+  },
+  {
+    "sku": "MS7-8-2",
+    "title": "multiSUB Mini Comb, 8 sample, 2mm thick",
+    "order": 40
+  },
+  {
+    "sku": "MS7-10-2",
+    "title": "multiSUB Mini Comb, 10 sample, 2mm thick",
+    "order": 41
+  },
+  {
+    "sku": "MS7-12-2",
+    "title": "multiSUB Mini Comb, 12 sample, 2mm thick",
+    "order": 42
+  },
+  {
+    "sku": "MS7-16-2",
+    "title": "multiSUB Mini Comb, 16 sample, 2mm thick",
+    "order": 43
+  },
+  {
+    "sku": "MS7LID",
+    "title": "multiSUB Mini Lid",
+    "order": 44
+  },
+  {
+    "sku": "MS7TANK",
+    "title": "multiSUB Mini Tank (Including Electrodes)",
+    "order": 45
+  },
+  {
+    "sku": "CSL-CAB",
+    "title": "Electrophoresis cable (Black & Red)",
+    "order": 46
+  },
+  {
+    "sku": "MSMIDI7",
+    "title": "multiSUB Midi with 10 x 7cm Gel tray",
+    "order": 47
+  },
+  {
+    "sku": "MSMIDI10",
+    "title": "multiSUB Midi with 10 x 10cm Gel tray",
+    "order": 48
+  },
+  {
+    "sku": "MSMIDIDUO",
+    "title": "multiSUB Midi with 10 x 7cm & 10 x 10cm Gel tray",
+    "order": 49
+  },
+  {
+    "sku": "MS10-UV7",
+    "title": "multiSUB Midi - 10 x 7cm Gel tray",
+    "order": 50
+  },
+  {
+    "sku": "MS10-UV10",
+    "title": "multiSUB Midi - 10 x 10cm Gel tray",
+    "order": 51
+  },
+  {
+    "sku": "MS10-UVDAM",
+    "title": "multiSUB Midi - Gel tray Dams",
+    "order": 52
+  },
+  {
+    "sku": "MS10-PE",
+    "title": "multiSUB Midi - Positive Electrode",
+    "order": 53
+  },
+  {
+    "sku": "MS10-NE",
+    "title": "multiSUB Midi - Negative Electrode",
+    "order": 54
+  },
+  {
+    "sku": "MS10-LG",
+    "title": "multiSUB Midi - Loading Guides",
+    "order": 55
+  },
+  {
+    "sku": "MS10-WP",
+    "title": "multiSUB Midi - Viewing Platform",
+    "order": 56
+  },
+  {
+    "sku": "MSMIDICP",
+    "title": "multiSUB Midi - Cool-pack and platform",
+    "order": 57
+  },
+  {
+    "sku": "MSMIDIBSB",
+    "title": "multiSUB Midi - Buffer Saver Blocks",
+    "order": 58
+  },
+  {
+    "sku": "MS10-UVS",
+    "title": "multiSUB Midi - 10cm UV Gel Scoop",
+    "order": 59
+  },
+  {
+    "sku": "MS10-1-0.75",
+    "title": "multiSUB Midi Comb, Prep 1, Marker 1, 0.75mm thick",
+    "order": 60
+  },
+  {
+    "sku": "MS10-2-0.75",
+    "title": "multiSUB Midi Comb, Prep 2, Marker 2, 0.75mm thick",
+    "order": 61
+  },
+  {
+    "sku": "MS10-4-0.75",
+    "title": "multiSUB Midi Comb, Prep 4, Marker 2, 0.75mm thick",
+    "order": 62
+  },
+  {
+    "sku": "MS10-8-0.75",
+    "title": "multiSUB Midi Comb, 8 sample, 0.75mm thick",
+    "order": 63
+  },
+  {
+    "sku": "MS10-10MC-0.75",
+    "title": "multiSUB Midi Comb, 10 sample MC, 0.75mm thick",
+    "order": 64
+  },
+  {
+    "sku": "MS10-12-0.75",
+    "title": "multiSUB Midi Comb, 12 sample, 0.75mm thick",
+    "order": 65
+  },
+  {
+    "sku": "MS10-16-0.75",
+    "title": "multiSUB Midi Comb, 16 sample, 0.75mm thick",
+    "order": 66
+  },
+  {
+    "sku": "MS10-20MC-0.75",
+    "title": "multiSUB Midi Comb, 20 sample, 0.75mm thick",
+    "order": 67
+  },
+  {
+    "sku": "MS10-25-0.75",
+    "title": "multiSUB Midi Comb, 25 sample, 0.75mm thick",
+    "order": 68
+  },
+  {
+    "sku": "MS10-1-1",
+    "title": "multiSUB Midi Comb, Prep 1, Marker 1, 1mm thick",
+    "order": 69
+  },
+  {
+    "sku": "MS10-2-1",
+    "title": "multiSUB Midi Comb, Prep 2, Marker 2, 1mm thick",
+    "order": 70
+  },
+  {
+    "sku": "MS10-4-1",
+    "title": "multiSUB Midi Comb, Prep 4, Marker 2, 1mm thick",
+    "order": 71
+  },
+  {
+    "sku": "MS10-8-1",
+    "title": "multiSUB Midi Comb, 8 sample, 1mm thick",
+    "order": 72
+  },
+  {
+    "sku": "MS10-10MC-1",
+    "title": "multiSUB Midi Comb, 10 sample MC, 1mm thick",
+    "order": 73
+  },
+  {
+    "sku": "MS10-12-1",
+    "title": "multiSUB Midi Comb, 12 sample, 1mm thick",
+    "order": 74
+  },
+  {
+    "sku": "MS10-16-1",
+    "title": "multiSUB Midi Comb, 16 sample, 1mm thick",
+    "order": 75
+  },
+  {
+    "sku": "MS10-20-1",
+    "title": "multiSUB Midi Comb, 20 sample, 1mm thick",
+    "order": 76
+  },
+  {
+    "sku": "MS10-25-1",
+    "title": "multiSUB Midi Comb, 25 sample, 1mm thick",
+    "order": 77
+  },
+  {
+    "sku": "MS10-1-1.5",
+    "title": "multiSUB Midi Comb, Prep 1, Marker 1, 1.5mm thick",
+    "order": 78
+  },
+  {
+    "sku": "MS10-2-1.5",
+    "title": "multiSUB Midi Comb, Prep 2, Marker 2, 1.5mm thick",
+    "order": 79
+  },
+  {
+    "sku": "MS10-4-1.5",
+    "title": "multiSUB Midi Comb, Prep 4, Marker 2, 1.5mm thick",
+    "order": 80
+  },
+  {
+    "sku": "MS10-8-1.5",
+    "title": "multiSUB Midi Comb, 8 sample, 1.5mm thick",
+    "order": 81
+  },
+  {
+    "sku": "MS10-10MC-1.5",
+    "title": "multiSUB Midi Comb, 10 sample MC, 1.5mm thick",
+    "order": 82
+  },
+  {
+    "sku": "MS10-12-1.5",
+    "title": "multiSUB Midi Comb, 12 sample, 1.5mm thick",
+    "order": 83
+  },
+  {
+    "sku": "MS10-16-1.5",
+    "title": "multiSUB Midi Comb, 16 sample, 1.5mm thick",
+    "order": 84
+  },
+  {
+    "sku": "MS10-20-1.5",
+    "title": "multiSUB Midi Comb, 20 sample, 1.5mm thick",
+    "order": 85
+  },
+  {
+    "sku": "MS10-25-1.5",
+    "title": "multiSUB Midi Comb, 25 sample, 1.5mm thick",
+    "order": 86
+  },
+  {
+    "sku": "MS10-1-2",
+    "title": "multiSUB Midi Comb, Prep 1, Marker 1, 2mm thick",
+    "order": 87
+  },
+  {
+    "sku": "MS10-2-2",
+    "title": "multiSUB Midi Comb, Prep 2, Marker 2, 2mm thick",
+    "order": 88
+  },
+  {
+    "sku": "MS10-4-2",
+    "title": "multiSUB Midi Comb, Prep 4, Marker 2, 2mm thick",
+    "order": 89
+  },
+  {
+    "sku": "MS10-8-2",
+    "title": "multiSUB Midi Comb, 8 sample, 2mm thick",
+    "order": 90
+  },
+  {
+    "sku": "MS10-10MC-2",
+    "title": "multiSUB Midi Comb, 10 sample, 2mm thick",
+    "order": 91
+  },
+  {
+    "sku": "MS10-12-2",
+    "title": "multiSUB Midi Comb, 12 sample, 2mm thick",
+    "order": 92
+  },
+  {
+    "sku": "MS10-16-2",
+    "title": "multiSUB Midi Comb, 16 sample, 2mm thick",
+    "order": 93
+  },
+  {
+    "sku": "MS10-20-2",
+    "title": "multiSUB Midi Comb, 20 sample, 2mm thick",
+    "order": 94
+  },
+  {
+    "sku": "MS10-25-2",
+    "title": "multiSUB Midi Comb, 25 sample, 2mm thick",
+    "order": 95
+  },
+  {
+    "sku": "MS10LID",
+    "title": "multiSUB Midi Lid",
+    "order": 96
+  },
+  {
+    "sku": "MSMIDISTLID",
+    "title": "multiSUB Midi Stretch lid without cables",
+    "order": 97
+  },
+  {
+    "sku": "MS10TANK",
+    "title": "multiSUB Midi Tank",
+    "order": 98
+  },
+  {
+    "sku": "MSCHOICE7",
+    "title": "multiSUB Choice with 15 x 7cm Gel tray",
+    "order": 99
+  },
+  {
+    "sku": "MSCHOICE10",
+    "title": "multiSUB Choice with 15 x 10cm Gel tray",
+    "order": 100
+  },
+  {
+    "sku": "MSCHOICE15",
+    "title": "multiSUB Choice with 15 x 15cm Gel tray",
+    "order": 101
+  },
+  {
+    "sku": "MSCHOICETRIO",
+    "title": "multiSUB Choice with 15 x 7, 10 & 15cm Gel tray",
+    "order": 102
+  },
+  {
+    "sku": "MSCHOICETRIO15",
+    "title": "multiSUB Choice with 3 x 15 x 15cm Gel tray",
+    "order": 103
+  },
+  {
+    "sku": "MSCHOICEST20",
+    "title": "multiSUB Choice Stretch with 15 x 20cm Gel tray",
+    "order": 104
+  },
+  {
+    "sku": "MSCHOICEST25",
+    "title": "multiSUB Choice Stretch with 15 x 25cm Gel tray",
+    "order": 105
+  },
+  {
+    "sku": "CHOICEAGAROSEPACK",
+    "title": "Complete 15 x 15 cm agarose gel kit with reagents",
+    "order": 106
+  },
+  {
+    "sku": "CHOICEAGAROSEPACK500",
+    "title": "Complete Choice agarose gel kit with reagents w/PP500",
+    "order": 107
+  },
+  {
+    "sku": "MS15-UV7",
+    "title": "multiSUB Choice - 15 x 7cm Gel tray",
+    "order": 108
+  },
+  {
+    "sku": "MS15-UV10",
+    "title": "multiSUB Choice - 15 x 10cm Gel tray",
+    "order": 109
+  },
+  {
+    "sku": "MS15-UV15",
+    "title": "multiSUB Choice - 15 x 15cm Gel tray",
+    "order": 110
+  },
+  {
+    "sku": "MS15-UVST20",
+    "title": "multiSUB ChoiceST - 15 x 20cm Gel tray (FITS ONLY STRETCH SYSTEM)",
+    "order": 111
+  },
+  {
+    "sku": "MS15-UVST25",
+    "title": "multiSUB ChoiceST - 15 x 25cm Gel tray (FITS ONLY STRETCH SYSTEM)",
+    "order": 112
+  },
+  {
+    "sku": "MS15-UVDAM",
+    "title": "multiSUB Choice - Gel tray Dams",
+    "order": 113
+  },
+  {
+    "sku": "MS15-PE",
+    "title": "multiSUB Choice - Positive Electrode",
+    "order": 114
+  },
+  {
+    "sku": "MS15-NE",
+    "title": "multiSUB Choice - Negative Electrode",
+    "order": 115
+  },
+  {
+    "sku": "MS15-LG",
+    "title": "multiSUB Choice - Loading Guides",
+    "order": 116
+  },
+  {
+    "sku": "MS15-WP",
+    "title": "multiSUB Choice - Viewing Platform",
+    "order": 117
+  },
+  {
+    "sku": "MS15ST-WP",
+    "title": "White vinyl viewing platform for multiSUB Choice Stretch",
+    "order": 118
+  },
+  {
+    "sku": "MSCHOICECP",
+    "title": "multiSUB Choice - Cool-pack and platform",
+    "order": 119
+  },
+  {
+    "sku": "MSCHOICEBSB",
+    "title": "multiSUB Choice - Buffer Saver Blocks",
+    "order": 120
+  },
+  {
+    "sku": "MS15/20-FC",
+    "title": "multiSUB Choice/Maxi Flexi caster",
+    "order": 121
+  },
+  {
+    "sku": "MS15-UVS",
+    "title": "multiSUB Choice - 15cm UV Gel Scoop",
+    "order": 122
+  },
+  {
+    "sku": "MS15-1-0.75",
+    "title": "multiSUB Choice Comb, Prep 1, Marker 1, 0.75mm thick",
+    "order": 123
+  },
+  {
+    "sku": "MS15-2-0.75",
+    "title": "multiSUB Choice Comb, Prep 2, Marker 2, 0.75mm thick",
+    "order": 124
+  },
+  {
+    "sku": "MS15-4-0.75",
+    "title": "multiSUB Choice Comb, Prep 4, Marker 2, 0.75mm thick",
+    "order": 125
+  },
+  {
+    "sku": "MS15-10-0.75",
+    "title": "multiSUB Choice Comb, 10 sample, 0.75mm thick",
+    "order": 126
+  },
+  {
+    "sku": "MS15-12-0.75",
+    "title": "multiSUB Choice Comb, 12 sample, 0.75mm thick",
+    "order": 127
+  },
+  {
+    "sku": "MS15-20-0.75",
+    "title": "multiSUB Choice Comb, 20 sample, 0.75mm thick",
+    "order": 128
+  },
+  {
+    "sku": "MS15-35-0.75",
+    "title": "multiSUB Choice Comb, 35 sample, 0.75mm thick",
+    "order": 129
+  },
+  {
+    "sku": "MS15-10MC-0.75",
+    "title": "multiSUB Choice Comb, 10 sample MC, 0.75mm thick",
+    "order": 130
+  },
+  {
+    "sku": "MS15-14MC-0.75",
+    "title": "multiSUB Choice Comb, 14 sample MC, 0.75mm thick",
+    "order": 131
+  },
+  {
+    "sku": "MS15-16MC-0.75",
+    "title": "multiSUB Choice Comb, 16 sample MC, 0.75mm thick",
+    "order": 132
+  },
+  {
+    "sku": "MS15-28MCSS-0.75",
+    "title": "multiSUB Choice Comb, 28 sample MCSS, 0.75mm thick",
+    "order": 133
+  },
+  {
+    "sku": "MS15-30MCSS-0.75",
+    "title": "multiSUB Choice Comb, 30 sample MCSS, 0.75mm thick",
+    "order": 134
+  },
+  {
+    "sku": "MS15-1-1",
+    "title": "multiSUB Choice Comb, Prep 1, Marker 1, 1mm thick",
+    "order": 135
+  },
+  {
+    "sku": "MS15-2-1",
+    "title": "multiSUB Choice Comb, Prep 2, Marker 2, 1mm thick",
+    "order": 136
+  },
+  {
+    "sku": "MS15-4-1",
+    "title": "multiSUB Choice Comb, Prep 4, Marker 2, 1mm thick",
+    "order": 137
+  },
+  {
+    "sku": "MS15-10-1",
+    "title": "multiSUB Choice Comb, 10 sample, 1mm thick",
+    "order": 138
+  },
+  {
+    "sku": "MS15-12-1",
+    "title": "multiSUB Choice Comb, 12 sample, 1mm thick",
+    "order": 139
+  },
+  {
+    "sku": "MS15-20-1",
+    "title": "multiSUB Choice Comb, 20 sample, 1mm thick",
+    "order": 140
+  },
+  {
+    "sku": "MS15-35-1",
+    "title": "multiSUB Choice Comb, 35 sample, 1mm thick",
+    "order": 141
+  },
+  {
+    "sku": "MS15-10MC-1",
+    "title": "multiSUB Choice Comb, 10 sample MC, 1mm thick",
+    "order": 142
+  },
+  {
+    "sku": "MS15-14MC-1",
+    "title": "multiSUB Choice Comb, 14 sample MC, 1mm thick",
+    "order": 143
+  },
+  {
+    "sku": "MS15-16MC-1",
+    "title": "multiSUB Choice Comb, 16 sample MC, 1mm thick",
+    "order": 144
+  },
+  {
+    "sku": "MS15-28MCSS-1",
+    "title": "multiSUB Choice Comb, 28 sample MCSS, 1mm thick",
+    "order": 145
+  },
+  {
+    "sku": "MS15-30MCSS-1",
+    "title": "multiSUB Choice Comb, 30 sample MCSS, 1mm thick",
+    "order": 146
+  },
+  {
+    "sku": "MS15-1-1.5",
+    "title": "multiSUB Choice Comb, Prep 1, Marker 1, 1.5mm thick",
+    "order": 147
+  },
+  {
+    "sku": "MS15-2-1.5",
+    "title": "multiSUB Choice Comb, Prep 2, Marker 2, 1.5mm thick",
+    "order": 148
+  },
+  {
+    "sku": "MS15-4-1.5",
+    "title": "multiSUB Choice Comb, Prep 4, Marker 2, 1.5mm thick",
+    "order": 149
+  },
+  {
+    "sku": "MS15-10-1.5",
+    "title": "multiSUB Choice Comb, 10 sample, 1.5mm thick",
+    "order": 150
+  },
+  {
+    "sku": "MS15-12-1.5",
+    "title": "multiSUB Choice Comb, 12 sample, 1.5mm thick",
+    "order": 151
+  },
+  {
+    "sku": "MS15-20-1.5",
+    "title": "multiSUB Choice Comb, 20 sample, 1.5mm thick",
+    "order": 152
+  },
+  {
+    "sku": "MS15-35-1.5",
+    "title": "multiSUB Choice Comb, 35 sample, 1.5mm thick",
+    "order": 153
+  },
+  {
+    "sku": "MS15-10MC-1.5",
+    "title": "multiSUB Choice Comb, 10 sample MC, 1.5mm thick",
+    "order": 154
+  },
+  {
+    "sku": "MS15-14MC-1.5",
+    "title": "multiSUB Choice Comb, 14 sample MC, 1.5mm thick",
+    "order": 155
+  },
+  {
+    "sku": "MS15-16MC-1.5",
+    "title": "multiSUB Choice Comb, 16 sample MC, 1.5mm thick",
+    "order": 156
+  },
+  {
+    "sku": "MS15-28MCSS-1.5",
+    "title": "multiSUB Choice Comb, 28 sample MCSS, 1.5mm thick",
+    "order": 157
+  },
+  {
+    "sku": "MS15-30MCSS-1.5",
+    "title": "multiSUB Choice Comb, 30 sample MCSS, 1.5mm thick",
+    "order": 158
+  },
+  {
+    "sku": "MS15-1-2",
+    "title": "multiSUB Choice Comb, Prep 1, Marker 1, 2mm thick",
+    "order": 159
+  },
+  {
+    "sku": "MS15-2-2",
+    "title": "multiSUB Choice Comb, Prep 2, Marker 2, 2mm thick",
+    "order": 160
+  },
+  {
+    "sku": "MS15-4-2",
+    "title": "multiSUB Choice Comb, Prep 4, Marker 2, 2mm thick",
+    "order": 161
+  },
+  {
+    "sku": "MS15-10-2",
+    "title": "multiSUB Choice Comb, 10 sample, 2mm thick",
+    "order": 162
+  },
+  {
+    "sku": "MS15-12-2",
+    "title": "multiSUB Choice Comb, 12 sample, 2mm thick",
+    "order": 163
+  },
+  {
+    "sku": "MS15-16MC-2",
+    "title": "multiSUB Choice Comb, 16 sample MC, 2mm thick",
+    "order": 164
+  },
+  {
+    "sku": "MS15-20-2",
+    "title": "multiSUB Choice Comb, 20 sample, 2mm thick",
+    "order": 165
+  },
+  {
+    "sku": "MS15-10MC-2",
+    "title": "multiSUB Choice Comb, 10 sample MC, 2mm thick",
+    "order": 166
+  },
+  {
+    "sku": "MS15-14MC-2",
+    "title": "multiSUB Choice Comb, 14 sample MC, 2mm thick",
+    "order": 167
+  },
+  {
+    "sku": "MS15-28MCSS-2",
+    "title": "multiSUB Choice Comb, 28 sample MCSS, 2mm thick",
+    "order": 168
+  },
+  {
+    "sku": "MS15-30MCSS-2",
+    "title": "multiSUB Choice Comb, 30 sample MCSS, 2mm thick",
+    "order": 169
+  },
+  {
+    "sku": "MS15-35-2",
+    "title": "multiSUB Choice Comb, 35 sample, 2mm thick",
+    "order": 170
+  },
+  {
+    "sku": "MS15LID",
+    "title": "multiSUB Choice Lid",
+    "order": 171
+  },
+  {
+    "sku": "MS15LIDBRP",
+    "title": "MS15  lid fitted with Buffer Recirculation Ports (No cables)",
+    "order": 172
+  },
+  {
+    "sku": "MSCHOICESTLID",
+    "title": "multiSUB ChoiceST Lid",
+    "order": 173
+  },
+  {
+    "sku": "MS15TANK",
+    "title": "multiSUB Choice Tank (Including Electrodes)",
+    "order": 174
+  },
+  {
+    "sku": "MSMAXI10",
+    "title": "multiSUB Maxi with 20 x 10cm Gel tray",
+    "order": 175
+  },
+  {
+    "sku": "MSMAXI15",
+    "title": "multiSUB Maxi with 20 x 15cm Gel tray",
+    "order": 176
+  },
+  {
+    "sku": "MSMAXI20",
+    "title": "multiSUB Maxi with 20 x 20cm Gel tray",
+    "order": 177
+  },
+  {
+    "sku": "MSMAXIDUO",
+    "title": "multiSUB Maxi with 20 x 10 & 20 x 20cm Gel tray",
+    "order": 178
+  },
+  {
+    "sku": "MSMAXI25",
+    "title": "multiSUB Maxi with 20 x 25cm Gel tray",
+    "order": 179
+  },
+  {
+    "sku": "MS20-UV10",
+    "title": "multiSUB Maxi - 20 x 10cm Gel tray",
+    "order": 180
+  },
+  {
+    "sku": "MS20-UV15",
+    "title": "multiSUB Maxi - 20 x 15cm Gel tray",
+    "order": 181
+  },
+  {
+    "sku": "MS20-UV20",
+    "title": "multiSUB Maxi - 20 x 20cm Gel tray",
+    "order": 182
+  },
+  {
+    "sku": "MS20-UV25",
+    "title": "multiSUB Maxi - 20 x 25cm Gel tray",
+    "order": 183
+  },
+  {
+    "sku": "MS20-UVDAM",
+    "title": "multiSUB Maxi - Gel tray Dams",
+    "order": 184
+  },
+  {
+    "sku": "MS20-PE",
+    "title": "multiSUB Maxi - Positive Electrode",
+    "order": 185
+  },
+  {
+    "sku": "MS20-NE",
+    "title": "multiSUB Maxi - Negative Electrode",
+    "order": 186
+  },
+  {
+    "sku": "MS20-LG",
+    "title": "multiSUB Maxi - Loading Guides",
+    "order": 187
+  },
+  {
+    "sku": "MS20-WP",
+    "title": "multiSUB Maxi - Viewing Platform",
+    "order": 188
+  },
+  {
+    "sku": "MSMAXICP",
+    "title": "multiSUB Maxi - Cool-pack and platform",
+    "order": 189
+  },
+  {
+    "sku": "MSMAXIBSB",
+    "title": "multiSUB Maxi - Buffer Saver Blocks",
+    "order": 190
+  },
+  {
+    "sku": "MS20-UVS",
+    "title": "multiSUB Maxi - 20cm UV Gel Scoop",
+    "order": 191
+  },
+  {
+    "sku": "MS20-1-0.75",
+    "title": "multiSUB Maxi Comb, Prep 1, Marker 1, 0.75mm thick",
+    "order": 192
+  },
+  {
+    "sku": "MS20-2-0.75",
+    "title": "multiSUB Maxi Comb, Prep 2, Marker 2, 0.75mm thick",
+    "order": 193
+  },
+  {
+    "sku": "MS20-4-0.75",
+    "title": "multiSUB Maxi Comb, Prep 4, Marker 2, 0.75mm thick",
+    "order": 194
+  },
+  {
+    "sku": "MS20-10-0.75",
+    "title": "multiSUB Maxi Comb, 10 sample, 0.75mm thick",
+    "order": 195
+  },
+  {
+    "sku": "MS20-16-0.75",
+    "title": "multiSUB Maxi Comb, 16 sample, 0.75mm thick",
+    "order": 196
+  },
+  {
+    "sku": "MS20-20MC-0.75",
+    "title": "multiSUB Maxi Comb, 20 sample MC, 0.75mm thick",
+    "order": 197
+  },
+  {
+    "sku": "MS20-25-0.75",
+    "title": "multiSUB Maxi Comb, 25 sample, 0.75mm thick",
+    "order": 198
+  },
+  {
+    "sku": "MS20-30-0.75",
+    "title": "multiSUB Maxi Comb, 30 sample, 0.75mm thick",
+    "order": 199
+  },
+  {
+    "sku": "MS20-36-0.75",
+    "title": "multiSUB Maxi Comb, 36 sample, 0.75mm thick",
+    "order": 200
+  },
+  {
+    "sku": "MS20-40MCSS-0.75",
+    "title": "multiSUB Maxi Comb, 40 sample MCSS, 0.75mm thick",
+    "order": 201
+  },
+  {
+    "sku": "MS20-50-0.75",
+    "title": "multiSUB Maxi Comb, 50 sample, 0.75mm thick",
+    "order": 202
+  },
+  {
+    "sku": "MS20-1-1",
+    "title": "multiSUB Maxi Comb, Prep 1, Marker 1, 1mm thick",
+    "order": 203
+  },
+  {
+    "sku": "MS20-2-1",
+    "title": "multiSUB Maxi Comb, Prep 2, Marker 2, 1mm thick",
+    "order": 204
+  },
+  {
+    "sku": "MS20-4-1",
+    "title": "multiSUB Maxi Comb, Prep 4, Marker 2, 1mm thick",
+    "order": 205
+  },
+  {
+    "sku": "MS20-10-1",
+    "title": "multiSUB Maxi Comb, 10 sample, 1mm thick",
+    "order": 206
+  },
+  {
+    "sku": "MS20-16-1",
+    "title": "multiSUB Maxi Comb, 16 sample, 1mm thick",
+    "order": 207
+  },
+  {
+    "sku": "MS20-20MC-1",
+    "title": "multiSUB Maxi Comb, 20 sample MC, 1mm thick",
+    "order": 208
+  },
+  {
+    "sku": "MS20-25-1",
+    "title": "multiSUB Maxi Comb, 25 sample, 1mm thick",
+    "order": 209
+  },
+  {
+    "sku": "MS20-30-1",
+    "title": "multiSUB Maxi Comb, 30 sample, 1mm thick",
+    "order": 210
+  },
+  {
+    "sku": "MS20-36-1",
+    "title": "multiSUB Maxi Comb, 36 sample, 1mm thick",
+    "order": 211
+  },
+  {
+    "sku": "MS20-40MCSS-1",
+    "title": "multiSUB Maxi Comb, 40 sample MCSS, 1mm thick",
+    "order": 212
+  },
+  {
+    "sku": "MS20-50-1",
+    "title": "multiSUB Maxi Comb, 50 sample, 1mm thick",
+    "order": 213
+  },
+  {
+    "sku": "MS20-1-1.5",
+    "title": "multiSUB Maxi Comb, Prep 1, Marker 1, 1.5mm thick",
+    "order": 214
+  },
+  {
+    "sku": "MS20-2-1.5",
+    "title": "multiSUB Maxi Comb, Prep 2, Marker 2, 1.5mm thick",
+    "order": 215
+  },
+  {
+    "sku": "MS20-4-1.5",
+    "title": "multiSUB Maxi Comb, Prep 4, Marker 2, 1.5mm thick",
+    "order": 216
+  },
+  {
+    "sku": "MS20-10-1.5",
+    "title": "multiSUB Maxi Comb, 10 sample, 1.5mm thick",
+    "order": 217
+  },
+  {
+    "sku": "MS20-16-1.5",
+    "title": "multiSUB Maxi Comb, 16 sample, 1.5mm thick",
+    "order": 218
+  },
+  {
+    "sku": "MS20-20MC-1.5",
+    "title": "multiSUB Maxi Comb, 20 sample MC, 1.5mm thick",
+    "order": 219
+  },
+  {
+    "sku": "MS20-25-1.5",
+    "title": "multiSUB Maxi Comb, 25 sample, 1.5mm thick",
+    "order": 220
+  },
+  {
+    "sku": "MS20-30-1.5",
+    "title": "multiSUB Maxi Comb, 30 sample, 1.5mm thick",
+    "order": 221
+  },
+  {
+    "sku": "MS20-36-1.5",
+    "title": "multiSUB Maxi Comb, 36 sample, 1.5mm thick",
+    "order": 222
+  },
+  {
+    "sku": "MS20-40MCSS-1.5",
+    "title": "multiSUB Maxi Comb, 40 sample MCSS, 1.5mm thick",
+    "order": 223
+  },
+  {
+    "sku": "MS20-50-1.5",
+    "title": "multiSUB Maxi Comb, 50 sample, 1.5mm thick",
+    "order": 224
+  },
+  {
+    "sku": "MS20-1-2",
+    "title": "multiSUB Maxi Comb, Prep 1, Marker 1, 2mm thick",
+    "order": 225
+  },
+  {
+    "sku": "MS20-2-2",
+    "title": "multiSUB Maxi Comb, Prep 2, Marker 2, 2mm thick",
+    "order": 226
+  },
+  {
+    "sku": "MS20-4-2",
+    "title": "multiSUB Maxi Comb, Prep 4, Marker 2, 2mm thick",
+    "order": 227
+  },
+  {
+    "sku": "MS20-10-2",
+    "title": "multiSUB Maxi Comb, 10 sample, 2mm thick",
+    "order": 228
+  },
+  {
+    "sku": "MS20-16-2",
+    "title": "multiSUB Maxi Comb, 16 sample, 2mm thick",
+    "order": 229
+  },
+  {
+    "sku": "MS20-20MC-2",
+    "title": "multiSUB Maxi Comb, 20 sample MC, 2mm thick",
+    "order": 230
+  },
+  {
+    "sku": "MS20-25-2",
+    "title": "multiSUB Maxi Comb, 25 sample, 2mm thick",
+    "order": 231
+  },
+  {
+    "sku": "MS20-30-2",
+    "title": "multiSUB Maxi Comb, 30 sample, 2mm thick",
+    "order": 232
+  },
+  {
+    "sku": "MS20-36-2",
+    "title": "multiSUB Maxi Comb, 36 sample, 2mm thick",
+    "order": 233
+  },
+  {
+    "sku": "MS20-40MCSS-2",
+    "title": "multiSUB Maxi Comb, 40 sample MCSS, 2mm thick",
+    "order": 234
+  },
+  {
+    "sku": "MS20-50-2",
+    "title": "multiSUB Maxi Comb, 50 sample, 2mm thick",
+    "order": 235
+  },
+  {
+    "sku": "MS20LID",
+    "title": "multiSUB Maxi Lid",
+    "order": 236
+  },
+  {
+    "sku": "MS20LIDBRP",
+    "title": "multiSUB Maxi Lid with buffer recirculation ports",
+    "order": 237
+  },
+  {
+    "sku": "MS20TANK",
+    "title": "multiSUB Maxi Tank (Including Electrodes)",
+    "order": 238
+  },
+  {
+    "sku": "MSSCREEN32",
+    "title": "multiSUB Screen with 26 x 32cm Gel tray including caster",
+    "order": 239
+  },
+  {
+    "sku": "MSSCREEN32-NC",
+    "title": "multiSUB Screen with 26 x 32cm Gel tray (NO CASTER)",
+    "order": 240
+  },
+  {
+    "sku": "MSSCREEN24",
+    "title": "multiSUB Screen with 26 x 24cm Gel tray including caster",
+    "order": 241
+  },
+  {
+    "sku": "MSSCREEN24-NC",
+    "title": "multiSUB Screen with 26 x 24cm Gel tray (NO CASTER)",
+    "order": 242
+  },
+  {
+    "sku": "MSSCREEN16",
+    "title": "multiSUB Screen with 26 x 16cm Gel tray including caster",
+    "order": 243
+  },
+  {
+    "sku": "MSSCREEN16-NC",
+    "title": "multiSUB Screen with 26 x 16cm Gel tray (NO CASTER)",
+    "order": 244
+  },
+  {
+    "sku": "MSSCREENTRIO",
+    "title": "multiSUB Screen with 26x16cm, 26x24cm, 26x32cm Gel trays including caster",
+    "order": 245
+  },
+  {
+    "sku": "MSSCREENTRIO-NC",
+    "title": "multiSUB Screen with 26x16cm, 26x24cm, 26x32cm Gel trays (NO CASTER)",
+    "order": 246
+  },
+  {
+    "sku": "SCREENAGAROSEPACK",
+    "title": "Complete High Throughput agarose gel kit and reagents",
+    "order": 247
+  },
+  {
+    "sku": "MS26-UV32",
+    "title": "multiSUB Screen - 26 x 32cm Gel tray",
+    "order": 248
+  },
+  {
+    "sku": "MS26-UV24",
+    "title": "multiSUB Screen - 26 x 24cm Gel tray",
+    "order": 249
+  },
+  {
+    "sku": "MS26-UV16",
+    "title": "multiSUB Screen - 26 x 16cm Gel tray",
+    "order": 250
+  },
+  {
+    "sku": "MS26-LG",
+    "title": "multiSUB Screen - Loading Guides",
+    "order": 251
+  },
+  {
+    "sku": "MS26-WP",
+    "title": "multiSUB Screen - Viewing Platform",
+    "order": 252
+  },
+  {
+    "sku": "MS26-PE",
+    "title": "multiSUB Screen - Positive Electrode",
+    "order": 253
+  },
+  {
+    "sku": "MS26-NE",
+    "title": "multiSUB Screen - Negative Electrode",
+    "order": 254
+  },
+  {
+    "sku": "MSSCRNCP",
+    "title": "multiSUB Screen - Cool-pack and platform",
+    "order": 255
+  },
+  {
+    "sku": "MSSCRNBSB",
+    "title": "multiSUB Screen - Buffer Saver Blocks",
+    "order": 256
+  },
+  {
+    "sku": "MS26-FC",
+    "title": "multiSUB Screen - Flexicaster",
+    "order": 257
+  },
+  {
+    "sku": "MS26-UVS",
+    "title": "multiSUB Screen - 26cm UV Gel Scoop",
+    "order": 258
+  },
+  {
+    "sku": "MS26-28MC-0.75",
+    "title": "multiSUB Screen Comb, 28 sample MC, 0.75mm thick",
+    "order": 259
+  },
+  {
+    "sku": "MS26-56MCSS-0.75",
+    "title": "multiSUB Screen Comb, 56 sample MCSS, 0.75mm thick",
+    "order": 260
+  },
+  {
+    "sku": "MS26-28MC-1",
+    "title": "multiSUB Screen Comb, 28 sample MC, 1mm thick",
+    "order": 261
+  },
+  {
+    "sku": "MS26-56MCSS-1",
+    "title": "multiSUB Screen Comb, 56 sample MCSS, 1mm thick",
+    "order": 262
+  },
+  {
+    "sku": "MS26-28MC-1.5",
+    "title": "multiSUB Screen Comb, 28 sample MC, 1.5mm thick",
+    "order": 263
+  },
+  {
+    "sku": "MS26-56MCSS-1.5",
+    "title": "multiSUB Screen Comb, 56 sample MCSS, 1.5mm thick",
+    "order": 264
+  },
+  {
+    "sku": "MS26-28MC-2",
+    "title": "multiSUB Screen Comb, 28 sample MC, 2mm thick",
+    "order": 265
+  },
+  {
+    "sku": "MS26-56MCSS-2",
+    "title": "multiSUB Screen Comb, 56 sample MCSS, 2mm thick",
+    "order": 266
+  },
+  {
+    "sku": "MS26LID",
+    "title": "multiSUB Screen Lid",
+    "order": 267
+  },
+  {
+    "sku": "MS26TANK",
+    "title": "multiSUB Screen Tank",
+    "order": 268
+  },
+  {
+    "sku": "MS26-ST",
+    "title": "Gel tray sealing tape. 65m X 25.4mm",
+    "order": 269
+  },
+  {
+    "sku": "MSMINI7CS",
+    "title": "ClearSight MSMINI7, Fan & power source.",
+    "order": 270
+  },
+  {
+    "sku": "MSMINI10CS",
+    "title": "ClearSight MSMINI10, Fan & power source",
+    "order": 271
+  },
+  {
+    "sku": "MSMINIDUOCS",
+    "title": "ClearSight MSMINIDUO, Fan & power source.",
+    "order": 272
+  },
+  {
+    "sku": "MSMIDI7CS",
+    "title": "ClearSight MSMIDI7, Fan & power source.",
+    "order": 273
+  },
+  {
+    "sku": "MSMIDI10CS",
+    "title": "ClearSight MSMIDI10, Fan & power source.",
+    "order": 274
+  },
+  {
+    "sku": "MSMIDIDUOCS",
+    "title": "ClearSight MSMIDIDUO, Fan & power source.",
+    "order": 275
+  },
+  {
+    "sku": "MSCHOICE7CS",
+    "title": "ClearSight MSCHOICE7, Fan & power source.",
+    "order": 276
+  },
+  {
+    "sku": "MSCHOICE10CS",
+    "title": "ClearSight MSCHOICE10, Fan & power source.",
+    "order": 277
+  },
+  {
+    "sku": "MSCHOICE15CS",
+    "title": "ClearSight MSCHOICE15, Fan & power source.",
+    "order": 278
+  },
+  {
+    "sku": "MSCHOICETRIOCS",
+    "title": "ClearSight MSCHOICETRIO, Fan & power source.",
+    "order": 279
+  },
+  {
+    "sku": "MSCHOICETRIO15CS",
+    "title": "ClearSight MSCHOICETRIO15, Fan & power source.",
+    "order": 280
+  },
+  {
+    "sku": "MSCHOICEST20CS",
+    "title": "ClearSight MSCHOICEST20, Fan & power source.",
+    "order": 281
+  },
+  {
+    "sku": "MSCHOICEST25CS",
+    "title": "ClearSight MSCHOICEST25, Fan & power source.",
+    "order": 282
+  },
+  {
+    "sku": "MSMAXIDUOCS",
+    "title": "ClearSight MSMAXIDUO, Fan & power source.",
+    "order": 283
+  },
+  {
+    "sku": "MSMIDI96CS",
+    "title": "ClearSight MSMIDI96, Fan & power source.",
+    "order": 284
+  },
+  {
+    "sku": "CLEARSIGHTMINI",
+    "title": "ClearSight Lid for multiSUB Mini, Fan & power source.",
+    "order": 285
+  },
+  {
+    "sku": "CLEARSIGHTMIDI",
+    "title": "ClearSight Lid for multiSUB Midi, Fan & power source.",
+    "order": 286
+  },
+  {
+    "sku": "CLEARSIGHTCHOICE",
+    "title": "ClearSight Lid for multiSUB Choice, Fan & power source.",
+    "order": 287
+  },
+  {
+    "sku": "CLEARSIGHTMAXI",
+    "title": "ClearSight Lid for multiSUB Maxi, Fan & power source.",
+    "order": 288
+  },
+  {
+    "sku": "MSMINIONE",
+    "title": "multiSUB MINI ONE, All in One Horizontal Electrophoresis System",
+    "order": 289
+  },
+  {
+    "sku": "MSO-1-12/22DS",
+    "title": "Full length combs for MSMINIONE Large Tray",
+    "order": 290
+  },
+  {
+    "sku": "MSO-1-5/9DS",
+    "title": "Double Comb for MSMINIONE small gel trays",
+    "order": 291
+  },
+  {
+    "sku": "MSO-GCL",
+    "title": "multiSUB MINIONE Gel Caster - Large",
+    "order": 292
+  },
+  {
+    "sku": "MSO-GCS",
+    "title": "multiSUB MINIONE Gel Caster - Small",
+    "order": 293
+  },
+  {
+    "sku": "MSO-UVL",
+    "title": "multiSUB MINIONE Large Gel Tray 110mm x 60mm",
+    "order": 294
+  },
+  {
+    "sku": "MSO-UVS",
+    "title": "multiSUB MINIONE Small Gel Tray 54mm x 60mm",
+    "order": 295
+  },
+  {
+    "sku": "MSMIDI96",
+    "title": "multiSUB MIDI96 with 1 mm thick combs, 1 marker lane",
+    "order": 296
+  },
+  {
+    "sku": "MSMIDI961.5",
+    "title": "multiSUB MIDI96 with 1.5 mm thick combs with 1 marker lane",
+    "order": 297
+  },
+  {
+    "sku": "MSMIDI96/2M",
+    "title": "multiSUB MIDI96 with 1 mm thick combs with 2 marker lanes",
+    "order": 298
+  },
+  {
+    "sku": "MSMIDI96/1.5/2M",
+    "title": "multiSUB MIDI96 with 1.5 mm thick combs with 2 marker lanes",
+    "order": 299
+  },
+  {
+    "sku": "MSMIDI96-8-1-CB",
+    "title": "multiSUB MIDI96 Comb Block, 12 x 8 sample multichannel wells + 1 Marker, 1mm thick",
+    "order": 300
+  },
+  {
+    "sku": "MSMIDI96-8-1.5-CB",
+    "title": "multiSUB MIDI96 Comb Block, 12 x 8 sample multichannel wells + 1 Marker, 1.5mm thick",
+    "order": 301
+  },
+  {
+    "sku": "MSMIDI96-8-1/2M-CB",
+    "title": "multiSUB MIDI96 Comb Block, 12 x 8 sample multichannel wells + 2 Marker, 1mm thick",
+    "order": 302
+  },
+  {
+    "sku": "MSMIDI96-8-1.5/2M-CB",
+    "title": "multiSUB MIDI96 Comb Block, 12 x 8 sample multichannel wells + 2 Marker, 1.5mm thick",
+    "order": 303
+  },
+  {
+    "sku": "MSMIDI96ST",
+    "title": "multiSUB MIDI96 Stretch with 1 mm thick combs, 1 marker lane",
+    "order": 304
+  },
+  {
+    "sku": "MSMIDI96ST1.5",
+    "title": "multiSUB MIDI96 Stretch with 1.5 mm thick combs with 1 marker lane",
+    "order": 305
+  },
+  {
+    "sku": "MSMIDI96ST/2M",
+    "title": "multiSUB MIDI96 Stretch with 1 mm thick combs with 2 marker lanes",
+    "order": 306
+  },
+  {
+    "sku": "MSMIDI96ST/1.5/2M",
+    "title": "multiSUB MIDI96 Stretch with 1.5 mm thick combs with 2 marker lanes",
+    "order": 307
+  },
+  {
+    "sku": "MSMIDI96STDBL",
+    "title": "multiSUB MIDI96 Stretch Double with 24 x 8 sample combs",
+    "order": 308
+  },
+  {
+    "sku": "MSMIDI96ST-8-1-CB",
+    "title": "multiSUB MIDI96 Stretch Comb Block, 12 x 8 sample multichannel wells + 1 Marker, 1mm thick",
+    "order": 309
+  },
+  {
+    "sku": "MSMIDI96ST-8-1.5-CB",
+    "title": "multiSUB MIDI96 Stretch Comb Block, 12 x 8 sample multichannel wells + 1 Marker, 1.5mm thick",
+    "order": 310
+  },
+  {
+    "sku": "MSMIDI96ST-8-1/2M-CB",
+    "title": "multiSUB MIDI96 Stretch Comb Block, 12 x 8 sample multichannel wells + 2 Marker, 1mm thick",
+    "order": 311
+  },
+  {
+    "sku": "MSMIDI96ST-8-1.5/2M-CB",
+    "title": "multiSUB MIDI96 Stretch Comb Block, 12 x 8 sample multichannel wells + 2 Marker, 1.5mm thick",
+    "order": 312
+  },
+  {
+    "sku": "MSMIDI96STDBL-8-1-CB",
+    "title": "multiSUB MIDI96 Stretch Comb Block, 24 x 8 sample multichannel wells + 1 Marker, 1mm thick",
+    "order": 313
+  },
+  {
+    "sku": "MSMIDI96STDBL-8-1.5-CB",
+    "title": "multiSUB MIDI96 Stretch Comb Block, 24 x 8 sample multichannel wells + 1 Marker, 1.5mm thick",
+    "order": 314
+  },
+  {
+    "sku": "MSMIDI96STDBL-8-1/2M-CB",
+    "title": "multiSUB MIDI96 Stretch Comb Block, 24 x 8 sample multichannel wells + 2 Marker, 1mm thick",
+    "order": 315
+  },
+  {
+    "sku": "MSMIDI96STDBL-8-1.5/2M-CB",
+    "title": "multiSUB MIDI96 Stretch Comb Block, 24 x 8 sample multichannel wells + 2 Marker, 1.5mm thick",
+    "order": 316
+  },
+  {
+    "sku": "MSMIDI96-8-1",
+    "title": "multiSUB MIDI96 Comb, 8 sample multichannel wells + 1 Marker, 1mm thick",
+    "order": 317
+  },
+  {
+    "sku": "MSMIDI96-8-1.5",
+    "title": "multiSUB MIDI96 Comb, 8 sample multichannel wells + 1 Marker, 1.5mm thick",
+    "order": 318
+  },
+  {
+    "sku": "MSMIDI96-8-1/2M",
+    "title": "multiSUB MIDI96 Comb, 8 sample multichannel wells + 2 Marker, 1mm thick",
+    "order": 319
+  },
+  {
+    "sku": "MSMIDI96-8-1.5/2M",
+    "title": "multiSUB MIDI96 Comb, 8 sample multichannel wells + 2 Marker, 1.5mm thick",
+    "order": 320
+  },
+  {
+    "sku": "MS10-UV96",
+    "title": "multiSUB MIDI96 Well Tray",
+    "order": 321
+  },
+  {
+    "sku": "MS10-UV96ST",
+    "title": "multiSUB MIDI96 Stretch Tray",
+    "order": 322
+  },
+  {
+    "sku": "MSMIDI96ST-WP",
+    "title": "White vinyl viewing platform for multiSUB Midi Stretch",
+    "order": 323
+  },
+  {
+    "sku": "MSMINIDUO-NANO300",
+    "title": "Mini Horizontal Electrophoresis Package",
+    "order": 324
+  },
+  {
+    "sku": "MSMINIDUO-NANO300KIT",
+    "title": "Mini Horizontal Package with Power Supply and reagent kit",
+    "order": 325
+  },
+  {
+    "sku": "MSMIDIDUO-NANO300",
+    "title": "Midi Horizontal Electrophoresis Package",
+    "order": 326
+  },
+  {
+    "sku": "MSMIDIDUO-NANO300KIT",
+    "title": "Midi Horizontal Package with Power Supply and reagent kit",
+    "order": 327
+  },
+  {
+    "sku": "MSCHOICETRIO-PP300",
+    "title": "Choice Horizontal Package with Power Supply",
+    "order": 328
+  },
+  {
+    "sku": "MSCHOICETRIO-PP300KIT",
+    "title": "Choice Horizontal Package with Power Supply and reagent kit",
+    "order": 329
+  },
+  {
+    "sku": "MSMAXIDUO-PP300",
+    "title": "Maxi Horizontal Package with Power Supply",
+    "order": 330
+  },
+  {
+    "sku": "MSMAXIDUO-PP300KIT",
+    "title": "Maxi Horizontal Package with Power Supply and reagent kit",
+    "order": 331
+  },
+  {
+    "sku": "MSSCREENTRIO-PP500",
+    "title": "Screen Horizontal Package with Power Supply",
+    "order": 332
+  },
+  {
+    "sku": "MSSCREENTRIO-PP500KIT",
+    "title": "Screen Horizontal Package with Power Supply and reagent kit",
+    "order": 333
+  },
+  {
+    "sku": "MSMIDI96-PP300",
+    "title": "MIDI96 Horizontal Package with Power Supply",
+    "order": 334
+  },
+  {
+    "sku": "MSMIDI96-PP300KIT",
+    "title": "MIDI96 Horizontal Package with Power Supply and reagent kit",
+    "order": 335
+  },
+  {
+    "sku": "MSMINIDUO-PP500",
+    "title": "Mini Horizontal Electophoresis Package, Includes:MSMINIDUO",
+    "order": 336
+  },
+  {
+    "sku": "MSMINIDUO-PP500KIT",
+    "title": "Mini Horizontal Electrophoresis Package with electrophoresis",
+    "order": 337
+  },
+  {
+    "sku": "MSMIDIDUO-PP500",
+    "title": "Midi Horizontal Electophoresis Package, Includes:MSMIDIDUO",
+    "order": 338
+  },
+  {
+    "sku": "MSMIDIDUO-PP500KIT",
+    "title": "Midi Horizontal Electrophoresis Package with electrophoresis",
+    "order": 339
+  },
+  {
+    "sku": "MSCHOICETRIO-PP500",
+    "title": "Choice Horizontal Electrophoresis Package Inc: MSCHOICE & PP",
+    "order": 340
+  },
+  {
+    "sku": "MSCHOICETRIO-PP500KIT",
+    "title": "Choice Horizontal Electrophoresis Package with",
+    "order": 341
+  },
+  {
+    "sku": "MSMAXIDUO-PP500",
+    "title": "Maxi Horizontal Electrophoresis Package & PP500",
+    "order": 342
+  },
+  {
+    "sku": "MSMAXIDUO-PP500KIT",
+    "title": "Maxi Horizontal Electrophoresis Package",
+    "order": 343
+  },
+  {
+    "sku": "MSMIDI96-PP500",
+    "title": "Midi96 Horizontal Electrophoresis Package Inc:",
+    "order": 344
+  },
+  {
+    "sku": "MSMIDI96-PP500KIT",
+    "title": "Midi96 Horizontal Electrophoresis Package with Power supply",
+    "order": 345
+  },
+  {
+    "sku": "FMMS10",
+    "title": "multiSUB Mini Rapide, Mini Horizontal Electrophoresis System",
+    "order": 346
+  },
+  {
+    "sku": "FMMS10-NE",
+    "title": "Negative electrode for FMMS10",
+    "order": 347
+  },
+  {
+    "sku": "FMMS10-PE",
+    "title": "Positive electrode for FMMS10",
+    "order": 348
+  },
+  {
+    "sku": "FMMS-DAM",
+    "title": "multiSUB Mini Rapide - Casting Gates, Pk/2",
+    "order": 349
+  },
+  {
+    "sku": "RPW0.2",
+    "title": "Replacement Platinum Wire 0.2mm - 50cm",
+    "order": 350
+  },
+  {
+    "sku": "FMMS-1-1",
+    "title": "multiSUB Mini Rapide Comb, 1 sample , 1 dye , 1mm thick",
+    "order": 351
+  },
+  {
+    "sku": "FMMS-4-1",
+    "title": "multiSUB Mini Rapide Comb, 4 sample, 1mm thick",
+    "order": 352
+  },
+  {
+    "sku": "FMMS-8-1",
+    "title": "multiSUB Mini Rapide Comb, 8 sample, 1mm thick",
+    "order": 353
+  },
+  {
+    "sku": "FMMS-12-1",
+    "title": "multiSUB Mini Rapide Comb, 12 sample, 1mm thick",
+    "order": 354
+  },
+  {
+    "sku": "FMMS-16-1",
+    "title": "multiSUB Mini Rapide Comb, 16 sample, 1mm thick",
+    "order": 355
+  },
+  {
+    "sku": "FMMS-1-1.5",
+    "title": "multiSUB Mini Rapide Comb, 1 sample , 1 dye , 1.5mm thick",
+    "order": 356
+  },
+  {
+    "sku": "FMMS-4-1.5",
+    "title": "multiSUB Mini Rapide Comb, 4 sample, 1.5mm thick",
+    "order": 357
+  },
+  {
+    "sku": "FMMS-8-1.5",
+    "title": "multiSUB Mini Rapide Comb, 8 sample, 1.5mm thick",
+    "order": 358
+  },
+  {
+    "sku": "FMMS-12-1.5",
+    "title": "multiSUB Mini Rapide Comb, 12 sample, 1.5mm thick",
+    "order": 359
+  },
+  {
+    "sku": "FMMS-16-1.5",
+    "title": "multiSUB Mini Rapide Comb, 16 sample, 1.5mm thick",
+    "order": 360
+  },
+  {
+    "sku": "FMMS-20MC-1",
+    "title": "multiSUB Mini Rapide Comb, 20MC sample, 1mm thick",
+    "order": 361
+  },
+  {
+    "sku": "FMMS-20MC-1.5",
+    "title": "multiSUB Mini Rapide Comb, 20MC sample, 1.5mm thick",
+    "order": 362
+  },
+  {
+    "sku": "FMMS10LID",
+    "title": "multiSUB Mini Rapide Lid",
+    "order": 363
+  },
+  {
+    "sku": "FMMS10TANK",
+    "title": "multiSUB Mini Rapide Tank (Including Electrodes)",
+    "order": 364
+  },
+  {
+    "sku": "CSL-MULTISUB4",
+    "title": "multiSUB-4 multi level agarose gel electrophoresis system",
+    "order": 365
+  },
+  {
+    "sku": "CSL-MULTISUB4EXCAS",
+    "title": "multiSUB-4 multi level agarose gel electrophoresis system with external caster",
+    "order": 366
+  },
+  {
+    "sku": "MSUB4UV6",
+    "title": "multiSUB-4 gel tray, 8 x 6 cm",
+    "order": 367
+  },
+  {
+    "sku": "MSUB4UV12",
+    "title": "multiSUB-4 gel tray, 8 x 12 cm",
+    "order": 368
+  },
+  {
+    "sku": "MSUB4UV18",
+    "title": "multiSUB-4 gel tray, 8 x 18 cm",
+    "order": 369
+  },
+  {
+    "sku": "MSUB4EXCASTER",
+    "title": "multiSUB-4 gel caster for 4 gels",
+    "order": 370
+  },
+  {
+    "sku": "MSUB4-12/1-1",
+    "title": "multiSUB-4 Comb, 12/1 sample, 1 mm thick",
+    "order": 371
+  },
+  {
+    "sku": "MSUB4-18/8-1",
+    "title": "multiSUB-4 Comb, 18/8 sample, 1 mm thick",
+    "order": 372
+  },
+  {
+    "sku": "MSUB4-12/1-1.5",
+    "title": "multiSUB-4 Comb, 12/1 sample, 1.5 mm thick",
+    "order": 373
+  },
+  {
+    "sku": "MSUB4-18/8-1.5",
+    "title": "multiSUB-4 Comb, 18/8 sample, 1.5 mm thick",
+    "order": 374
+  },
+  {
+    "sku": "MSMULTISUB4LID",
+    "title": "multiSUB-4 Lid, no cables",
+    "order": 375
+  },
+  {
+    "sku": "CSL-RVMSCHOICE7",
+    "title": "runVIEW system complete with 15 x 7cm gel tray",
+    "order": 376
+  },
+  {
+    "sku": "CSL-RVMSCHOICE10",
+    "title": "runVIEW system complete with 15 x 10cm gel tray",
+    "order": 377
+  },
+  {
+    "sku": "CSL-RVMSCHOICE15",
+    "title": "runVIEW system complete with 15 x 15cm gel tray",
+    "order": 378
+  },
+  {
+    "sku": "CSL-RVMSCHOICETRIO",
+    "title": "runVIEW system complete with 15 x 7cm, 15 x 10 & 15 x 15 gel tray",
+    "order": 379
+  },
+  {
+    "sku": "CSL-RVBSBVLID",
+    "title": "runVIEW base station & bluVIEW lid for multiSUB Choice",
+    "order": 380
+  },
+  {
+    "sku": "CSL-RVGELDOC",
+    "title": "runDOC gel Documentation hood with Digital camera",
+    "order": 381
+  },
+  {
+    "sku": "CSL-RVGELDOCSYS",
+    "title": "runDOC gel Documentation hood with camera, Laptop & 1D Analysis Software",
+    "order": 382
+  },
+  {
+    "sku": "CSL-RVGELDOC1D",
+    "title": "runDOC gel Documentation hood & Camera including TotalLab1D Analysis Software",
+    "order": 383
+  },
+  {
+    "sku": "CSL-CAMCHARGER",
+    "title": "Optional mains charger cable runDOC Camera",
+    "order": 384
+  },
+  {
+    "sku": "CSL-RVSTATION",
+    "title": "runSTATION complete with runVIEW System and runDOC",
+    "order": 385
+  },
+  {
+    "sku": "CSL-RVGDCOMPLETE",
+    "title": "runSTATION complete with runVIEW System and runDOC with laptop and analysis software",
+    "order": 386
+  },
+  {
+    "sku": "RV-GLASSES1",
+    "title": "Glasses for viewing gels on runVIEW system",
+    "order": 387
+  },
+  {
+    "sku": "CSL-RVMSMINI-S",
+    "title": "multiSUB Mini DUO with mini runVIEW gel viewer",
+    "order": 388
+  },
+  {
+    "sku": "CSL-RVMSMIDI-S",
+    "title": "multiSUB Midi DUO with mini runVIEW gel viewer",
+    "order": 389
+  },
+  {
+    "sku": "CSL-RVBSBV-LID-MINI",
+    "title": "runVIEW base station & bluVIEW lid for MSMINI systems",
+    "order": 390
+  },
+  {
+    "sku": "CSL-RVBSBV-LID-MIDI",
+    "title": "runVIEW base station & bluVIEW lid for MSMIDI systems",
+    "order": 391
+  },
+  {
+    "sku": "CSL-RVLID",
+    "title": "runVIEW bluVIEW lid for SafeDyes and EtBr",
+    "order": 392
+  },
+  {
+    "sku": "CSL-RVMINILID",
+    "title": "Orange filter lid for MSMINI",
+    "order": 393
+  },
+  {
+    "sku": "CSL-RVMIDILID",
+    "title": "Orange filter lid for MSMIDI",
+    "order": 394
+  },
+  {
+    "sku": "TGT8XMINI",
+    "title": "8 Student Agarose Electrophoresis System",
+    "order": 395
+  },
+  {
+    "sku": "TGT8XMINI-SET1",
+    "title": "8 Student Agarose Electrophoresis System with Power Supply and Fixed Volume Pipettes",
+    "order": 396
+  },
+  {
+    "sku": "TGT6XMINI",
+    "title": "6 Student Agarose Electrophoresis System",
+    "order": 397
+  },
+  {
+    "sku": "TGT6XMINI-NANO300",
+    "title": "6 Student Agarose Electrophoresis System with Power Supply",
+    "order": 398
+  },
+  {
+    "sku": "TGT6XMINI-NANO300KIT",
+    "title": "6 Student Agarose Electrophoresis System with Power Supply and Reagent kit",
+    "order": 399
+  },
+  {
+    "sku": "TGT4XMINI",
+    "title": "4 Student Agarose Electrophoresis System",
+    "order": 400
+  },
+  {
+    "sku": "TGT4XMINI-NANO300",
+    "title": "4 Student Agarose Electrophoresis System with Power Supply",
+    "order": 401
+  },
+  {
+    "sku": "TGT4XMINI-NANO300KIT",
+    "title": "TGT4XMINI with nanPAC-300 and chemical package",
+    "order": 402
+  },
+  {
+    "sku": "TGT1XMINI",
+    "title": "Individual Student Agarose Electrophoresis System",
+    "order": 403
+  },
+  {
+    "sku": "TGT7X10",
+    "title": "Teaching gel tank to run 1x 7x10cm gel trays, includes: 2x 8-sample combs, casting dams, loading guides and cables.",
+    "order": 404
+  },
+  {
+    "sku": "TGT-UV7",
+    "title": "7 x 7 cm Gel Tray for Student Tank",
+    "order": 405
+  },
+  {
+    "sku": "TGT-6-2",
+    "title": "Comb 6 well, 2mm thick for student tanks",
+    "order": 406
+  },
+  {
+    "sku": "TGT-8-2",
+    "title": "Comb 8 well, 2mm thick Fixed Height for TGT tanks",
+    "order": 407
+  },
+  {
+    "sku": "TPS150V",
+    "title": "75/150V Power Supply for Teaching Electrophoresis Tanks",
+    "order": 408
+  },
+  {
+    "sku": "LABSET1",
+    "title": "2 Gel Tanks, Power Supply & Pipettes",
+    "order": 409
+  },
+  {
+    "sku": "LABSET2",
+    "title": "4 Gel Tanks, Power Supply, Reagents & Pipettes",
+    "order": 410
+  },
+  {
+    "sku": "CSL-EDUPACK",
+    "title": "Education reagent package",
+    "order": 411
+  },
+  {
+    "sku": "CSLDNAKIT1",
+    "title": "DNA Experiment Kit",
+    "order": 412
+  },
+  {
+    "sku": "CSLFDYEKIT1",
+    "title": "Dye Experiment Kit",
+    "order": 413
+  },
+  {
+    "sku": "BB101",
+    "title": "DNA Fingerprinting - Electrophoresis Education kit",
+    "order": 414
+  },
+  {
+    "sku": "BB102",
+    "title": "Cystic Fibrosis - Electrophoresis Education kit",
+    "order": 415
+  },
+  {
+    "sku": "BB103",
+    "title": "Paternity Testing - Electrophoresis Education kit",
+    "order": 416
+  },
+  {
+    "sku": "BB104",
+    "title": "Breast Cancer Genetics - Electrophoresis Education kit",
+    "order": 417
+  },
+  {
+    "sku": "CSL-RUNSAFE",
+    "title": "runSAFE stain 1ml/vial",
+    "order": 418
+  },
+  {
+    "sku": "CSL-MDNA-100BPH",
+    "title": "100bp DNA ladder, 100-3000bp, 1 x 500ul vial",
+    "order": 419
+  },
+  {
+    "sku": "CSL-MDNA-100BP",
+    "title": "100bp DNA ladder, 100-1500bp, 1 x 500ul vial",
+    "order": 420
+  },
+  {
+    "sku": "CSL-MDNA-1KBPLUS",
+    "title": "1Kb PLUS DNA ladder, 100-10Kb, 1 x 500ul vial",
+    "order": 421
+  },
+  {
+    "sku": "CSL-MDNA-50BP",
+    "title": "50bp DNA ladder, 50-1500bp, 1x500ul vial",
+    "order": 422
+  },
+  {
+    "sku": "CSL-TBEP",
+    "title": "Powdered Tris-Borate-EDTA  Running buffer - 10X, 5L",
+    "order": 423
+  },
+  {
+    "sku": "TAE50X1L",
+    "title": "Tris-Acetate EDTA Running Buffer 50X - 1L",
+    "order": 424
+  },
+  {
+    "sku": "TAE50X5L",
+    "title": "Tris-Acetate EDTA Running Buffer 50X - 5L",
+    "order": 425
+  },
+  {
+    "sku": "TBE10X1L",
+    "title": "Tris-Borate EDTA Running Buffer 10X - 1L",
+    "order": 426
+  },
+  {
+    "sku": "TBE10X5L",
+    "title": "Tris-Borate EDTA Running Buffer 10X - 5L",
+    "order": 427
+  },
+  {
+    "sku": "CSL-LOADDYE",
+    "title": "10 x Bromophenol Blue Loading Dye, 1ml",
+    "order": 428
+  },
+  {
+    "sku": "CSL-LOADDYE10",
+    "title": "10 x Bromophenol Blue Loading Dye, 10ml",
+    "order": 429
+  },
+  {
+    "sku": "RFW250",
+    "title": "RNase-Free Water 250ml",
+    "order": 430
+  },
+  {
+    "sku": "RFW50X5",
+    "title": "RNase-Free Water 50 x 5ml",
+    "order": 431
+  },
+  {
+    "sku": "UPW1000",
+    "title": "BP Grade Sterile Water, 1000ml",
+    "order": 432
+  },
+  {
+    "sku": "CSL-AG5",
+    "title": "Agarose 5g",
+    "order": 433
+  },
+  {
+    "sku": "CSL-AG100",
+    "title": "Agarose 100g",
+    "order": 434
+  },
+  {
+    "sku": "CSL-AG500",
+    "title": "Agarose 500g",
+    "order": 435
+  },
+  {
+    "sku": "CSL-AG1000",
+    "title": "Agarose 1000g (2 x 500g Bottles)",
+    "order": 436
+  },
+  {
+    "sku": "CSL-AG2000",
+    "title": "Agarose 2000g (4 x 500g Bottles)",
+    "order": 437
+  },
+  {
+    "sku": "CSL-AG5000",
+    "title": "Agarose 5000g (10 x 500g Bottles)",
+    "order": 438
+  },
+  {
+    "sku": "CSL-AG10KG",
+    "title": "Agarose 10kg (20 x 500g Bottles)",
+    "order": 439
+  },
+  {
+    "sku": "CSL-LMA5",
+    "title": "Agarose 5g, LMP",
+    "order": 440
+  },
+  {
+    "sku": "CSL-LMA50",
+    "title": "Agarose 50g, LMP",
+    "order": 441
+  },
+  {
+    "sku": "CSL-LMA100",
+    "title": "Agarose 100g, LMP",
+    "order": 442
+  },
+  {
+    "sku": "CSL-LMA500",
+    "title": "Agarose 500g, LMP",
+    "order": 443
+  },
+  {
+    "sku": "CSL-HRA5",
+    "title": "Agarose 5g, HR",
+    "order": 444
+  },
+  {
+    "sku": "CSL-HRA100",
+    "title": "Agarose 100g, HR",
+    "order": 445
+  },
+  {
+    "sku": "CSL-HRA500",
+    "title": "Agarose 500g, HR",
+    "order": 446
+  },
+  {
+    "sku": "CSL-AGTAB",
+    "title": "Agarose Tablets 100g, Low EEO, 200 x 0.5g",
+    "order": 447
+  },
+  {
+    "sku": "CVS10DSYS",
+    "title": "omniPAGE Mini System with Caster",
+    "order": 448
+  },
+  {
+    "sku": "CVS10D",
+    "title": "omniPAGE Mini System, No Caster",
+    "order": 449
+  },
+  {
+    "sku": "CVS10PRE",
+    "title": "omniPAGE Mini System for pre-cast Gels",
+    "order": 450
+  },
+  {
+    "sku": "CVS10DSYS-CU",
+    "title": "omniPAGE Mini System with Caster and additional casting unit",
+    "order": 451
+  },
+  {
+    "sku": "CVS10EXCASTER",
+    "title": "omniPAGE Mini - Casting Stand without base (no electrodes)",
+    "order": 452
+  },
+  {
+    "sku": "CVS10EXCASTERSYS",
+    "title": "omniPAGE Mini - Casting Stand with base",
+    "order": 453
+  },
+  {
+    "sku": "VS10DCAST",
+    "title": "omniPAGE Mini - Casting base",
+    "order": 454
+  },
+  {
+    "sku": "VS10DCASTM",
+    "title": "omniPAGE Mini - Replacement Caster Sealing Mats (PK/2)",
+    "order": 455
+  },
+  {
+    "sku": "CVS10DIRM",
+    "title": "omniPAGE Mini - Inner Running Module",
+    "order": 456
+  },
+  {
+    "sku": "VS10ICB",
+    "title": "omniPAGE Mini - Cooling Block.",
+    "order": 457
+  },
+  {
+    "sku": "VS10NG",
+    "title": "10 x 10cm Notched Glass Plates 2mm thick (Pack of 2)",
+    "order": 458
+  },
+  {
+    "sku": "VS10PG",
+    "title": "10 x 10cm Plain Glass Plates 2mm thick (Pack of 2)",
+    "order": 459
+  },
+  {
+    "sku": "VS10PGS0.5",
+    "title": "10 x 10cm Plain Glass Plates with 0.5mm Bonded Spacers (Pack of 2)",
+    "order": 460
+  },
+  {
+    "sku": "VS10PGS0.75",
+    "title": "10 x 10cm Plain Glass Plates with 0.75mm Bonded Spacers (Pack of 2)",
+    "order": 461
+  },
+  {
+    "sku": "VS10PGS1",
+    "title": "10 x 10cm Plain Glass Plates with 1mm Bonded Spacers (Pack of 2)",
+    "order": 462
+  },
+  {
+    "sku": "VS10PGS1.5",
+    "title": "10 x 10cm Plain Glass Plates with 1.5mm Bonded Spacers (Pack of 2)",
+    "order": 463
+  },
+  {
+    "sku": "VS10PGS2",
+    "title": "10 x 10cm Plain Glass Plates with 2mm Bonded Spacers (Pack of 2)",
+    "order": 464
+  },
+  {
+    "sku": "VS10NGS0.5",
+    "title": "10 x 10cm Notched Glass Plates with 0.5mm Bonded Spacers (Pack of 2)",
+    "order": 465
+  },
+  {
+    "sku": "VS10NGS0.75",
+    "title": "10 x 10cm Notched Glass Plates with 0.75mm Bonded Spacers (Pack of 2)",
+    "order": 466
+  },
+  {
+    "sku": "VS10NGS1",
+    "title": "10 x 10cm Notched Glass Plates with 1mm Bonded Spacers (Pack of 2)",
+    "order": 467
+  },
+  {
+    "sku": "VS10NGS1.5",
+    "title": "10 x 10cm Notched Glass Plates with 1.5mm Bonded Spacers (Pack of 2)",
+    "order": 468
+  },
+  {
+    "sku": "VS10NGS2",
+    "title": "10 x 10cm Notched Glass Plates with 2mm Bonded Spacers (Pack of 2)",
+    "order": 469
+  },
+  {
+    "sku": "VS10DP",
+    "title": "omniPAGE Mini - Dummy Plate, 10 x 10cm",
+    "order": 470
+  },
+  {
+    "sku": "VS10S0.5",
+    "title": "10cm Spacers - 0.5mm (Pack of 2)",
+    "order": 471
+  },
+  {
+    "sku": "VS10S0.75",
+    "title": "10cm Spacers - 0.75mm (Pack of 2)",
+    "order": 472
+  },
+  {
+    "sku": "VS10S1",
+    "title": "10cm Spacers - 1mm thick (Pack of 2)",
+    "order": 473
+  },
+  {
+    "sku": "VS10S1.5",
+    "title": "10cm Spacers - 1.5mm thick (Pack of 2)",
+    "order": 474
+  },
+  {
+    "sku": "VS10S2",
+    "title": "10cm Spacers - 2mm thick (Pack of 2)",
+    "order": 475
+  },
+  {
+    "sku": "VS10-1-0.75",
+    "title": "omniPAGE Mini Comb, 1 Prep, 1 Marker, 0.75mm thick",
+    "order": 476
+  },
+  {
+    "sku": "VS10-5-0.75",
+    "title": "omniPAGE Mini Comb, 5 sample, 0.75mm thick",
+    "order": 477
+  },
+  {
+    "sku": "VS10-8MC-0.75",
+    "title": "omniPAGE Mini Comb, 8 sample MC, 0.75mm thick",
+    "order": 478
+  },
+  {
+    "sku": "VS10-9-0.75",
+    "title": "omniPAGE Mini Comb, 9 sample, 0.75mm thick",
+    "order": 479
+  },
+  {
+    "sku": "VS10-10-0.75",
+    "title": "omniPAGE Mini Comb, 10 sample, 0.75mm thick",
+    "order": 480
+  },
+  {
+    "sku": "VS10-12-0.75",
+    "title": "omniPAGE Mini Comb, 12 sample, 0.75mm thick",
+    "order": 481
+  },
+  {
+    "sku": "VS10-20-0.75",
+    "title": "omniPAGE Mini Comb, 20 sample, 0.75mm thick",
+    "order": 482
+  },
+  {
+    "sku": "VS10-1-1",
+    "title": "omniPAGE Mini Comb, 1 Prep, 1 Marker, 1mm thick",
+    "order": 483
+  },
+  {
+    "sku": "VS10-5-1",
+    "title": "omniPAGE Mini Comb, 5 sample, 1mm thick",
+    "order": 484
+  },
+  {
+    "sku": "VS10-8MC-1",
+    "title": "omniPAGE Mini Comb, 8 sample MC, 1mm thick",
+    "order": 485
+  },
+  {
+    "sku": "VS10-9-1",
+    "title": "omniPAGE Mini Comb, 9 sample, 1mm thick",
+    "order": 486
+  },
+  {
+    "sku": "VS10-16-0.75",
+    "title": "omniPAGE Mini Comb, 16 sample, 0.75mm thick",
+    "order": 487
+  },
+  {
+    "sku": "VS10-16-1",
+    "title": "omniPAGE Mini Comb, 16 sample, 1mm thick",
+    "order": 488
+  },
+  {
+    "sku": "VS10-16-1.5",
+    "title": "omniPAGE Mini Comb, 16 sample, 1.5mm thick",
+    "order": 489
+  },
+  {
+    "sku": "VS10-16-2",
+    "title": "omniPAGE Mini Comb, 16 sample, 2mm thick",
+    "order": 490
+  },
+  {
+    "sku": "VS10-10-1",
+    "title": "omniPAGE Mini Comb, 10 sample, 1mm thick",
+    "order": 491
+  },
+  {
+    "sku": "VS10-12-1",
+    "title": "omniPAGE Mini Comb, 12 sample, 1mm thick",
+    "order": 492
+  },
+  {
+    "sku": "VS10-20-1",
+    "title": "omniPAGE Mini Comb, 20 sample, 1mm thick",
+    "order": 493
+  },
+  {
+    "sku": "VS10-1-1.5",
+    "title": "omniPAGE Mini Comb, 1 Prep, 1 Marker, 1.5mm thick",
+    "order": 494
+  },
+  {
+    "sku": "VS10-5-1.5",
+    "title": "omniPAGE Mini Comb, 5 sample, 1.5mm thick",
+    "order": 495
+  },
+  {
+    "sku": "VS10-8MC-1.5",
+    "title": "omniPAGE Mini Comb, 8 sample MC, 1.5mm thick",
+    "order": 496
+  },
+  {
+    "sku": "VS10-9-1.5",
+    "title": "omniPAGE Mini Comb, 9 sample, 1.5mm thick",
+    "order": 497
+  },
+  {
+    "sku": "VS10-10-1.5",
+    "title": "omniPAGE Mini Comb, 10 sample, 1.5mm thick",
+    "order": 498
+  },
+  {
+    "sku": "VS10-12-1.5",
+    "title": "omniPAGE Mini Comb, 12 sample, 1.5mm thick",
+    "order": 499
+  },
+  {
+    "sku": "VS10-20-1.5",
+    "title": "omniPAGE Mini Comb, 20 sample, 1.5mm thick",
+    "order": 500
+  },
+  {
+    "sku": "VS10-1-2",
+    "title": "omniPAGE Mini Comb, 1 Prep, 1 Marker, 2mm thick",
+    "order": 501
+  },
+  {
+    "sku": "VS10-5-2",
+    "title": "omniPAGE Mini Comb, 5 sample, 2mm thick",
+    "order": 502
+  },
+  {
+    "sku": "VS10-8MC-2",
+    "title": "omniPAGE Mini Comb, 8 sample MC, 2mm thick",
+    "order": 503
+  },
+  {
+    "sku": "VS10-9-2",
+    "title": "omniPAGE Mini Comb, 9 sample, 2mm thick",
+    "order": 504
+  },
+  {
+    "sku": "VS10-10-2",
+    "title": "omniPAGE Mini Comb, 10 sample, 2mm thick",
+    "order": 505
+  },
+  {
+    "sku": "VS10-12-2",
+    "title": "omniPAGE Mini Comb, 12 sample, 2mm thick",
+    "order": 506
+  },
+  {
+    "sku": "VS10-20-2",
+    "title": "omniPAGE Mini Comb, 20 sample, 2mm thick",
+    "order": 507
+  },
+  {
+    "sku": "VS10-IEFKIT",
+    "title": "omniPAGE Mini - IEF Conversion kit for 2 x 7cm IPG strips",
+    "order": 508
+  },
+  {
+    "sku": "VS10SG",
+    "title": "omniPAGE Mini - Silicone Gasket (PK/1)",
+    "order": 509
+  },
+  {
+    "sku": "VS10LID",
+    "title": "omniPAGE Mini lid, No cables",
+    "order": 510
+  },
+  {
+    "sku": "VS10TANK",
+    "title": "omniPAGE Mini Tank",
+    "order": 511
+  },
+  {
+    "sku": "CVS10CES",
+    "title": "omniPAGE Mini - PAGE, 2D and Blotting Package",
+    "order": 512
+  },
+  {
+    "sku": "CVS10C2DS",
+    "title": "omniPAGE Mini - PAGE and 2D Package",
+    "order": 513
+  },
+  {
+    "sku": "CVS10CBS",
+    "title": "omniPAGE Mini - PAGE and Blotting Package",
+    "order": 514
+  },
+  {
+    "sku": "CVS10CBS-HI",
+    "title": "omniPAGE Mini - PAGE and High Intensity Blotting Package",
+    "order": 515
+  },
+  {
+    "sku": "VS10DCI",
+    "title": "omniPAGE Mini Tube Gel Insert",
+    "order": 516
+  },
+  {
+    "sku": "VS10BI",
+    "title": "omniBLOT Mini Insert",
+    "order": 517
+  },
+  {
+    "sku": "VS10BI-HI",
+    "title": "OmniBLOT Mini High Intensity Insert",
+    "order": 518
+  },
+  {
+    "sku": "MCT10",
+    "title": "Mini Capillary Tubes, 75mm x 1mm ID- Pack of 100",
+    "order": 519
+  },
+  {
+    "sku": "MCT101.5",
+    "title": "Mini Capillary Tubes, 75mm x 1.5mm ID - Pack of 100",
+    "order": 520
+  },
+  {
+    "sku": "MCBP",
+    "title": "Mini Capillary Blanking ports - Pack of 10",
+    "order": 521
+  },
+  {
+    "sku": "VS10DC",
+    "title": "omniPAGE Mini Tube Unit",
+    "order": 522
+  },
+  {
+    "sku": "CVS82BSYS0.75",
+    "title": "proPAGE 2 - mini PAGE system for 2 gels, 0.75mm - CLEAVER BRANDED",
+    "order": 523
+  },
+  {
+    "sku": "CVS82BSYS",
+    "title": "proPAGE 2 - mini PAGE system for 2 gels, 1mm- CLEAVER BRANDED",
+    "order": 524
+  },
+  {
+    "sku": "CVS82BSYS1.5",
+    "title": "proPAGE 2 - mini PAGE system for 2 gels, 1.5mm- CLEAVER BRANDED",
+    "order": 525
+  },
+  {
+    "sku": "CVS84BSYS0.75",
+    "title": "proPAGE 4 - mini PAGE system for 4 gels, 0.75mm- CLEAVER BRANDED",
+    "order": 526
+  },
+  {
+    "sku": "CVS84BSYS",
+    "title": "proPAGE 4 - mini PAGE system for 4 gels, 1mm- CLEAVER BRANDED",
+    "order": 527
+  },
+  {
+    "sku": "CVS84BSYS1.5",
+    "title": "proPAGE 4 - mini PAGE system for 4 gels, 1.5mm- CLEAVER BRANDED",
+    "order": 528
+  },
+  {
+    "sku": "CVS8-SBU",
+    "title": "miniBLOT 10 x 8cm electroblotting system for 2 gels",
+    "order": 529
+  },
+  {
+    "sku": "CVS8-BI",
+    "title": "miniBLOT replacement blotting module, pk/1",
+    "order": 530
+  },
+  {
+    "sku": "CVS8-10-1.0",
+    "title": "Comb for proPAGE - 10 Sample, 1mm thick, pk/5",
+    "order": 531
+  },
+  {
+    "sku": "CVS8-15-1.0",
+    "title": "Comb for proPAGE - 15 Sample, 1mm thick, pk/5",
+    "order": 532
+  },
+  {
+    "sku": "CVS8-10-0.75",
+    "title": "Comb for proPAGE - 10 Sample, 0.75mm thick, pk/5",
+    "order": 533
+  },
+  {
+    "sku": "CVS8-15-0.75",
+    "title": "Comb for proPAGE - 15 Sample, 0.75mm thick, pk/5",
+    "order": 534
+  },
+  {
+    "sku": "CVS8-10-1.5",
+    "title": "Comb for proPAGE - 10 Sample, 1.5mm thick, pk/5",
+    "order": 535
+  },
+  {
+    "sku": "CVS8-15-1.5",
+    "title": "Comb for proPAGE - 15 Sample, 1.5mm thick, pk/5",
+    "order": 536
+  },
+  {
+    "sku": "CVS8PGS0.75",
+    "title": "Glass plates for proPAGE, 0.75mm spacers, pk/5",
+    "order": 537
+  },
+  {
+    "sku": "CVS8PGS1.0",
+    "title": "Glass plates for proPAGE, 1mm spacers, pk/5",
+    "order": 538
+  },
+  {
+    "sku": "CVS8PGS1.5",
+    "title": "Glass plates for proPAGE, 1.5mm spacers, pk/5",
+    "order": 539
+  },
+  {
+    "sku": "CVS8SP",
+    "title": "Short glass for proPAGE, pk/10",
+    "order": 540
+  },
+  {
+    "sku": "CVS8EXCASTERB",
+    "title": "proPAGE gel casting base without gasket, pk/1",
+    "order": 541
+  },
+  {
+    "sku": "CVS8EXCASTERF",
+    "title": "proPAGE gel casting frame, pk/1",
+    "order": 542
+  },
+  {
+    "sku": "CVS8EXCASTERH",
+    "title": "Replacement hing for proPAGE gel casting frame, pk/2",
+    "order": 543
+  },
+  {
+    "sku": "CVS8DCASTM",
+    "title": "Sealing gasket for proPAGE casting base, pk/5",
+    "order": 544
+  },
+  {
+    "sku": "CVS8USS",
+    "title": "Replacement gasket for proPAGE running module, pk/2",
+    "order": 545
+  },
+  {
+    "sku": "CVS8EXCASTERS",
+    "title": "Repalcement side fastener for proPAGE running module, pk/2",
+    "order": 546
+  },
+  {
+    "sku": "CVS8DIRM",
+    "title": "proPAGE inner running module with electrode heads, pk/1",
+    "order": 547
+  },
+  {
+    "sku": "CVS8DIRMN",
+    "title": "proPAGE inner running module with flat heads, pk/1",
+    "order": 548
+  },
+  {
+    "sku": "CVS8DP",
+    "title": "Dummy plate for proPAGE, pk/1",
+    "order": 549
+  },
+  {
+    "sku": "CVS8GPS",
+    "title": "Glass plate separator for proPAGE, pk/5",
+    "order": 550
+  },
+  {
+    "sku": "CVS8SLAF",
+    "title": "Sample loading guide for proPAGE units, pk/1",
+    "order": 551
+  },
+  {
+    "sku": "CVS8LIDC",
+    "title": "proPAGE lid with power cables, pk/1",
+    "order": 552
+  },
+  {
+    "sku": "CVS8TANK",
+    "title": "proPAGE Tank",
+    "order": 553
+  },
+  {
+    "sku": "CVS8-CAB",
+    "title": "proPAGE & miniBLOT power cables",
+    "order": 554
+  },
+  {
+    "sku": "CVS8BI-BC",
+    "title": "miniBLOT Blotting Cassette, pk/2",
+    "order": 555
+  },
+  {
+    "sku": "CVS8BI-MS",
+    "title": "miniBLOT Porous Sponge for blotting cassette, pk/5",
+    "order": 556
+  },
+  {
+    "sku": "CVS8BI-CB",
+    "title": "miniBLOT Cooling Block, pk/1",
+    "order": 557
+  },
+  {
+    "sku": "VS10WD",
+    "title": "omniPAGE Mini Wide System, No Caster",
+    "order": 558
+  },
+  {
+    "sku": "VS10WDSYS",
+    "title": "omniPAGE Mini Wide System with Caster",
+    "order": 559
+  },
+  {
+    "sku": "VS10WDSYS-CU",
+    "title": "omniPAGE Mini Wide System with Caster and additional casting unit",
+    "order": 560
+  },
+  {
+    "sku": "VS10WEXCASTER",
+    "title": "omniPAGE Mini Wide - Casting Stand without base",
+    "order": 561
+  },
+  {
+    "sku": "VS20DCAST",
+    "title": "omniPAGE Maxi and Mini Wide - Casting base",
+    "order": 562
+  },
+  {
+    "sku": "VS20DCASTM",
+    "title": "omniPAGE Maxi and Mini Wide - Replacement Caster Sealing Mat",
+    "order": 563
+  },
+  {
+    "sku": "VS10WDIRM",
+    "title": "omniPAGE Mini Wide, - Inner Running Module",
+    "order": 564
+  },
+  {
+    "sku": "VS10WNG",
+    "title": "20 x 10cm Notched Glass Plates 4mm thick (Pk of 2)",
+    "order": 565
+  },
+  {
+    "sku": "VS10WPG",
+    "title": "20 x 10cm Plain Glass Plates 4mm thick (Pack of 2)",
+    "order": 566
+  },
+  {
+    "sku": "VS10WPGS0.75",
+    "title": "20 x 10cm Plain Glass Plates with 0.75mm Bonded Spacers (Pack of 2)",
+    "order": 567
+  },
+  {
+    "sku": "VS10WPGS1",
+    "title": "20 x 10cm Plain Glass Plates with 1mm Bonded Spacers (Pack of 2)",
+    "order": 568
+  },
+  {
+    "sku": "VS10WPGS1.5",
+    "title": "20 x 10cm Plain Glass Plates with 1.5mm Bonded Spacers (Pack of 2)",
+    "order": 569
+  },
+  {
+    "sku": "VS10WPGS2",
+    "title": "20 x 10cm Plain Glass Plates with 2mm Bonded Spacers (Pack of 2)",
+    "order": 570
+  },
+  {
+    "sku": "VS10WNGS0.75",
+    "title": "20 x 10cm Notched Glass Plates with 0.75mm Bonded Spacers (Pack of 2)",
+    "order": 571
+  },
+  {
+    "sku": "VS10WNGS1",
+    "title": "20 x 10cm Notched Glass Plates with 1mm Bonded Spacers (Pack of 2)",
+    "order": 572
+  },
+  {
+    "sku": "VS10WDP",
+    "title": "omniPAGE Mini Wide - Dummy Plate, 20 x 10cm",
+    "order": 573
+  },
+  {
+    "sku": "VS10W-IEFKIT",
+    "title": "omniPAGE Mini Wide IEF Conversion kit",
+    "order": 574
+  },
+  {
+    "sku": "VS20WAVELID",
+    "title": "omniPAGE Mini Wide and WAVE Maxi Lid, No cables",
+    "order": 575
+  },
+  {
+    "sku": "VS10WTANK",
+    "title": "omniPAGE Mini Wide Tank",
+    "order": 576
+  },
+  {
+    "sku": "VS10WCES",
+    "title": "omniPAGE Mini Wide - PAGE, 2D and Blotting Package",
+    "order": 577
+  },
+  {
+    "sku": "VS10WCBS",
+    "title": "omniPAGE Mini Wide - PAGE and Blotting Package",
+    "order": 578
+  },
+  {
+    "sku": "VS10WC2DS",
+    "title": "omniPAGE Mini Wide - PAGE and 2D Package",
+    "order": 579
+  },
+  {
+    "sku": "VS10WDC",
+    "title": "omniPAGE Mini Wide, Tube Unit",
+    "order": 580
+  },
+  {
+    "sku": "VS10WDCI",
+    "title": "omniPAGE Mini Wide, Tube Gel Insert",
+    "order": 581
+  },
+  {
+    "sku": "VS20WAVESYS",
+    "title": "omniPAGE WAVE Maxi with caster",
+    "order": 582
+  },
+  {
+    "sku": "VS20WAVESYS-CU",
+    "title": "omniPAGE WAVE Maxi with caster and additional casting unit",
+    "order": 583
+  },
+  {
+    "sku": "VS20WAVED",
+    "title": "omniPAGE WAVE Maxi, No caster",
+    "order": 584
+  },
+  {
+    "sku": "VS20WAVE-EC",
+    "title": "omniPAGE WAVE Maxi - Casting Stand without base",
+    "order": 585
+  },
+  {
+    "sku": "VS20WAVEDIRM",
+    "title": "omniPAGE WAVE Maxi - Inner Running Module",
+    "order": 586
+  },
+  {
+    "sku": "VS20WAVE-CC",
+    "title": "omniPAGE WAVE Maxi - Detachable Cooling Coil",
+    "order": 587
+  },
+  {
+    "sku": "VS20ICB",
+    "title": "omniPAGE WAVE Maxi - Maxi Cooling Block.",
+    "order": 588
+  },
+  {
+    "sku": "VS20NG",
+    "title": "20 x 20cm Notched Glass Plates 4mm thick (Pack of 2)",
+    "order": 589
+  },
+  {
+    "sku": "VS20PGS0.75",
+    "title": "20 x 20cm Plain Glass Plates with 0.75mm Bonded Spacers (Pack of 2)",
+    "order": 590
+  },
+  {
+    "sku": "VS20PGS1",
+    "title": "20 x 20cm Plain Glass Plates with 1mm Bonded Spacers (Pack of 2)",
+    "order": 591
+  },
+  {
+    "sku": "VS20PGS1.5",
+    "title": "20 x 20cm Plain Glass Plates with 1.5mm Bonded Spacers (Pack of 2)",
+    "order": 592
+  },
+  {
+    "sku": "VS20PGS2",
+    "title": "20 x 20cm Plain Glass Plates with 2mm Bonded Spacers (Pack of 2)",
+    "order": 593
+  },
+  {
+    "sku": "VS20NGS0.75",
+    "title": "20 x 20cm Notched Glass Plates with 0.75mm Bonded Spacers (Pack of 2)",
+    "order": 594
+  },
+  {
+    "sku": "VS20NGS1",
+    "title": "20 x 20cm Notched Glass Plates with 1mm Bonded Spacers (Pack of 2)",
+    "order": 595
+  },
+  {
+    "sku": "VS20NGS2",
+    "title": "20 x 20cm Notched Glass Plates with 2mm Bonded Spacers (Pack of 2)",
+    "order": 596
+  },
+  {
+    "sku": "VS20PG",
+    "title": "20 x 20cm Plain Glass Plates 4mm thick (Pack of 2)",
+    "order": 597
+  },
+  {
+    "sku": "VS20NGS1.5",
+    "title": "20 x 20cm Notched Glass Plates with 1.5mm Bonded Spacers (Pack of 2)",
+    "order": 598
+  },
+  {
+    "sku": "VS20DP",
+    "title": "omniPAGE WAVE Maxi - Dummy Plate, 20 x 20cm",
+    "order": 599
+  },
+  {
+    "sku": "VS20S0.75",
+    "title": "20cm Spacers - 0.75mm (Pack of 2)",
+    "order": 600
+  },
+  {
+    "sku": "VS20S1",
+    "title": "20cm Spacers - 1mm thick (Pack of 2)",
+    "order": 601
+  },
+  {
+    "sku": "VS20S1.5",
+    "title": "20cm Spacers - 1.5mm thick (Pack of 2)",
+    "order": 602
+  },
+  {
+    "sku": "VS20S2",
+    "title": "20cm Spacers - 2mm thick (Pack of 2)",
+    "order": 603
+  },
+  {
+    "sku": "VS20WAVE-IEFKIT",
+    "title": "omniPAGE WAVE Maxi - IEF Conversion Kit",
+    "order": 604
+  },
+  {
+    "sku": "RPW0.2100",
+    "title": "Replacement Platinum Wire 0.2mm - 100cm",
+    "order": 605
+  },
+  {
+    "sku": "VS20-1-0.75",
+    "title": "omniPAGE WAVE Maxi Comb, 1 Prep, 1 Marker, 0.75mm thick",
+    "order": 606
+  },
+  {
+    "sku": "VS20-5-0.75",
+    "title": "omniPAGE WAVE Maxi Comb, 5 sample, 0.75mm thick",
+    "order": 607
+  },
+  {
+    "sku": "VS20-10-0.75",
+    "title": "omniPAGE WAVE Maxi Comb, 10 sample, 0.75mm thick",
+    "order": 608
+  },
+  {
+    "sku": "VS20-18MC-0.75",
+    "title": "omniPAGE WAVE Maxi Comb, 18 sample MC, 0.75mm thick",
+    "order": 609
+  },
+  {
+    "sku": "VS20-24-0.75",
+    "title": "omniPAGE WAVE Maxi Comb, 24 sample, 0.75mm thick",
+    "order": 610
+  },
+  {
+    "sku": "VS20-30-0.75",
+    "title": "omniPAGE WAVE Maxi Comb, 30 sample, 0.75mm thick",
+    "order": 611
+  },
+  {
+    "sku": "VS20-48-0.75",
+    "title": "omniPAGE WAVE Maxi Comb, 48 sample, 0.75mm thick",
+    "order": 612
+  },
+  {
+    "sku": "VS20-1-1",
+    "title": "omniPAGE WAVE Maxi Comb, 1 Prep, 1 Marker, 1mm thick",
+    "order": 613
+  },
+  {
+    "sku": "VS20-5-1",
+    "title": "omniPAGE WAVE Maxi Comb, 5 sample, 1mm thick",
+    "order": 614
+  },
+  {
+    "sku": "VS20-10-1",
+    "title": "omniPAGE WAVE Maxi Comb, 10 sample, 1mm thick",
+    "order": 615
+  },
+  {
+    "sku": "VS20-18MC-1",
+    "title": "omniPAGE WAVE Maxi Comb, 18 sample MC, 1mm thick",
+    "order": 616
+  },
+  {
+    "sku": "VS20-24-1",
+    "title": "omniPAGE WAVE Maxi Comb, 24 sample, 1mm thick",
+    "order": 617
+  },
+  {
+    "sku": "VS20-30-1",
+    "title": "omniPAGE WAVE Maxi Comb, 30 sample, 1mm thick",
+    "order": 618
+  },
+  {
+    "sku": "VS20-48-1",
+    "title": "omniPAGE WAVE Maxi Comb, 48 sample, 1mm thick",
+    "order": 619
+  },
+  {
+    "sku": "VS20-36-0.75",
+    "title": "omniPAGE WAVE Maxi Comb, 36 sample, 0.75mm thick",
+    "order": 620
+  },
+  {
+    "sku": "VS20-36-1",
+    "title": "omniPAGE WAVE Maxi Comb, 36 sample, 1mm thick",
+    "order": 621
+  },
+  {
+    "sku": "VS20-36-2",
+    "title": "omniPAGE WAVE Maxi Comb, 36 sample, 2mm thick",
+    "order": 622
+  },
+  {
+    "sku": "VS20-36-1.5",
+    "title": "omniPAGE WAVE Maxi Comb, 36 sample, 1.5mm thick",
+    "order": 623
+  },
+  {
+    "sku": "VS20-1-1.5",
+    "title": "omniPAGE WAVE Maxi Comb, 1 Prep, 1 Marker, 1.5mm thick",
+    "order": 624
+  },
+  {
+    "sku": "VS20-5-1.5",
+    "title": "omniPAGE WAVE Maxi Comb, 5 sample, 1.5mm thick",
+    "order": 625
+  },
+  {
+    "sku": "VS20-10-1.5",
+    "title": "omniPAGE WAVE Maxi Comb, 10 sample, 1.5mm thick",
+    "order": 626
+  },
+  {
+    "sku": "VS20-18MC-1.5",
+    "title": "omniPAGE WAVE Maxi Comb, 18 sample MC, 1.5mm thick",
+    "order": 627
+  },
+  {
+    "sku": "VS20-24-1.5",
+    "title": "omniPAGE WAVE Maxi Comb, 24 sample, 1.5mm thick",
+    "order": 628
+  },
+  {
+    "sku": "VS20-30-1.5",
+    "title": "omniPAGE WAVE Maxi Comb, 30 sample, 1.5mm thick",
+    "order": 629
+  },
+  {
+    "sku": "VS20-48-1.5",
+    "title": "omniPAGE WAVE Maxi Comb, 48 sample, 1.5mm thick",
+    "order": 630
+  },
+  {
+    "sku": "VS20-1-2",
+    "title": "omniPAGE WAVE Maxi Comb, 1 Prep, 1 Marker, 2mm thick",
+    "order": 631
+  },
+  {
+    "sku": "VS20-5-2",
+    "title": "omniPAGE WAVE Maxi Comb, 5 sample, 2mm thick",
+    "order": 632
+  },
+  {
+    "sku": "VS20-10-2",
+    "title": "omniPAGE WAVE Maxi Comb, 10 sample, 2mm thick",
+    "order": 633
+  },
+  {
+    "sku": "VS20-18MC-2",
+    "title": "omniPAGE WAVE Maxi Comb, 18 sample MC, 2mm thick",
+    "order": 634
+  },
+  {
+    "sku": "VS20-24-2",
+    "title": "omniPAGE WAVE Maxi Comb, 24 sample, 2mm thick",
+    "order": 635
+  },
+  {
+    "sku": "VS20-30-2",
+    "title": "omniPAGE WAVE Maxi Comb, 30 sample, 2mm thick",
+    "order": 636
+  },
+  {
+    "sku": "VS20-48-2",
+    "title": "omniPAGE WAVE Maxi Comb, 48 sample, 2mm thick",
+    "order": 637
+  },
+  {
+    "sku": "VS20WAVEOT",
+    "title": "omniPAGE WAVE Maxi Tank",
+    "order": 638
+  },
+  {
+    "sku": "VS20WAVECES",
+    "title": "omniPAGE WAVE Maxi - PAGE, 2D and Blotting Package",
+    "order": 639
+  },
+  {
+    "sku": "VS20WAVECES-HI",
+    "title": "omniPAGE WAVE Maxi - PAGE, 2D and High Intensity Blotting Package",
+    "order": 640
+  },
+  {
+    "sku": "VS20WAVEC2DS",
+    "title": "omniPAGE WAVE Maxi - PAGE and 2D Package",
+    "order": 641
+  },
+  {
+    "sku": "VS20CBS",
+    "title": "omniPAGE WAVE Maxi - PAGE and Blotting Package",
+    "order": 642
+  },
+  {
+    "sku": "VS20CBS-HI",
+    "title": "omniPAGE WAVE Maxi - PAGE and High Intensity Blotting Package",
+    "order": 643
+  },
+  {
+    "sku": "VS20BI-HI",
+    "title": "omniBLOT Maxi High Intensity Insert",
+    "order": 644
+  },
+  {
+    "sku": "VS20BI",
+    "title": "omniBLOT Maxi Insert",
+    "order": 645
+  },
+  {
+    "sku": "VS20DC",
+    "title": "omniPAGE WAVE Maxi Tube Unit",
+    "order": 646
+  },
+  {
+    "sku": "VS20WAVEDCI",
+    "title": "omniPAGE WAVE Maxi Tube Gel Insert",
+    "order": 647
+  },
+  {
+    "sku": "MCT20",
+    "title": "Maxi Capillary Tubes 175mm x 1.15mm ID - Pack of 100",
+    "order": 648
+  },
+  {
+    "sku": "MCT201.5",
+    "title": "Maxi Capillary Tubes - 175mm x 1.5mm ID - Pack of 100",
+    "order": 649
+  },
+  {
+    "sku": "VS20NGS1/6",
+    "title": "omniPAGE WAVE Maxi - IEF Notched Glass Plates",
+    "order": 650
+  },
+  {
+    "sku": "CSL-GM15",
+    "title": "Gradient Mixer, total volume 15ml",
+    "order": 651
+  },
+  {
+    "sku": "CSL-GM25",
+    "title": "Gradient Mixer, total volume 25ml",
+    "order": 652
+  },
+  {
+    "sku": "CSL-GM50",
+    "title": "Gradient Mixer, total volume 50ml",
+    "order": 653
+  },
+  {
+    "sku": "CSL-GM100",
+    "title": "Gradient Mixer, total volume 100ml",
+    "order": 654
+  },
+  {
+    "sku": "CSL-GM500",
+    "title": "Gradient Mixer, total volume 500ml",
+    "order": 655
+  },
+  {
+    "sku": "CSL-12CAST",
+    "title": "12 gel caster for 8 x 10cm or 10 x 10cm gels",
+    "order": 656
+  },
+  {
+    "sku": "VS30DSYS",
+    "title": "omniPAGE Maxi Plus with caster",
+    "order": 657
+  },
+  {
+    "sku": "VS30D",
+    "title": "omniPAGE Maxi Plus, No caster",
+    "order": 658
+  },
+  {
+    "sku": "VS30DCAST",
+    "title": "omniPAGE Maxi Plus, 30 x 22cm Dual Caster.",
+    "order": 659
+  },
+  {
+    "sku": "VS30DCASTM",
+    "title": "omniPAGE Maxi Plus,  Replacement Caster Sealing Mat",
+    "order": 660
+  },
+  {
+    "sku": "VS30DIRM",
+    "title": "omniPAGE Maxi Plus - Inner Running Module",
+    "order": 661
+  },
+  {
+    "sku": "VS30BI",
+    "title": "omniBLOT Maxi Plus Insert",
+    "order": 662
+  },
+  {
+    "sku": "SB30C",
+    "title": "omniBLOT Maxi Plus Cassette",
+    "order": 663
+  },
+  {
+    "sku": "SB30F",
+    "title": "omniBLOT Maxi Plus Fibre pads - Pack of 6",
+    "order": 664
+  },
+  {
+    "sku": "VS30NG",
+    "title": "30 x 22cm Notched Glass Plates 2mm thick (Pack of 2)",
+    "order": 665
+  },
+  {
+    "sku": "VS30PG",
+    "title": "30 x 22cm Plain Glass Plates 2mm thick (Pack of 2)",
+    "order": 666
+  },
+  {
+    "sku": "VS30NGS0.75",
+    "title": "30 x 22cm Notched Glass Plates with 0.75mm Bonded Spacers (Pack of 2)",
+    "order": 667
+  },
+  {
+    "sku": "VS30PGS0.75",
+    "title": "30 x 22cm Plain Glass Plates with 0.75mm Bonded Spacers (Pack of 2)",
+    "order": 668
+  },
+  {
+    "sku": "VS30NGS1",
+    "title": "30 x 22cm Notched Glass Plates with 1mm Bonded Spacers (Pack of 2)",
+    "order": 669
+  },
+  {
+    "sku": "VS30PGS1",
+    "title": "30 x 22cm Plain Glass Plates with 1mm Bonded Spacers (Pack of 2)",
+    "order": 670
+  },
+  {
+    "sku": "VS30PGS1.5",
+    "title": "30 x 22cm Plain Glass Plates with 1.5mm Bonded Spacers (Pack of 2)",
+    "order": 671
+  },
+  {
+    "sku": "VS30PGS2",
+    "title": "30 x 22cm Plain Glass Plates with 2mm Bonded Spacers (Pack of 2)",
+    "order": 672
+  },
+  {
+    "sku": "VS30DP",
+    "title": "omniBLOT Maxi Plus - Dummy Plate, 30 x 22cm",
+    "order": 673
+  },
+  {
+    "sku": "VS30S0.75",
+    "title": "22cm Spacers - 0.75mm (Pack of 2)",
+    "order": 674
+  },
+  {
+    "sku": "VS30S1",
+    "title": "22cm Spacers - 1mm thick (Pack of 2)",
+    "order": 675
+  },
+  {
+    "sku": "VS30S1.5",
+    "title": "22cm Spacers - 1.5mm thick (Pack of 2)",
+    "order": 676
+  },
+  {
+    "sku": "VS30S2",
+    "title": "22cm Spacers - 2mm thick (Pack of 2)",
+    "order": 677
+  },
+  {
+    "sku": "VS30-1-1",
+    "title": "omniPAGE Maxi Plus Comb, 1 Prep, 1 Marker, 1mm thick",
+    "order": 678
+  },
+  {
+    "sku": "VS30-2-1",
+    "title": "omniPAGE Maxi Plus Comb, 2 sample, 1mm thick",
+    "order": 679
+  },
+  {
+    "sku": "VS30-4-1",
+    "title": "omniPAGE Maxi Plus Comb, 4 sample, 1mm thick",
+    "order": 680
+  },
+  {
+    "sku": "VS30-28MC-1",
+    "title": "omniPAGE Maxi Plus Comb, 28 sample MC, 1mm thick",
+    "order": 681
+  },
+  {
+    "sku": "VS30-56MC-1",
+    "title": "omniPAGE Maxi Plus Comb, 56 sample, 1mm thick",
+    "order": 682
+  },
+  {
+    "sku": "VS30-75-1",
+    "title": "omniPAGE Maxi Plus Comb, 75 sample, 1mm thick",
+    "order": 683
+  },
+  {
+    "sku": "VS30-1-1.5",
+    "title": "omniPAGE Maxi Plus Comb, 1 Prep, 1 Marker, 1.5mm thick",
+    "order": 684
+  },
+  {
+    "sku": "VS30-2-1.5",
+    "title": "omniPAGE Maxi Plus Comb, 2 sample, 1.5mm thick",
+    "order": 685
+  },
+  {
+    "sku": "VS30-4-1.5",
+    "title": "omniPAGE Maxi Plus Comb, 4 sample, 1.5mm thick",
+    "order": 686
+  },
+  {
+    "sku": "VS30-28MC-1.5",
+    "title": "omniPAGE Maxi Plus Comb, 28 sample MC, 1.5mm thick",
+    "order": 687
+  },
+  {
+    "sku": "VS30-56MC-1.5",
+    "title": "omniPAGE Maxi Plus Comb, 56 sample, 1.5mm thick",
+    "order": 688
+  },
+  {
+    "sku": "VS30-75-1.5",
+    "title": "omniPAGE Maxi Plus Comb, 75 sample, 1.5mm thick",
+    "order": 689
+  },
+  {
+    "sku": "VS30LID",
+    "title": "omniPAGE Maxi Plus Lid",
+    "order": 690
+  },
+  {
+    "sku": "VS30TANK",
+    "title": "omniPAGE Maxi Plus Tank",
+    "order": 691
+  },
+  {
+    "sku": "CVS10TETRAD0.75",
+    "title": "omniPAGE Mini TETRAD, 0.75 mm Spacers",
+    "order": 692
+  },
+  {
+    "sku": "CVS10TETRAD1",
+    "title": "omniPAGE Mini TETRAD, 1 mm Spacers",
+    "order": 693
+  },
+  {
+    "sku": "CVS10TETRAD1.5",
+    "title": "omniPAGE Mini TETRAD, 1.5 mm Spacers",
+    "order": 694
+  },
+  {
+    "sku": "CVS10TETRAD0.75CBS",
+    "title": "omniPAGE Mini TETRAD, 0.75 mm Spacers and Blotting Module",
+    "order": 695
+  },
+  {
+    "sku": "CVS10TETRAD0.75-PP500",
+    "title": "omniPAGE Mini TETRAD, 0.75 mm Spacers and Power Supply",
+    "order": 696
+  },
+  {
+    "sku": "CVS10TETRAD1CBS",
+    "title": "omniPAGE Mini TETRAD, 1 mm Spacers and Blotting Module",
+    "order": 697
+  },
+  {
+    "sku": "CVS10TETRAD1.5CBS",
+    "title": "omniPAGE Mini TETRAD, 1.5 mm Spacers and Blotting Module",
+    "order": 698
+  },
+  {
+    "sku": "CVS10DSYS-PP300",
+    "title": "omniPAGE Mini - PAGE Package with Power Supply",
+    "order": 699
+  },
+  {
+    "sku": "CVS10DSYS-PP500",
+    "title": "omniPAGE Mini - PAGE Package with Power Supply",
+    "order": 700
+  },
+  {
+    "sku": "CVS10CBS-PP300",
+    "title": "omniPAGE Mini - PAGE and Blotting Package with Power Supply",
+    "order": 701
+  },
+  {
+    "sku": "CVS10CBS-PP500",
+    "title": "omniPAGE Mini - PAGE and Blotting Package with Power Supply",
+    "order": 702
+  },
+  {
+    "sku": "CVS10TETRAD1CBS-PP300",
+    "title": "omniPAGE Mini TETRAD, 1 mm Spacers, Blotting Module and Power Supply",
+    "order": 703
+  },
+  {
+    "sku": "CVS10TETRAD1CBS-PP500",
+    "title": "omniPAGE Mini TETRAD, 1 mm Spacers, Blotting Module and Power Supply",
+    "order": 704
+  },
+  {
+    "sku": "CVS10TETRAD1-PP300",
+    "title": "omniPAGE Mini TETRAD, 1 mm Spacers and Power Supply",
+    "order": 705
+  },
+  {
+    "sku": "CVS10TETRAD1.5-PP500",
+    "title": "omniPAGE Mini TETRAD, 1.5 mm Spacers and Power Supply",
+    "order": 706
+  },
+  {
+    "sku": "CVS10TETRAD1-PP500",
+    "title": "omniPAGE Mini TETRAD, 1 mm Spacers and Power Supply",
+    "order": 707
+  },
+  {
+    "sku": "CVS84BSYS-PP300",
+    "title": "proPAGE 4 - mini PAGE system for 4 gels, 1mm- CLEAVER BRANDED and Power Supply",
+    "order": 708
+  },
+  {
+    "sku": "EBM10",
+    "title": "electroBLOT Mini, 10 x 10cm, Five Position",
+    "order": 709
+  },
+  {
+    "sku": "SB10C",
+    "title": "omniBLOT Mini Cassette (Including 2 foam Pads)",
+    "order": 710
+  },
+  {
+    "sku": "SB10F",
+    "title": "omniBLOT Mini Fibre pads - Pack of 8",
+    "order": 711
+  },
+  {
+    "sku": "EBM20",
+    "title": "electroBLOT Maxi, 20 x 20cm, Five Position",
+    "order": 712
+  },
+  {
+    "sku": "SB20C",
+    "title": "omniBLOT Maxi Cassette (including 2 foam pads)",
+    "order": 713
+  },
+  {
+    "sku": "SB20F",
+    "title": "omniBLOT Maxi Fibre pads - Pack of 6",
+    "order": 714
+  },
+  {
+    "sku": "SD10",
+    "title": "Semi Dry Mini, 10 x 10cm System",
+    "order": 715
+  },
+  {
+    "sku": "SD20",
+    "title": "Semi Dry Maxi, 20 x 20cm System",
+    "order": 716
+  },
+  {
+    "sku": "SD10-PP3AMP",
+    "title": "Semi Dry Mini with 3 Amp power supply",
+    "order": 717
+  },
+  {
+    "sku": "SD20-PP3AMP",
+    "title": "Semi Dry Maxi with 3 Amp power supply",
+    "order": 718
+  },
+  {
+    "sku": "SD10-PP500",
+    "title": "Semi Dry Mini with 500V power supply",
+    "order": 719
+  },
+  {
+    "sku": "SD20-PP500",
+    "title": "Semi Dry Maxi with 500V power supply",
+    "order": 720
+  },
+  {
+    "sku": "CSL-WBROLLER",
+    "title": "10cm acrylic roller for western blotting",
+    "order": 721
+  },
+  {
+    "sku": "CSL-SDCAB",
+    "title": "Semi dry Blotter Cables (Red & Black)",
+    "order": 722
+  },
+  {
+    "sku": "CSL-D48",
+    "title": "Dot Blotter, 48 Sample",
+    "order": 723
+  },
+  {
+    "sku": "CSL-D96",
+    "title": "Dot Blotter, 96 Sample",
+    "order": 724
+  },
+  {
+    "sku": "CSL-S24",
+    "title": "Slot Blotter, 24 Sample",
+    "order": 725
+  },
+  {
+    "sku": "CSL-S48",
+    "title": "Slot Blotter, 48 Sample",
+    "order": 726
+  },
+  {
+    "sku": "SB10W",
+    "title": "omniBLOT Mini Wide 20 x 10cm Blotting System, including 4 cassettes",
+    "order": 727
+  },
+  {
+    "sku": "VS10WBI",
+    "title": "omniBLOT Mini Wide Insert",
+    "order": 728
+  },
+  {
+    "sku": "SB10WC",
+    "title": "omniBLOT Mini Wide Cassette (including 2 foam pads)",
+    "order": 729
+  },
+  {
+    "sku": "SB10WF",
+    "title": "omniBLOT Mini Wide Fibre pads - Pack of 8",
+    "order": 730
+  },
+  {
+    "sku": "SB10",
+    "title": "omniBLOT Mini, 10 x 10cm Blotting System, including 4 cassettes",
+    "order": 731
+  },
+  {
+    "sku": "SB20",
+    "title": "omniBLOT Maxi, 20 x 20cm Blotting System, including 4 cassettes",
+    "order": 732
+  },
+  {
+    "sku": "SB10-HI",
+    "title": "omniBLOT Blotter High Intensity",
+    "order": 733
+  },
+  {
+    "sku": "SB20-HI",
+    "title": "omniBLOT Maxi High Intensity",
+    "order": 734
+  },
+  {
+    "sku": "HPAGE-SET",
+    "title": "hPAGE casting set with glass plates, 2 rows of teeth",
+    "order": 735
+  },
+  {
+    "sku": "HPAGE-SET2",
+    "title": "hPAGE casting set with glass plates, 1 rows of teeth",
+    "order": 736
+  },
+  {
+    "sku": "HPAGE-PLAT1",
+    "title": "hPAGE casting unit, 2 rows teeth (No Glass Plates)",
+    "order": 737
+  },
+  {
+    "sku": "HPAGE-PLAT2",
+    "title": "hPAGE casting unit, 1 row of teeth (No Glass Plates)",
+    "order": 738
+  },
+  {
+    "sku": "MS26-HPAGE",
+    "title": "hPAGE Horizontal PAGE System with electrophoresis tank and double tooth row casting system",
+    "order": 739
+  },
+  {
+    "sku": "MS26-HPAGE2",
+    "title": "hPAGE Horizontal PAGE System with electrophoresis tank and single tooth row casting system",
+    "order": 740
+  },
+  {
+    "sku": "CSL-TGSDSP",
+    "title": "Powdered 10X Tris-Glycine-SDS Running buffer - 1L",
+    "order": 741
+  },
+  {
+    "sku": "CSL-TGP",
+    "title": "Powdered 10X Tris-Glycine Running buffer - 1L",
+    "order": 742
+  },
+  {
+    "sku": "CSL-PSS",
+    "title": "Ponceau S staining solution (500 ml)",
+    "order": 743
+  },
+  {
+    "sku": "TG10X1L",
+    "title": "Tris-Glycine 10X - 1 litre",
+    "order": 744
+  },
+  {
+    "sku": "TG10X5L",
+    "title": "Tris-Glycine 10X - 5 litre",
+    "order": 745
+  },
+  {
+    "sku": "TG-SDS10X1L",
+    "title": "Tris-Glycine SDS 10X - 1 litre",
+    "order": 746
+  },
+  {
+    "sku": "TG-SDS10X5L",
+    "title": "Tris-Glycine SDS 10X - 5 litre",
+    "order": 747
+  },
+  {
+    "sku": "CSL-BUPL",
+    "title": "Blue Ultra Pre-stained Protein Ladder (6.5 to 270 kDa)",
+    "order": 748
+  },
+  {
+    "sku": "CSL-BBL",
+    "title": "Blue Wide Range Protein Ladder (10-245kDa)",
+    "order": 749
+  },
+  {
+    "sku": "CSL-RNC45",
+    "title": "Nitrocellulose roll, Type SCN, pore size 0.45 - 30 cm x 3 M",
+    "order": 750
+  },
+  {
+    "sku": "CSL-RNC2",
+    "title": "Nitrocellulose roll, Type SCN, pore size 0.22 - 30 cm X 3 M",
+    "order": 751
+  },
+  {
+    "sku": "CSL-RNY45",
+    "title": "Nylon roll, Type SNNP, pore size 0.45 - 24cm X 3M",
+    "order": 752
+  },
+  {
+    "sku": "CSL-RNY2",
+    "title": "Nylon roll, Type SNNP, pore size 0.20 - 24cm X 3M",
+    "order": 753
+  },
+  {
+    "sku": "PVDF0.2R",
+    "title": "roll W × L 30 cm × 3.00 m, roll of 1, pore size 0.22 µm",
+    "order": 754
+  },
+  {
+    "sku": "PVDF0.2S",
+    "title": "25 Pre-cut PVDF 10 x 10 cm 0.22µm",
+    "order": 755
+  },
+  {
+    "sku": "PVDF0.45S",
+    "title": "25 Pre-cut PVDF 10 x 10 cm 0.45 µm",
+    "order": 756
+  },
+  {
+    "sku": "PVDF0.45R",
+    "title": "Roll PVDF 30 cm x 3 m, 0.45 µm",
+    "order": 757
+  },
+  {
+    "sku": "CSL-BP1010",
+    "title": "Blot-Absorbent Filter paper, 10 x 10cm, pack of 50",
+    "order": 758
+  },
+  {
+    "sku": "CSL-BP2020",
+    "title": "Blot-Absorbent Filter paper, 20 x 20cm, pack of 50",
+    "order": 759
+  },
+  {
+    "sku": "BLUEPRO",
+    "title": "EZEE UltraBlue protein staining solution, 500ml",
+    "order": 760
+  },
+  {
+    "sku": "JUSTBLOCK",
+    "title": "EZEE JUSTBLOCK Western Blocking solution and signal enhancer, 500ml",
+    "order": 761
+  },
+  {
+    "sku": "ECLONE",
+    "title": "LumiGO ECL substrate kit: 125ml Luminol/enhancer solution; 125ml Peroxide solution",
+    "order": 762
+  },
+  {
+    "sku": "ECLULTRA",
+    "title": "LumiPRO ECL substrate kit: 50ml Luminol/enhancer solution; 50ml Peroxide solution",
+    "order": 763
+  },
+  {
+    "sku": "MINIWESTERNPACK",
+    "title": "Mini PAGE and Western Blotting Kit with Reagents",
+    "order": 764
+  },
+  {
+    "sku": "MINIWESTERNPACK500",
+    "title": "Mini PAGE and Western Blotting Kit with Reagents w/pp500",
+    "order": 765
+  },
+  {
+    "sku": "MAXIWESTERNPACK",
+    "title": "Maxi PAGE and Western Blotting Kit with Reagents",
+    "order": 766
+  },
+  {
+    "sku": "MAXIWESTERNPACK500",
+    "title": "Maxi PAGE and Western Blotting Kit with Reagents w/pp500",
+    "order": 767
+  },
+  {
+    "sku": "CSL-COM10",
+    "title": "Comet Assay Tank for 10 Slides",
+    "order": 768
+  },
+  {
+    "sku": "CSL-COM20",
+    "title": "Comet Assay Tank for 20 Slides",
+    "order": 769
+  },
+  {
+    "sku": "CSL-COM40",
+    "title": "Comet Assay Tank for 40 Slides",
+    "order": 770
+  },
+  {
+    "sku": "COMRAC-25",
+    "title": "Vertical Slide carrier for 25 slides, pk/1",
+    "order": 771
+  },
+  {
+    "sku": "STAINDISH",
+    "title": "Ebony treatment dish, pk/1",
+    "order": 772
+  },
+  {
+    "sku": "STAINDISH4X",
+    "title": "Ebony treatment dish, pk/4",
+    "order": 773
+  },
+  {
+    "sku": "CSL-CHILLPLATE",
+    "title": "Slide Chilling plate for COMET Assay",
+    "order": 774
+  },
+  {
+    "sku": "CSLMINISCAN",
+    "title": "Automated Densitometer With 8 Reading Channels And Software",
+    "order": 775
+  },
+  {
+    "sku": "CSL-CELLAS",
+    "title": "Horizontal Unit for Cellulose Acetate Electrophoresis",
+    "order": 776
+  },
+  {
+    "sku": "CELLAS-TANK",
+    "title": "Running tank for CSL-CELLAS (No bridges or Lid)",
+    "order": 777
+  },
+  {
+    "sku": "CELLAS-LID",
+    "title": "Lid for CSL-CELLAS (no cables)",
+    "order": 778
+  },
+  {
+    "sku": "CSL-CELLASMINI",
+    "title": "Mini Horizontal Unit for Cellulose Acetate Electrophoresis",
+    "order": 779
+  },
+  {
+    "sku": "CSLDENS",
+    "title": "TurboScan Software Densitometer(computer&scanner not includ)",
+    "order": 780
+  },
+  {
+    "sku": "CSLSCAN",
+    "title": "Flatbed Scanner for TurboScan software.",
+    "order": 781
+  },
+  {
+    "sku": "CADRY-U2.513HBSP",
+    "title": "Dry Cellulose Acetate 2.5X13Cm, Hemoglobin & Serum Pk50",
+    "order": 782
+  },
+  {
+    "sku": "CADRY-U5.714HBSP",
+    "title": "Dry Cellulose Acetate 5.7X14Cm, Hemoglobin & Serum Pk50",
+    "order": 783
+  },
+  {
+    "sku": "CADRY-U5.7LP",
+    "title": "Dry Cellulose Acetate 5.7X13Cm, Lipoprotein Pk50",
+    "order": 784
+  },
+  {
+    "sku": "CSL-APPS-U4",
+    "title": "Applicator Micro (4 Samples) For Supported/unsupported Membrane",
+    "order": 785
+  },
+  {
+    "sku": "CSL-APPS-U8",
+    "title": "Applicator Micro (8 Samples) For Supported/unsupported Membrane",
+    "order": 786
+  },
+  {
+    "sku": "CSL-BDG-U1",
+    "title": "Bridge 1 Station For Unsupported/Supported Membrane 1 Unit This is the updated description",
+    "order": 787
+  },
+  {
+    "sku": "CADRY-S7.66HB",
+    "title": "Cel Ace Supported Membranes For Hemoglobins 7.6 x 6 cm pk25",
+    "order": 788
+  },
+  {
+    "sku": "CADRY-S7.63.6HB",
+    "title": "Cel Ace Supported Membranes For Hemoglobin 7.6x3.6cm pk25",
+    "order": 789
+  },
+  {
+    "sku": "CADRY-S7.66SP",
+    "title": "Cel Ace Supported Membranes For Serum Protein 7.6x6cm pk25",
+    "order": 790
+  },
+  {
+    "sku": "CADRY-S7.63.6SP",
+    "title": "Cel Ace Supported Membranes For Serum Protein 7.6x3.6cm pk25",
+    "order": 791
+  },
+  {
+    "sku": "CSL-DROPS-S1",
+    "title": "Applicator Micro Plus And Holder For Supported Membrane",
+    "order": 792
+  },
+  {
+    "sku": "CSL-BRD-X1",
+    "title": "Bridge 1 station for supported membrane",
+    "order": 793
+  },
+  {
+    "sku": "CSL-BRD-S1",
+    "title": "Bridge 2 Stations For Supported Membrane El040, El010, El07",
+    "order": 794
+  },
+  {
+    "sku": "CSL-VR-S1",
+    "title": "Soaking Chamber F/ Supported Membrane El040, El010, El07",
+    "order": 795
+  },
+  {
+    "sku": "CSL-M103",
+    "title": "57 X 60 Mm Supported Membrane For Hemoglobins/Serum Pk25",
+    "order": 796
+  },
+  {
+    "sku": "CSL-MYLAR",
+    "title": "Mylar 5.7 x 10cm pk50",
+    "order": 797
+  },
+  {
+    "sku": "CSL-WICKS",
+    "title": "Paper wicks 7.5x7cm, pk50-Required if not using CSL-BRD-S1",
+    "order": 798
+  },
+  {
+    "sku": "CSL-CAHB-M",
+    "title": "Hemoglobin Kit for 200 tests, 25 Cell Ace Sup + Lysing",
+    "order": 799
+  },
+  {
+    "sku": "CSL-CAHB-M-KIT",
+    "title": "200 tests:CSL-CAHB-M,CSL-DROPS-S1,3xCSL-BRD-S1,CSL-VR-S1",
+    "order": 800
+  },
+  {
+    "sku": "CSL-CAHB-M-CS",
+    "title": "Hemoglobin Kit for 200 tests, 25 Cell Ace Sup Membranes",
+    "order": 801
+  },
+  {
+    "sku": "CSL-CAHB-M-CS-KIT",
+    "title": "200 tests: CSL-CAHB-M,CSL-DROPS-S1,CSL-VR-S1",
+    "order": 802
+  },
+  {
+    "sku": "CSL-CAHB/4-M",
+    "title": "Kit: Hemoglobin 100 tests: 25 Cell Ace Supported Membranes",
+    "order": 803
+  },
+  {
+    "sku": "CSL-CAHB/4-M-KIT",
+    "title": "200 test:CSL-CAHB/4-M-CS,CSL-DROPS-S1,3xCSL-BRD-S1,CSL-VR-S1",
+    "order": 804
+  },
+  {
+    "sku": "CSL-CAHB/4-M-CS",
+    "title": "Cellulose Acetate Hemoglobin Supported Kit",
+    "order": 805
+  },
+  {
+    "sku": "CSL-CAHB/4-M-CS-KIT",
+    "title": "200 tests: CSL-CAHB/4-M-CS; CSL-DROPS-S1; CSL-VR-S1",
+    "order": 806
+  },
+  {
+    "sku": "CSL-CASP-M",
+    "title": "Kit Serum Proteins 200 tests: 25 Cell Ace Supported Membran",
+    "order": 807
+  },
+  {
+    "sku": "CSL-CASP-M-KIT",
+    "title": "200 tests: CSL-CASP-M,CSL-DROPS-S1,3xCSL-BRD-S1,CSL-VR-S1",
+    "order": 808
+  },
+  {
+    "sku": "CSL-CASP-M-CS",
+    "title": "Kit: Serum Proteins 200 tests: 25 Cell Ace Supported Membran",
+    "order": 809
+  },
+  {
+    "sku": "CSL-CASP-M-CS-KIT",
+    "title": "200 tests: CSL-CASP-M, CSL-DROPS-S1,CSL-VR-S1",
+    "order": 810
+  },
+  {
+    "sku": "CSL-CASP/4-M",
+    "title": "Kit: Serum Proteins. Kit content sufficient for 100 tests",
+    "order": 811
+  },
+  {
+    "sku": "CSL-CASP/4-M-KIT",
+    "title": "100tests:CSL-CASP/4-M-CS,CSL-DROPS-S1,3xCSL-BRD-S1,CSL-VR-S1",
+    "order": 812
+  },
+  {
+    "sku": "CSL-CASP/4-M-CS",
+    "title": "Kit: Serum Proteins. Kit content sufficient for 100 tests",
+    "order": 813
+  },
+  {
+    "sku": "CSL-CASP/4-M-CS-KIT",
+    "title": "100 tests:CSL-CAHB/4-M-CS,CSL-DROPS-S1,CSL-VR-S1",
+    "order": 814
+  },
+  {
+    "sku": "CSL-SPB10X100",
+    "title": "Serum Protein Buffer Solution Conc. 10X  - 100 Ml",
+    "order": 815
+  },
+  {
+    "sku": "CSL-HBB10X50",
+    "title": "Hemoglobin Buffersolution Conc. 10X  - 50 Ml",
+    "order": 816
+  },
+  {
+    "sku": "CSL-B6F4X250",
+    "title": "Buffer Solution 6 Fractions Conc. 4X  - 250 Ml",
+    "order": 817
+  },
+  {
+    "sku": "CSL-SS100",
+    "title": "Stain Solution Ponceau S Ready To Use - 100 Ml",
+    "order": 818
+  },
+  {
+    "sku": "CSL-SS1000",
+    "title": "Stain Solution Ponceau S Ready To Use - 1000 Ml",
+    "order": 819
+  },
+  {
+    "sku": "CSL-DS20X250",
+    "title": "Destain Solution Conc. 20X  - 250 Ml",
+    "order": 820
+  },
+  {
+    "sku": "CSL-DS20X1000",
+    "title": "Destain Solution Conc. 20X  - 1000 Ml",
+    "order": 821
+  },
+  {
+    "sku": "CSL-CS250",
+    "title": "Clearing Solution Ready To Use - 250 Ml",
+    "order": 822
+  },
+  {
+    "sku": "CSL-CS1000",
+    "title": "Clearing Solution Ready To Use - 1000 Ml",
+    "order": 823
+  },
+  {
+    "sku": "CSL-LS25",
+    "title": "Lysing solution ready to use - 25ml",
+    "order": 824
+  },
+  {
+    "sku": "T205",
+    "title": "T205 Serum Proteins buffer - 5 fractions, conc. 10X, 100 ml",
+    "order": 825
+  },
+  {
+    "sku": "CADRY-U7.515HBSP",
+    "title": "Dry cell ace mem 7.5x15cmhemoglobin&serum Protein(unsup)pk50",
+    "order": 826
+  },
+  {
+    "sku": "CADRY-S7.618HB",
+    "title": "Cell Ace Supported Membranes For Hemoglobin 7.6x18 cm pk25",
+    "order": 827
+  },
+  {
+    "sku": "CADRY-S7.515HB",
+    "title": "Cell Ace Supported Membranes For Hemoglobin 7.5x15cm pk25",
+    "order": 828
+  },
+  {
+    "sku": "CADRY-S7.618SP",
+    "title": "Cell Ace Supported Membranes For Serum Protein 7.6x18cm pk25",
+    "order": 829
+  },
+  {
+    "sku": "CADRY-S7.515SP",
+    "title": "Cell Ace Supported Membranes For Serum Protein 7.5x15cm pk25",
+    "order": 830
+  },
+  {
+    "sku": "CHILL-ECOPLUS",
+    "title": "Eco Chiller 1000W, 220V",
+    "order": 831
+  },
+  {
+    "sku": "CHILL-ECOPLUS$",
+    "title": "Eco Chiller 1000W, 110V",
+    "order": 832
+  },
+  {
+    "sku": "CSL-CHILLER",
+    "title": "Recirculating Chiller -20 to 100 °C - 240V",
+    "order": 833
+  },
+  {
+    "sku": "CSL-CHILLER$",
+    "title": "Recirculating Chiller -20 to 100 °C - 115V",
+    "order": 834
+  },
+  {
+    "sku": "CSL-IEF",
+    "title": "Flatbed IEF system for IEF strips and gels",
+    "order": 835
+  },
+  {
+    "sku": "CSL-IEF-KIT",
+    "title": "Flatbed IEF Package with Chiller and Power Supply",
+    "order": 836
+  },
+  {
+    "sku": "CSL-IEF-KIT$",
+    "title": "Flatbed IEF Package with Chiller and Power Supply",
+    "order": 837
+  },
+  {
+    "sku": "CSL-IEFCP",
+    "title": "CSL-IEF - Cooling Platform",
+    "order": 838
+  },
+  {
+    "sku": "CSL-IEFPOS",
+    "title": "CSL-IEF - Replacement positive electrode (Fits to Tank side)",
+    "order": 839
+  },
+  {
+    "sku": "CSL-IEFNEG",
+    "title": "CSL-IEF - Replacement negative electrode  (Fits to Tank side)",
+    "order": 840
+  },
+  {
+    "sku": "CSL-IEFFRME",
+    "title": "CSL-IEF - Replacement electrode frame",
+    "order": 841
+  },
+  {
+    "sku": "CSL-SGELEPOS",
+    "title": "CSL-IEF - Replacement Spring positive electrode",
+    "order": 842
+  },
+  {
+    "sku": "CSL-SGELENEG",
+    "title": "CSL-IEF - Replacement Spring negative electrode",
+    "order": 843
+  },
+  {
+    "sku": "CSL-RHYDTRY",
+    "title": "CSL-IEF - Rehydration Tray",
+    "order": 844
+  },
+  {
+    "sku": "CSL-FOCUSTRAY",
+    "title": "CSL-IEF - Focusing tray with adjustable electrodes",
+    "order": 845
+  },
+  {
+    "sku": "CSL-FTELECPOS",
+    "title": "CSL-IEF - Focusing tray adjustable electrode Positive",
+    "order": 846
+  },
+  {
+    "sku": "CSL-FTELECNEG",
+    "title": "CSL-IEF - Focusing tray adjustable electrode Negative",
+    "order": 847
+  },
+  {
+    "sku": "CSL-IEFTANK",
+    "title": "CSL-IEF - Replacement Tank",
+    "order": 848
+  },
+  {
+    "sku": "IEF-LID",
+    "title": "CSL-IEF - Replacement Lid",
+    "order": 849
+  },
+  {
+    "sku": "CSL-IEFPLT",
+    "title": "CSL-IEF - Replacement Glass platform",
+    "order": 850
+  },
+  {
+    "sku": "CSL-IEF-KIT-MINI",
+    "title": "Full 2D Package with omniPAGE Mini - 240V",
+    "order": 851
+  },
+  {
+    "sku": "CSL-IEF-KIT-MINI$",
+    "title": "Full 2D Package with omniPAGE Mini - 110V",
+    "order": 852
+  },
+  {
+    "sku": "CSL-IEF-KIT-MINIWIDE",
+    "title": "Full 2D Package with omniPAGE Mini Wide - 240V",
+    "order": 853
+  },
+  {
+    "sku": "CSL-IEF-KIT-MINIWIDE$",
+    "title": "Full 2D Package with omniPAGE Mini Wide - 110V",
+    "order": 854
+  },
+  {
+    "sku": "CSL-IEF-KIT-WAVE",
+    "title": "Full 2D Package with omniPAGE WAVE Maxi - 240V",
+    "order": 855
+  },
+  {
+    "sku": "CSL-IEF-KIT-WAVE$",
+    "title": "Full 2D Package with omniPAGE WAVE Maxi - 110V",
+    "order": 856
+  },
+  {
+    "sku": "CSL-IEF-KIT-MAXIPLUS",
+    "title": "Full 2D Package with omniPAGE Maxi Wide - 240V",
+    "order": 857
+  },
+  {
+    "sku": "CSL-IEF-KIT-MAXIPLUS$",
+    "title": "Full 2D Package with omniPAGE Maxi Wide - 110V",
+    "order": 858
+  },
+  {
+    "sku": "CSQ20",
+    "title": "DNA Sequencing unit, 20cm wide, standard glass plates",
+    "order": 859
+  },
+  {
+    "sku": "CSQ20TG",
+    "title": "DNA Sequencing unit, 20cm wide, toughened glass plates",
+    "order": 860
+  },
+  {
+    "sku": "CSQ20-NG",
+    "title": "CSQ-20 Glass plates, Pk/2 Notched",
+    "order": 861
+  },
+  {
+    "sku": "CSQ20-PG",
+    "title": "CSQ-20 Glass plates, Pk/2",
+    "order": 862
+  },
+  {
+    "sku": "CSQ20-NG-T",
+    "title": "CSQ-20 Glass plates, Pk/2 Notched, Toughened",
+    "order": 863
+  },
+  {
+    "sku": "CSQ20-PG-T",
+    "title": "CSQ-20 Glass plates, Pk/2, Toughened",
+    "order": 864
+  },
+  {
+    "sku": "CSQ20-S0.25",
+    "title": "CSQ-20 Spacer set 0.25mm",
+    "order": 865
+  },
+  {
+    "sku": "CSQ20-S0.35",
+    "title": "CSQ-20 Spacer set 0.35mm",
+    "order": 866
+  },
+  {
+    "sku": "CSQ20-S1",
+    "title": "CSQ-20 Spacer set 1mm",
+    "order": 867
+  },
+  {
+    "sku": "CSQ20-S1.5",
+    "title": "CSQ-20 Spacer set 1.5mm",
+    "order": 868
+  },
+  {
+    "sku": "CSQ20-0.25-24",
+    "title": "CSQ-20 Comb, 24 sample, 0.25mm thick, Sharks tooth",
+    "order": 869
+  },
+  {
+    "sku": "CSQ20-0.25-48",
+    "title": "CSQ-20 Comb, 48 sample, 0.25mm thick, Sharks tooth",
+    "order": 870
+  },
+  {
+    "sku": "CSQ20-0.35-24",
+    "title": "CSQ-20 Comb, 24 sample, 0.35mm thick, Sharks tooth",
+    "order": 871
+  },
+  {
+    "sku": "CSQ20-0.35-48",
+    "title": "CSQ-20 Comb, 48 sample, 0.35mm thick, Sharks tooth",
+    "order": 872
+  },
+  {
+    "sku": "CSQ20-1-24SQT",
+    "title": "CSQ-20 Comb, 24 sample, 1mm thick, Square tooth",
+    "order": 873
+  },
+  {
+    "sku": "CSQ20-1.5-24SQT",
+    "title": "CSQ-20 Comb, 24 sample, 1.5mm thick, Square tooth",
+    "order": 874
+  },
+  {
+    "sku": "CSQ20-1-48SQT",
+    "title": "CSQ-20 Comb, 48 sample, 1mm thick, Square tooth",
+    "order": 875
+  },
+  {
+    "sku": "CSQ20-1.5-48SQT",
+    "title": "CSQ-20 Comb, 48 sample, 1.5mm thick, Square tooth",
+    "order": 876
+  },
+  {
+    "sku": "CSQ33",
+    "title": "DNA Sequencing unit, 33cm wide, standard glass plates",
+    "order": 877
+  },
+  {
+    "sku": "CSQ33TG",
+    "title": "DNA Sequencing unit, 33cm wide, toughened glass plates",
+    "order": 878
+  },
+  {
+    "sku": "CSQ33-NG",
+    "title": "CSQ-33 Glass plates, Pk/2 Notched",
+    "order": 879
+  },
+  {
+    "sku": "CSQ33-PG",
+    "title": "CSQ-33 Glass plates, Pk/2",
+    "order": 880
+  },
+  {
+    "sku": "CSQ33-NG-T",
+    "title": "CSQ-33 Glass plates, Pk/2 Notched, Toughened",
+    "order": 881
+  },
+  {
+    "sku": "CSQ33-PG-T",
+    "title": "CSQ-33 Glass plates, Pk/2, Toughened",
+    "order": 882
+  },
+  {
+    "sku": "CSQ33-S0.25",
+    "title": "CSQ-33 Spacer set 0.25mm",
+    "order": 883
+  },
+  {
+    "sku": "CSQ33-S0.35",
+    "title": "CSQ-33 Spacer set 0.35mm",
+    "order": 884
+  },
+  {
+    "sku": "CSQ33-S1",
+    "title": "CSQ-33 Spacer set 1mm",
+    "order": 885
+  },
+  {
+    "sku": "CSQ33-S1.5",
+    "title": "CSQ-33 Spacer set 1.5mm",
+    "order": 886
+  },
+  {
+    "sku": "CSQ33-0.25-48",
+    "title": "CSQ-33 Comb, 48 sample, 0.25mm thick, Sharks tooth",
+    "order": 887
+  },
+  {
+    "sku": "CSQ33-0.25-96",
+    "title": "CSQ-33 Comb, 96 sample, 0.25mm thick, Sharks tooth",
+    "order": 888
+  },
+  {
+    "sku": "CSQ33-0.35-48",
+    "title": "CSQ-33 Comb, 48 sample, 0.35mm thick, Sharks tooth",
+    "order": 889
+  },
+  {
+    "sku": "CSQ33-0.35-96",
+    "title": "CSQ-33 Comb, 96 sample, 0.35mm thick, Sharks tooth",
+    "order": 890
+  },
+  {
+    "sku": "CSQ33-1-48SQT",
+    "title": "CSQ-33 Comb, 48 sample, 1mm thick, Square tooth",
+    "order": 891
+  },
+  {
+    "sku": "CSQ33-1.5-48SQT",
+    "title": "CSQ-33 Comb, 48 sample, 1.5mm thick, Square tooth",
+    "order": 892
+  },
+  {
+    "sku": "CSQ33-1-80SQT",
+    "title": "CSQ-33 Comb, 80 sample, 1mm thick, Square tooth",
+    "order": 893
+  },
+  {
+    "sku": "CSQ33-1.5-80SQT",
+    "title": "CSQ-33 Comb, 48 sample, 1.5mm thick, Square tooth",
+    "order": 894
+  },
+  {
+    "sku": "CSQ-FC",
+    "title": "FLEXI CASTER FOR CSQ20 & CSQ33",
+    "order": 895
+  },
+  {
+    "sku": "CSL-FHS",
+    "title": "Fan heater kit for large format vertical units CSQ20 and CSQ33 - 230V",
+    "order": 896
+  },
+  {
+    "sku": "CSL-FHS$",
+    "title": "Fan heater kit for large format vertical units CSQ20 and CSQ33 - 110V",
+    "order": 897
+  },
+  {
+    "sku": "CSL-MGR",
+    "title": "Small Glass Plate Rack",
+    "order": 898
+  },
+  {
+    "sku": "CSL-LGR",
+    "title": "Large Glass Plate Rack",
+    "order": 899
+  },
+  {
+    "sku": "CSL-CAB2",
+    "title": "Replacement cables for CSQ Large Format Vertical Units, Pk/2",
+    "order": 900
+  },
+  {
+    "sku": "VS20WAVE-DGGE",
+    "title": "Denaturing Gradient Gel Electrophoresis System, 220V",
+    "order": 901
+  },
+  {
+    "sku": "VS20WAVE-DGGE$",
+    "title": "Denaturing Gradient Gel Electrophoresis System, 110V",
+    "order": 902
+  },
+  {
+    "sku": "VS20WAVE-DGGETC",
+    "title": "DGGE Temperature Control Unit - 240V",
+    "order": 903
+  },
+  {
+    "sku": "VS20WAVE-DGGETC$",
+    "title": "DGGE Temperature Control Unit - 115V",
+    "order": 904
+  },
+  {
+    "sku": "VS20WAVE-DGGEKIT",
+    "title": "DGGE System with Casting Package - 240V",
+    "order": 905
+  },
+  {
+    "sku": "VS20WAVE-DGGEKIT$",
+    "title": "DGGE System with Casting Package - 115V",
+    "order": 906
+  },
+  {
+    "sku": "VS20WAVE-DGGETANK",
+    "title": "DGGE System Outer Tank, No Temperature Control Unit",
+    "order": 907
+  },
+  {
+    "sku": "VS20DGGE-LID",
+    "title": "DGGE System lid",
+    "order": 908
+  },
+  {
+    "sku": "VS20WAVEDIRM-DGGE",
+    "title": "VS20wave Page insert for DGGE UNIT",
+    "order": 909
+  },
+  {
+    "sku": "NANOPAC-300P",
+    "title": "nanoPAC-300P Power Supply, 300V, 400mA, 60W",
+    "order": 910
+  },
+  {
+    "sku": "NANOPAC-500",
+    "title": "nanoPAC-500 Power Supply, 500V, 400mA, 120W",
+    "order": 911
+  },
+  {
+    "sku": "POWERPRO300",
+    "title": "PowerPRO 300 Power Supply, 300V, 700mA, 150W",
+    "order": 912
+  },
+  {
+    "sku": "POWERPRO500",
+    "title": "PowerPRO 500 Power Supply, 500V, 800mA, 300W",
+    "order": 913
+  },
+  {
+    "sku": "POWERPRO3AMP",
+    "title": "PowerPRO 3AMP Power Supply, 300V, 3000mA, 300W",
+    "order": 914
+  },
+  {
+    "sku": "EV2310",
+    "title": "EV2310 Maxi Power Supply, 4 Outputs, 300Volts, 1000 mAmps, 150 watts - 230V",
+    "order": 915
+  },
+  {
+    "sku": "EV2310$",
+    "title": "EV2310 Maxi Power Supply, 4 Outputs, 300Volts, 1000 mAmps, 150 watts - 110V",
+    "order": 916
+  },
+  {
+    "sku": "EV3020",
+    "title": "EV3020 Maxi Power Supply, 4 Outputs, 300Volts, 2000 mAmps, 300 watts  - 230V",
+    "order": 917
+  },
+  {
+    "sku": "EV3020$",
+    "title": "EV3020 Maxi Power Supply, 4 Outputs, 300Volts, 2000 mAmps, 300 watts - 110V",
+    "order": 918
+  },
+  {
+    "sku": "EV2650",
+    "title": "EV2650 Maxi Power Supply, 4 Outputs, 600Volts, 500 mAmps, 150 watts - 230V",
+    "order": 919
+  },
+  {
+    "sku": "EV2650$",
+    "title": "EV2650 Maxi Power Supply, 4 Outputs, 600Volts, 500 mAmps, 150 watts - 110V",
+    "order": 920
+  },
+  {
+    "sku": "EV3610",
+    "title": "EV3610 Maxi Power Supply, 4 Outputs, 600Volts, 1000 mAmps, 300 watts - 230V",
+    "order": 921
+  },
+  {
+    "sku": "EV3610$",
+    "title": "EV3610 Maxi Power Supply, 4 Outputs, 600Volts, 1000 mAmps, 300 watts - 110V",
+    "order": 922
+  },
+  {
+    "sku": "EV3150",
+    "title": "EV3150 Maxi Power Supply, 4 Outputs, 1200Volts, 500 mAmps, 300 watts - 230V",
+    "order": 923
+  },
+  {
+    "sku": "EV3150$",
+    "title": "EV3150 Maxi Power Supply, 4 Outputs, 1200Volts, 500 mAmps, 300 watts - 110V",
+    "order": 924
+  },
+  {
+    "sku": "EV3330",
+    "title": "EV 3330 Maxi Power Supply, 4 Outputs, 3000Volts, 300 mAmps, 200 watts -230V",
+    "order": 925
+  },
+  {
+    "sku": "EV3330$",
+    "title": "EV3330$ Maxi Power Supply, 4 Outputs, 3000Volts, 200 mAmps, 300 watts -110V",
+    "order": 926
+  },
+  {
+    "sku": "EV3620",
+    "title": "EV3620 Maxi Power Supply, 4 Outputs, 6000Volts, 150 mAmps, 300 watts - 230V",
+    "order": 927
+  },
+  {
+    "sku": "EV3620$",
+    "title": "EV3620 Maxi Power Supply, 4 Outputs, 6000Volts, 150 mAmps, 300 watts - 110V",
+    "order": 928
+  },
+  {
+    "sku": "CSL-4-4",
+    "title": "Power supply Adapters, 4mm to 4mm, Pk/2",
+    "order": 929
+  },
+  {
+    "sku": "CSL-4-2",
+    "title": "Power supply Adapters, 4mm to 2mm, Pk/2",
+    "order": 930
+  },
+  {
+    "sku": "CSL-2-4",
+    "title": "Power supply Adapters, 2mm to 4mm, Pk/2",
+    "order": 931
+  },
+  {
+    "sku": "CSL-MICRODOC",
+    "title": "microDOC Gel Documentation Hood with Screen",
+    "order": 932
+  },
+  {
+    "sku": "CSL-MDOCUV312",
+    "title": "microDOC System with 312nm UV Transilluminator",
+    "order": 933
+  },
+  {
+    "sku": "CSL-MDOCUV254",
+    "title": "microDOC System with 254nm UV Transilluminator",
+    "order": 934
+  },
+  {
+    "sku": "CSL-MDOCUV365",
+    "title": "microDOC System with 365nm UV Transilluminator",
+    "order": 935
+  },
+  {
+    "sku": "CSL-MDOCUV254/312",
+    "title": "microDOC System with 254/312nm UV Transilluminator",
+    "order": 936
+  },
+  {
+    "sku": "CSL-MDOCUV254/365",
+    "title": "microDOC System with 254/365nm UV Transilluminator",
+    "order": 937
+  },
+  {
+    "sku": "CSL-MDOCUV312/365",
+    "title": "microDOC System with 312/365nm UV Transilluminator",
+    "order": 938
+  },
+  {
+    "sku": "CSL-MDOCBASIC",
+    "title": "microDOC Basic System with lift-off dark room hood and camera only",
+    "order": 939
+  },
+  {
+    "sku": "CSL-MICRODOC1D",
+    "title": "microDOC Gel Documentation Hood with Screen & Analysis Software",
+    "order": 940
+  },
+  {
+    "sku": "CSL-MDOCUV3121D",
+    "title": "microDOC System with 312nm UV Transilluminator & Analysis Software",
+    "order": 941
+  },
+  {
+    "sku": "CSL-MDOCUV2541D",
+    "title": "microDOC System with 254nm UV Transilluminator & Analysis Software",
+    "order": 942
+  },
+  {
+    "sku": "CSL-MDOCUV3651D",
+    "title": "microDOC System with 365nm UV Transilluminator & Analysis Software",
+    "order": 943
+  },
+  {
+    "sku": "CSL-MDOCUV254/3121D",
+    "title": "microDOC System with 254/312nm UV Transilluminator & Analysis Software",
+    "order": 944
+  },
+  {
+    "sku": "CSL-MDOCUV254/3651D",
+    "title": "microDOC System with 254/365nm UV Transilluminator & Analysis Software",
+    "order": 945
+  },
+  {
+    "sku": "CSL-MDOCUV312/3651D",
+    "title": "microDOC System with 312/365nm UV Transilluminator & Analysis Software",
+    "order": 946
+  },
+  {
+    "sku": "CSL-MDOCBASIC1D",
+    "title": "microDOC Basic System with lift-off dark room hood, camera and analysis software",
+    "order": 947
+  },
+  {
+    "sku": "CSL-MDOCEB",
+    "title": "microDOC ethidium bromide filter",
+    "order": 948
+  },
+  {
+    "sku": "CSL-MDOCSBRG",
+    "title": "microDOC SYBR filter (520nm)",
+    "order": 949
+  },
+  {
+    "sku": "CSL-PRTPAP",
+    "title": "Replacement printer paper for Mitsubishi Thermal Printer - 110mm x 20m",
+    "order": 950
+  },
+  {
+    "sku": "CSL-MDOCWLB",
+    "title": "microDOC White Light Illuminator",
+    "order": 951
+  },
+  {
+    "sku": "OMNIDOC",
+    "title": "omniDOC Gel Documentation System",
+    "order": 952
+  },
+  {
+    "sku": "OMNIDOCSAFE",
+    "title": "omniDOC SAFE Gel Documentation System",
+    "order": 953
+  },
+  {
+    "sku": "OMNIDOCPRO",
+    "title": "omniDOC PRO Gel Documentation System",
+    "order": 954
+  },
+  {
+    "sku": "OMNIDOCPROSAFE",
+    "title": "omniDOC PROSAFE Gel Documentation System",
+    "order": 955
+  },
+  {
+    "sku": "OMNIDOC-WLT",
+    "title": "omniDOC White Light Table",
+    "order": 956
+  },
+  {
+    "sku": "OMNIDOC-BL",
+    "title": "omniDOC Blue Light Module",
+    "order": 957
+  },
+  {
+    "sku": "OMNIDOC-SYBR",
+    "title": "omniDOC SYBR Green Filter",
+    "order": 958
+  },
+  {
+    "sku": "OMNIDOC-EB",
+    "title": "omniDOC Ethidium Bromide Filter",
+    "order": 959
+  },
+  {
+    "sku": "OMNIDOC-AF580",
+    "title": "omniDOC 580nm Amber Filter for use with Blue Light",
+    "order": 960
+  },
+  {
+    "sku": "OMNIDOC-AF560",
+    "title": "omniDOC 560nm Amber Filter for use with Blue Light",
+    "order": 961
+  },
+  {
+    "sku": "OMNIDOC-F1",
+    "title": "omniDOC Viewing Window Replacement",
+    "order": 962
+  },
+  {
+    "sku": "PHORETIX1D",
+    "title": "Core Laboratory Image Quantification Software",
+    "order": 963
+  },
+  {
+    "sku": "CLIQS1DPRO",
+    "title": "CLIQS Gel Analysis software with advanced analysis functions",
+    "order": 964
+  },
+  {
+    "sku": "CLIQS1D21CFR",
+    "title": "CLIQS Gel Analysis software, 21CFR Compliant",
+    "order": 965
+  },
+  {
+    "sku": "SAMESPOTS",
+    "title": "SameSpots - Professional 2D Gel Analysis Software",
+    "order": 966
+  },
+  {
+    "sku": "GDH-BASIC",
+    "title": "Basic Gel Documentation Hood for use with phone",
+    "order": 967
+  },
+  {
+    "sku": "GDH-BASICKIT",
+    "title": "Basic Gel Documentation Hood and blue light illuminator",
+    "order": 968
+  },
+  {
+    "sku": "RVMINI",
+    "title": "runVIEW Mini Blue Light Illuminator",
+    "order": 969
+  },
+  {
+    "sku": "MINIRUNVIEW-B",
+    "title": "runVIEW Mini Blue Light Illuminator (Side Light)",
+    "order": 970
+  },
+  {
+    "sku": "RVMINISYS",
+    "title": "runVIEW Mini with multiSUB MINI DUO",
+    "order": 971
+  },
+  {
+    "sku": "RVMIDISYS",
+    "title": "runVIEW Mini with multiSUB MIDI DUO",
+    "order": 972
+  },
+  {
+    "sku": "SAFEVIEW-MINI2",
+    "title": "safeVIEW-MINI2 Blue Light Transilluminator 15.3 x 15.3 cm",
+    "order": 973
+  },
+  {
+    "sku": "DUOVIEW-MINI",
+    "title": "BLUE/White  Light Transilluminator 15.3 x 15.3cm (110V-240V)",
+    "order": 974
+  },
+  {
+    "sku": "PROBLUEVIEW",
+    "title": "proBLUEVIEW Dual Colour transilluminator",
+    "order": 975
+  },
+  {
+    "sku": "PP1",
+    "title": "Adjustable Speed Peristaltic Pump 220V",
+    "order": 976
+  },
+  {
+    "sku": "PP1$",
+    "title": "Adjustable Speed Peristaltic Pump 110V",
+    "order": 977
+  },
+  {
+    "sku": "MU-S13",
+    "title": "Silicon Tube 1/32 25 Ft",
+    "order": 978
+  },
+  {
+    "sku": "MU-S14",
+    "title": "Silicon Tube 1/16 25 Ft",
+    "order": 979
+  },
+  {
+    "sku": "MU-S16",
+    "title": "Silicon Tube 1/8 25 Ft",
+    "order": 980
+  },
+  {
+    "sku": "MU-S25",
+    "title": "Silicon Tube 3/16 25 Ft",
+    "order": 981
+  },
+  {
+    "sku": "MU-S17",
+    "title": "Silicon Tube 1/4 25 Ft",
+    "order": 982
+  },
+  {
+    "sku": "MU-S18",
+    "title": "Silicon Tube 3/8 25 Ft",
+    "order": 983
+  },
+  {
+    "sku": "CSL-GDVH",
+    "title": "Vacuum Heated Gel Dryer 21 x 31 cm - 230V",
+    "order": 984
+  },
+  {
+    "sku": "CSL-GDVH$",
+    "title": "Vacuum Heated Gel Dryer 21 x 31 cm - 110V",
+    "order": 985
+  },
+  {
+    "sku": "CSL-GDVH35",
+    "title": "Vacuum Heated Gel Dryer 35 x 45 cm - 230V",
+    "order": 986
+  },
+  {
+    "sku": "CSL-GDVH35$",
+    "title": "Vacuum Heated Gel Dryer 35 x 45 cm - 110V",
+    "order": 987
+  },
+  {
+    "sku": "CSL-GDPUMP",
+    "title": "Gel Dryer Pump, 230V",
+    "order": 988
+  },
+  {
+    "sku": "CSL-GDPUMP$",
+    "title": "Gel Dryer Pump, 110V",
+    "order": 989
+  },
+  {
+    "sku": "CSL-GDPUMPTUBE",
+    "title": "Tube for Gel Dryer Pump - 1M",
+    "order": 990
+  },
+  {
+    "sku": "CSL-S2131",
+    "title": "Silicone overlay for 21 x 31 cm Gel Dryer",
+    "order": 991
+  },
+  {
+    "sku": "CSL-M2131",
+    "title": "Mat Support for 21 x 31 cm Gel Dryer",
+    "order": 992
+  },
+  {
+    "sku": "CSL-S3545",
+    "title": "Silicone overlay for 35 x 45 cm Gel Dryer",
+    "order": 993
+  },
+  {
+    "sku": "CSL-M3545",
+    "title": "Mat Support for 35 x 45 cm Gel Dryer",
+    "order": 994
+  },
+  {
+    "sku": "CSL-GDVHCS",
+    "title": "Cellophane sheets for Gel Drying - Precut 14 x 14cm (Pk 50)",
+    "order": 995
+  },
+  {
+    "sku": "CSL-GDVH35CS",
+    "title": "Cellophane sheets for Gel Drying - Precut 24 x 24cm (Pk 50)",
+    "order": 996
+  },
+  {
+    "sku": "CSLUVTS254",
+    "title": "UV Transilluminator small, 21 x 21 cm, 254 nm",
+    "order": 997
+  },
+  {
+    "sku": "CSLUVTS312",
+    "title": "UV Transilluminator small, 21 x 21 cm, 312 nm",
+    "order": 998
+  },
+  {
+    "sku": "CSLUVTS365",
+    "title": "UV Transilluminator small, 21 x 21 cm, 365 nm",
+    "order": 999
+  },
+  {
+    "sku": "CSLUVTSDUO",
+    "title": "UV Transilluminator small, 21 x 21 cm, 254/365 nm",
+    "order": 1000
+  },
+  {
+    "sku": "CSLUVTSDUO365",
+    "title": "UV Transilluminator small, 21 x 21 cm, 312/365nm",
+    "order": 1001
+  },
+  {
+    "sku": "CSLUVTS254L",
+    "title": "UV Transilluminator large, 26x 21 cm, 254nm",
+    "order": 1002
+  },
+  {
+    "sku": "CSLUVTS312L",
+    "title": "UV Transilluminator large, 26 x 21 cm, 312nm",
+    "order": 1003
+  },
+  {
+    "sku": "CSLUVTS365L",
+    "title": "UV Transilluminator large, 26 x 21 cm, 365nm",
+    "order": 1004
+  },
+  {
+    "sku": "CSLUVTSDUOL",
+    "title": "UV Transilluminator large, 26x 21 cm, 254/365nm",
+    "order": 1005
+  },
+  {
+    "sku": "CSLUVTSDUO312",
+    "title": "UV Transilluminator small, 21 x 21 cm, 254/312 nm",
+    "order": 1006
+  },
+  {
+    "sku": "CSLUVTSDUO312L",
+    "title": "UV Transilluminator large, 26x 21 cm, 254/312nm",
+    "order": 1007
+  },
+  {
+    "sku": "CSLUVTSDUO365L",
+    "title": "UV Transilluminator large, 26 x 21 cm, 312/365 nm",
+    "order": 1008
+  },
+  {
+    "sku": "CSL-UVPS22",
+    "title": "UV Transparent Cutting Platform 22 X 22 cm",
+    "order": 1009
+  },
+  {
+    "sku": "CSL-UVPS27",
+    "title": "UV Transparent Cutting Platform 22 X 27 cm",
+    "order": 1010
+  },
+  {
+    "sku": "CSL-T254",
+    "title": "Replacement UV bulb 254nm",
+    "order": 1011
+  },
+  {
+    "sku": "CSL-T312",
+    "title": "Replacement UV bulb 312nm",
+    "order": 1012
+  },
+  {
+    "sku": "CSL-T365",
+    "title": "Replacement UV bulb 365nm",
+    "order": 1013
+  },
+  {
+    "sku": "CSL-F21254",
+    "title": "Replacement transilluminator Filter 21cm - 254nm",
+    "order": 1014
+  },
+  {
+    "sku": "CSL-F212312",
+    "title": "Replacement transilluminator Filter 21cm - 312nm",
+    "order": 1015
+  },
+  {
+    "sku": "CSL-F21365",
+    "title": "Replacement transilluminator Filter 21cm - 365nm",
+    "order": 1016
+  },
+  {
+    "sku": "CSL-F26254",
+    "title": "Replacement transilluminator Filter 26cm - 254nm",
+    "order": 1017
+  },
+  {
+    "sku": "CSL-F26312",
+    "title": "Replacement transilluminator Filter 26cm - 312nm",
+    "order": 1018
+  },
+  {
+    "sku": "CSL-F26365",
+    "title": "Replacement transilluminator Filter 26cm - 365nm",
+    "order": 1019
+  },
+  {
+    "sku": "CSL-C",
+    "title": "Replacement transilluminator cover",
+    "order": 1020
+  },
+  {
+    "sku": "CL-508.G",
+    "title": "UV Crosslinker, 254nm",
+    "order": 1021
+  },
+  {
+    "sku": "CL-508.M",
+    "title": "UV Crosslinker, 302nm",
+    "order": 1022
+  },
+  {
+    "sku": "CL-508.BL",
+    "title": "UV Crosslinker, 365nm",
+    "order": 1023
+  },
+  {
+    "sku": "CL-508.G$",
+    "title": "Shortwave crosslinker, 254nm, 110V",
+    "order": 1024
+  },
+  {
+    "sku": "CL-508.M$",
+    "title": "Midrange crosslinker, 302nm, 110V",
+    "order": 1025
+  },
+  {
+    "sku": "CL-508.BL$",
+    "title": "Longwave crosslinker, 365nm, 110V",
+    "order": 1026
+  },
+  {
+    "sku": "CL-508-254UV",
+    "title": "Set of 254nm CLX UV tubes + calibration for CL-508",
+    "order": 1027
+  },
+  {
+    "sku": "CL-508-312UV",
+    "title": "Set of 312nm CLX UV tubes + calibration for CL-508",
+    "order": 1028
+  },
+  {
+    "sku": "CL-508-365UV",
+    "title": "Set of 365nm CLX UV tubes + calibration for CL-508",
+    "order": 1029
+  },
+  {
+    "sku": "CV2",
+    "title": "omniPETTE - Volume; 0.2 - 2ul",
+    "order": 1030
+  },
+  {
+    "sku": "CV10",
+    "title": "omniPETTE - Volume; 0.5 - 10ul",
+    "order": 1031
+  },
+  {
+    "sku": "CV20",
+    "title": "omniPETTE - Volume; 2 - 20ul",
+    "order": 1032
+  },
+  {
+    "sku": "CV50",
+    "title": "omniPETTE - Volume; 5 - 50ul",
+    "order": 1033
+  },
+  {
+    "sku": "CV100",
+    "title": "omniPETTE - Volume; 10 - 100ul",
+    "order": 1034
+  },
+  {
+    "sku": "CV200",
+    "title": "omniPETTE - Volume; 20 - 200ul",
+    "order": 1035
+  },
+  {
+    "sku": "CV250",
+    "title": "omniPETTE - Volume; 50 - 250ul",
+    "order": 1036
+  },
+  {
+    "sku": "CV1000",
+    "title": "omniPETTE - Volume; 100 - 1000ul",
+    "order": 1037
+  },
+  {
+    "sku": "CV5000",
+    "title": "omniPETTE - Volume; 1000 - 5000ul",
+    "order": 1038
+  },
+  {
+    "sku": "CV10000",
+    "title": "omniPETTE - Volume; 1000 - 10,000ul",
+    "order": 1039
+  },
+  {
+    "sku": "CVSTARTERPACK",
+    "title": "omniPETTE Starter Pack with 2 - 1000 µl pipettes and stand",
+    "order": 1040
+  },
+  {
+    "sku": "CV8-10",
+    "title": "omniPETTE 8 Channel - Volume; 0.5 - 10ul",
+    "order": 1041
+  },
+  {
+    "sku": "CV8-50",
+    "title": "omniPETTE 8 Channel - Volume; 5 - 50ul",
+    "order": 1042
+  },
+  {
+    "sku": "CV8-200",
+    "title": "omniPETTE 8 Channel - Volume; 20 - 200ul",
+    "order": 1043
+  },
+  {
+    "sku": "CV8-300",
+    "title": "omniPETTE 8 Channel - Volume; 50 - 300ul",
+    "order": 1044
+  },
+  {
+    "sku": "CV12-10",
+    "title": "omniPETTE 12 Channel - Volume; 0.5 - 10ul",
+    "order": 1045
+  },
+  {
+    "sku": "CV12-50",
+    "title": "omniPETTE 12 Channel - Volume; 5 - 50ul",
+    "order": 1046
+  },
+  {
+    "sku": "CV12-200",
+    "title": "omniPETTE 12 Channel - Volume; 20 - 200ul",
+    "order": 1047
+  },
+  {
+    "sku": "CV12-300",
+    "title": "omniPETTE 12 Channel - Volume; 50 - 300ul",
+    "order": 1048
+  },
+  {
+    "sku": "CV-RS",
+    "title": "omniPETTE - Rotating Stand",
+    "order": 1049
+  },
+  {
+    "sku": "CV-1POS",
+    "title": "1 Position Stand for Single or MC pipette.",
+    "order": 1050
+  },
+  {
+    "sku": "CV-4POS",
+    "title": "4 Position Stand for Single Channel Pipettes",
+    "order": 1051
+  },
+  {
+    "sku": "CV-MS",
+    "title": "Multiple Stand for 3 x Multi Channel pipettes",
+    "order": 1052
+  },
+  {
+    "sku": "EZEEPETTE-10",
+    "title": "EZEE Pipette - Volume; 0.5 - 10ul",
+    "order": 1053
+  },
+  {
+    "sku": "EZEEPETTE-100",
+    "title": "EZEE Pipette - Volume; 10 - 100ul",
+    "order": 1054
+  },
+  {
+    "sku": "EZEEPETTE-1000",
+    "title": "EZEE Pipette - Volume; 100 - 1000ul",
+    "order": 1055
+  },
+  {
+    "sku": "EZEEPETTE-2",
+    "title": "EZEE Pipette - Volume; 0.2 - 2ul",
+    "order": 1056
+  },
+  {
+    "sku": "EZEEPETTE-20",
+    "title": "EZEE Pipette - Volume; 2 - 20ul",
+    "order": 1057
+  },
+  {
+    "sku": "EZEEPETTE-200",
+    "title": "EZEE Pipette - Volume; 20 - 200ul",
+    "order": 1058
+  },
+  {
+    "sku": "MFVP-5",
+    "title": "Mini Fixed Volume Pipette 5ul, with 1 tip",
+    "order": 1059
+  },
+  {
+    "sku": "MFVP-10",
+    "title": "Mini Fixed Volume Pipette 10ul, with 1 tip",
+    "order": 1060
+  },
+  {
+    "sku": "MFVP-20",
+    "title": "Mini Fixed Volume Pipette 20ul, with 1 tip",
+    "order": 1061
+  },
+  {
+    "sku": "MFVP-40",
+    "title": "Mini Fixed Volume Pipette 40ul, with 1 tip",
+    "order": 1062
+  },
+  {
+    "sku": "MFVP-50",
+    "title": "Mini Fixed Volume Pipette 50ul, with 1 tip",
+    "order": 1063
+  },
+  {
+    "sku": "MFVP-100",
+    "title": "Mini Fixed Volume Pipette 100ul, with 1 tip",
+    "order": 1064
+  },
+  {
+    "sku": "MFVP-200",
+    "title": "Mini Fixed Volume Pipette 200ul, with 1 tip",
+    "order": 1065
+  },
+  {
+    "sku": "OMNIPET",
+    "title": "OmniPET Pipette Filler",
+    "order": 1066
+  },
+  {
+    "sku": "OMNIPET-CS",
+    "title": "Charging Stand for Omnipet",
+    "order": 1067
+  },
+  {
+    "sku": "EPV10",
+    "title": "Electronic omni-EPETTE, 0.5-10ul",
+    "order": 1068
+  },
+  {
+    "sku": "EPV100",
+    "title": "Electronic omni-EPETTE, 5-100ul",
+    "order": 1069
+  },
+  {
+    "sku": "EPV200",
+    "title": "Electronic omni-EPETTE, 10-200ul",
+    "order": 1070
+  },
+  {
+    "sku": "EPV1000",
+    "title": "Electronic omni-EPETTE, 50-1000ul",
+    "order": 1071
+  },
+  {
+    "sku": "EPV5000",
+    "title": "Electronic omni-EPETTE, 250-5000ul",
+    "order": 1072
+  },
+  {
+    "sku": "EPV8-10",
+    "title": "Electronic omni-EPETTE 8 Channel, 0.5-10ul",
+    "order": 1073
+  },
+  {
+    "sku": "EPV8-20",
+    "title": "Electronic omni-EPETTE 8 Channel, 2-20ul",
+    "order": 1074
+  },
+  {
+    "sku": "EPV8-100",
+    "title": "Electronic omni-EPETTE 8 Channel, 5-100ul",
+    "order": 1075
+  },
+  {
+    "sku": "EPV8-200",
+    "title": "Electronic omni-EPETTE 8 Channel, 10-200ul",
+    "order": 1076
+  },
+  {
+    "sku": "EPV8-300",
+    "title": "Electronic omni-EPETTE 8 Channel, 15-300ul",
+    "order": 1077
+  },
+  {
+    "sku": "EPV12-10",
+    "title": "Electronic omni-EPETTE 12 Channel, 0.5-10ul",
+    "order": 1078
+  },
+  {
+    "sku": "EPV12-20",
+    "title": "Electronic omni-EPETTE 12 Channel, 2-20ul",
+    "order": 1079
+  },
+  {
+    "sku": "EPV12-100",
+    "title": "Electronic omni-EPETTE 12 Channel, 5-100ul",
+    "order": 1080
+  },
+  {
+    "sku": "EPV12-200",
+    "title": "Electronic omni-EPETTE 12 Channel, 10-200ul",
+    "order": 1081
+  },
+  {
+    "sku": "EPV12-300",
+    "title": "Electronic omni-EPETTE 12 Channel, 15-300ul",
+    "order": 1082
+  },
+  {
+    "sku": "EPCS",
+    "title": "Electronic Pipette Charging Stand",
+    "order": 1083
+  },
+  {
+    "sku": "EPST",
+    "title": "Acrylic Stand",
+    "order": 1084
+  },
+  {
+    "sku": "VORTEXM2",
+    "title": "Cleaver Vortex Mixer with general purpose head, 230V",
+    "order": 1085
+  },
+  {
+    "sku": "VORTEXM2$",
+    "title": "Cleaver Vortex Mixer with general purpose head, 100V",
+    "order": 1086
+  },
+  {
+    "sku": "VT-H1",
+    "title": "3\" Round Rubber Flat Cover",
+    "order": 1087
+  },
+  {
+    "sku": "VT-H2",
+    "title": "Pop-Off Rubber Cup Head",
+    "order": 1088
+  },
+  {
+    "sku": "VT-H3",
+    "title": "15ml Tube Horizontal Holder",
+    "order": 1089
+  },
+  {
+    "sku": "VT-H4",
+    "title": "50ml Tube Horizontal Holder",
+    "order": 1090
+  },
+  {
+    "sku": "VT-H5",
+    "title": "1.5ml Eppendorf/Tube Foam Rack",
+    "order": 1091
+  },
+  {
+    "sku": "VT-H6",
+    "title": "15ml Tube Foam Rack",
+    "order": 1092
+  },
+  {
+    "sku": "VT-H7",
+    "title": "50ml Tube Foam Rack",
+    "order": 1093
+  },
+  {
+    "sku": "VT-H8",
+    "title": "96-well PCR Plate Foam Platform",
+    "order": 1094
+  },
+  {
+    "sku": "VT-H9",
+    "title": "96-well Microplate Foam Platform",
+    "order": 1095
+  },
+  {
+    "sku": "CSLVORTEX",
+    "title": "Vortex Mixer, 230V",
+    "order": 1096
+  },
+  {
+    "sku": "CSLVORTEX$",
+    "title": "Vortex Mixer, 110V",
+    "order": 1097
+  },
+  {
+    "sku": "S0200-21",
+    "title": "Vortex Adapter For 24 X 1.5/2.0Ml Tubes, 24 X 0.5Ml Tubes And 32 X 0.2Ml Tubes (Or 4 Tube Strips)",
+    "order": 1098
+  },
+  {
+    "sku": "S0200-22",
+    "title": "Vortex Adapter For 1 Microplate Or 64 X 0.2Ml Tubes Or 8 X 0.2Ml Tube Strips",
+    "order": 1099
+  },
+  {
+    "sku": "S0200-23",
+    "title": "Vortex Adapter For 8 X 15Ml And 8 X 12/13Mm Diameter Tubes.",
+    "order": 1100
+  },
+  {
+    "sku": "S0200-24",
+    "title": "Vortex Adapter For 6 X 50Ml Tubes",
+    "order": 1101
+  },
+  {
+    "sku": "S0200-25",
+    "title": "Vortex Adapter For 12 X 1.5/2.0Ml Tubes",
+    "order": 1102
+  },
+  {
+    "sku": "S0200-26",
+    "title": "Vortex Adapter For 4 X 15Ml Tubes",
+    "order": 1103
+  },
+  {
+    "sku": "S0200-27",
+    "title": "Vortex Adapter For 2 X 50Ml Tubes",
+    "order": 1104
+  },
+  {
+    "sku": "MINIVORTEX",
+    "title": "Mini Vortex Mixer 100-240VAC, 50/60Hz Universal, Grey/Purple",
+    "order": 1105
+  },
+  {
+    "sku": "ORBITAL2",
+    "title": "Digital Orbital Shaker 100-240VAC, 50/60Hz Universal Plug",
+    "order": 1106
+  },
+  {
+    "sku": "3DSHAKER",
+    "title": "EZEEshaker 3-D shaker with non-slip mat. 115/240V",
+    "order": 1107
+  },
+  {
+    "sku": "CSL3DSHAKER",
+    "title": "MiniMix 3D Shaker and two blotting boxes, 230V",
+    "order": 1108
+  },
+  {
+    "sku": "CSL3DSHAKER$",
+    "title": "MiniMix 3D Shaker and two blotting boxes, 110V",
+    "order": 1109
+  },
+  {
+    "sku": "CSL-BB9X6",
+    "title": "Gel/Blot box, 9.1 x 6.6cm, 3-5ml capacity, 10/pack",
+    "order": 1110
+  },
+  {
+    "sku": "CSL-BB11X8",
+    "title": "Gel/Blot box, 11.7 x 8.9cm, 3-10ml capacity, 10/pack",
+    "order": 1111
+  },
+  {
+    "sku": "CSL-BB12X12",
+    "title": "Gel/Blot box 12 x 12cm 1/pack",
+    "order": 1112
+  },
+  {
+    "sku": "CSL-BB20X16.5",
+    "title": "Gel/Blot box 20 x 16.5cm 1/pack",
+    "order": 1113
+  },
+  {
+    "sku": "OS-200",
+    "title": "proSET Orbital Shaker with universal platform",
+    "order": 1114
+  },
+  {
+    "sku": "SI-200-01",
+    "title": "Universal platform",
+    "order": 1115
+  },
+  {
+    "sku": "SI-200-02",
+    "title": "Adjustable angle Tube Rack ( 33 x 15ml )",
+    "order": 1116
+  },
+  {
+    "sku": "SI-200-03",
+    "title": "Adjustable angle Tube Rack ( 16 x 50ml )",
+    "order": 1117
+  },
+  {
+    "sku": "SI-200-04",
+    "title": "Universal Spring Rack",
+    "order": 1118
+  },
+  {
+    "sku": "SI-200-05",
+    "title": "Sticky Pad platform",
+    "order": 1119
+  },
+  {
+    "sku": "SI-200-06",
+    "title": "Universal cushioned crossbar platform",
+    "order": 1120
+  },
+  {
+    "sku": "SI-200-07",
+    "title": "Microplate holders",
+    "order": 1121
+  },
+  {
+    "sku": "SI-200-08",
+    "title": "Flask Holder 50ml",
+    "order": 1122
+  },
+  {
+    "sku": "SI-200-09",
+    "title": "Flask Holder 125ml",
+    "order": 1123
+  },
+  {
+    "sku": "SI-200-10",
+    "title": "Flask Holder 250ml",
+    "order": 1124
+  },
+  {
+    "sku": "SI-200-11",
+    "title": "Flask Holder 500ml",
+    "order": 1125
+  },
+  {
+    "sku": "SI-200-12",
+    "title": "Flask Holder 1000ml",
+    "order": 1126
+  },
+  {
+    "sku": "SI-200-13",
+    "title": "Flask Holder 2000ml",
+    "order": 1127
+  },
+  {
+    "sku": "SI-200-14",
+    "title": "PT-100 temperature external module with cable",
+    "order": 1128
+  },
+  {
+    "sku": "CSSI-200",
+    "title": "proSET series shaking incubator, complete with universal platform",
+    "order": 1129
+  },
+  {
+    "sku": "CSL-NHYBRIDBASIC",
+    "title": "Incubator only with 2 x SS shelves- 110/230V",
+    "order": 1144
+  },
+  {
+    "sku": "CSL-NHYBRIDORB",
+    "title": "CSL Hybridization/Orbital Shaking Oven (without rotisserie)-",
+    "order": 1145
+  },
+  {
+    "sku": "CSL-NHYBRIDREC",
+    "title": "CSL Hybridization/Reciprocal Shaking Oven (without rotisseri",
+    "order": 1146
+  },
+  {
+    "sku": "CSL-NHYBRIDROC",
+    "title": "CSL Hybridization/Rocking Oven (without rotisserie)- 110/240",
+    "order": 1147
+  },
+  {
+    "sku": "CSL-NHYB-8RT",
+    "title": "1 x Rotisserie for 8 x 40mm glass tubes (Tubes not included)",
+    "order": 1148
+  },
+  {
+    "sku": "CSL-NHYB-16RT",
+    "title": "1 x Rotisserie for 16 x 50mm disposable conical tubes (Tubes not included)",
+    "order": 1149
+  },
+  {
+    "sku": "CSL-NHYB-24RT",
+    "title": "1 x Rotisserie for 24 x 15mm disposable conical tubes (Tubes not included)",
+    "order": 1150
+  },
+  {
+    "sku": "CSL-NHYB-P2320",
+    "title": "Additional 23x20cm platform for orbital and reciprocal shake not included)",
+    "order": 1151
+  },
+  {
+    "sku": "NHYRIDREC-MESH",
+    "title": "1 layer of stainless steel mesh plate with 4 plate holders",
+    "order": 1152
+  },
+  {
+    "sku": "CSL-NHYBBT40X150",
+    "title": "Glass Bottle 40 x 150mm (diameter x length)",
+    "order": 1153
+  },
+  {
+    "sku": "CSL-NHYBBT40X200",
+    "title": "Glass Bottle 40 x 200mm (diameter x length)",
+    "order": 1154
+  },
+  {
+    "sku": "CSL-NHYBBT40X300",
+    "title": "Glass Bottle 40 x 300mm (diameter x length)",
+    "order": 1155
+  },
+  {
+    "sku": "NHYRIDREC-SEESAW",
+    "title": "Rocking shaker platform for CSL-NHYBRIDROC",
+    "order": 1156
+  },
+  {
+    "sku": "MINI-INCBASIC",
+    "title": "Mini Incubator - 17L Capacity, 110V/220V",
+    "order": 1157
+  },
+  {
+    "sku": "INCBASIC-SHELF",
+    "title": "Stainless Steel shelf for MINI-INCBASIC",
+    "order": 1158
+  },
+  {
+    "sku": "CSL-HOTPLATE",
+    "title": "Hotplate, 7.5 x 7.5 in. - 230V",
+    "order": 1159
+  },
+  {
+    "sku": "CSL-HOTPLATE$",
+    "title": "Hotplate, 7.5 x 7.5 in. - 110V",
+    "order": 1160
+  },
+  {
+    "sku": "CSL-STIR",
+    "title": "Magnetic Stirrer, 7.5 x 7.5 in.- 230V",
+    "order": 1161
+  },
+  {
+    "sku": "CSL-STIR$",
+    "title": "Magnetic Stirrer, 7.5 x 7.5 in.- 110V",
+    "order": 1162
+  },
+  {
+    "sku": "CSL-HOTSTIR",
+    "title": "Hotplate Magnetic Stirrer 7.5 x 7.5 inch. - 230V",
+    "order": 1163
+  },
+  {
+    "sku": "CSL-HOTSTIR$",
+    "title": "Hotplate Magnetic Stirrer 7.5 x 7.5 inch. - 110V",
+    "order": 1164
+  },
+  {
+    "sku": "CSL-DHOTPLATE",
+    "title": "Digital Hotplate, 7.5 x 7.5 in. - 230V",
+    "order": 1165
+  },
+  {
+    "sku": "CSL-DHOTPLATE$",
+    "title": "Digital Hotplate, 7.5 x 7.5 in. - 110V",
+    "order": 1166
+  },
+  {
+    "sku": "CSL-DSTIR",
+    "title": "Digital Magnetic Stirrer, 7.5 x 7.5 in.- 230V",
+    "order": 1167
+  },
+  {
+    "sku": "CSL-DSTIR$",
+    "title": "Digital Magnetic Stirrer, 7.5 x 7.5 in.- 110V",
+    "order": 1168
+  },
+  {
+    "sku": "CSL-DHOTSTIR",
+    "title": "Digital Hotplate Magnetic Stirrer 7.5 x 7.5 inch. - 230V",
+    "order": 1169
+  },
+  {
+    "sku": "CSL-DHOTSTIR$",
+    "title": "Digital Hotplate Magnetic Stirrer 7.5 x 7.5 inch. - 110V",
+    "order": 1170
+  },
+  {
+    "sku": "TEMPROBE",
+    "title": "Optional Temperature probe for hotplate",
+    "order": 1171
+  },
+  {
+    "sku": "SUPPROD",
+    "title": "Optional Support Rod for hotplate and stirrer",
+    "order": 1172
+  },
+  {
+    "sku": "ISTIR2",
+    "title": "Magnetic Induction Stirrer",
+    "order": 1173
+  },
+  {
+    "sku": "MINISTIR",
+    "title": "Magnetic Stirrer",
+    "order": 1174
+  },
+  {
+    "sku": "MAGFUGE",
+    "title": "High Speed Centrifuge and a Magnetic Stirrer In-One",
+    "order": 1175
+  },
+  {
+    "sku": "QUICKSPINPLUS",
+    "title": "Quickspin Mini Centrifuge",
+    "order": 1176
+  },
+  {
+    "sku": "QUICKSPIN2",
+    "title": "QUICKSPIN2 Mini-Centrifuge",
+    "order": 1177
+  },
+  {
+    "sku": "EZEESPIN",
+    "title": "ezeeSPIN single speed mini centrifuge",
+    "order": 1178
+  },
+  {
+    "sku": "EZEESPIN-D",
+    "title": "ezeeSPIN mini centrifuge with digital speed adjustement",
+    "order": 1179
+  },
+  {
+    "sku": "EZ-ROTOR",
+    "title": "ezeeSPIN Microcentrifuge Tube Rotor, 8 x 1.5/2.0ml",
+    "order": 1180
+  },
+  {
+    "sku": "EZ-PST",
+    "title": "ezeeSPIN PCR Strip Tube Rotor, 4 x 8 PCR strip",
+    "order": 1181
+  },
+  {
+    "sku": "EZ-A0.2",
+    "title": "ezeeSPIN Adaptor, 0.2ml PCR tube (8/pk)",
+    "order": 1182
+  },
+  {
+    "sku": "EZ-A0.5",
+    "title": "ezeeSPIN Adaptor, 0.5ml PCR tube (8/pk)",
+    "order": 1183
+  },
+  {
+    "sku": "CSL-MULTIFUGE",
+    "title": "multiFUGE Mini Centrifuge",
+    "order": 1184
+  },
+  {
+    "sku": "MF-A0.5-6",
+    "title": "multiFUGE Adaptors, 0.5ml, Pack of 6",
+    "order": 1185
+  },
+  {
+    "sku": "MF-A0.2-6",
+    "title": "multiFUGE Adaptors, 0.2ml, Pack of 6",
+    "order": 1186
+  },
+  {
+    "sku": "EZEEFUGE",
+    "title": "24 place microcentrifuge (Includes 24×1.5/2.0ml rotor )",
+    "order": 1187
+  },
+  {
+    "sku": "EZEEFUGE$",
+    "title": "24 place microcentrifuge (Includes 24×1.5/2.0ml rotor) $",
+    "order": 1188
+  },
+  {
+    "sku": "EZEEFUGE-R",
+    "title": "24 place refrigerated microcentrifuge",
+    "order": 1189
+  },
+  {
+    "sku": "EZEEFUGE-R$",
+    "title": "24 place refrigerated microcentrifuge",
+    "order": 1190
+  },
+  {
+    "sku": "EZEEROTOR-0.2",
+    "title": "Fixed Angle Rotor 8 x 0.2ml strips, 14,000 rpm",
+    "order": 1191
+  },
+  {
+    "sku": "EZEEROTOR-2",
+    "title": "Fixed Angle Rotor 24 x 1.5/2ml, 15,000 rpm",
+    "order": 1192
+  },
+  {
+    "sku": "EZEEROTOR-2-16",
+    "title": "Angle Rotor, 16 × 1.5/2.0 ml",
+    "order": 1193
+  },
+  {
+    "sku": "EZEEROTOR-5",
+    "title": "Fixed Angle Rotor 12 x 5ml, 16,500 rpm",
+    "order": 1194
+  },
+  {
+    "sku": "EZEEROTOR-HEM",
+    "title": "Hematocrit rotor, 24 x hematocrit tubes",
+    "order": 1195
+  },
+  {
+    "sku": "AQUALAB-ECO-2L-120V$",
+    "title": "Still, 2 l/hr, 120V 1.8 kW $",
+    "order": 1196
+  },
+  {
+    "sku": "AQUALAB-ECO-2L-220V",
+    "title": "Still, 2 l/hr, 220V 1.8 kW",
+    "order": 1197
+  },
+  {
+    "sku": "AQUALAB-ECO-2L-240V",
+    "title": "Still, 2 l/hr, 240V 1.8 kW",
+    "order": 1198
+  },
+  {
+    "sku": "AQUALAB-ECO-4L-120V$",
+    "title": "Still 4 l/hr, 120V 3kW",
+    "order": 1199
+  },
+  {
+    "sku": "AQUALAB-ECO-4L-220V",
+    "title": "Still 4 l/hr, 220V 3kW",
+    "order": 1200
+  },
+  {
+    "sku": "AQUALAB-ECO-4L-240V",
+    "title": "Still 4 l/hr, 240V 3kW",
+    "order": 1201
+  },
+  {
+    "sku": "AQUALAB-ECO-RESERVOIR",
+    "title": "Reservoir for the AquaLab Eco, 30 litres",
+    "order": 1202
+  },
+  {
+    "sku": "AQUALAB-PRO-4BD-4L-220V",
+    "title": "4BD 4l/hr Double Distiller  220V 6kW",
+    "order": 1203
+  },
+  {
+    "sku": "AQUALAB-PRO-4BD-4L-240V",
+    "title": "4BD 4l/hr Double Distiller  240V 6kW",
+    "order": 1204
+  },
+  {
+    "sku": "AQUALAB-PRO-4L-220V",
+    "title": "4l/hr Single distiller, 220V 3kW",
+    "order": 1205
+  },
+  {
+    "sku": "AQUALAB-PRO-4L-240V",
+    "title": "4l/hr Single distiller, 240V 3kW",
+    "order": 1206
+  },
+  {
+    "sku": "AQUALAB-PRO-8L-220V",
+    "title": "8l/hr Single distiller, 220V 6kW",
+    "order": 1207
+  },
+  {
+    "sku": "AQUALAB-PRO-8L-240V",
+    "title": "8l/hr Single distiller, 240V 6kW",
+    "order": 1208
+  },
+  {
+    "sku": "AQUALAB-PRO-RESERVOIR",
+    "title": "Reservoir for the Aqualab Pro , 30 litres",
+    "order": 1209
+  },
+  {
+    "sku": "C11",
+    "title": "PH/EC/SAL/TDS/O2/ORP METER",
+    "order": 1210
+  },
+  {
+    "sku": "C11K",
+    "title": "C11 KIT EC GLASS",
+    "order": 1211
+  },
+  {
+    "sku": "C11KE",
+    "title": "C11 KIT EC EPOXY",
+    "order": 1212
+  },
+  {
+    "sku": "C11P",
+    "title": "C11 KIT PH GLASS",
+    "order": 1213
+  },
+  {
+    "sku": "C11PE",
+    "title": "C11 KIT PH EPOXY",
+    "order": 1214
+  },
+  {
+    "sku": "C11PK",
+    "title": "C11 KIT PH/EC GLASS",
+    "order": 1215
+  },
+  {
+    "sku": "C11PKE",
+    "title": "C11 KIT PH/EC EPOXY",
+    "order": 1216
+  },
+  {
+    "sku": "C11T",
+    "title": "C11 KIT PH/EC/O2 GLASS",
+    "order": 1217
+  },
+  {
+    "sku": "C11TE",
+    "title": "C11 KIT PH/EC/O2 EPOXY",
+    "order": 1218
+  },
+  {
+    "sku": "C11X",
+    "title": "C11 KIT WITHOUT ELECTRODES",
+    "order": 1219
+  },
+  {
+    "sku": "C11Z",
+    "title": "C11 KIT O2",
+    "order": 1220
+  },
+  {
+    "sku": "C51",
+    "title": "C51 Portable Meter Only",
+    "order": 1221
+  },
+  {
+    "sku": "C51P",
+    "title": "C51 Portable Meter+ SP20T + 2x50ml pH buffers + 50ml electrolyte + carrying case",
+    "order": 1222
+  },
+  {
+    "sku": "C51K",
+    "title": "C51 Portable Meter+ SK20T + 50ml EC standard + carrying case",
+    "order": 1223
+  },
+  {
+    "sku": "C51PK",
+    "title": "C51 Portable Meter+ SP20T + EC electrode SK20T + 2x50ml pH buffers + 50ml electrolyte + 50ml EC standard + carrying case",
+    "order": 1224
+  },
+  {
+    "sku": "C51Z",
+    "title": "C51 Portable Meter+ SZ20T + carrying case",
+    "order": 1225
+  },
+  {
+    "sku": "C51T",
+    "title": "C51 Portable Meter+ SP20T + SK20T + SZ20T + 2x50ml pH buffers + 50ml electrolyte + 50ml EC standard + carrying case",
+    "order": 1226
+  },
+  {
+    "sku": "C51X",
+    "title": "C51 Portable Meter+ 2x50ml pH buffers + 50ml electrolyte + 50ml EC standard + carrying case",
+    "order": 1227
+  },
+  {
+    "sku": "C51PE",
+    "title": "C51 Portable Meter+ SP10T + 2x50ml pH buffers + 50ml electrolyte + carrying case",
+    "order": 1228
+  },
+  {
+    "sku": "C51KE",
+    "title": "C51 Portable Meter+ SK10T + 50ml EC standard + carrying case",
+    "order": 1229
+  },
+  {
+    "sku": "C51PKE",
+    "title": "C51 Portable Meter+ SP10T + SK10T + 2x50ml pH buffers + 50ml electrolyte + 50ml EC standard + carrying case",
+    "order": 1230
+  },
+  {
+    "sku": "C51TE",
+    "title": "C51 Portable Meter+ SP10T + SK10T + +SZ20T+ 2x50ml pH buffers + 50ml electrolyte + 50ml EC standard + carrying case",
+    "order": 1231
+  },
+  {
+    "sku": "SH300",
+    "title": "Flexible electrode holder (optional)",
+    "order": 1232
+  },
+  {
+    "sku": "TCDB-01",
+    "title": "CUBE Dry Bath, Single Block, 220V",
+    "order": 1233
+  },
+  {
+    "sku": "TCDB-01$",
+    "title": "CUBE Dry Bath, Single Block, 110V",
+    "order": 1234
+  },
+  {
+    "sku": "TCDB-02",
+    "title": "CUBE Dry Bath, Dual Block, 220V",
+    "order": 1235
+  },
+  {
+    "sku": "TCDB-02$",
+    "title": "CUBE Dry Bath, Dual Block, 110V",
+    "order": 1236
+  },
+  {
+    "sku": "MD-MP01-S",
+    "title": "CUBE Dry Bath Block for Microplate for Single Block Unit Only",
+    "order": 1237
+  },
+  {
+    "sku": "MD-MP02-S",
+    "title": "CUBE Dry Bath Block for 96 wells deep Microplate or PCR plate For Single Block Unit Only",
+    "order": 1238
+  },
+  {
+    "sku": "MD-MP01-D",
+    "title": "CUBE Dry Bath Block for Microplate for Dual Block Unit Only",
+    "order": 1239
+  },
+  {
+    "sku": "MD-MP02-D",
+    "title": "CUBE Dry Bath Block for 96 wells deep Microplate or PCR plate For Dual Block Unit Only",
+    "order": 1240
+  },
+  {
+    "sku": "MD-B0.5/1.5",
+    "title": "CUBE Dry Bath Double side block : one side for 1.5 or 2.0 ml tube",
+    "order": 1241
+  },
+  {
+    "sku": "MD-B0.5PLUS1.5",
+    "title": "CUBE Dry Bath Combination block : for 0.5 ml tube",
+    "order": 1242
+  },
+  {
+    "sku": "MD-B0.2",
+    "title": "CUBE Dry Bath Block for 0.2 ml tube",
+    "order": 1243
+  },
+  {
+    "sku": "MD-B0.5",
+    "title": "CUBE Dry Bath Block for 0.5 ml tube",
+    "order": 1244
+  },
+  {
+    "sku": "MD-B1.5",
+    "title": "CUBE Dry Bath Block for 1.5 ml tube",
+    "order": 1245
+  },
+  {
+    "sku": "MD-B13",
+    "title": "CUBE Dry Bath Block well size 13 mm",
+    "order": 1246
+  },
+  {
+    "sku": "MD-B17",
+    "title": "CUBE Dry Bath Block for 15 ml centrifuge tube",
+    "order": 1247
+  },
+  {
+    "sku": "MD-B20",
+    "title": "CUBE Dry Bath Block well size 20 mm",
+    "order": 1248
+  },
+  {
+    "sku": "MD-B25",
+    "title": "CUBE Dry Bath Block well size 25 mm",
+    "order": 1249
+  },
+  {
+    "sku": "MD-B29",
+    "title": "CUBE Dry Bath Block for 50 ml centrifuge tube",
+    "order": 1250
+  },
+  {
+    "sku": "TCDB-BL",
+    "title": "Block lifter 95mm for CUBE Blocks",
+    "order": 1251
+  },
+  {
+    "sku": "MBDB-01",
+    "title": "microBLOCK Digital Dry Bath, 100- 240V",
+    "order": 1252
+  },
+  {
+    "sku": "A-MINI",
+    "title": "microBLOCK Block for 40 x 0.2ml tubes",
+    "order": 1253
+  },
+  {
+    "sku": "B-MINI",
+    "title": "microBLOCK Block for 24 x 0.5ml tubes",
+    "order": 1254
+  },
+  {
+    "sku": "C-MINI",
+    "title": "microBLOCK Block for 15 x 1.5ml tubes",
+    "order": 1255
+  },
+  {
+    "sku": "D-MINI",
+    "title": "microBLOCK Block for 15 x 2.0ml tubes",
+    "order": 1256
+  },
+  {
+    "sku": "E-MINI",
+    "title": "microBLOCK Block for 8 x 12.5 x 12.5ml Cuvettes",
+    "order": 1257
+  },
+  {
+    "sku": "F-MINI",
+    "title": "microBLOCK Block for 4 x 15ml tubes",
+    "order": 1258
+  },
+  {
+    "sku": "G-MINI",
+    "title": "microBLOCK Block for 2 x 50ml tubes",
+    "order": 1259
+  },
+  {
+    "sku": "SWB-10L-1",
+    "title": "Stirring Water Bath 10L with 1 built-in stirrer",
+    "order": 1260
+  },
+  {
+    "sku": "SWB-10L-1$",
+    "title": "Stirring Water Bath 10L with 1 built-in stirrer, 110V",
+    "order": 1261
+  },
+  {
+    "sku": "SWB-10L-2",
+    "title": "Stirring Water Bath 10L with 2 built-in stirrers",
+    "order": 1262
+  },
+  {
+    "sku": "SWB-10L-2$",
+    "title": "Stirring Water Bath 10L with 2 built-in stirrers, 110V",
+    "order": 1263
+  },
+  {
+    "sku": "SWB-20L-1",
+    "title": "Stirring Water Bath 20L with 1 built-in stirrer",
+    "order": 1264
+  },
+  {
+    "sku": "SWB-20L-1$",
+    "title": "Stirring Water Bath 20L with 1 built-in stirrer, 110V",
+    "order": 1265
+  },
+  {
+    "sku": "SWB-20L-3",
+    "title": "Stirring Water Bath 20L with 3 built-in stirrers",
+    "order": 1266
+  },
+  {
+    "sku": "SWB-20L-3$",
+    "title": "Stirring Water Bath 20L with 3 built-in stirrers, 110V",
+    "order": 1267
+  },
+  {
+    "sku": "SWB-LID10",
+    "title": "Transparent lid for 10L stirring water bath",
+    "order": 1268
+  },
+  {
+    "sku": "SWB-LID20",
+    "title": "Transparent lid for 20L stirring water bath",
+    "order": 1269
+  },
+  {
+    "sku": "GTC96S",
+    "title": "GTC96S thermal cycler with 96-well block, 240VAC",
+    "order": 1270
+  },
+  {
+    "sku": "GTC96S$",
+    "title": "GTC96S thermal cycler with 96-well block, 120VAC",
+    "order": 1271
+  },
+  {
+    "sku": "CSLIB",
+    "title": "Large Ice Bucket- White",
+    "order": 1272
+  },
+  {
+    "sku": "CSLIBLID",
+    "title": "Lid For Large Ice Bucket - White",
+    "order": 1273
+  },
+  {
+    "sku": "CSMIB",
+    "title": "Mini Ice Bucket - White",
+    "order": 1274
+  },
+  {
+    "sku": "CSL-COOLCUBE",
+    "title": "Coolcube Storage Rack",
+    "order": 1275
+  },
+  {
+    "sku": "CSL-GB24",
+    "title": "2 port glove box 24\" x 24\" x 24\"",
+    "order": 1276
+  },
+  {
+    "sku": "CSL-GB24A",
+    "title": "2 port glove box 24\" x 24\" x 24\" with airlock",
+    "order": 1277
+  },
+  {
+    "sku": "CSL-GB36",
+    "title": "2 port glove box 36\" x 24\" x 24\"",
+    "order": 1278
+  },
+  {
+    "sku": "CSL-GB36A",
+    "title": "2 port glove box 36\" x 24\" x 24\" with airlock",
+    "order": 1279
+  },
+  {
+    "sku": "CSL-GB48",
+    "title": "2 port glove box 48\" x 24\" x 24\"",
+    "order": 1280
+  },
+  {
+    "sku": "CSL-GB48A",
+    "title": "2 port glove box 48\" x 24\" x 24\" with airlock",
+    "order": 1281
+  },
+  {
+    "sku": "CSL-GB60",
+    "title": "2 port glove box 60\" x 24\" x 24\"",
+    "order": 1282
+  },
+  {
+    "sku": "CSL-GB60A",
+    "title": "2 port glove box 60\" x 24\" x 24\" with airlock",
+    "order": 1283
+  },
+  {
+    "sku": "GLOVES-NEOPRENE",
+    "title": "Neoprene Glove for Glove Boxes (Single)",
+    "order": 1284
+  },
+  {
+    "sku": "CSL-COMBIBOX",
+    "title": "Combination Glove box 24\" with 2 ports - 240VAC",
+    "order": 1285
+  },
+  {
+    "sku": "CSL-COMBIBOX-A",
+    "title": "Combination Glove box 24\" with 2 ports - 110VAC",
+    "order": 1286
+  },
+  {
+    "sku": "CSL-COMBIBOX36",
+    "title": "UV & White Light Combination Glove box 36\" with 2 ports - 240VAC",
+    "order": 1287
+  },
+  {
+    "sku": "CSL-COMBIBOX36-A",
+    "title": "UV & White Light Combination Glove box 36\" with 2 ports - 110VAC",
+    "order": 1288
+  },
+  {
+    "sku": "COMBIBOX-MINI",
+    "title": "Small UV & White Light Combination Glove box 20\" with 2 ports - 240VAC",
+    "order": 1289
+  },
+  {
+    "sku": "CSL-UVCAB",
+    "title": "UV Sterilisation Cabinet for PCR Preperation, 230V",
+    "order": 1290
+  },
+  {
+    "sku": "CSL-UVCAB$",
+    "title": "UV Sterilisation Cabinet for PCR Preperation, 110V",
+    "order": 1291
+  },
+  {
+    "sku": "CSL-UVCABTY4",
+    "title": "UV Sterilisation Cabinet for PCR Preperation, with Spill Tray, 230V",
+    "order": 1292
+  },
+  {
+    "sku": "CSL-UVCABTY4$",
+    "title": "UV Sterilisation Cabinet for PCR Preperation, with Spill Tray, 110V",
+    "order": 1293
+  },
+  {
+    "sku": "CSL-UVCABMIDI",
+    "title": "Midi UV Sterilisation Cabinet for PCR Preperation, 230V",
+    "order": 1294
+  },
+  {
+    "sku": "CSL-UVCABMIDI$",
+    "title": "Midi UV Sterilisation Cabinet for PCR Preperation, 110V",
+    "order": 1295
+  },
+  {
+    "sku": "CSL-UVCABMIDITY4",
+    "title": "Midi UV Sterilisation Cabinet for PCR Preperation, with Spill Tray, 230V",
+    "order": 1296
+  },
+  {
+    "sku": "CSL-UVCABMIDITY4$",
+    "title": "Midi UV Sterilisation Cabinet for PCR Preperation, with Spill Tray, 110V",
+    "order": 1297
+  },
+  {
+    "sku": "CSL-UVCABMINI",
+    "title": "Mini UV Sterilisation Cabinet for UV Sterlisation, 230V",
+    "order": 1298
+  },
+  {
+    "sku": "CSL-UVCABMINI$",
+    "title": "Mini UV Sterilisation Cabinet for UV Sterlisation, 110V",
+    "order": 1299
+  },
+  {
+    "sku": "CSL-UVCABMTY4",
+    "title": "Mini UV Sterilisation Cabinet for UV Sterlisation, with Spill Tray, 230V",
+    "order": 1300
+  },
+  {
+    "sku": "CSL-UVCABMTY4$",
+    "title": "Mini UV Sterilisation Cabinet for UV Sterlisation, with Spill Tray, 110V",
+    "order": 1301
+  },
+  {
+    "sku": "CSL-UVTUBE",
+    "title": "Replacement UV Tube for cabinets",
+    "order": 1302
+  },
+  {
+    "sku": "CSL-WHITETUBE",
+    "title": "Replacement White Light Tube for cabinets",
+    "order": 1303
+  },
+  {
+    "sku": "CSR-S1",
+    "title": "Beta Shield-Small Fixed 15° Angle - Flat Base",
+    "order": 1304
+  },
+  {
+    "sku": "CSR-S1T",
+    "title": "Beta Shield-Small Fixed 15° Angle - Curved Base",
+    "order": 1305
+  },
+  {
+    "sku": "CSR-S2",
+    "title": "Beta Shield-Large Fixed 15° Angle - Flat Base",
+    "order": 1306
+  },
+  {
+    "sku": "CSR-S2T",
+    "title": "Beta Shield-Large Fixed 15° Angle - Curved Base",
+    "order": 1307
+  },
+  {
+    "sku": "CSR-S1O",
+    "title": "Beta Shield-Small Fixed 45° Angle - Flat Base",
+    "order": 1308
+  },
+  {
+    "sku": "CSR-S1OT",
+    "title": "Beta Shield-Small Fixed 45° Angle - Curved Base",
+    "order": 1309
+  },
+  {
+    "sku": "CSR-S2O",
+    "title": "Beta Shield-Large Fixed 45° Angle - Flat Base",
+    "order": 1310
+  },
+  {
+    "sku": "CSR-S2OT",
+    "title": "Beta Shield-Large Fixed 45° Angle - Curved Base",
+    "order": 1311
+  },
+  {
+    "sku": "CSR-S3",
+    "title": "Beta Shield-3-Sided",
+    "order": 1312
+  },
+  {
+    "sku": "CSR-S4",
+    "title": "Beta Shield-Hourglass - Flat Base",
+    "order": 1313
+  },
+  {
+    "sku": "CSR-S4T",
+    "title": "Beta Shield-Hourglass - Curved Base",
+    "order": 1314
+  },
+  {
+    "sku": "CSR-SFLEXI",
+    "title": "Beta Shield - Adjustable",
+    "order": 1315
+  },
+  {
+    "sku": "CSR-SF",
+    "title": "Beta Base Plate",
+    "order": 1316
+  },
+  {
+    "sku": "CSR-CAB",
+    "title": "Beta Work Cabinet",
+    "order": 1317
+  },
+  {
+    "sku": "CSR-B0.4",
+    "title": "Beta Box -Mini",
+    "order": 1318
+  },
+  {
+    "sku": "CSR-B0.8",
+    "title": "Beta Box - Midi",
+    "order": 1319
+  },
+  {
+    "sku": "CSR-B6.5",
+    "title": "Beta Box - Maxi",
+    "order": 1320
+  },
+  {
+    "sku": "CSR-B3.5",
+    "title": "Beta Flipper-Box",
+    "order": 1321
+  },
+  {
+    "sku": "CSR-B8",
+    "title": "Beta Transport Box",
+    "order": 1322
+  },
+  {
+    "sku": "CSR-BLOCK",
+    "title": "Beta Block for 4 x 1.5ml Eppendorf tubes",
+    "order": 1323
+  },
+  {
+    "sku": "CSR-BLOCKL",
+    "title": "Beta Cover for B4",
+    "order": 1324
+  },
+  {
+    "sku": "CSR-STORE",
+    "title": "Beta-Storage/Transport Block",
+    "order": 1325
+  },
+  {
+    "sku": "CSR-COV",
+    "title": "Beta Carboy Cover",
+    "order": 1326
+  },
+  {
+    "sku": "CSR-R1.5",
+    "title": "Mini Insert - 16 x 1.5ml tubes",
+    "order": 1327
+  },
+  {
+    "sku": "CSR-R50",
+    "title": "Insert - 8 x 50ml Centrifuge tubes",
+    "order": 1328
+  },
+  {
+    "sku": "CSR-R0.5",
+    "title": "Mini Insert - 20 x 0.5ml tubes",
+    "order": 1329
+  },
+  {
+    "sku": "CSR-R3F",
+    "title": "Insert - 3 x Falcon tubes, 8 x 1.5ml tubes",
+    "order": 1330
+  },
+  {
+    "sku": "CSR-R1.5L",
+    "title": "Midi Insert - 32 x 1.5ml Eppendorf tubes",
+    "order": 1331
+  },
+  {
+    "sku": "CSR-R2F",
+    "title": "Insert - 2 x Falcon tubes, 8 x 1.5ml tubes",
+    "order": 1332
+  },
+  {
+    "sku": "CSR-R0.5L",
+    "title": "Midi Insert - 40 x 0.5ml Eppendorf tubes",
+    "order": 1333
+  },
+  {
+    "sku": "CSR-R20",
+    "title": "Insert - 8 x 20ml Scintillation vials",
+    "order": 1334
+  },
+  {
+    "sku": "CSR-RDUO",
+    "title": "Midi Insert - 16 x 1.5 and 16 x 0.5ml tubes",
+    "order": 1335
+  },
+  {
+    "sku": "CSR-R5",
+    "title": "Insert - 15 x 5ml Scintillation vials",
+    "order": 1336
+  },
+  {
+    "sku": "CSR-R2",
+    "title": "Midi Insert - 32 x 2ml Cryotubes",
+    "order": 1337
+  },
+  {
+    "sku": "CSR-RU",
+    "title": "Inset - 8 x Universals",
+    "order": 1338
+  },
+  {
+    "sku": "CSR-R15",
+    "title": "Insert - 15 x 15ml Centrifuge tubes",
+    "order": 1339
+  },
+  {
+    "sku": "CSR-B1",
+    "title": "Beta Bin - 1L",
+    "order": 1340
+  },
+  {
+    "sku": "CSR-B2TIP",
+    "title": "Beta TipBox- 2L",
+    "order": 1341
+  },
+  {
+    "sku": "CSR-B2MCTIP",
+    "title": "Beta Multi-TipBox - 2L",
+    "order": 1342
+  },
+  {
+    "sku": "CSR-B3",
+    "title": "Beta Bin - 3.3L",
+    "order": 1343
+  },
+  {
+    "sku": "CSR-B10",
+    "title": "Beta Bin - 10L",
+    "order": 1344
+  },
+  {
+    "sku": "CSR-B15",
+    "title": "Beta Bin - 15L",
+    "order": 1345
+  },
+  {
+    "sku": "CSR-B5TIP",
+    "title": "Beta TipBox-Large  5L",
+    "order": 1346
+  },
+  {
+    "sku": "CSR-B20",
+    "title": "Beta Bin - 20L",
+    "order": 1347
+  },
+  {
+    "sku": "CSR-B53",
+    "title": "Beta Bin - 53L",
+    "order": 1348
+  },
+  {
+    "sku": "CSR-B47",
+    "title": "Beta Bin - 47L with Wheels",
+    "order": 1349
+  },
+  {
+    "sku": "CSR-B122",
+    "title": "Beta Bin - 122L with Wheels",
+    "order": 1350
+  },
+  {
+    "sku": "CSR-PB2",
+    "title": "Pipette Shield - Biohit PS1000 Beta",
+    "order": 1351
+  },
+  {
+    "sku": "CSR-PB1",
+    "title": "Pipette Shield - Biohit PS200 Beta",
+    "order": 1352
+  },
+  {
+    "sku": "CSR-PB3",
+    "title": "Pipette Shield - Biohit PS5000 Beta",
+    "order": 1353
+  },
+  {
+    "sku": "CSR-PG3",
+    "title": "Pipette Shield - Gilson P1000 Beta",
+    "order": 1354
+  },
+  {
+    "sku": "CSR-PG1",
+    "title": "Pipette Shield - Gilson P20/100 Beta",
+    "order": 1355
+  },
+  {
+    "sku": "CSR-PG2",
+    "title": "Pipette Shield - Gilson P200 Beta",
+    "order": 1356
+  },
+  {
+    "sku": "CSR-S1G",
+    "title": "Gamma Shield - Small Fixed 15° Angle - Flat Base",
+    "order": 1357
+  },
+  {
+    "sku": "CSR-S1TG",
+    "title": "Gamma Shield - Small Fixed 15° Angle - Curved Base",
+    "order": 1358
+  },
+  {
+    "sku": "CSR-S2G",
+    "title": "Gamma Shield - Large Fixed 15° Angle - Flat Base",
+    "order": 1359
+  },
+  {
+    "sku": "CSR-S2TG",
+    "title": "Gamma Shield - Large Fixed 15° Angle - Curved Base",
+    "order": 1360
+  },
+  {
+    "sku": "CSR-S1OG",
+    "title": "Gamma Shield - Small Fixed 45° Angle - Flat Base",
+    "order": 1361
+  },
+  {
+    "sku": "CSR-S1OTG",
+    "title": "Gamma Shield - Small Fixed 45° Angle - Curved Base",
+    "order": 1362
+  },
+  {
+    "sku": "CSR-S2OG",
+    "title": "Gamma Shield - Large Fixed 45° Angle - Flat Base",
+    "order": 1363
+  },
+  {
+    "sku": "CSR-S2OTG",
+    "title": "Gamma Shield - Large Fixed 45° Angle - Curved Base",
+    "order": 1364
+  },
+  {
+    "sku": "CSR-S3G",
+    "title": "Gamma Shield-3-Sided",
+    "order": 1365
+  },
+  {
+    "sku": "CSR-S4G",
+    "title": "Gamma Shield - Hourglass - Flat Base",
+    "order": 1366
+  },
+  {
+    "sku": "CSR-S4TG",
+    "title": "Gamma Shield - Hourglass - Curved Base",
+    "order": 1367
+  },
+  {
+    "sku": "CSR-SFLEXIG",
+    "title": "Gamma Shield - Adjustable",
+    "order": 1368
+  },
+  {
+    "sku": "CSR-SFG",
+    "title": "Gamma Base Plate",
+    "order": 1369
+  },
+  {
+    "sku": "CSR-CABG",
+    "title": "Gamma Work Cabinet",
+    "order": 1370
+  },
+  {
+    "sku": "CSR-SDUO",
+    "title": "DuoShield - Curved Base, Beta/Gamma",
+    "order": 1371
+  },
+  {
+    "sku": "CSR-SFLEXITG",
+    "title": "Gamma Shield - Adjustable  35mm",
+    "order": 1372
+  },
+  {
+    "sku": "CSR-B0.4G",
+    "title": "Gamma Box -Mini",
+    "order": 1373
+  },
+  {
+    "sku": "CSR-B0.8G",
+    "title": "Gamma Box- Midi",
+    "order": 1374
+  },
+  {
+    "sku": "CSR-B6.5G",
+    "title": "Gamma Box-6.5L",
+    "order": 1375
+  },
+  {
+    "sku": "CSR-B3.5G",
+    "title": "Gamma Box  3.5L",
+    "order": 1376
+  },
+  {
+    "sku": "CSR-B8G",
+    "title": "Transport Box 7.5 x 29.5 x 38 cm",
+    "order": 1377
+  },
+  {
+    "sku": "CSR-BDUOG",
+    "title": "Gamma 2 Pig-Pen Box",
+    "order": 1378
+  },
+  {
+    "sku": "CSR-BLOCKG",
+    "title": "Block for 4 x1.5ml Eppendorf tubes 5 x 3.5 x 14 cm",
+    "order": 1379
+  },
+  {
+    "sku": "CSR-BLOCKLG",
+    "title": "Cover for B4 1 x 3.5 x 14 cm",
+    "order": 1380
+  },
+  {
+    "sku": "CSR-STOREG",
+    "title": "Gamma-Storage/Transport Block",
+    "order": 1381
+  },
+  {
+    "sku": "CSR-COVG",
+    "title": "Gamma Carboy Cover",
+    "order": 1382
+  },
+  {
+    "sku": "CSR-B1G",
+    "title": "Gamma Box-1L",
+    "order": 1383
+  },
+  {
+    "sku": "CSR-B2TIPG",
+    "title": "Gamma TipBox - 2L",
+    "order": 1384
+  },
+  {
+    "sku": "CSR-B2MCTIPG",
+    "title": "Gamma Multi-TipBox - 2L",
+    "order": 1385
+  },
+  {
+    "sku": "CSR-B3G",
+    "title": "Gamma Bin - 3.3L",
+    "order": 1386
+  },
+  {
+    "sku": "CSR-B10G",
+    "title": "Gamma Bin - 10L",
+    "order": 1387
+  },
+  {
+    "sku": "CSR-B15G",
+    "title": "Gamma Bin - 15L",
+    "order": 1388
+  },
+  {
+    "sku": "CSR-B20G",
+    "title": "Gamma Bin - 20L",
+    "order": 1389
+  },
+  {
+    "sku": "CSR-B53G",
+    "title": "Gamma Bin - 53L",
+    "order": 1390
+  },
+  {
+    "sku": "CSR-PB2G",
+    "title": "Pipette Shield - Biohit PS1000 Gamma",
+    "order": 1391
+  },
+  {
+    "sku": "CSR-PB1G",
+    "title": "Pipette Shield - Biohit PS200 Gamma",
+    "order": 1392
+  },
+  {
+    "sku": "CSR-PB3G",
+    "title": "Pipette Shield - Biohit PS5000 Gamma",
+    "order": 1393
+  },
+  {
+    "sku": "CSR-PG3G",
+    "title": "Pipette Shield - Gilson P1000 Gamma",
+    "order": 1394
+  },
+  {
+    "sku": "CSR-PG1G",
+    "title": "Pipette Shield - Gilson P20/100 Gamma",
+    "order": 1395
+  },
+  {
+    "sku": "CSR-PG2G",
+    "title": "Pipette Shield - Gilson P200 Gamma",
+    "order": 1396
+  },
+  {
+    "sku": "CSR-LABS",
+    "title": "Radiation Labels - 25 x 25mm, PK/25",
+    "order": 1397
+  },
+  {
+    "sku": "CSR-LABL",
+    "title": "Radiation Labels - 50 x 50mm, PK/25",
+    "order": 1398
+  },
+  {
+    "sku": "CSR-RADTAPE",
+    "title": "Radiation Tape - 25mm x 66m",
+    "order": 1399
+  },
+  {
+    "sku": "CSR-TL1",
+    "title": "Liners - 46 x 26, PK/25",
+    "order": 1400
+  },
+  {
+    "sku": "CSR-TL2",
+    "title": "Liners - 54 x 34, PK/25",
+    "order": 1401
+  },
+  {
+    "sku": "CSR-TL3",
+    "title": "Liners - 57 x 54, PK/25",
+    "order": 1402
+  },
+  {
+    "sku": "CSR-TL4",
+    "title": "Liners - 68 x 54, PK/25 (FOR CABINET)",
+    "order": 1403
+  },
+  {
+    "sku": "CSR-TL5",
+    "title": "Liners - 70 x 46, PK/25",
+    "order": 1404
+  },
+  {
+    "sku": "CSR-TL6",
+    "title": "Liners - 113 x 54, PK/25",
+    "order": 1405
+  },
+  {
+    "sku": "CSR-TO1",
+    "title": "BioHazard Tray White - 46 x 26 cm",
+    "order": 1406
+  },
+  {
+    "sku": "CSR-TO2",
+    "title": "BioHazard Tray White - 54 x 34 cm",
+    "order": 1407
+  },
+  {
+    "sku": "CSR-TO3",
+    "title": "BioHazard Tray White - 57 x 54 cm",
+    "order": 1408
+  },
+  {
+    "sku": "CSR-TO4",
+    "title": "BioHazard Tray White - 68 x 54 cm",
+    "order": 1409
+  },
+  {
+    "sku": "CSR-TO5",
+    "title": "BioHazard Tray White - 70 x 46 cm",
+    "order": 1410
+  },
+  {
+    "sku": "CSR-TO6",
+    "title": "BioHazard Tray White - 113 x 54 cm",
+    "order": 1411
+  },
+  {
+    "sku": "CSR-TW1",
+    "title": "General Purpose Tray White - 46 x 26 cm",
+    "order": 1412
+  },
+  {
+    "sku": "CSR-TW2",
+    "title": "General Purpose Tray White - 54 x 34 cm",
+    "order": 1413
+  },
+  {
+    "sku": "CSR-TW3",
+    "title": "General Purpose Tray White - 57 x 54 cm",
+    "order": 1414
+  },
+  {
+    "sku": "CSR-TW4",
+    "title": "General Purpose Tray White - 68 x 54 cm",
+    "order": 1415
+  },
+  {
+    "sku": "CSR-TW5",
+    "title": "General Purpose Tray White - 70 x 46 cm",
+    "order": 1416
+  },
+  {
+    "sku": "CSR-TW6",
+    "title": "General Purpose Tray White - 113 x 54 cm",
+    "order": 1417
+  },
+  {
+    "sku": "CSR-TY1",
+    "title": "Radiation Hazard Tray Yellow - 46 x 26 cm",
+    "order": 1418
+  },
+  {
+    "sku": "CSR-TY2",
+    "title": "Radiation Hazard Tray Yellow - 54 x 34 cm",
+    "order": 1419
+  },
+  {
+    "sku": "CSR-TY3",
+    "title": "Radiation Hazard Tray Yellow - 57 x 54 cm",
+    "order": 1420
+  },
+  {
+    "sku": "CSR-TY4",
+    "title": "Radiation Hazard Tray Yellow - 68 x 54 cm",
+    "order": 1421
+  },
+  {
+    "sku": "CSR-TY5",
+    "title": "Radiation Hazard Tray Yellow - 70 x 46 cm",
+    "order": 1422
+  },
+  {
+    "sku": "CSR-TY6",
+    "title": "Radiation Hazard Tray Yellow - 113 x 54 cm",
+    "order": 1423
+  },
+  {
+    "sku": "TW1-SP",
+    "title": "Safe Tray Starter Gen 455X255mm Pk1/10",
+    "order": 1424
+  },
+  {
+    "sku": "TW2-SP",
+    "title": "Safe Tray Starter Gen 355X540mm Pk1/10",
+    "order": 1425
+  },
+  {
+    "sku": "TW3-SP",
+    "title": "Safe Tray Starter Gen 565x535mm Pk1/10",
+    "order": 1426
+  },
+  {
+    "sku": "TW4-SP",
+    "title": "Safe Tray Starter Gen 685x535mm Pk1/10",
+    "order": 1427
+  },
+  {
+    "sku": "TW5-SP",
+    "title": "Safe Tray Starter Gen 685x455mm Pk1/10",
+    "order": 1428
+  },
+  {
+    "sku": "TW6-SP",
+    "title": "Safe Tray Starter Gen 1120xX535mm Pk1/10",
+    "order": 1429
+  },
+  {
+    "sku": "TY1-SP",
+    "title": "Safe Tray Starter Rad. 455X255mm Pk1/10",
+    "order": 1430
+  },
+  {
+    "sku": "TY2-SP",
+    "title": "Safe Tray Starter Rad. 355X540mm Pk1/10",
+    "order": 1431
+  },
+  {
+    "sku": "TY3-SP",
+    "title": "Safe Tray Starter Rad. 565x535mm Pk1/10",
+    "order": 1432
+  },
+  {
+    "sku": "TY4-SP",
+    "title": "Safe Tray Starter Rad. 685x535mm Pk1/10",
+    "order": 1433
+  },
+  {
+    "sku": "TY5-SP",
+    "title": "Safe Tray Starter Rad. 685x455mm Pk1/10",
+    "order": 1434
+  },
+  {
+    "sku": "TY6-SP",
+    "title": "Safe Tray Starter Rad. 1120xX535mm Pk1/10",
+    "order": 1435
+  },
+  {
+    "sku": "TO1-SP",
+    "title": "Safe Tray Starter Biohaz 455X255mm Pk1/10",
+    "order": 1436
+  },
+  {
+    "sku": "TO2-SP",
+    "title": "Safe Tray Starter Biohaz 355X540mm Pk1/10",
+    "order": 1437
+  },
+  {
+    "sku": "TO3-SP",
+    "title": "Safe Tray Starter Biohaz 565x535mm Pk1/10",
+    "order": 1438
+  },
+  {
+    "sku": "TO4-SP",
+    "title": "Safe Tray Starter Biohaz 685x535mm Pk1/10",
+    "order": 1439
+  },
+  {
+    "sku": "TO5-SP",
+    "title": "Safe Tray Starter Biohaz 685x455mm Pk1/10",
+    "order": 1440
+  },
+  {
+    "sku": "TO6-SP",
+    "title": "Safe Tray Starter Biohaz 1120xX535mm Pk1/10",
+    "order": 1441
+  },
+  {
+    "sku": "TD1",
+    "title": "Acrylic Tape Dispenser for Identitape",
+    "order": 1442
+  },
+  {
+    "sku": "CA55",
+    "title": "Core adapters for identitape dispenser, pack/5",
+    "order": 1443
+  },
+  {
+    "sku": "CSL-GLT",
+    "title": "Gel Levelling Table",
+    "order": 1444
+  },
+  {
+    "sku": "CSL-RULER",
+    "title": "UV Fluorescent Ruler",
+    "order": 1445
+  }
+]

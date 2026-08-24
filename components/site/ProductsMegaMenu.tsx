@@ -300,9 +300,9 @@ const BRANDS: Brand[] = [
     name: "Cleaver Scientific",
     area: "Laboratory Equipment",
     description: "Practical equipment for electrophoresis, gel documentation, blotting, power supply, and clinical laboratory workflows.",
-    href: "/products#brands",
+    href: "/products/cleaver",
     searchKey: "cleaverscientific",
-    categories: ["Horizontal Gel Systems", "Vertical, Blotting & DGGE", "Power Supplies", "Clinical & Pharmaceutical", "Gel Documentation"],
+    categories: ["Electrophoresis Equipment", "Gel Documentation", "Electrophoresis Reagents", "General Laboratory Products", "Teaching and Education"],
     theme: THEMES.cleaver,
   },
   {
@@ -539,8 +539,8 @@ export default function ProductsMegaMenu() {
                     </div>
                     <div className="mt-3 grid gap-x-7 sm:grid-cols-2 xl:grid-cols-3">
                       {activeBrand.categories.map((category) => {
-                        const href = activeBrand.key === "kent"
-                          ? `/products/kent/${slugify(category)}`
+                        const href = activeBrand.key === "kent" || activeBrand.key === "cleaver"
+                          ? `/products/${activeBrand.key}/${slugify(category)}`
                           : `/search?q=${encodeURIComponent(category)}&brand=${encodeURIComponent(activeBrand.searchKey)}`;
                         return (
                           <Link

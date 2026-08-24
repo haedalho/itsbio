@@ -1,0 +1,65 @@
+[
+  {
+    "slug": "electrophoresis-equipment",
+    "title": "Electrophoresis Equipment",
+    "description": "Horizontal and vertical electrophoresis systems, blotting equipment, power supplies and application-specific accessories.",
+    "sourceUrl": "https://www.thistlescientific.com/product-category/molecular-cell-biology/electrophoresis-equipment/",
+    "children": [
+      { "slug": "agarose-gel-tanks", "title": "Agarose Gel Tanks" },
+      { "slug": "page-tanks", "title": "PAGE Tanks" },
+      { "slug": "electroblotters", "title": "Electroblotters" },
+      { "slug": "power-supplies", "title": "Power Supplies" },
+      { "slug": "spares-and-accessories", "title": "Spares and Accessories" },
+      { "slug": "cellulose-acetate", "title": "Cellulose Acetate" },
+      { "slug": "comet-assay", "title": "Comet Assay" },
+      { "slug": "dgge-and-sequencing", "title": "DGGE, IEF and DNA Sequencing" }
+    ]
+  },
+  {
+    "slug": "gel-documentation",
+    "title": "Gel Documentation",
+    "description": "Gel documentation systems, UV and blue-light transilluminators, imaging accessories and analysis solutions.",
+    "sourceUrl": "https://www.thistlescientific.com/product-category/molecular-cell-biology/gel-documentation/",
+    "children": [
+      { "slug": "gel-documentation-systems", "title": "Gel Documentation Systems" },
+      { "slug": "transilluminators", "title": "Transilluminators" },
+      { "slug": "imaging-accessories", "title": "Gel and Imaging Accessories" }
+    ]
+  },
+  {
+    "slug": "electrophoresis-reagents",
+    "title": "Electrophoresis Reagents",
+    "description": "Agarose, DNA ladders, stains, loading dyes, buffers and complete electrophoresis reagent kits.",
+    "sourceUrl": "https://www.thistlescientific.com/product-category/molecular-cell-biology/electrophoresis-reagents/",
+    "children": [
+      { "slug": "agarose-and-gel-reagents", "title": "Agarose and Gel Reagents" },
+      { "slug": "dna-ladders-and-stains", "title": "DNA Ladders and Stains" },
+      { "slug": "buffers-and-components", "title": "Buffers and Components" }
+    ]
+  },
+  {
+    "slug": "general-laboratory-products",
+    "title": "General Laboratory Products",
+    "description": "Liquid handling, mixing, incubation, water baths, radiation protection and practical laboratory safety equipment.",
+    "sourceUrl": "https://www.thistlescientific.com/product-category/general-laboratory-products/",
+    "children": [
+      { "slug": "liquid-handling", "title": "Pipettes and Liquid Handling" },
+      { "slug": "mixers-shakers-and-incubators", "title": "Mixers, Shakers and Incubators" },
+      { "slug": "water-baths-and-stills", "title": "Water Baths and Stills" },
+      { "slug": "centrifuges-and-meters", "title": "Centrifuges and Laboratory Meters" },
+      { "slug": "glove-boxes-and-pcr-cabinets", "title": "Glove Boxes and PCR Cabinets" },
+      { "slug": "radiation-protection", "title": "Radiation Protection" },
+      { "slug": "laboratory-safety-and-accessories", "title": "Laboratory Safety and Accessories" }
+    ]
+  },
+  {
+    "slug": "teaching-and-education",
+    "title": "Teaching and Education",
+    "description": "Student electrophoresis tanks, laboratory teaching systems and complete educational equipment packages.",
+    "sourceUrl": "https://www.thistlescientific.com/product-category/teaching-and-education/",
+    "children": [
+      { "slug": "student-electrophoresis-systems", "title": "Student Electrophoresis Systems" },
+      { "slug": "teaching-kits-and-accessories", "title": "Teaching Kits and Accessories" }
+    ]
+  }
+]
