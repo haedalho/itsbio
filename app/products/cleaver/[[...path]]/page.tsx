@@ -15,7 +15,7 @@ import {
 } from "@/lib/cleaver/catalog";
 import { getCleaverCategoryCovers, getCleaverProductPage } from "@/lib/cleaver/sanity";
 
-export const revalidate = 300;
+export const revalidate = 30;
 
 type PageProps = {
   params: Promise<{ path?: string[] }>;
