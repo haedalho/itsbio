@@ -1,5 +1,6 @@
 import Breadcrumb from "@/components/site/Breadcrumb";
 import PageHero from "@/components/site/PageHero";
+import PartnersCarousel from "@/components/site/PartnersCarousel";
 
 export default function AboutPage() {
   return (
@@ -50,6 +51,8 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+      <PartnersCarousel />
     </main>
   );
 }
