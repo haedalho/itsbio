@@ -1,0 +1,71 @@
+name: Publish Cleaver Scientific catalog
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/migrate-cleaver-products.yml
+      - scripts/migrate-cleaver-products-to-sanity.mjs
+      - data/cleaver-product-catalog.json
+      - data/cleaver-categories.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cleaver-production-catalog
+  cancel-in-progress: false
+
+jobs:
+  publish-products:
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 35
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install reviewed project dependencies
+        run: npm install --no-audit --no-fund
+      - name: Validate all reviewed products without writing
+        run: node scripts/migrate-cleaver-products-to-sanity.mjs
+      - name: Publish Cleaver brand, categories and all reviewed products
+        run: node scripts/migrate-cleaver-products-to-sanity.mjs --apply
+
+  enrich-official-content:
+    needs: publish-products
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 180
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install reviewed project dependencies
+        run: npm install --no-audit --no-fund
+      - name: Import verified official details, PDFs and Sanity-managed images
+        run: node scripts/migrate-cleaver-products-to-sanity.mjs --enrich
