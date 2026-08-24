@@ -205,6 +205,30 @@ export default defineType({
       rows: 16,
     }),
     defineField({
+      name: "highlights",
+      title: "Product Highlights",
+      type: "array",
+      of: [{ type: "string" }],
+      description: "Verified manufacturer product features shown alongside the main product image.",
+    }),
+    defineField({
+      name: "specRows",
+      title: "Structured Technical Specifications",
+      type: "array",
+      of: [
+        defineField({
+          name: "productSpecificationRow",
+          title: "Specification",
+          type: "object",
+          fields: [
+            defineField({ name: "label", title: "Specification", type: "string" }),
+            defineField({ name: "value", title: "Value", type: "string" }),
+          ],
+        }),
+      ],
+      description: "SKU-specific specifications extracted from reviewed manufacturer tables.",
+    }),
+    defineField({
       name: "kentSections",
       title: "Kent Source Sections",
       type: "array",

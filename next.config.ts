@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     "/products/abm/staged/[kind]/[key]": ["./data/abm-cell-details/**/*.json.gz"],
   },
   images: {
+    qualities: [75, 85, 90],
     remotePatterns: [
       {
         protocol: "https",

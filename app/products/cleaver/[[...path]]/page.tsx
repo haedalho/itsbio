@@ -13,7 +13,7 @@ import {
   cleaverProductHref,
   type CleaverProduct,
 } from "@/lib/cleaver/catalog";
-import { getCleaverCategoryCovers, getCleaverProductPage } from "@/lib/cleaver/sanity";
+import { getCleaverCategoryCovers, getCleaverProductPage, getCleaverShowcase } from "@/lib/cleaver/sanity";
 
 export const revalidate = 30;
 
@@ -81,9 +81,9 @@ function ProductCard({ product }: { product: CleaverProduct }) {
   return (
     <Link href={cleaverProductHref(product)} prefetch={false} className="group block h-full">
       <article className="flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-200 hover:-translate-y-0.5 hover:border-purple-200 hover:shadow-lg">
-        <div className="relative aspect-[1.15] border-b border-slate-100 bg-white">
+        <div className="relative aspect-[1.12] border-b border-slate-100 bg-white">
           {product.image ? (
-            <Image src={product.image} alt={product.title} fill sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 280px" className="object-contain p-5" />
+            <Image src={product.image} alt={product.title} fill quality={85} sizes="(max-width: 768px) 48vw, (max-width: 1280px) 32vw, 350px" className="object-contain p-3 transition duration-500 group-hover:scale-[1.04]" />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center bg-[#faf8fc] p-10">
               <Image src="/partners/Cleaverscientific-logo.png" alt="Cleaver Scientific" width={185} height={70} className="h-auto max-h-16 w-auto max-w-full object-contain opacity-70" />
@@ -124,9 +124,10 @@ export default async function CleaverCatalogPage({ params, searchParams }: PageP
 
   const query = String(search.q || "").trim();
   const requestedPage = Math.max(1, Number.parseInt(String(search.page || "1"), 10) || 1);
-  const [listing, covers] = await Promise.all([
+  const [listing, covers, showcase] = await Promise.all([
     getCleaverProductPage(path, query, requestedPage),
     path.length ? Promise.resolve({} as Record<string, string>) : getCleaverCategoryCovers(),
+    getCleaverShowcase(),
   ]);
   const heading = match?.current.title || CLEAVER_BRAND_NAME;
   const breadcrumbs = [
@@ -138,17 +139,34 @@ export default async function CleaverCatalogPage({ params, searchParams }: PageP
 
   return (
     <main className="bg-white pb-20">
-      <section className="relative isolate overflow-hidden bg-gradient-to-r from-[#46165f] via-[#61247b] to-[#9360ae] text-white">
-        <div className="pointer-events-none absolute inset-0 opacity-[0.13] [background-image:radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px]" />
-        <div className="relative mx-auto flex min-h-[210px] max-w-[1320px] items-center justify-between gap-10 px-6 py-10 md:min-h-[250px]">
-          <div>
-            <div className="text-xs font-bold uppercase tracking-[0.2em] text-white/70">Laboratory Equipment</div>
-            <h1 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">{CLEAVER_BRAND_NAME}</h1>
-            <p className="mt-4 max-w-[650px] text-sm leading-7 text-white/80">Precision electrophoresis, gel documentation and laboratory equipment from the Cleaver Scientific product range.</p>
+      <section className="relative isolate overflow-hidden bg-[#251133] text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(133,78,173,0.6),transparent_38%),radial-gradient(circle_at_92%_78%,rgba(149,88,160,0.32),transparent_36%)]" />
+        <div className="pointer-events-none absolute inset-0 opacity-[0.14] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:54px_54px]" />
+        <div className="relative mx-auto grid min-h-[400px] max-w-[1380px] items-center gap-10 px-6 py-14 md:min-h-[450px] lg:grid-cols-[minmax(0,.92fr)_minmax(460px,1.08fr)] lg:gap-14 lg:py-16">
+          <div className="max-w-[650px]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/85">
+              <span className="h-2 w-2 rounded-full bg-[#bfd776]" /> Precision laboratory instruments
+            </div>
+            <h1 className="mt-7 max-w-[580px] text-[42px] font-semibold leading-[1.04] tracking-[-0.055em] md:text-[62px]">Electrophoresis, <span className="text-[#cfb4df]">made exceptional.</span></h1>
+            <p className="mt-6 max-w-[540px] text-[15px] leading-8 text-white/76">Explore the Cleaver Scientific range of horizontal and vertical electrophoresis systems, gel imaging, power supplies and practical laboratory equipment.</p>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link href="/products/cleaver/electrophoresis-equipment" className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#472058] transition hover:bg-[#efe6f4]">Explore electrophoresis</Link>
+              <Link href="/contact" className="rounded-full border border-white/35 px-6 py-3 text-sm font-medium text-white transition hover:bg-white/10">Talk to a specialist</Link>
+            </div>
+            <div className="mt-9 flex flex-wrap gap-6 text-[12px] text-white/70"><span><strong className="text-white">1,432</strong> catalog products</span><span><strong className="text-white">23</strong> specialist ranges</span><span>Cleaver Scientific equipment</span></div>
           </div>
-          <div className="relative hidden h-24 w-64 shrink-0 rounded-2xl bg-white p-4 shadow-lg lg:block">
-            <Image src="/partners/Cleaverscientific-logo.png" alt="Cleaver Scientific" fill sizes="256px" className="object-contain p-5" />
-          </div>
+
+          {showcase.length ? (
+            <div className="relative hidden h-[365px] lg:block" aria-label="Featured Cleaver Scientific laboratory equipment">
+              <div className="absolute inset-y-5 left-4 right-12 rounded-[36px] border border-white/10 bg-white/[0.055] backdrop-blur-sm" />
+              <div className="absolute left-0 top-4 h-[315px] w-[62%] overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-2xl">
+                <Image src={showcase[0].image!} alt={showcase[0].title} fill priority quality={90} sizes="420px" className="object-contain p-4" />
+                <div className="absolute bottom-3 left-3 rounded-full bg-[#3e1d50]/90 px-3 py-1.5 text-[11px] font-semibold text-white">multiSUB® electrophoresis</div>
+              </div>
+              {showcase[1] ? <div className="absolute right-0 top-0 h-[165px] w-[35%] overflow-hidden rounded-[24px] border border-white/75 bg-white shadow-2xl"><Image src={showcase[1].image!} alt={showcase[1].title} fill quality={90} sizes="230px" className="object-contain p-2" /></div> : null}
+              {showcase[2] ? <div className="absolute bottom-0 right-0 h-[175px] w-[38%] overflow-hidden rounded-[24px] border border-white/75 bg-white shadow-2xl"><Image src={showcase[2].image!} alt={showcase[2].title} fill quality={90} sizes="250px" className="object-contain p-2" /></div> : null}
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -168,16 +186,19 @@ export default async function CleaverCatalogPage({ params, searchParams }: PageP
             </div>
 
             {!path.length && !query ? (
-              <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {CLEAVER_CATEGORIES.map((category) => (
-                  <Link key={category.slug} href={categoryHref([category.slug])} prefetch={false} className="group overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:border-purple-200 hover:shadow-md">
-                    <div className="relative flex h-28 items-center justify-center bg-[#f8f5fa] p-5">
-                      {covers[category.slug] ? <Image src={covers[category.slug]} alt={category.title} fill sizes="260px" className="object-contain p-3" /> : <Image src="/partners/Cleaverscientific-logo.png" alt="" width={150} height={55} className="h-auto max-h-12 w-auto object-contain opacity-70" />}
-                    </div>
-                    <div className="p-4"><div className="text-[14px] font-semibold text-slate-900 group-hover:text-[#61247b]">{category.title}</div><div className="mt-1 text-xs text-slate-500">{categoryCount([category.slug]).toLocaleString()} products</div></div>
-                  </Link>
-                ))}
-              </div>
+              <section className="mt-8" aria-label="Browse Cleaver Scientific equipment ranges">
+                <div className="mb-5 flex items-end justify-between gap-3"><div><div className="text-[11px] font-semibold uppercase tracking-[0.17em] text-[#8650a0]">Purpose-built for discovery</div><h3 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">Browse the range</h3></div></div>
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {CLEAVER_CATEGORIES.map((category) => (
+                    <Link key={category.slug} href={categoryHref([category.slug])} prefetch={false} className="group overflow-hidden rounded-2xl border border-[#ece8ef] bg-white transition duration-300 hover:-translate-y-0.5 hover:border-[#cbb8d4] hover:shadow-[0_14px_36px_rgba(86,39,105,0.1)]">
+                      <div className="relative flex h-44 items-center justify-center overflow-hidden bg-gradient-to-b from-white to-[#faf8fc] p-4">
+                        {covers[category.slug] ? <Image src={covers[category.slug]} alt={category.title} fill quality={85} sizes="(max-width: 768px) 46vw, 340px" className="object-contain p-3 transition duration-500 group-hover:scale-[1.05]" /> : <Image src="/partners/Cleaverscientific-logo.png" alt="" width={170} height={70} className="h-auto max-h-14 w-auto object-contain opacity-65" />}
+                      </div>
+                      <div className="border-t border-slate-100 p-4"><div className="text-[14px] font-semibold text-slate-900 group-hover:text-[#61247b]">{category.title}</div><p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">{category.description}</p><div className="mt-3 text-xs font-medium text-[#8650a0]">{categoryCount([category.slug]).toLocaleString()} products <span aria-hidden>→</span></div></div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
             ) : null}
 
             {match && path.length === 1 && !query ? (
