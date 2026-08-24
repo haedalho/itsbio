@@ -303,6 +303,7 @@ async function enrichCatalog() {
   const detailByUrl = new Map();
   const pendingPages = new Map();
   const assetByUrl = new Map();
+  let htmlAvailable = true;
 
   for (const [family, url] of FAMILY_PAGES) {
     try {
@@ -315,7 +316,11 @@ async function enrichCatalog() {
       for (const variation of details.variations) if (recordsBySku.has(variation.sku)) sourceBySku.set(variation.sku, { ...details, images: [...new Set([variation.image, ...details.images].filter(Boolean))] });
     } catch (error) {
       console.warn(`[Cleaver] family page ${family}: ${error.message}`);
-      if (/denied access/.test(error.message)) throw error;
+      if (/denied access/.test(error.message)) {
+        htmlAvailable = false;
+        console.warn("[Cleaver] manufacturer HTML pages are restricted; continuing with the public product API only");
+        break;
+      }
     }
   }
 
@@ -357,7 +362,7 @@ async function enrichCatalog() {
     }
   }
 
-  for (const root of categories) {
+  for (const root of htmlAvailable ? categories : []) {
     try {
       const response = await fetchOfficial(root.sourceUrl, "text/html,*/*;q=0.8");
       if (!response) continue;
@@ -370,13 +375,16 @@ async function enrichCatalog() {
         if (exact) pendingPages.set(sourceUrl, normalize(exact.sku));
       });
     } catch (error) {
-      if (/denied access/.test(error.message)) throw error;
       console.warn(`[Cleaver] official category ${root.slug}: ${error.message}`);
+      if (/denied access/.test(error.message)) {
+        htmlAvailable = false;
+        break;
+      }
     }
   }
 
   let pageIndex = 0;
-  for (const [url, requestedSku] of [...pendingPages.entries()].slice(0, 550)) {
+  for (const [url, requestedSku] of htmlAvailable ? [...pendingPages.entries()].slice(0, 550) : []) {
     pageIndex += 1;
     try {
       let details = detailByUrl.get(url);
@@ -391,8 +399,11 @@ async function enrichCatalog() {
       for (const variation of details.variations) if (recordsBySku.has(variation.sku)) sourceBySku.set(variation.sku, { ...details, images: [...new Set([variation.image, ...details.images].filter(Boolean))] });
       if (pageIndex % 50 === 0) console.log(`[Cleaver] reviewed ${pageIndex} official product pages; ${sourceBySku.size} verified product matches`);
     } catch (error) {
-      if (/denied access/.test(error.message)) throw error;
       console.warn(`[Cleaver] official product page failed: ${error.message}`);
+      if (/denied access/.test(error.message)) {
+        htmlAvailable = false;
+        break;
+      }
     }
   }
 
@@ -414,6 +425,7 @@ async function enrichCatalog() {
   let enriched = 0;
   let withImages = 0;
   let withDocuments = 0;
+  let imageFetchAvailable = true;
   for (const row of inventory) {
     const sku = normalize(row.sku);
     let details = sourceBySku.get(sku);
@@ -427,13 +439,17 @@ async function enrichCatalog() {
     if (!details) continue;
 
     const images = [];
-    for (const url of details.images.slice(0, 4)) {
+    for (const url of imageFetchAvailable ? details.images.slice(0, 4) : []) {
       try {
         const image = await uploadManagedImage(url, row.sku);
         if (image && !images.some((existing) => existing.asset._ref === image.asset._ref)) images.push(image);
       } catch (error) {
-        if (/denied access/.test(error.message)) throw error;
         console.warn(`[Cleaver] image ${row.sku}: ${error.message}`);
+        if (/denied access/.test(error.message)) {
+          imageFetchAvailable = false;
+          console.warn("[Cleaver] manufacturer image downloads are restricted; continuing with verified product descriptions");
+          break;
+        }
       }
     }
 
