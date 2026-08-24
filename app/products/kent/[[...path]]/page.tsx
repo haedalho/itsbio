@@ -132,6 +132,7 @@ type KentCurrentTaxonomy = {
   categoryCount: number;
   countMismatchCount: number;
   categories: KentCurrentTaxonomyCategory[];
+  products: Array<{ slug: string }>;
 };
 
 const CURRENT_KENT_TAXONOMY = kentCurrentTaxonomy as KentCurrentTaxonomy;
@@ -193,8 +194,8 @@ const PAGE_QUERY = `
     listingPaths,
     categoryPathTitles,
     "slug": slug.current,
-    "thumb": coalesce(images[0].asset->url, ""),
-    "thumbSource": coalesce(images[0].sourceUrl, ""),
+    "thumb": coalesce(images[defined(asset->url)][0].asset->url, ""),
+    "thumbSource": coalesce(images[defined(asset->url)][0].sourceUrl, ""),
     sourceUrl
   },
 
@@ -498,6 +499,14 @@ function rewriteRelativeUrls(html: string, baseUrl: string) {
 function resolveKentHref(href: string) {
   const raw = String(href || "").trim();
   if (!raw) return "#";
+
+  if (/^\/?products\/kent\/?(?:[?#].*)?$/i.test(raw)) {
+    return `/products/${BRAND_KEY}`;
+  }
+
+  if (/^\/?products\/kent\/item\/kent\/?(?:[?#].*)?$/i.test(raw)) {
+    return `/products/${BRAND_KEY}`;
+  }
 
   if (/^\/?products\/kent\/item\//i.test(raw) || /^\/?kent\/item\//i.test(raw) || /^\/?item\//i.test(raw)) {
     return buildProductHref(raw);
@@ -1008,6 +1017,14 @@ function findCanonicalCategoryPath(requestedPath: string[], allCategories: Categ
   const requested = normalizePathSegments(requestedPath || []);
   if (!requested.length) return null;
 
+  const leaf = requested[requested.length - 1] || "";
+  if (
+    requested[0] === "anesthesia" &&
+    /^anesthesia-accessories-for-(?:somnoflo|somnosuite|vetflo)$/.test(leaf)
+  ) {
+    return ["anesthesia", leaf];
+  }
+
   const candidates = (Array.isArray(allCategories) ? allCategories : [])
     .map((category) => normalizePathSegments(category.path || []))
     .filter((candidate) => candidate.length > 0);
@@ -1015,7 +1032,6 @@ function findCanonicalCategoryPath(requestedPath: string[], allCategories: Categ
   const exact = candidates.find((candidate) => candidate.join("/") === requestedKey);
   if (exact) return exact;
 
-  const leaf = requested[requested.length - 1] || "";
   const leafMatches = candidates.filter((candidate) => candidate[candidate.length - 1] === leaf);
   if (leafMatches.length === 1) return leafMatches[0];
   if (!leafMatches.length) return null;
@@ -2135,34 +2151,45 @@ function renderLandingBlocks(blocks: ContentBlock[], theme: Theme) {
           <KentH2>{title || "Scientific articles and publications"}</KentH2>
 
           <div className="mt-6 space-y-4">
-            {items.map((item, idx) => (
-              <div
-                key={item._key || `${item.title}-${idx}`}
-                className="rounded-[22px] border border-slate-200 bg-white px-6 py-5 transition hover:shadow-sm"
-              >
-                <Link
-                  href={resolveKentHref(String(item.href || ""))}
-                  prefetch={false}
-                  className="block text-lg font-semibold tracking-tight text-slate-900 hover:text-blue-700"
+            {items.map((item, idx) => {
+              const href = resolveKentHref(String(item.href || ""));
+              const hasDestination = href !== "#" && href !== `/products/${BRAND_KEY}`;
+
+              return (
+                <div
+                  key={item._key || `${item.title}-${idx}`}
+                  className="rounded-[22px] border border-slate-200 bg-white px-6 py-5 transition hover:shadow-sm"
                 >
-                  {item.title}
-                </Link>
+                  {hasDestination ? (
+                    <Link
+                      href={href}
+                      prefetch={false}
+                      className="block text-lg font-semibold tracking-tight text-slate-900 hover:text-blue-700"
+                    >
+                      {item.title}
+                    </Link>
+                  ) : (
+                    <div className="text-lg font-semibold tracking-tight text-slate-900">{item.title}</div>
+                  )}
 
-                {item.subtitle ? (
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{item.subtitle}</p>
-                ) : null}
+                  {item.subtitle ? (
+                    <p className="mt-2 text-sm leading-6 text-slate-600">{item.subtitle}</p>
+                  ) : null}
 
-                <div className="mt-4">
-                  <Link
-                    href={resolveKentHref(String(item.href || ""))}
-                    prefetch={false}
-                    className={`inline-flex items-center gap-2 text-sm font-semibold ${theme.accentText}`}
-                  >
-                    Continue Reading <span aria-hidden>›</span>
-                  </Link>
+                  {hasDestination ? (
+                    <div className="mt-4">
+                      <Link
+                        href={href}
+                        prefetch={false}
+                        className={`inline-flex items-center gap-2 text-sm font-semibold ${theme.accentText}`}
+                      >
+                        Continue Reading <span aria-hidden>›</span>
+                      </Link>
+                    </div>
+                  ) : null}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>,
       );
@@ -2225,7 +2252,9 @@ export default async function KentProductsPathPage({
   const hasPath = pathArr.length > 0;
   const pathStr = pathArr.join("/");
   const taxonomyCategoryForRequest = hasPath ? resolveCurrentKentCategory(pathArr) : null;
-  const productSlugs = taxonomyCategoryForRequest?.productSlugs || [];
+  const productSlugs = hasPath
+    ? taxonomyCategoryForRequest?.productSlugs || []
+    : CURRENT_KENT_TAXONOMY.products.map((product) => product.slug);
   const hasProductScope = productSlugs.length > 0;
 
   const data = await sanityCdnClient.fetch(PAGE_QUERY, {
@@ -2242,6 +2271,25 @@ export default async function KentProductsPathPage({
   if (!brand?._id) notFound();
 
   if (!hasPath) {
+    const products: ProductLite[] = Array.isArray(data?.allProducts) ? data.allProducts : [];
+    const rootCategories: CategoryLite[] = KENT_STATIC_MENU.flatMap((node, index) => {
+      const category = resolveCurrentKentCategory(node.path, undefined, node.title);
+      if (!category || category.count <= 0) return [];
+
+      return [{
+        _id: `kent-root-category-${category.id}`,
+        title: node.title,
+        path: node.path,
+        order: index,
+        summary: "",
+      }];
+    });
+    const featuredSlugs = ["somnosuite", "somnoflo", "coda-monitor", "physiosuite", "rovent", "righttemp"];
+    const productBySlug = new Map(products.map((product) => [product.slug, product]));
+    const featuredProducts = featuredSlugs
+      .map((slug) => productBySlug.get(slug))
+      .filter((product): product is ProductLite => Boolean(product));
+
     return (
       <div>
         <HeroBanner brandTitle={brand.title} />
@@ -2263,10 +2311,40 @@ export default async function KentProductsPathPage({
             </aside>
 
             <main className="min-w-0">
-              <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-                <h2 className="text-3xl font-semibold tracking-tight text-slate-900">Select a category</h2>
-                <p className="mt-3 leading-7 text-slate-700">왼쪽 사이드탭에서 Kent 카테고리를 선택해 주세요.</p>
-              </div>
+              <section className="rounded-[28px] border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-slate-50 px-7 py-8 md:px-9 md:py-10">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">
+                  Small animal research solutions
+                </div>
+                <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
+                  Explore Kent Scientific products
+                </h2>
+                <p className="mt-4 max-w-2xl text-[15px] leading-7 text-slate-600">
+                  Browse research equipment, monitoring systems, anesthesia solutions, surgical instruments, and
+                  laboratory accessories by product category.
+                </p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <span className="rounded-full border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-blue-800">
+                    {CURRENT_KENT_TAXONOMY.publishedProductCount} products
+                  </span>
+                  <span className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700">
+                    {rootCategories.length} product categories
+                  </span>
+                </div>
+              </section>
+
+              <KentChildCategoryGrid
+                items={rootCategories}
+                products={products}
+                title="Browse product categories"
+                theme={THEME_KENT}
+              />
+
+              {featuredProducts.length ? (
+                <section className="mt-12 border-t border-slate-200 pt-8">
+                  <KentH2>Featured research systems</KentH2>
+                  <KentProductGrid products={featuredProducts} theme={THEME_KENT} />
+                </section>
+              ) : null}
             </main>
           </div>
         </div>

@@ -86,10 +86,7 @@ const PAGE_QUERY = `
     categoryPathTitles,
     "slug": slug.current,
     "thumb": coalesce(
-      images[0].asset->url,
-      images[0].url,
-      imageUrls[0],
-      galleryImageUrls[0],
+      images[defined(asset->url)][0].asset->url,
       ""
     ),
     sourceUrl
