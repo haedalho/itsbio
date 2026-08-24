@@ -8,7 +8,7 @@ import HtmlContent from "@/components/site/HtmlContent";
 import { CLEAVER_BRAND_NAME } from "@/lib/cleaver/catalog";
 import { getCleaverProduct } from "@/lib/cleaver/sanity";
 
-export const revalidate = 300;
+export const revalidate = 30;
 
 type PageProps = { params: Promise<{ slug: string[] }> };
 

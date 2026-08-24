@@ -7,7 +7,9 @@ import {
   findLocalCleaverProduct,
   type CleaverProduct,
 } from "@/lib/cleaver/catalog";
-import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
+import { sanityCdnClient } from "@/lib/sanity/sanity.client";
+
+const CLEAVER_CATALOG_CACHE = { next: { revalidate: 30 } } as const;
 
 const CLEAVER_FILTER = `
   _type == "product"
@@ -77,7 +79,7 @@ export async function getCleaverProductPage(path: string[], query: string, reque
           && ($searchTerm == "" || title match $match || sku match $match)
         ] | order(order asc, title asc)[$start...$end] ${PRODUCT_PROJECTION}
       }
-    `, { category, searchTerm: query, match, start, end: start + CLEAVER_PAGE_SIZE }, PUBLIC_CATALOG_CACHE);
+    `, { category, searchTerm: query, match, start, end: start + CLEAVER_PAGE_SIZE }, CLEAVER_CATALOG_CACHE);
 
     const total = Number(result?.total || 0);
     if (total > 0) {
@@ -101,7 +103,7 @@ export const getCleaverProduct = cache(async (slugOrSku: string): Promise<Cleave
   try {
     const product = await sanityCdnClient.fetch<CleaverProduct | null>(`
       *[${CLEAVER_FILTER} && (slug.current == $slug || lower(sku) == lower($slug))][0] ${PRODUCT_PROJECTION}
-    `, { slug: decodeURIComponent(slugOrSku) }, PUBLIC_CATALOG_CACHE);
+    `, { slug: decodeURIComponent(slugOrSku) }, CLEAVER_CATALOG_CACHE);
     if (product) {
       const categoryPath = Array.isArray(product.categoryPath) && product.categoryPath.length ? product.categoryPath : local?.categoryPath || [];
       return {
@@ -125,7 +127,7 @@ export async function getCleaverCategoryCovers() {
         "category": categoryPath[0],
         "image": images[0].asset->url
       }
-    `, {}, PUBLIC_CATALOG_CACHE);
+    `, {}, CLEAVER_CATALOG_CACHE);
     const covers: Record<string, string> = {};
     for (const row of Array.isArray(rows) ? rows : []) {
       if (row.category && row.image && !covers[row.category]) covers[row.category] = row.image;
