@@ -45,6 +45,11 @@ export type CleaverVideo = {
   embedUrl?: string;
 };
 
+export type CleaverSpecificationMatrix = {
+  headers: string[];
+  rows: Array<{ label: string; values: string[] }>;
+};
+
 export type CleaverProduct = {
   _id: string;
   title: string;
@@ -62,7 +67,10 @@ export type CleaverProduct = {
   documentsHtml?: string;
   highlights?: string[];
   specRows?: Array<{ label: string; value: string }>;
-  docs?: Array<{ title?: string; label?: string; url?: string }>;
+  docs?: Array<{ title?: string; label?: string; group?: string; url?: string }>;
+  cleaverSourceTitle?: string;
+  cleaverAtAGlance?: string[];
+  cleaverSpecificationMatrix?: CleaverSpecificationMatrix;
   cleaverIncludedItems?: CleaverIncludedItem[];
   cleaverVariations?: CleaverVariation[];
   cleaverAccessories?: CleaverAccessory[];
@@ -195,4 +203,8 @@ export function searchLocalCleaverProducts(query: string) {
   const normalized = query.normalize("NFKC").trim().toLowerCase();
   if (!normalized) return [];
   return CLEAVER_INVENTORY.filter((product) => product.sku.toLowerCase().includes(normalized) || product.title.toLowerCase().includes(normalized));
+}
+
+export function cleaverDisplayTitle(product: Pick<CleaverProduct, "title" | "cleaverSourceTitle">) {
+  return product.cleaverSourceTitle?.trim() || product.title;
 }
