@@ -47,6 +47,7 @@ export async function POST(req: Request) {
     const department = clean(body.department, 100);
     const inquiryType = clean(body.inquiryType, 100);
     const product = clean(body.product, 300);
+    const catNo = clean(body.catNo, 150);
     const message = clean(body.message, 5000);
     const sourceUrl = clean(body.sourceUrl, 1000);
     const privacyAccepted = body.privacyAccepted === true;
@@ -72,7 +73,7 @@ export async function POST(req: Request) {
     const { data, error } = await resend.emails.send({
       from: process.env.QUOTE_FROM_EMAIL || "ITS BIO <onboarding@resend.dev>",
       to: [toEmail],
-      subject: `[${inquiryType || "Quote Request"}] ${product || "General inquiry"} - ${name || "Unknown"}`,
+      subject: `[${inquiryType || "Quote Request"}] ${product || catNo || "General inquiry"} - ${name || "Unknown"}`,
       text: `
 New website inquiry received:
 
@@ -83,7 +84,8 @@ Phone: ${phone}
 Field: ${field}
 Department: ${department}
 Inquiry type: ${inquiryType}
-Product/CatNo: ${product}
+Product name: ${product}
+Cat No: ${catNo}
 ${sourceUrl ? `Source page: ${sourceUrl}\n` : ""}
 Message:
 ${message}
