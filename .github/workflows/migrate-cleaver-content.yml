@@ -41,6 +41,21 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Inspect public Thistle product data routes
         run: node scripts/diagnose-thistle-sections.mjs
+      - name: Probe complete Thistle HTML through Vercel runtime
+        shell: bash
+        run: |
+          URL="https://itsbio-git-agent-cleaver-full-thistle-461aba-hadel-hos-projects.vercel.app/api/cleaver-source-probe"
+          for attempt in $(seq 1 24); do
+            code=$(curl -L -sS -o /tmp/cleaver-source-probe.json -w "%{http_code}" "$URL" || true)
+            echo "[vercel-probe] attempt=$attempt status=$code"
+            if [ "$code" = "200" ]; then
+              cat /tmp/cleaver-source-probe.json
+              echo
+              exit 0
+            fi
+            sleep 5
+          done
+          cat /tmp/cleaver-source-probe.json || true
       - name: Verify Overview, Specifications, What's Included, Documents, All Variations, Accessories and video discovery
         run: node scripts/migrate-cleaver-thistle-sections-to-sanity.mjs
 
