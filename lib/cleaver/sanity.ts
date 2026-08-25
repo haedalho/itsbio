@@ -22,20 +22,6 @@ const CLEAVER_FILTER = `
   )
 `;
 
-// Catalog/listing pages only need card data. Keeping large detail HTML, document
-// arrays and full galleries out of this projection dramatically reduces the
-// Sanity response size for every 24-product page.
-const LISTING_PROJECTION = `{
-  _id,
-  title,
-  sku,
-  order,
-  categoryPath,
-  categoryPathTitles,
-  "slug": slug.current,
-  "image": images[defined(asset->url)][0].asset->url
-}`;
-
 const SHOWCASE_PROJECTION = `{
   _id,
   title,
@@ -75,6 +61,11 @@ type ProductPage = {
   pageCount: number;
 };
 
+type ListingImageRow = {
+  sku?: string;
+  image?: string;
+};
+
 function localProductPage(path: string[], query: string, requestedPage: number): ProductPage {
   const needle = query.trim().toLowerCase();
   const matches = CLEAVER_INVENTORY.filter((product) => {
@@ -88,42 +79,42 @@ function localProductPage(path: string[], query: string, requestedPage: number):
   return { products: matches.slice(start, start + CLEAVER_PAGE_SIZE), total: matches.length, page, pageCount };
 }
 
+// Listing/search/category membership is already authoritative in the reviewed
+// local Cleaver inventory. Do that work locally and ask Sanity only for the
+// small set of card images required by the current page.
 export async function getCleaverProductPage(path: string[], query: string, requestedPage = 1): Promise<ProductPage> {
-  const page = Math.max(1, requestedPage);
-  const start = (page - 1) * CLEAVER_PAGE_SIZE;
-  const category = path.join("/");
-  const match = `*${query.replace(/\*/g, "").trim()}*`;
+  const local = localProductPage(path, query, requestedPage);
+  if (!local.products.length) return local;
 
+  const skus = local.products.map((product) => product.sku);
   try {
-    const result = await sanityCdnClient.fetch<{ products?: CleaverProduct[]; total?: number }>(`
-      {
-        "total": count(*[
-          ${CLEAVER_FILTER}
-          && ($category == "" || $category in listingPaths)
-          && ($searchTerm == "" || title match $match || sku match $match)
-        ]),
-        "products": *[
-          ${CLEAVER_FILTER}
-          && ($category == "" || $category in listingPaths)
-          && ($searchTerm == "" || title match $match || sku match $match)
-        ] | order(order asc, title asc)[$start...$end] ${LISTING_PROJECTION}
+    const rows = await sanityCdnClient.fetch<ListingImageRow[]>(`
+      *[
+        ${CLEAVER_FILTER}
+        && sku in $skus
+      ]{
+        sku,
+        "image": images[defined(asset->url)][0].asset->url
       }
-    `, { category, searchTerm: query, match, start, end: start + CLEAVER_PAGE_SIZE }, CLEAVER_CATALOG_CACHE);
+    `, { skus }, CLEAVER_CATALOG_CACHE);
 
-    const total = Number(result?.total || 0);
-    if (total > 0) {
-      return {
-        products: Array.isArray(result.products) ? result.products : [],
-        total,
-        page,
-        pageCount: Math.max(1, Math.ceil(total / CLEAVER_PAGE_SIZE)),
-      };
-    }
+    const images = new Map(
+      (Array.isArray(rows) ? rows : [])
+        .filter((row): row is Required<Pick<ListingImageRow, "sku">> & ListingImageRow => Boolean(row.sku))
+        .map((row) => [String(row.sku).toLowerCase(), row.image]),
+    );
+
+    return {
+      ...local,
+      products: local.products.map((product) => ({
+        ...product,
+        image: images.get(product.sku.toLowerCase()) || product.image,
+      })),
+    };
   } catch (error) {
-    console.error("Unable to load Cleaver catalog from Sanity:", error instanceof Error ? error.message : error);
+    console.error("Unable to load Cleaver card images from Sanity:", error instanceof Error ? error.message : error);
+    return local;
   }
-
-  return localProductPage(path, query, requestedPage);
 }
 
 export const getCleaverProduct = cache(async (slugOrSku: string): Promise<CleaverProduct | null> => {
@@ -149,19 +140,44 @@ export const getCleaverProduct = cache(async (slugOrSku: string): Promise<Cleave
   return local || null;
 });
 
+const CATEGORY_COVER_CANDIDATES = (() => {
+  const candidates = new Map<string, string[]>();
+  for (const category of CLEAVER_CATEGORIES) candidates.set(category.slug, []);
+  for (const product of CLEAVER_INVENTORY) {
+    const category = product.categoryPath[0];
+    const bucket = candidates.get(category);
+    if (!bucket || bucket.length >= 12) continue;
+    bucket.push(product.sku);
+  }
+  return candidates;
+})();
+
 export async function getCleaverCategoryCovers() {
+  const candidateSkus = Array.from(new Set(Array.from(CATEGORY_COVER_CANDIDATES.values()).flat()));
+  if (!candidateSkus.length) return {};
+
   try {
-    const fields = CLEAVER_CATEGORIES.map((category) => `
-      "${category.slug}": *[
+    const rows = await sanityCdnClient.fetch<ListingImageRow[]>(`
+      *[
         ${CLEAVER_FILTER}
-        && categoryPath[0] == "${category.slug}"
+        && sku in $skus
         && defined(images[0].asset->url)
-      ] | order(order asc)[0]{ "image": images[0].asset->url }
-    `).join(",");
-    const result = await sanityCdnClient.fetch<Record<string, { image?: string } | null>>(`{${fields}}`, {}, CLEAVER_CATALOG_CACHE);
+      ]{
+        sku,
+        "image": images[0].asset->url
+      }
+    `, { skus: candidateSkus }, CLEAVER_CATALOG_CACHE);
+
+    const bySku = new Map(
+      (Array.isArray(rows) ? rows : [])
+        .filter((row) => row.sku && row.image)
+        .map((row) => [String(row.sku).toLowerCase(), String(row.image)]),
+    );
     const covers: Record<string, string> = {};
+
     for (const category of CLEAVER_CATEGORIES) {
-      const image = result?.[category.slug]?.image;
+      const candidates = CATEGORY_COVER_CANDIDATES.get(category.slug) || [];
+      const image = candidates.map((sku) => bySku.get(sku.toLowerCase())).find(Boolean);
       if (image) covers[category.slug] = image;
     }
     return covers;
