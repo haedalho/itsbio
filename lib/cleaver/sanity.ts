@@ -7,6 +7,7 @@ import {
   findLocalCleaverProduct,
   type CleaverProduct,
 } from "@/lib/cleaver/catalog";
+import { getVerifiedCleaverSourceFixture } from "@/lib/cleaver/source-fixtures";
 import { sanityCdnClient } from "@/lib/sanity/sanity.client";
 
 const CLEAVER_CATALOG_CACHE = { next: { revalidate: 30 } } as const;
@@ -38,7 +39,13 @@ const PRODUCT_PROJECTION = `{
   documentsHtml,
   highlights,
   specRows[]{label, value},
-  docs[]{title, label, url},
+  docs[]{title, label, group, url},
+  cleaverSourceTitle,
+  cleaverAtAGlance,
+  cleaverSpecificationMatrix{
+    headers,
+    rows[]{label, values}
+  },
   cleaverIncludedItems[]{title, quantity, sourceUrl, imageUrl},
   cleaverVariations[]{title, sku, packSize, priceText, imageUrl, internalHref},
   cleaverAccessories[]{title, sku, packSize, priceText, sourceUrl, imageUrl, internalHref},
@@ -113,9 +120,11 @@ export const getCleaverProduct = cache(async (slugOrSku: string): Promise<Cleave
     `, { slug: decodeURIComponent(slugOrSku) }, CLEAVER_CATALOG_CACHE);
     if (product) {
       const categoryPath = Array.isArray(product.categoryPath) && product.categoryPath.length ? product.categoryPath : local?.categoryPath || [];
+      const fixture = getVerifiedCleaverSourceFixture(product.sku || local?.sku || "");
       return {
         ...local,
         ...product,
+        ...fixture,
         categoryPath,
         categoryPathTitles: product.categoryPathTitles?.length ? product.categoryPathTitles : cleaverCategoryTitles(categoryPath),
       };
@@ -124,7 +133,9 @@ export const getCleaverProduct = cache(async (slugOrSku: string): Promise<Cleave
     console.error("Unable to load Cleaver product from Sanity:", error instanceof Error ? error.message : error);
   }
 
-  return local || null;
+  if (!local) return null;
+  const fixture = getVerifiedCleaverSourceFixture(local.sku);
+  return fixture ? { ...local, ...fixture } : local;
 });
 
 export async function getCleaverCategoryCovers() {
