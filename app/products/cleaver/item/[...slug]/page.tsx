@@ -9,7 +9,7 @@ import Breadcrumb from "@/components/site/Breadcrumb";
 import { CLEAVER_BRAND_NAME, cleaverDisplayTitle } from "@/lib/cleaver/catalog";
 import { getCleaverProduct } from "@/lib/cleaver/sanity";
 
-export const revalidate = 30;
+export const revalidate = 300;
 
 type PageProps = { params: Promise<{ slug: string[] }> };
 
@@ -33,6 +33,8 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
   const photos = Array.from(new Set([product.image, ...(product.images || [])].filter((image): image is string => Boolean(image))));
   const highlights = (product.highlights || []).filter(Boolean).slice(0, 6);
   const atAGlance = (product.cleaverAtAGlance || []).filter(Boolean);
+  const variations = (product.cleaverVariations || []).filter((item) => item.title && item.internalHref);
+  const sourceFidelity = Boolean(product.cleaverSourceTitle);
   const quoteHref = `/quote?product=${encodeURIComponent(`${displayTitle} (${product.sku})`)}`;
   const crumbs = [
     { label: "Home", href: "/" },
@@ -44,39 +46,59 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
 
   return (
     <main className="bg-white pb-20">
-      <CleaverHeroBanner title={displayTitle} eyebrow="Cleaver Scientific product" />
-      <section className="border-b border-slate-200 bg-[#fbfafc]"><div className="mx-auto max-w-[1260px] px-6 py-6"><Breadcrumb items={crumbs} /></div></section>
-      <div className="mx-auto max-w-[1260px] px-6 pt-10 md:pt-16">
-        <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.04fr)_minmax(0,.9fr)] lg:gap-16">
+      {sourceFidelity ? null : <CleaverHeroBanner title={displayTitle} eyebrow="Cleaver Scientific product" />}
+      <section className={`border-b border-slate-200 ${sourceFidelity ? "bg-white" : "bg-[#fbfafc]"}`}><div className="mx-auto max-w-[1260px] px-6 py-5 md:py-6"><Breadcrumb items={crumbs} /></div></section>
+
+      <div className="mx-auto max-w-[1260px] px-6 pt-10 md:pt-14">
+        <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,.98fr)] lg:gap-16">
           <CleaverProductGallery images={photos} title={displayTitle} />
 
-          <section className="py-2 lg:py-5">
-            <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.24em] text-[#8650a0]"><span className="h-px w-8 bg-[#8650a0]" />Cleaver Scientific</div>
-            <h1 className="mt-5 text-[32px] font-semibold leading-[1.12] tracking-tight text-slate-950 md:text-[44px]">{displayTitle}</h1>
-            <div className="mt-6 inline-flex rounded-full bg-[#f4edf8] px-4 py-2 text-sm font-semibold text-[#61247b]">Catalog No. {product.sku}</div>
+          {sourceFidelity ? (
+            <section className="py-1 lg:py-2">
+              <h1 className="text-[34px] font-semibold leading-[1.08] tracking-[-0.035em] text-slate-950 md:text-[48px]">{displayTitle}</h1>
 
-            {atAGlance.length ? (
-              <div className="mt-7 border-t border-slate-100 pt-6">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8650a0]">At a Glance</p>
-                <ul className="mt-4 grid gap-3">
-                  {atAGlance.map((item) => <li key={item} className="flex items-start gap-3 text-sm leading-6 text-slate-700"><span aria-hidden className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f3ebf8] text-xs font-bold text-[#743693]">✓</span><span>{item}</span></li>)}
-                </ul>
+              {atAGlance.length ? (
+                <div className="mt-8">
+                  <h2 className="text-[15px] font-semibold text-slate-900">At a Glance</h2>
+                  <ul className="mt-4 space-y-2.5 border-l-2 border-[#6d2c86] pl-5">
+                    {atAGlance.map((item) => <li key={item} className="text-[15px] leading-7 text-slate-700">{item}</li>)}
+                  </ul>
+                </div>
+              ) : null}
+
+              {variations.length ? (
+                <div className="mt-8 border-t border-slate-200 pt-7">
+                  <p className="text-[14px] font-semibold text-slate-900">Item</p>
+                  <div className="mt-3 grid gap-2">
+                    {variations.map((item) => {
+                      const selected = item.sku?.toUpperCase() === product.sku.toUpperCase();
+                      return <Link key={`${item.sku}-${item.title}`} href={item.internalHref || "#"} className={`flex min-h-12 items-center justify-between border px-4 py-3 text-sm transition ${selected ? "border-[#6d2c86] bg-[#f8f3fa] text-[#61247b]" : "border-slate-300 bg-white text-slate-700 hover:border-[#9b6caf] hover:text-[#61247b]"}`}><span className="font-medium">{item.title}</span>{selected ? <span className="ml-4 text-xs font-semibold">Selected</span> : null}</Link>;
+                    })}
+                  </div>
+                </div>
+              ) : null}
+
+              <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-slate-200 pt-6">
+                <span className="text-sm text-slate-600">SKU: <strong className="font-semibold text-slate-900">{product.sku}</strong></span>
+                <Link href={quoteHref} className="inline-flex h-12 items-center justify-center bg-[#61247b] px-7 text-sm font-semibold text-white transition hover:bg-[#471659]">Request a Quote</Link>
               </div>
-            ) : product.summary ? <p className="mt-7 text-[15px] leading-8 text-slate-600">{product.summary}</p> : null}
-
-            {!atAGlance.length && highlights.length ? <ul className="mt-7 grid gap-3 border-t border-slate-100 pt-6">{highlights.map((highlight) => <li key={highlight} className="flex items-start gap-3 text-sm leading-6 text-slate-700"><span aria-hidden className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f3ebf8] text-xs font-bold text-[#743693]">✓</span><span>{highlight}</span></li>)}</ul> : null}
-
-            <div className="mt-8 rounded-2xl border border-slate-200 bg-[#fbfafc] p-5">
-              <div className="grid grid-cols-[105px_minmax(0,1fr)] gap-x-4 gap-y-3 text-sm"><span className="font-semibold text-slate-700">Brand</span><span className="text-slate-600">{CLEAVER_BRAND_NAME}</span><span className="font-semibold text-slate-700">Catalog No.</span><span className="text-slate-600">{product.sku}</span>{product.categoryPathTitles.length ? <><span className="font-semibold text-slate-700">Category</span><span className="text-slate-600">{product.categoryPathTitles.at(-1)}</span></> : null}</div>
-            </div>
-
-            <div className="mt-7 flex flex-wrap gap-3"><Link href={quoteHref} className="inline-flex h-12 items-center rounded-full bg-[#61247b] px-7 text-sm font-semibold text-white transition hover:bg-[#471659]">Request a Quote</Link><Link href="/contact" className="inline-flex h-12 items-center rounded-full border border-slate-300 px-6 text-sm font-semibold text-slate-700 transition hover:border-purple-300 hover:text-[#61247b]">Technical Support</Link></div>
-          </section>
+            </section>
+          ) : (
+            <section className="py-2 lg:py-5">
+              <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.24em] text-[#8650a0]"><span className="h-px w-8 bg-[#8650a0]" />Cleaver Scientific</div>
+              <h1 className="mt-5 text-[32px] font-semibold leading-[1.12] tracking-tight text-slate-950 md:text-[44px]">{displayTitle}</h1>
+              <div className="mt-6 inline-flex rounded-full bg-[#f4edf8] px-4 py-2 text-sm font-semibold text-[#61247b]">Catalog No. {product.sku}</div>
+              {product.summary ? <p className="mt-7 text-[15px] leading-8 text-slate-600">{product.summary}</p> : null}
+              {highlights.length ? <ul className="mt-7 grid gap-3 border-t border-slate-100 pt-6">{highlights.map((highlight) => <li key={highlight} className="flex items-start gap-3 text-sm leading-6 text-slate-700"><span aria-hidden className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f3ebf8] text-xs font-bold text-[#743693]">✓</span><span>{highlight}</span></li>)}</ul> : null}
+              <div className="mt-8 rounded-2xl border border-slate-200 bg-[#fbfafc] p-5"><div className="grid grid-cols-[105px_minmax(0,1fr)] gap-x-4 gap-y-3 text-sm"><span className="font-semibold text-slate-700">Brand</span><span className="text-slate-600">{CLEAVER_BRAND_NAME}</span><span className="font-semibold text-slate-700">Catalog No.</span><span className="text-slate-600">{product.sku}</span>{product.categoryPathTitles.length ? <><span className="font-semibold text-slate-700">Category</span><span className="text-slate-600">{product.categoryPathTitles.at(-1)}</span></> : null}</div></div>
+              <div className="mt-7 flex flex-wrap gap-3"><Link href={quoteHref} className="inline-flex h-12 items-center rounded-full bg-[#61247b] px-7 text-sm font-semibold text-white transition hover:bg-[#471659]">Request a Quote</Link><Link href="/contact" className="inline-flex h-12 items-center rounded-full border border-slate-300 px-6 text-sm font-semibold text-slate-700 transition hover:border-purple-300 hover:text-[#61247b]">Technical Support</Link></div>
+            </section>
+          )}
         </div>
 
         <CleaverProductSections product={product} />
 
-        <section className="mt-14 flex flex-col gap-5 rounded-2xl bg-[#f5f1f8] px-7 py-8 md:mt-20 md:flex-row md:items-center md:justify-between md:px-9"><div><h2 className="text-lg font-semibold text-slate-900">Need help selecting the right system?</h2><p className="mt-1 text-sm leading-6 text-slate-600">Our team can help with product specifications, compatibility, and quotations.</p></div><Link href="/contact" className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#61247b] px-6 text-sm font-semibold text-white transition hover:bg-[#471659]">Contact our specialists</Link></section>
+        {sourceFidelity ? null : <section className="mt-14 flex flex-col gap-5 rounded-2xl bg-[#f5f1f8] px-7 py-8 md:mt-20 md:flex-row md:items-center md:justify-between md:px-9"><div><h2 className="text-lg font-semibold text-slate-900">Need help selecting the right system?</h2><p className="mt-1 text-sm leading-6 text-slate-600">Our team can help with product specifications, compatibility, and quotations.</p></div><Link href="/contact" className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#61247b] px-6 text-sm font-semibold text-white transition hover:bg-[#471659]">Contact our specialists</Link></section>}
       </div>
     </main>
   );
