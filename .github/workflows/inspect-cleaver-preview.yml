@@ -1,0 +1,39 @@
+name: Inspect Cleaver preview source
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/inspect-cleaver-preview.yml'
+      - 'app/api/cleaver-source-probe/route.ts'
+      - 'lib/cleaver/source-fixtures.ts'
+      - 'components/site/FloatingQuoteButton.tsx'
+      - 'app/api/quote/route.ts'
+
+jobs:
+  inspect:
+    if: github.head_ref == 'agent/cleaver-full-thistle-sections'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Vercel preview
+        run: sleep 75
+      - name: Read official gallery through Vercel source probe
+        run: |
+          set -euxo pipefail
+          curl --fail --show-error --silent --retry 4 --retry-delay 15 \
+            'https://itsbio-git-agent-cleaver-full-thistle-461aba-hadel-hos-projects.vercel.app/api/cleaver-source-probe' \
+            | tee /tmp/cleaver-source-probe.json
+          python - <<'PY'
+          import json
+          with open('/tmp/cleaver-source-probe.json', encoding='utf-8') as f:
+              data = json.load(f)
+          print('SOURCE_STATUS', data.get('status'))
+          print('LIKELY_GALLERY_COUNT', data.get('likelyGalleryCount'))
+          print('LIKELY_GALLERY')
+          for i, url in enumerate(data.get('likelyGallery') or [], 1):
+              print(i, url)
+          print('ALL_MSMINI_IMAGES')
+          for i, url in enumerate(data.get('imageUrls') or [], 1):
+              print(i, url)
+          print('SECTION_ICON_KEYS', list((data.get('sectionIcons') or {}).keys()))
+          PY
