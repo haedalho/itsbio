@@ -38,7 +38,12 @@ const PRODUCT_PROJECTION = `{
   documentsHtml,
   highlights,
   specRows[]{label, value},
-  docs[]{title, label, url}
+  docs[]{title, label, url},
+  cleaverIncludedItems[]{title, quantity, sourceUrl, imageUrl},
+  cleaverVariations[]{title, sku, packSize, priceText, imageUrl, internalHref},
+  cleaverAccessories[]{title, sku, packSize, priceText, sourceUrl, imageUrl, internalHref},
+  cleaverVideos[]{title, url, embedUrl},
+  cleaverSourceSectionsMigratedAt
 }`;
 
 type ProductPage = {
