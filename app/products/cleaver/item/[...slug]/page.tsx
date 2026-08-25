@@ -4,8 +4,8 @@ import { notFound } from "next/navigation";
 
 import CleaverHeroBanner from "@/components/products/CleaverHeroBanner";
 import CleaverProductGallery from "@/components/products/CleaverProductGallery";
+import CleaverProductSections from "@/components/products/CleaverProductSections";
 import Breadcrumb from "@/components/site/Breadcrumb";
-import HtmlContent from "@/components/site/HtmlContent";
 import { CLEAVER_BRAND_NAME } from "@/lib/cleaver/catalog";
 import { getCleaverProduct } from "@/lib/cleaver/sanity";
 
@@ -30,13 +30,6 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
 
   const photos = Array.from(new Set([product.image, ...(product.images || [])].filter((image): image is string => Boolean(image))));
   const highlights = (product.highlights || []).filter(Boolean).slice(0, 6);
-  const specifications = (product.specRows || []).filter((row) => row.label && row.value);
-  const documents = (product.docs || []).filter((document) => document.url);
-  const sections = [
-    product.overviewHtml ? { id: "overview", label: "Overview" } : null,
-    specifications.length || product.specsHtml ? { id: "specifications", label: "Specifications" } : null,
-    documents.length || product.documentsHtml ? { id: "documents", label: "Documents" } : null,
-  ].filter((section): section is { id: string; label: string } => Boolean(section));
   const quoteHref = `/quote?product=${encodeURIComponent(`${product.title} (${product.sku})`)}`;
   const crumbs = [
     { label: "Home", href: "/" },
@@ -69,15 +62,9 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
           </section>
         </div>
 
-        <div className="mt-16 border-t border-slate-200 md:mt-24">
-          {sections.length ? <nav aria-label="Product information sections" className="flex flex-wrap gap-x-8 gap-y-2 border-b border-slate-200 py-5">{sections.map((section) => <a key={section.id} href={`#${section.id}`} className="text-sm font-semibold text-slate-600 transition hover:text-[#61247b]">{section.label}</a>)}</nav> : null}
-          <div className="space-y-16 py-12 md:py-16">
-            {product.overviewHtml ? <section id="overview" className="scroll-mt-28"><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8650a0]">Product information</p><h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Overview</h2><HtmlContent html={product.overviewHtml} className="prose prose-slate mt-6 max-w-[920px] text-[15px] leading-8 [&_h2]:mt-9 [&_h2]:text-xl [&_h3]:mt-8 [&_h3]:text-lg [&_li]:my-1 [&_p]:my-4" /></section> : null}
-            {specifications.length || product.specsHtml ? <section id="specifications" className="scroll-mt-28"><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8650a0]">Technical details</p><h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Specifications</h2>{specifications.length ? <div className="mt-6 max-w-[980px] overflow-hidden rounded-2xl border border-slate-200"><table className="w-full border-collapse text-left text-sm"><tbody>{specifications.map((row, index) => <tr key={`${row.label}-${index}`} className="border-b border-slate-200 last:border-b-0 even:bg-[#faf9fb]"><th scope="row" className="w-[42%] px-5 py-4 font-semibold text-slate-700 md:px-7">{row.label}</th><td className="px-5 py-4 text-slate-600 md:px-7">{row.value}</td></tr>)}</tbody></table></div> : <HtmlContent html={product.specsHtml || ""} className="prose prose-slate mt-6 max-w-none overflow-x-auto text-sm [&_table]:w-full [&_td]:border [&_td]:border-slate-200 [&_td]:p-4 [&_th]:border [&_th]:border-slate-200 [&_th]:bg-slate-50 [&_th]:p-4" />}</section> : null}
-            {documents.length ? <section id="documents" className="scroll-mt-28"><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8650a0]">Downloads & resources</p><h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Documents</h2><div className="mt-6 grid gap-4 sm:grid-cols-2">{documents.map((document) => <a key={document.url} href={document.url} target="_blank" rel="noopener noreferrer" className="group flex min-h-24 items-center gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 transition hover:border-[#b99ac8] hover:bg-[#fcfaff]"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#f4edf8] text-[11px] font-bold tracking-wide text-[#61247b]">PDF</span><span className="min-w-0 flex-1 text-sm font-semibold leading-6 text-slate-700 group-hover:text-[#61247b]">{document.title || document.label || "Product document"}</span><span aria-hidden className="text-lg text-slate-400 transition group-hover:text-[#61247b]">↗</span></a>)}</div></section> : product.documentsHtml ? <section id="documents" className="scroll-mt-28"><h2 className="text-3xl font-semibold tracking-tight text-slate-950">Documents</h2><HtmlContent html={product.documentsHtml} className="prose prose-slate mt-5 max-w-none text-sm" /></section> : null}
-          </div>
-        </div>
-        <section className="flex flex-col gap-5 rounded-2xl bg-[#f5f1f8] px-7 py-8 md:flex-row md:items-center md:justify-between md:px-9"><div><h2 className="text-lg font-semibold text-slate-900">Need help selecting the right system?</h2><p className="mt-1 text-sm leading-6 text-slate-600">Our team can help with product specifications, compatibility, and quotations.</p></div><Link href="/contact" className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#61247b] px-6 text-sm font-semibold text-white transition hover:bg-[#471659]">Contact our specialists</Link></section>
+        <CleaverProductSections product={product} />
+
+        <section className="mt-14 flex flex-col gap-5 rounded-2xl bg-[#f5f1f8] px-7 py-8 md:mt-20 md:flex-row md:items-center md:justify-between md:px-9"><div><h2 className="text-lg font-semibold text-slate-900">Need help selecting the right system?</h2><p className="mt-1 text-sm leading-6 text-slate-600">Our team can help with product specifications, compatibility, and quotations.</p></div><Link href="/contact" className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#61247b] px-6 text-sm font-semibold text-white transition hover:bg-[#471659]">Contact our specialists</Link></section>
       </div>
     </main>
   );
