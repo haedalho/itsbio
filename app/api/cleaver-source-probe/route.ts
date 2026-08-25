@@ -3,7 +3,20 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const SOURCE = "https://www.thistlescientific.com/product/microdoc-gel-documentation-hood-with-screen/?ss=global";
+const SOURCE = "https://www.thistlescientific.com/product/multisub-mini-mini-horizontal-electrophoresis-system/";
+const SECTION_LABELS = ["Specifications", "What's Included", "Video", "Documents", "All Variations", "Accessories"];
+
+function decode(value: string) {
+  return value.replace(/&quot;/g, '"').replace(/&#039;|&#39;/g, "'").replace(/&amp;/g, "&");
+}
+
+function svgNear(html: string, label: string) {
+  const index = html.toLowerCase().indexOf(label.toLowerCase());
+  if (index < 0) return null;
+  const before = html.slice(Math.max(0, index - 3000), index + 300);
+  const svgs = [...before.matchAll(/<svg\b[\s\S]*?<\/svg>/gi)].map((match) => match[0]);
+  return svgs.at(-1)?.slice(0, 2400) || null;
+}
 
 export async function GET() {
   try {
@@ -16,20 +29,20 @@ export async function GET() {
       cache: "no-store",
     });
     const html = await response.text();
+    const rawImages = [...html.matchAll(/(?:src|data-src|data-large_image|href)=["']([^"']+\.(?:jpe?g|png|webp))(?:\?[^"']*)?["']/gi)]
+      .map((match) => decode(match[1]))
+      .filter((url) => /MSMINI/i.test(url));
+    const imageUrls = Array.from(new Set(rawImages));
+    const likelyGallery = imageUrls.filter((url) => !/-150x150\.|\/woocommerce-placeholder|MS7-|MS10-|CSL-CAB|MSMINIBSB|MSMINICP/i.test(url));
+
     return NextResponse.json({
       status: response.status,
       bytes: html.length,
-      markers: {
-        overview: /Overview/i.test(html),
-        specifications: /Specifications/i.test(html),
-        included: /What(?:'|&#0?39;|’)?s Included/i.test(html),
-        documents: /Documents/i.test(html),
-        variations: /All Variations/i.test(html),
-        accessories: /Accessories/i.test(html),
-      },
-      tableCount: (html.match(/<table\b/gi) || []).length,
-      pdfCount: (html.match(/\.pdf(?:[?"'&#]|$)/gi) || []).length,
-      productLinkCount: (html.match(/\/product\//gi) || []).length,
+      imageUrls,
+      likelyGallery,
+      likelyGalleryCount: likelyGallery.length,
+      sectionIcons: Object.fromEntries(SECTION_LABELS.map((label) => [label, svgNear(html, label)])),
+      markers: Object.fromEntries(SECTION_LABELS.map((label) => [label, html.toLowerCase().includes(label.toLowerCase())])),
     });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
