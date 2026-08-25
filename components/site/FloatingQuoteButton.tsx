@@ -194,7 +194,7 @@ export default function FloatingQuoteButton() {
                 placeholder="Email *"
               />
 
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-3">
                 <input
                   ref={productRef}
                   name="product"
