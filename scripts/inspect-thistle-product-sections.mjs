@@ -1,48 +1,34 @@
 #!/usr/bin/env node
 
+const fetchJson = async (url) => {
+  const response = await fetch(url, { headers: { Accept: "application/json,*/*;q=0.8" }, signal: AbortSignal.timeout(60000) });
+  let body;
+  try { body = await response.json(); } catch { body = null; }
+  return { status: response.status, body, url: response.url };
+};
+
 const sku = "CSL-MDOCUV254/3651D";
-const base = new URL("https://www.thistlescientific.com/wp-json/wc/store/v1/products");
-base.searchParams.set("sku", sku);
-base.searchParams.set("per_page", "20");
-const response = await fetch(base, { headers: { Accept: "application/json,*/*;q=0.8" }, signal: AbortSignal.timeout(60000) });
-console.log(JSON.stringify({ status: response.status, url: response.url }));
-if (!response.ok) process.exit(1);
-const rows = await response.json();
-const product = Array.isArray(rows) ? rows[0] : null;
-if (!product) throw new Error("No microDOC variant found");
-console.log(JSON.stringify({
-  productKeys: Object.keys(product),
-  id: product.id,
-  parent: product.parent,
-  name: product.name,
-  sku: product.sku,
-  permalink: product.permalink,
-  description: product.description,
-  short_description: product.short_description,
-  attributes: product.attributes,
-  variations: product.variations,
-  extensions: product.extensions,
-  images: product.images,
-}, null, 2));
-if (Number(product.parent) > 0) {
-  const parentUrl = new URL("https://www.thistlescientific.com/wp-json/wc/store/v1/products");
-  parentUrl.searchParams.set("include", String(product.parent));
-  parentUrl.searchParams.set("per_page", "20");
-  const parentResponse = await fetch(parentUrl, { headers: { Accept: "application/json,*/*;q=0.8" }, signal: AbortSignal.timeout(60000) });
-  const parents = parentResponse.ok ? await parentResponse.json() : [];
-  const parent = Array.isArray(parents) ? parents[0] : null;
-  console.log(JSON.stringify({
-    parentStatus: parentResponse.status,
-    parentKeys: parent ? Object.keys(parent) : [],
-    id: parent?.id,
-    name: parent?.name,
-    sku: parent?.sku,
-    permalink: parent?.permalink,
-    description: parent?.description,
-    short_description: parent?.short_description,
-    attributes: parent?.attributes,
-    variations: parent?.variations,
-    extensions: parent?.extensions,
-    images: parent?.images,
-  }, null, 2));
+const store = new URL("https://www.thistlescientific.com/wp-json/wc/store/v1/products");
+store.searchParams.set("sku", sku);
+store.searchParams.set("per_page", "20");
+const storeResult = await fetchJson(store);
+const product = Array.isArray(storeResult.body) ? storeResult.body[0] : null;
+if (!product) throw new Error(`No microDOC variant found (${storeResult.status})`);
+const parentId = Number(product.parent || 0);
+console.log(JSON.stringify({ storeStatus: storeResult.status, variant: { id: product.id, parent: parentId, sku: product.sku, permalink: product.permalink } }));
+
+for (const endpoint of [
+  `https://www.thistlescientific.com/wp-json/wp/v2/product/${parentId}`,
+  `https://www.thistlescientific.com/wp-json/wp/v2/products/${parentId}`,
+  `https://www.thistlescientific.com/wp-json/wp/v2/product?include=${parentId}`,
+  `https://www.thistlescientific.com/wp-json/wp/v2/products?include=${parentId}`,
+]) {
+  const result = await fetchJson(endpoint);
+  const sample = Array.isArray(result.body) ? result.body[0] : result.body;
+  console.log(JSON.stringify({ endpoint, status: result.status, keys: sample && typeof sample === "object" ? Object.keys(sample) : [], sample }, null, 2));
 }
+
+const root = await fetchJson("https://www.thistlescientific.com/wp-json/");
+const routes = root.body?.routes && typeof root.body.routes === "object" ? Object.keys(root.body.routes) : [];
+const interesting = routes.filter((route) => /(product|document|download|spec|accessor|variation|bundle|composite|linked|related|woo)/i.test(route));
+console.log(JSON.stringify({ rootStatus: root.status, interestingRoutes: interesting.slice(0, 300) }, null, 2));
