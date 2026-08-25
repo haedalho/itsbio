@@ -1,12 +1,6 @@
 name: Enrich Cleaver manufacturer content and galleries
 
 on:
-  push:
-    branches:
-      - agent/kent-summary-dedupe
-    paths:
-      - .github/workflows/enrich-cleaver-manufacturer-content.yml
-      - scripts/enrich-cleaver-manufacturer-content.mjs
   workflow_dispatch:
 
 permissions:
@@ -39,16 +33,6 @@ jobs:
           cache: npm
       - name: Install reviewed project dependencies
         run: npm install --no-audit --no-fund
-      - name: Normalize nullable legacy arrays for the reviewed enrichment run
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p = Path('scripts/enrich-cleaver-manufacturer-content.mjs')
-          s = p.read_text()
-          s = s.replace('const result = [...existingRows];', 'const result = [...(Array.isArray(existingRows) ? existingRows : [])];')
-          s = s.replace('for (const row of candidateRows) {', 'for (const row of (Array.isArray(candidateRows) ? candidateRows : [])) {')
-          p.write_text(s)
-          PY
       - name: Validate Cleaver enrichment script syntax
         run: node --check scripts/enrich-cleaver-manufacturer-content.mjs
       - name: Enrich only missing or thin Cleaver content
