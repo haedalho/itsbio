@@ -33,6 +33,11 @@ const nextConfig: NextConfig = {
         hostname: "abmgood.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "www.thistlescientific.com",
+        pathname: "/wp-content/uploads/**",
+      },
     ],
   },
   async redirects() {
