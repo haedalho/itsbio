@@ -1,0 +1,45 @@
+name: Enrich Cleaver manufacturer content and galleries
+
+on:
+  push:
+    branches:
+      - agent/kent-summary-dedupe
+    paths:
+      - .github/workflows/enrich-cleaver-manufacturer-content.yml
+      - scripts/enrich-cleaver-manufacturer-content.mjs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cleaver-manufacturer-content-enrichment-production
+  cancel-in-progress: false
+
+jobs:
+  enrich-cleaver-products:
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 120
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install reviewed project dependencies
+        run: npm install --no-audit --no-fund
+      - name: Validate Cleaver enrichment script syntax
+        run: node --check scripts/enrich-cleaver-manufacturer-content.mjs
+      - name: Enrich only missing or thin Cleaver content
+        run: node scripts/enrich-cleaver-manufacturer-content.mjs --apply
