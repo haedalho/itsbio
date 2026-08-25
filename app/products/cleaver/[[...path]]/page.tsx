@@ -16,7 +16,7 @@ import {
 } from "@/lib/cleaver/catalog";
 import { getCleaverCategoryCovers, getCleaverProductPage } from "@/lib/cleaver/sanity";
 
-export const revalidate = 30;
+export const revalidate = 300;
 
 type PageProps = {
   params: Promise<{ path?: string[] }>;
@@ -33,8 +33,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+const CATEGORY_COUNTS = (() => {
+  const counts = new Map<string, number>();
+  for (const product of CLEAVER_INVENTORY) {
+    for (let depth = 1; depth <= product.categoryPath.length; depth += 1) {
+      const key = product.categoryPath.slice(0, depth).join("/");
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+  }
+  return counts;
+})();
+
 function categoryCount(path: string[]) {
-  return CLEAVER_INVENTORY.filter((product) => path.every((segment, index) => product.categoryPath[index] === segment)).length;
+  return CATEGORY_COUNTS.get(path.join("/")) || 0;
 }
 
 function categoryHref(path: string[], query = "", page = 1) {
@@ -57,14 +68,14 @@ function CleaverSidebar({ activePath }: { activePath: string[] }) {
           const active = activePath[0] === category.slug;
           return (
             <div key={category.slug}>
-              <Link href={categoryHref([category.slug])} prefetch={false} className={`flex items-start justify-between gap-3 rounded-xl px-3 py-2.5 text-[13px] transition ${active ? "bg-purple-50 font-semibold text-[#61247b]" : "text-slate-700 hover:bg-slate-50"}`}>
+              <Link href={categoryHref([category.slug])} className={`flex items-start justify-between gap-3 rounded-xl px-3 py-2.5 text-[13px] transition ${active ? "bg-purple-50 font-semibold text-[#61247b]" : "text-slate-700 hover:bg-slate-50"}`}>
                 <span>{category.title}</span>
                 <span className="shrink-0 text-xs text-slate-400">{categoryCount([category.slug])}</span>
               </Link>
               {active ? (
                 <div className="mb-2 ml-4 space-y-0.5 border-l border-dashed border-purple-200 pl-3">
                   {category.children.map((child) => (
-                    <Link key={child.slug} href={categoryHref([category.slug, child.slug])} prefetch={false} className={`block rounded-lg px-3 py-2 text-[12px] leading-5 transition ${activePath[1] === child.slug ? "bg-purple-50 font-semibold text-[#61247b]" : "text-slate-600 hover:bg-slate-50 hover:text-[#61247b]"}`}>
+                    <Link key={child.slug} href={categoryHref([category.slug, child.slug])} className={`block rounded-lg px-3 py-2 text-[12px] leading-5 transition ${activePath[1] === child.slug ? "bg-purple-50 font-semibold text-[#61247b]" : "text-slate-600 hover:bg-slate-50 hover:text-[#61247b]"}`}>
                       {child.title}
                     </Link>
                   ))}
@@ -80,7 +91,7 @@ function CleaverSidebar({ activePath }: { activePath: string[] }) {
 
 function ProductCard({ product }: { product: CleaverProduct }) {
   return (
-    <Link href={cleaverProductHref(product)} prefetch={false} className="group block h-full">
+    <Link href={cleaverProductHref(product)} className="group block h-full">
       <article className="flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-200 hover:-translate-y-0.5 hover:border-purple-200 hover:shadow-lg">
         <div className="relative aspect-[1.12] border-b border-slate-100 bg-white">
           {product.image ? (
@@ -161,7 +172,7 @@ export default async function CleaverCatalogPage({ params, searchParams }: PageP
                 <div className="mb-5 flex items-end justify-between gap-3"><div><div className="text-[11px] font-semibold uppercase tracking-[0.17em] text-[#8650a0]">Purpose-built for discovery</div><h3 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">Browse the range</h3></div></div>
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   {CLEAVER_CATEGORIES.map((category) => (
-                    <Link key={category.slug} href={categoryHref([category.slug])} prefetch={false} className="group overflow-hidden rounded-2xl border border-[#ece8ef] bg-white transition duration-300 hover:-translate-y-0.5 hover:border-[#cbb8d4] hover:shadow-[0_14px_36px_rgba(86,39,105,0.1)]">
+                    <Link key={category.slug} href={categoryHref([category.slug])} className="group overflow-hidden rounded-2xl border border-[#ece8ef] bg-white transition duration-300 hover:-translate-y-0.5 hover:border-[#cbb8d4] hover:shadow-[0_14px_36px_rgba(86,39,105,0.1)]">
                       <div className="relative flex h-44 items-center justify-center overflow-hidden bg-gradient-to-b from-white to-[#faf8fc] p-4">
                         {covers[category.slug] ? <Image src={covers[category.slug]} alt={category.title} fill quality={85} sizes="(max-width: 768px) 46vw, 340px" className="object-contain p-3 transition duration-500 group-hover:scale-[1.05]" /> : <Image src="/partners/Cleaverscientific-logo.png" alt="" width={170} height={70} className="h-auto max-h-14 w-auto object-contain opacity-65" />}
                       </div>

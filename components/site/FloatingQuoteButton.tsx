@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 type QuoteOpenDetail = {
   product?: string;
+  catNo?: string;
 };
 
 export default function FloatingQuoteButton() {
@@ -15,7 +16,9 @@ export default function FloatingQuoteButton() {
   const [errorMsg, setErrorMsg] = useState("");
   const panelRef = useRef<HTMLDivElement | null>(null);
   const productRef = useRef<HTMLInputElement | null>(null);
+  const catNoRef = useRef<HTMLInputElement | null>(null);
   const pendingProductRef = useRef("");
+  const pendingCatNoRef = useRef("");
 
   useEffect(() => {
     if (!open) return;
@@ -32,7 +35,8 @@ export default function FloatingQuoteButton() {
     const onOpenQuote = (event: Event) => {
       const detail = (event as CustomEvent<QuoteOpenDetail>).detail;
       pendingProductRef.current = String(detail?.product || "").trim();
-      openPanel(pendingProductRef.current);
+      pendingCatNoRef.current = String(detail?.catNo || "").trim();
+      openPanel(pendingProductRef.current, pendingCatNoRef.current);
     };
 
     window.addEventListener("itsbio:open-quote", onOpenQuote);
@@ -44,10 +48,12 @@ export default function FloatingQuoteButton() {
     setDone(null);
     setErrorMsg("");
     pendingProductRef.current = "";
+    pendingCatNoRef.current = "";
   }, [pathname]);
 
-  function openPanel(productOverride = "") {
+  function openPanel(productOverride = "", catNoOverride = "") {
     const explicitProduct = String(productOverride || pendingProductRef.current || "").trim();
+    const explicitCatNo = String(catNoOverride || pendingCatNoRef.current || "").trim();
     setOpen(true);
     setDone(null);
     setErrorMsg("");
@@ -58,14 +64,19 @@ export default function FloatingQuoteButton() {
       if (explicitProduct) {
         productRef.current.value = explicitProduct;
         pendingProductRef.current = "";
-        return;
       }
 
-      if (productRef.current.value.trim()) return;
+      if (catNoRef.current && explicitCatNo) {
+        catNoRef.current.value = explicitCatNo;
+        pendingCatNoRef.current = "";
+      }
+
       if (!pathname.startsWith("/products")) return;
 
-      const heading = document.querySelector("main h1")?.textContent?.trim();
-      if (heading) productRef.current.value = heading;
+      if (!productRef.current.value.trim()) {
+        const heading = document.querySelector("main h1")?.textContent?.trim();
+        if (heading) productRef.current.value = heading;
+      }
     }, 0);
   }
 
@@ -82,6 +93,7 @@ export default function FloatingQuoteButton() {
       org: String(form.get("org") ?? ""),
       email: String(form.get("email") ?? ""),
       product: String(form.get("product") ?? ""),
+      catNo: String(form.get("catNo") ?? ""),
       message: String(form.get("message") ?? ""),
       privacyAccepted: form.get("privacyAccepted") === "on",
       website: String(form.get("website") ?? ""),
@@ -107,8 +119,16 @@ export default function FloatingQuoteButton() {
     } catch (error) {
       console.error("Quote send failed:", error);
       setDone("fail");
-      const subject = `[ITS BIO] Quote request - ${payload.product || payload.name || "New inquiry"}`;
-      const body = [`Name: ${payload.name}`, `Company / Lab: ${payload.org}`, `Email: ${payload.email}`, `Product / Cat No: ${payload.product}`, "", payload.message].join("\n");
+      const subject = `[ITS BIO] Quote request - ${payload.product || payload.catNo || payload.name || "New inquiry"}`;
+      const body = [
+        `Name: ${payload.name}`,
+        `Company / Lab: ${payload.org}`,
+        `Email: ${payload.email}`,
+        `Product name: ${payload.product}`,
+        `Cat No: ${payload.catNo}`,
+        "",
+        payload.message,
+      ].join("\n");
       window.location.href = `mailto:info@itsbio.co.kr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       setErrorMsg("Direct sending is temporarily unavailable. Your email app has been opened with the request filled in.");
     } finally {
@@ -174,12 +194,20 @@ export default function FloatingQuoteButton() {
                 placeholder="Email *"
               />
 
-              <input
-                ref={productRef}
-                name="product"
-                className="h-11 w-full rounded-xl border border-slate-300 px-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-                placeholder="Product name / Cat No"
-              />
+              <div className="space-y-3">
+                <input
+                  ref={productRef}
+                  name="product"
+                  className="h-11 w-full rounded-xl border border-slate-300 px-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                  placeholder="Product name"
+                />
+                <input
+                  ref={catNoRef}
+                  name="catNo"
+                  className="h-11 w-full rounded-xl border border-slate-300 px-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                  placeholder="Cat No"
+                />
+              </div>
 
               <textarea
                 name="message"

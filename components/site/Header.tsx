@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import BrandLogo from "./BrandLogo";
 import ProductsMegaMenu from "./ProductsMegaMenu";
@@ -22,6 +23,7 @@ function useClickOutside<T extends HTMLElement>(onOutside: () => void) {
 }
 
 export default function Header() {
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const panelRef = useClickOutside<HTMLDivElement>(() => setMobileOpen(false));
 
@@ -41,6 +43,15 @@ export default function Header() {
       document.body.style.overflow = prev;
     };
   }, [mobileOpen]);
+
+  // Cleaver currently has the largest catalog payload. Warm its App Router
+  // response shortly after the shared header hydrates so opening the Products
+  // menu and choosing Cleaver can use the prefetched route instead of starting
+  // the server request only after the click.
+  useEffect(() => {
+    const timer = window.setTimeout(() => router.prefetch("/products/cleaver"), 700);
+    return () => window.clearTimeout(timer);
+  }, [router]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur">

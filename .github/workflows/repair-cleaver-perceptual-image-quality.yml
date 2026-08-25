@@ -1,0 +1,41 @@
+name: Repair Cleaver perceptual image quality
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cleaver-perceptual-image-quality-production
+  cancel-in-progress: false
+
+jobs:
+  repair-cleaver-perceptual-images:
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 120
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install reviewed project dependencies
+        run: npm install --no-audit --no-fund
+      - name: Install image-quality analyzer
+        run: npm install sharp --no-save --no-audit --no-fund
+      - name: Validate perceptual repair script
+        run: node --check scripts/repair-cleaver-perceptual-image-quality.mjs
+      - name: Replace only exact-SKU images proven perceptually sharper
+        run: node scripts/repair-cleaver-perceptual-image-quality.mjs --apply

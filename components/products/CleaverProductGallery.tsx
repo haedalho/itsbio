@@ -12,7 +12,6 @@ export default function CleaverProductGallery({ title, images }: Props) {
   const [selected, setSelected] = useState(0);
   const [zoomed, setZoomed] = useState(false);
   const active = images[selected] || images[0];
-  const dimensions = active?.match(/-(\d+)x(\d+)\.[a-z]+(?:\?|$)/i);
 
   useEffect(() => {
     if (!zoomed) return;
@@ -42,8 +41,8 @@ export default function CleaverProductGallery({ title, images }: Props) {
           alt={title}
           fill
           priority
-          unoptimized
-          sizes="(max-width: 768px) 94vw, (max-width: 1280px) 48vw, 650px"
+          quality={95}
+          sizes="(max-width: 768px) 94vw, (max-width: 1280px) 70vw, 1000px"
           className="object-contain p-3 md:p-4"
         />
         {images.length > 1 ? (
@@ -57,7 +56,7 @@ export default function CleaverProductGallery({ title, images }: Props) {
           className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/95 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-[#be9dce] hover:text-[#61247b]"
         >
           <span aria-hidden>↗</span>
-          View original{dimensions ? ` · ${dimensions[1]} × ${dimensions[2]}` : ""}
+          View original
         </button>
       </div>
 
