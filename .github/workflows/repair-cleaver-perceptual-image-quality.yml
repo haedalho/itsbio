@@ -1,12 +1,6 @@
 name: Repair Cleaver perceptual image quality
 
 on:
-  push:
-    branches:
-      - agent/kent-summary-dedupe
-    paths:
-      - .github/workflows/repair-cleaver-perceptual-image-quality.yml
-      - scripts/repair-cleaver-perceptual-image-quality.mjs
   workflow_dispatch:
 
 permissions:
