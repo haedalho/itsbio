@@ -1,6 +1,7 @@
 import { cache } from "react";
 
 import {
+  CLEAVER_CATEGORIES,
   CLEAVER_INVENTORY,
   CLEAVER_PAGE_SIZE,
   cleaverCategoryTitles,
@@ -150,15 +151,18 @@ export const getCleaverProduct = cache(async (slugOrSku: string): Promise<Cleave
 
 export async function getCleaverCategoryCovers() {
   try {
-    const rows = await sanityCdnClient.fetch<Array<{ category?: string; image?: string }>>(`
-      *[${CLEAVER_FILTER} && defined(images[0].asset->url)] | order(order asc)[0...500]{
-        "category": categoryPath[0],
-        "image": images[0].asset->url
-      }
-    `, {}, CLEAVER_CATALOG_CACHE);
+    const fields = CLEAVER_CATEGORIES.map((category) => `
+      "${category.slug}": *[
+        ${CLEAVER_FILTER}
+        && categoryPath[0] == "${category.slug}"
+        && defined(images[0].asset->url)
+      ] | order(order asc)[0]{ "image": images[0].asset->url }
+    `).join(",");
+    const result = await sanityCdnClient.fetch<Record<string, { image?: string } | null>>(`{${fields}}`, {}, CLEAVER_CATALOG_CACHE);
     const covers: Record<string, string> = {};
-    for (const row of Array.isArray(rows) ? rows : []) {
-      if (row.category && row.image && !covers[row.category]) covers[row.category] = row.image;
+    for (const category of CLEAVER_CATEGORIES) {
+      const image = result?.[category.slug]?.image;
+      if (image) covers[category.slug] = image;
     }
     return covers;
   } catch {
