@@ -9,7 +9,7 @@ import {
 } from "@/lib/cleaver/catalog";
 import { sanityCdnClient } from "@/lib/sanity/sanity.client";
 
-const CLEAVER_CATALOG_CACHE = { next: { revalidate: 30 } } as const;
+const CLEAVER_CATALOG_CACHE = { next: { revalidate: 300 } } as const;
 
 const CLEAVER_FILTER = `
   _type == "product"
@@ -20,6 +20,32 @@ const CLEAVER_FILTER = `
     || brand->themeKey in ["cleaver", "cleaverscientific"]
   )
 `;
+
+// Catalog/listing pages only need card data. Keeping large detail HTML, document
+// arrays and full galleries out of this projection dramatically reduces the
+// Sanity response size for every 24-product page.
+const LISTING_PROJECTION = `{
+  _id,
+  title,
+  sku,
+  order,
+  categoryPath,
+  categoryPathTitles,
+  "slug": slug.current,
+  "image": images[defined(asset->url)][0].asset->url
+}`;
+
+const SHOWCASE_PROJECTION = `{
+  _id,
+  title,
+  sku,
+  order,
+  summary,
+  categoryPath,
+  categoryPathTitles,
+  "slug": slug.current,
+  "image": images[defined(asset->url)][0].asset->url
+}`;
 
 const PRODUCT_PROJECTION = `{
   _id,
@@ -79,7 +105,7 @@ export async function getCleaverProductPage(path: string[], query: string, reque
           ${CLEAVER_FILTER}
           && ($category == "" || $category in listingPaths)
           && ($searchTerm == "" || title match $match || sku match $match)
-        ] | order(order asc, title asc)[$start...$end] ${PRODUCT_PROJECTION}
+        ] | order(order asc, title asc)[$start...$end] ${LISTING_PROJECTION}
       }
     `, { category, searchTerm: query, match, start, end: start + CLEAVER_PAGE_SIZE }, CLEAVER_CATALOG_CACHE);
 
@@ -145,7 +171,7 @@ export async function getCleaverShowcase() {
 
   try {
     const rows = await sanityCdnClient.fetch<CleaverProduct[]>(`
-      *[${CLEAVER_FILTER} && sku in $featured && defined(images[0].asset->url)] ${PRODUCT_PROJECTION}
+      *[${CLEAVER_FILTER} && sku in $featured && defined(images[0].asset->url)] ${SHOWCASE_PROJECTION}
     `, { featured }, CLEAVER_CATALOG_CACHE);
     const bySku = new Map((Array.isArray(rows) ? rows : []).map((product) => [product.sku, product]));
     return featured.map((sku) => bySku.get(sku)).filter((product): product is CleaverProduct => Boolean(product));
