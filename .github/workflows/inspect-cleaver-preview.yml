@@ -16,11 +16,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Wait for Vercel preview
-        run: sleep 75
+        run: sleep 45
       - name: Read official gallery through Vercel source probe
         run: |
           set -euxo pipefail
-          curl --fail --show-error --silent --retry 4 --retry-delay 15 \
+          curl --location --fail --show-error --silent --retry 4 --retry-delay 15 \
             'https://itsbio-git-agent-cleaver-full-thistle-461aba-hadel-hos-projects.vercel.app/api/cleaver-source-probe' \
             | tee /tmp/cleaver-source-probe.json
           python - <<'PY'
