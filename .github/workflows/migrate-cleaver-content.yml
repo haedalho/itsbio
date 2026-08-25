@@ -12,6 +12,7 @@ on:
     paths:
       - .github/workflows/migrate-cleaver-content.yml
       - scripts/migrate-cleaver-thistle-sections-to-sanity.mjs
+      - scripts/diagnose-thistle-sections.mjs
       - lib/cleaver/**
       - components/products/CleaverProductSections.tsx
       - app/products/cleaver/item/**
@@ -38,6 +39,8 @@ jobs:
           cache: npm
       - name: Install reviewed project dependencies
         run: npm install --no-audit --no-fund
+      - name: Inspect public Thistle product data routes
+        run: node scripts/diagnose-thistle-sections.mjs
       - name: Verify Overview, Specifications, What's Included, Documents, All Variations, Accessories and video discovery
         run: node scripts/migrate-cleaver-thistle-sections-to-sanity.mjs
 
