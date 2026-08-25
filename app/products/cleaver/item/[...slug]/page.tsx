@@ -33,7 +33,6 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
   const photos = Array.from(new Set([product.image, ...(product.images || [])].filter((image): image is string => Boolean(image))));
   const highlights = (product.highlights || []).filter(Boolean).slice(0, 6);
   const atAGlance = (product.cleaverAtAGlance || []).filter(Boolean);
-  const variations = (product.cleaverVariations || []).filter((item) => item.title && item.internalHref);
   const sourceFidelity = Boolean(product.cleaverSourceTitle);
   const quoteHref = `/quote?product=${encodeURIComponent(`${displayTitle} (${product.sku})`)}`;
   const crumbs = [
@@ -46,8 +45,8 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
 
   return (
     <main className="bg-white pb-20">
-      {sourceFidelity ? null : <CleaverHeroBanner title={displayTitle} eyebrow="Cleaver Scientific product" />}
-      <section className={`border-b border-slate-200 ${sourceFidelity ? "bg-white" : "bg-[#fbfafc]"}`}><div className="mx-auto max-w-[1260px] px-6 py-5 md:py-6"><Breadcrumb items={crumbs} /></div></section>
+      <CleaverHeroBanner title={displayTitle} eyebrow="Cleaver Scientific product" />
+      <section className="border-b border-slate-200 bg-[#fbfafc]"><div className="mx-auto max-w-[1260px] px-6 py-5 md:py-6"><Breadcrumb items={crumbs} /></div></section>
 
       <div className="mx-auto max-w-[1260px] px-6 pt-10 md:pt-14">
         <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,.98fr)] lg:gap-16">
@@ -55,32 +54,20 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
 
           {sourceFidelity ? (
             <section className="py-1 lg:py-2">
-              <h1 className="text-[34px] font-semibold leading-[1.08] tracking-[-0.035em] text-slate-950 md:text-[48px]">{displayTitle}</h1>
+              <h1 className="text-[32px] font-semibold leading-[1.12] tracking-[-0.025em] text-slate-950 md:text-[42px]">{displayTitle}</h1>
 
               {atAGlance.length ? (
-                <div className="mt-8">
+                <div className="mt-7">
                   <h2 className="text-[15px] font-semibold text-slate-900">At a Glance</h2>
-                  <ul className="mt-4 space-y-2.5 border-l-2 border-[#6d2c86] pl-5">
-                    {atAGlance.map((item) => <li key={item} className="text-[15px] leading-7 text-slate-700">{item}</li>)}
+                  <ul className="mt-3.5 space-y-2 border-l-2 border-[#6d2c86] pl-5">
+                    {atAGlance.map((item) => <li key={item} className="text-[14px] leading-6 text-slate-700 md:text-[15px]">{item}</li>)}
                   </ul>
                 </div>
               ) : null}
 
-              {variations.length ? (
-                <div className="mt-8 border-t border-slate-200 pt-7">
-                  <p className="text-[14px] font-semibold text-slate-900">Item</p>
-                  <div className="mt-3 grid gap-2">
-                    {variations.map((item) => {
-                      const selected = item.sku?.toUpperCase() === product.sku.toUpperCase();
-                      return <Link key={`${item.sku}-${item.title}`} href={item.internalHref || "#"} className={`flex min-h-12 items-center justify-between border px-4 py-3 text-sm transition ${selected ? "border-[#6d2c86] bg-[#f8f3fa] text-[#61247b]" : "border-slate-300 bg-white text-slate-700 hover:border-[#9b6caf] hover:text-[#61247b]"}`}><span className="font-medium">{item.title}</span>{selected ? <span className="ml-4 text-xs font-semibold">Selected</span> : null}</Link>;
-                    })}
-                  </div>
-                </div>
-              ) : null}
-
-              <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-slate-200 pt-6">
-                <span className="text-sm text-slate-600">SKU: <strong className="font-semibold text-slate-900">{product.sku}</strong></span>
-                <Link href={quoteHref} className="inline-flex h-12 items-center justify-center bg-[#61247b] px-7 text-sm font-semibold text-white transition hover:bg-[#471659]">Request a Quote</Link>
+              <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-slate-200 pt-5">
+                <span className="text-[14px] text-slate-600">SKU: <strong className="font-semibold text-slate-900">{product.sku}</strong></span>
+                <Link href={quoteHref} className="inline-flex h-11 items-center justify-center bg-[#61247b] px-6 text-[14px] font-semibold text-white transition hover:bg-[#471659]">Request a Quote</Link>
               </div>
             </section>
           ) : (
