@@ -4,27 +4,28 @@ const SOURCE_URL = "https://www.thistlescientific.com/product/multisub-mini-mini
 const SOURCE_TITLE = "multiSUB Mini, Mini Horizontal Electrophoresis System";
 
 const internalHref = (title: string, sku: string) => `/products/cleaver/item/${encodeURIComponent(cleaverProductSlug(title, sku))}`;
+const originalWpImage = (url: string) => url.replace(/-\d+x\d+(?=\.[a-z0-9]+(?:\?|$))/i, "");
 
 const variations = [
   {
     title: "multiSUB Mini with 7 x 10cm Gel tray",
     sku: "MSMINI10",
     packSize: "1 / Each",
-    imageUrl: "https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-4.WEB_-600x600.jpg",
+    imageUrl: originalWpImage("https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-4.WEB_-600x600.jpg"),
     internalHref: internalHref("multiSUB Mini with 7 x 10cm Gel tray", "MSMINI10"),
   },
   {
     title: "multiSUB Mini with 7 x 7cm & 7 x 10cm Gel tray",
     sku: "MSMINIDUO",
     packSize: "1 / Each",
-    imageUrl: "https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-3.WEB_-600x600.jpg",
+    imageUrl: originalWpImage("https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-3.WEB_-600x600.jpg"),
     internalHref: internalHref("multiSUB Mini with 7 x 7cm & 7 x 10cm Gel tray", "MSMINIDUO"),
   },
   {
     title: "multiSUB Mini with 7 x 7cm Gel tray",
     sku: "MSMINI7",
     packSize: "1 / Each",
-    imageUrl: "https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-4.WEB_-600x600.jpg",
+    imageUrl: originalWpImage("https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-4.WEB_-600x600.jpg"),
     internalHref: internalHref("multiSUB Mini with 7 x 7cm Gel tray", "MSMINI7"),
   },
 ];
@@ -43,12 +44,18 @@ const accessories = [
   ["multiSUB Mini Lid", "MS7LID", "https://www.thistlescientific.com/wp-content/uploads/2024/11/MS7LID-1.WEB_-150x150.jpg", "1 / Each"],
   ["multiSUB Mini Tank (Including Electrodes)", "MS7TANK", "https://www.thistlescientific.com/wp-content/uploads/2024/11/MS7TANK-1.WEB_-150x150.jpg", "1 / Each"],
   ["Electrophoresis cable (Black & Red)", "CSL-CAB", "https://www.thistlescientific.com/wp-content/uploads/2024/11/CSL-CAB-1.WEB_-150x150.jpg", "1 / Each"],
-].map(([title, sku, imageUrl, packSize]) => ({ title, sku, imageUrl, packSize, internalHref: internalHref(title, sku) }));
+].map(([title, sku, imageUrl, packSize]) => ({
+  title,
+  sku,
+  imageUrl: originalWpImage(imageUrl),
+  packSize,
+  internalHref: internalHref(title, sku),
+}));
 
 const combAccessory = {
   title: "multiSUB Mini Combs",
   packSize: "1 / Each",
-  imageUrl: "https://www.thistlescientific.com/wp-content/uploads/2024/11/MS7-10-1-1.WEB_-150x150.jpg",
+  imageUrl: originalWpImage("https://www.thistlescientific.com/wp-content/uploads/2024/11/MS7-10-1-1.WEB_-150x150.jpg"),
   internalHref: "/products/cleaver?q=multiSUB+Mini+Comb",
 };
 
@@ -72,9 +79,14 @@ const includedBySku = {
   ],
 } as const;
 
+const manufacturerImages = Array.from(new Set(variations.map((item) => item.imageUrl)));
+
 const baseFixture: Partial<CleaverProduct> = {
   sourceUrl: SOURCE_URL,
   cleaverSourceTitle: SOURCE_TITLE,
+  image: manufacturerImages[0],
+  images: manufacturerImages,
+  overviewHtml: `<p>The MultiSUB Mini is the smallest unit in the range, designed for low to medium numbers of samples. The small gel size maximises run economy but does not compromise versatility as two tray options are available - 7 x 7cm and 7 x 10cm - and combs ranging from preparative up to 16 samples. Simply by altering the gel tray or comb, this compact unit is capable of resolving up to 64 different samples, prepping 1ml of sample or separating sample bands over a distance of 9cm.</p><p>Buffer saver blocks physically reduce the volume of a gel chamber and buffer requirements, therefore saving cost.</p>`,
   cleaverAtAGlance: [
     "Available with 7 x 7cm, 7 x 10cm or with both gel trays",
     "Economic low gel and buffer volumes",
