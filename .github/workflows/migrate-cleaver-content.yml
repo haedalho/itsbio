@@ -1,4 +1,4 @@
-name: Publish verified Cleaver specifications, manuals, and galleries
+name: Validate and publish complete Cleaver manufacturer content
 
 on:
   push:
@@ -7,17 +7,42 @@ on:
     paths:
       - .github/workflows/migrate-cleaver-content.yml
       - scripts/migrate-cleaver-content-to-sanity.mjs
+      - scripts/migrate-cleaver-thistle-sections-to-sanity.mjs
+  pull_request:
+    paths:
+      - .github/workflows/migrate-cleaver-content.yml
+      - scripts/migrate-cleaver-thistle-sections-to-sanity.mjs
+      - lib/cleaver/**
+      - components/products/CleaverProductSections.tsx
+      - app/products/cleaver/item/**
+      - studio-admin/schemaTypes/product.ts
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: cleaver-product-content-production
+  group: cleaver-product-content-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
+  validate-thistle-six-sections:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install reviewed project dependencies
+        run: npm install --no-audit --no-fund
+      - name: Verify Overview, Specifications, What's Included, Documents, All Variations, Accessories and video discovery
+        run: node scripts/migrate-cleaver-thistle-sections-to-sanity.mjs
+
   publish-reviewed-cleaver-content:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment: Production
     timeout-minutes: 120
@@ -39,5 +64,7 @@ jobs:
           cache: npm
       - name: Install reviewed project dependencies
         run: npm install --no-audit --no-fund
-      - name: Import exact-SKU manufacturer descriptions, specifications, PDFs, and high-resolution galleries
+      - name: Import exact-SKU descriptions, specifications, PDFs, and high-resolution galleries
         run: node scripts/migrate-cleaver-content-to-sanity.mjs --apply
+      - name: Import complete Thistle product sections and verify the microDOC reference fixture
+        run: node scripts/migrate-cleaver-thistle-sections-to-sanity.mjs --apply
