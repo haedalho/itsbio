@@ -13,6 +13,38 @@ export type CleaverCategory = {
   children: Array<{ slug: string; title: string }>;
 };
 
+export type CleaverIncludedItem = {
+  title: string;
+  quantity?: string;
+  sourceUrl?: string;
+  imageUrl?: string;
+};
+
+export type CleaverVariation = {
+  title: string;
+  sku?: string;
+  packSize?: string;
+  priceText?: string;
+  imageUrl?: string;
+  internalHref?: string;
+};
+
+export type CleaverAccessory = {
+  title: string;
+  sku?: string;
+  packSize?: string;
+  priceText?: string;
+  sourceUrl?: string;
+  imageUrl?: string;
+  internalHref?: string;
+};
+
+export type CleaverVideo = {
+  title?: string;
+  url: string;
+  embedUrl?: string;
+};
+
 export type CleaverProduct = {
   _id: string;
   title: string;
@@ -31,6 +63,11 @@ export type CleaverProduct = {
   highlights?: string[];
   specRows?: Array<{ label: string; value: string }>;
   docs?: Array<{ title?: string; label?: string; url?: string }>;
+  cleaverIncludedItems?: CleaverIncludedItem[];
+  cleaverVariations?: CleaverVariation[];
+  cleaverAccessories?: CleaverAccessory[];
+  cleaverVideos?: CleaverVideo[];
+  cleaverSourceSectionsMigratedAt?: string;
 };
 
 export const CLEAVER_CATEGORIES = categories as CleaverCategory[];
