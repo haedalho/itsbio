@@ -296,9 +296,9 @@ console.log(JSON.stringify({ phase: "before", ...metrics(existing), sourceCandid
 if (candidates.size < 1000) throw new Error(`Only ${candidates.size} verified exact-SKU candidates were collected; refusing enrichment.`);
 
 function mergeSpecRows(existingRows = [], candidateRows = []) {
-  const result = [...existingRows];
+  const result = [...(Array.isArray(existingRows) ? existingRows : [])];
   const labels = new Set(result.map((row) => cleanText(row?.label).toLowerCase()));
-  for (const row of candidateRows) {
+  for (const row of (Array.isArray(candidateRows) ? candidateRows : [])) {
     const key = cleanText(row?.label).toLowerCase();
     if (!key || labels.has(key)) continue;
     labels.add(key);
@@ -308,9 +308,9 @@ function mergeSpecRows(existingRows = [], candidateRows = []) {
 }
 
 function mergeDocs(existingRows = [], candidateRows = []) {
-  const result = [...existingRows];
+  const result = [...(Array.isArray(existingRows) ? existingRows : [])];
   const urls = new Set(result.map((row) => String(row?.url || "")));
-  for (const row of candidateRows) {
+  for (const row of (Array.isArray(candidateRows) ? candidateRows : [])) {
     if (!row?.url || urls.has(row.url)) continue;
     urls.add(row.url);
     result.push(row);
