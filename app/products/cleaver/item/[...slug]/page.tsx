@@ -6,7 +6,7 @@ import CleaverHeroBanner from "@/components/products/CleaverHeroBanner";
 import CleaverProductGallery from "@/components/products/CleaverProductGallery";
 import CleaverProductSections from "@/components/products/CleaverProductSections";
 import Breadcrumb from "@/components/site/Breadcrumb";
-import { CLEAVER_BRAND_NAME } from "@/lib/cleaver/catalog";
+import { CLEAVER_BRAND_NAME, cleaverDisplayTitle } from "@/lib/cleaver/catalog";
 import { getCleaverProduct } from "@/lib/cleaver/sanity";
 
 export const revalidate = 30;
@@ -17,9 +17,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const product = await getCleaverProduct(slug.at(-1) || "");
   if (!product) return { title: "Product not found" };
+  const displayTitle = cleaverDisplayTitle(product);
   return {
-    title: `${product.title} | ${product.sku} | ${CLEAVER_BRAND_NAME}`,
-    description: product.summary || `${product.title} (${product.sku}) from Cleaver Scientific. Request product information and a quote from ITS BIO.`,
+    title: `${displayTitle} | ${product.sku} | ${CLEAVER_BRAND_NAME}`,
+    description: product.summary || `${displayTitle} (${product.sku}) from Cleaver Scientific. Request product information and a quote from ITS BIO.`,
   };
 }
 
@@ -28,31 +29,42 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
   const product = await getCleaverProduct(slug.at(-1) || "");
   if (!product) notFound();
 
+  const displayTitle = cleaverDisplayTitle(product);
   const photos = Array.from(new Set([product.image, ...(product.images || [])].filter((image): image is string => Boolean(image))));
   const highlights = (product.highlights || []).filter(Boolean).slice(0, 6);
-  const quoteHref = `/quote?product=${encodeURIComponent(`${product.title} (${product.sku})`)}`;
+  const atAGlance = (product.cleaverAtAGlance || []).filter(Boolean);
+  const quoteHref = `/quote?product=${encodeURIComponent(`${displayTitle} (${product.sku})`)}`;
   const crumbs = [
     { label: "Home", href: "/" },
     { label: "Products", href: "/products" },
     { label: CLEAVER_BRAND_NAME, href: "/products/cleaver" },
     ...product.categoryPathTitles.map((label, index) => ({ label, href: `/products/cleaver/${product.categoryPath.slice(0, index + 1).join("/")}` })),
-    { label: product.title },
+    { label: displayTitle },
   ];
 
   return (
     <main className="bg-white pb-20">
-      <CleaverHeroBanner title={product.title} eyebrow="Cleaver Scientific product" />
+      <CleaverHeroBanner title={displayTitle} eyebrow="Cleaver Scientific product" />
       <section className="border-b border-slate-200 bg-[#fbfafc]"><div className="mx-auto max-w-[1260px] px-6 py-6"><Breadcrumb items={crumbs} /></div></section>
       <div className="mx-auto max-w-[1260px] px-6 pt-10 md:pt-16">
         <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.04fr)_minmax(0,.9fr)] lg:gap-16">
-          <CleaverProductGallery images={photos} title={product.title} />
+          <CleaverProductGallery images={photos} title={displayTitle} />
 
           <section className="py-2 lg:py-5">
             <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.24em] text-[#8650a0]"><span className="h-px w-8 bg-[#8650a0]" />Cleaver Scientific</div>
-            <h1 className="mt-5 text-[32px] font-semibold leading-[1.12] tracking-tight text-slate-950 md:text-[44px]">{product.title}</h1>
+            <h1 className="mt-5 text-[32px] font-semibold leading-[1.12] tracking-tight text-slate-950 md:text-[44px]">{displayTitle}</h1>
             <div className="mt-6 inline-flex rounded-full bg-[#f4edf8] px-4 py-2 text-sm font-semibold text-[#61247b]">Catalog No. {product.sku}</div>
-            {product.summary ? <p className="mt-7 text-[15px] leading-8 text-slate-600">{product.summary}</p> : null}
-            {highlights.length ? <ul className="mt-7 grid gap-3 border-t border-slate-100 pt-6">{highlights.map((highlight) => <li key={highlight} className="flex items-start gap-3 text-sm leading-6 text-slate-700"><span aria-hidden className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f3ebf8] text-xs font-bold text-[#743693]">✓</span><span>{highlight}</span></li>)}</ul> : null}
+
+            {atAGlance.length ? (
+              <div className="mt-7 border-t border-slate-100 pt-6">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8650a0]">At a Glance</p>
+                <ul className="mt-4 grid gap-3">
+                  {atAGlance.map((item) => <li key={item} className="flex items-start gap-3 text-sm leading-6 text-slate-700"><span aria-hidden className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f3ebf8] text-xs font-bold text-[#743693]">✓</span><span>{item}</span></li>)}
+                </ul>
+              </div>
+            ) : product.summary ? <p className="mt-7 text-[15px] leading-8 text-slate-600">{product.summary}</p> : null}
+
+            {!atAGlance.length && highlights.length ? <ul className="mt-7 grid gap-3 border-t border-slate-100 pt-6">{highlights.map((highlight) => <li key={highlight} className="flex items-start gap-3 text-sm leading-6 text-slate-700"><span aria-hidden className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f3ebf8] text-xs font-bold text-[#743693]">✓</span><span>{highlight}</span></li>)}</ul> : null}
 
             <div className="mt-8 rounded-2xl border border-slate-200 bg-[#fbfafc] p-5">
               <div className="grid grid-cols-[105px_minmax(0,1fr)] gap-x-4 gap-y-3 text-sm"><span className="font-semibold text-slate-700">Brand</span><span className="text-slate-600">{CLEAVER_BRAND_NAME}</span><span className="font-semibold text-slate-700">Catalog No.</span><span className="text-slate-600">{product.sku}</span>{product.categoryPathTitles.length ? <><span className="font-semibold text-slate-700">Category</span><span className="text-slate-600">{product.categoryPathTitles.at(-1)}</span></> : null}</div>
