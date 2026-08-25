@@ -43,7 +43,7 @@ export default function CleaverProductGallery({ title, images }: Props) {
           fill
           priority
           quality={95}
-          sizes="(max-width: 768px) 94vw, (max-width: 1280px) 48vw, 650px"
+          sizes="(max-width: 768px) 94vw, (max-width: 1280px) 70vw, 1000px"
           className="object-contain p-3 md:p-4"
         />
         {images.length > 1 ? (
