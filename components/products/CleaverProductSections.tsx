@@ -6,6 +6,13 @@ import type { CleaverProduct } from "@/lib/cleaver/catalog";
 
 type SectionName = "Overview" | "Specifications" | "What's Included" | "Video" | "Documents" | "All Variations" | "Accessories";
 
+type IncludedCardProps = {
+  title: string;
+  quantity?: string;
+  imageUrl?: string;
+  href?: string;
+};
+
 function SectionIcon({ name }: { name: SectionName }) {
   const common = "h-[22px] w-[22px] shrink-0 text-[#6d2c86]";
 
@@ -13,7 +20,7 @@ function SectionIcon({ name }: { name: SectionName }) {
     return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={common} aria-hidden><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="8" cy="6" r="1.7" fill="white"/><circle cx="15" cy="12" r="1.7" fill="white"/><circle cx="10" cy="18" r="1.7" fill="white"/></svg>;
   }
   if (name === "What's Included") {
-    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={common} aria-hidden><path d="m4.5 7 7.5-4 7.5 4v10L12 21l-7.5-4V7Z"/><path d="m4.5 7 7.5 4 7.5-4M12 11v10"/><path d="m8.5 5 7.5 4"/></svg>;
+    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={common} aria-hidden><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 9h18M8 4v16M13 4v16M18 4v16"/></svg>;
   }
   if (name === "Video") {
     return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={common} aria-hidden><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="m10 9 5 3-5 3V9Z"/></svg>;
@@ -53,10 +60,25 @@ function ProductLink({ href, children }: { href?: string; children: React.ReactN
   return <Link href={href} className="font-medium text-[#292929] transition hover:text-[#61247b]">{children}</Link>;
 }
 
-function SourceImage({ src, alt, size }: { src: string; alt: string; size: number }) {
+function SourceImage({ src, alt, size, className = "object-contain p-1" }: { src: string; alt: string; size: number; className?: string }) {
   let direct = false;
   try { direct = /(^|\.)thistlescientific\.com$/i.test(new URL(src).hostname); } catch { direct = false; }
-  return <Image src={src} alt={alt} fill unoptimized={direct} sizes={`${size}px`} className="object-contain p-1" />;
+  return <Image src={src} alt={alt} fill unoptimized={direct} sizes={`${size}px`} className={className} />;
+}
+
+function IncludedCard({ title, quantity, imageUrl, href }: IncludedCardProps) {
+  const body = (
+    <>
+      <div className="relative h-[150px] w-full overflow-hidden bg-white sm:h-[165px] lg:h-[190px]">
+        {imageUrl ? <SourceImage src={imageUrl} alt={title} size={240} className="object-contain object-center transition-transform duration-200 group-hover/card:scale-[1.03]" /> : <div className="absolute inset-0 flex items-center justify-center bg-[#faf8fc] text-xs text-slate-400">Image unavailable</div>}
+      </div>
+      <h3 className="mt-4 min-h-[52px] w-full pr-2 text-[15px] font-semibold leading-[1.35] text-[#5b24f2] transition group-hover/card:underline md:text-[16px]">{title}</h3>
+      <p className="mt-2 text-[14px] leading-5 text-[#5b24f2]">Qty: {quantity || "—"}</p>
+    </>
+  );
+
+  if (!href) return <div className="group/card block h-full w-full">{body}</div>;
+  return <Link href={href} className="group/card block h-full w-full" aria-label={`View ${title} in ITS BIO`}>{body}</Link>;
 }
 
 export default function CleaverProductSections({ product }: { product: CleaverProduct }) {
@@ -78,11 +100,19 @@ export default function CleaverProductSections({ product }: { product: CleaverPr
     return groups;
   }, []);
 
-  const includedHref = (title: string) => {
-    const normalized = title.trim().toLowerCase();
-    return accessories.find((item) => item.title.trim().toLowerCase() === normalized)?.internalHref
-      || variations.find((item) => item.title.trim().toLowerCase() === normalized)?.internalHref;
-  };
+  const normalizedTitle = (value: string) => value.trim().toLowerCase().replace(/[×]/g, "x").replace(/\s+/g, " ");
+  const includedCards = included.map((item) => {
+    const normalized = normalizedTitle(item.title);
+    const accessory = accessories.find((candidate) => normalizedTitle(candidate.title) === normalized);
+    const variation = variations.find((candidate) => normalizedTitle(candidate.title) === normalized);
+    return {
+      title: item.title,
+      quantity: item.quantity,
+      imageUrl: item.imageUrl || accessory?.imageUrl || variation?.imageUrl,
+      href: accessory?.internalHref || variation?.internalHref,
+    };
+  });
+  const hasIncludedMedia = includedCards.some((item) => Boolean(item.imageUrl));
 
   if (!hasOverview && !hasSpecs && !included.length && !hasDocuments && !variations.length && !accessories.length && !videos.length) return null;
 
@@ -111,14 +141,20 @@ export default function CleaverProductSections({ product }: { product: CleaverPr
 
       {included.length ? (
         <SectionShell title="What's Included">
-          <div className="max-w-[1040px] divide-y divide-[#dedede] border-y border-[#dedede]">
-            {included.map((item, index) => (
-              <div key={`${item.title}-${index}`} className="flex min-h-[54px] items-center justify-between gap-5 py-3.5 text-[14px] leading-6">
-                <ProductLink href={includedHref(item.title)}>{item.title}</ProductLink>
-                <span className="shrink-0 text-[#555]">Qty: <strong className="font-semibold text-[#303030]">{item.quantity || "—"}</strong></span>
-              </div>
-            ))}
-          </div>
+          {hasIncludedMedia ? (
+            <div className="grid w-full max-w-[1040px] grid-cols-2 gap-x-7 gap-y-12 sm:gap-x-8 lg:grid-cols-4 lg:gap-x-9 lg:gap-y-14">
+              {includedCards.map((item, index) => <IncludedCard key={`${item.title}-${index}`} {...item} />)}
+            </div>
+          ) : (
+            <div className="max-w-[1040px] divide-y divide-[#dedede] border-y border-[#dedede]">
+              {includedCards.map((item, index) => (
+                <div key={`${item.title}-${index}`} className="flex min-h-[54px] items-center justify-between gap-5 py-3.5 text-[14px] leading-6">
+                  <ProductLink href={item.href}>{item.title}</ProductLink>
+                  <span className="shrink-0 text-[#555]">Qty: <strong className="font-semibold text-[#303030]">{item.quantity || "—"}</strong></span>
+                </div>
+              ))}
+            </div>
+          )}
         </SectionShell>
       ) : null}
 
