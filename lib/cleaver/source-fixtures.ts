@@ -82,7 +82,15 @@ const includedBySku = {
   ],
 } as const;
 
-const manufacturerImages = Array.from(new Set(variations.map((item) => item.imageUrl)));
+// The manufacturer product gallery has four logical images in this exact order.
+// Use the verified full-size uploads rather than treating variation thumbnails as
+// the product gallery: MSMINI-4, MSMINI-3, MSMINI-2, MSMINI-1.
+const manufacturerImages = [
+  "https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-4.WEB_.jpg",
+  "https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-3.WEB_.jpg",
+  "https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-2.WEB_.jpg",
+  "https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-1.WEB_.jpg",
+];
 
 const baseFixture: Partial<CleaverProduct> = {
   sourceUrl: SOURCE_URL,
