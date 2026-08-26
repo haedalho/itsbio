@@ -15,23 +15,14 @@ const MULTISUB_MINI_SLUG = "multisub-mini-mini-horizontal-electrophoresis-system
 const MULTISUB_MINI_SKUS = ["MSMINI10", "MSMINI7", "MSMINIDUO"] as const;
 type MultiSubMiniSku = (typeof MULTISUB_MINI_SKUS)[number];
 
-type PageProps = {
-  params: Promise<{ slug: string[] }>;
-  searchParams?: Promise<{ item?: string | string[] }>;
-};
-
-function normalizeMultiSubMiniSku(value: string | string[] | undefined): MultiSubMiniSku {
-  const candidate = (Array.isArray(value) ? value[0] : value || "MSMINI10").trim().toUpperCase();
-  return MULTISUB_MINI_SKUS.includes(candidate as MultiSubMiniSku) ? candidate as MultiSubMiniSku : "MSMINI10";
-}
+type PageProps = { params: Promise<{ slug: string[] }> };
 
 function isMultiSubMiniSku(value: string | undefined) {
   return Boolean(value && MULTISUB_MINI_SKUS.includes(value.trim().toUpperCase() as MultiSubMiniSku));
 }
 
-function multiSubMiniPath(sku: string) {
-  const normalized = sku.trim().toUpperCase();
-  return `/products/cleaver/item/${MULTISUB_MINI_SLUG}${normalized === "MSMINI10" ? "" : `?item=${encodeURIComponent(normalized)}`}`;
+function multiSubMiniPath() {
+  return `/products/cleaver/item/${MULTISUB_MINI_SLUG}`;
 }
 
 function manufacturerOriginalUrl(url: string) {
@@ -42,9 +33,6 @@ function manufacturerOriginalUrl(url: string) {
 
     if (!isManufacturer || !parsed.pathname.includes("/wp-content/uploads/")) return url;
 
-    // WordPress creates derivative files such as product-600x600.jpg and
-    // product-150x150.webp. Strip only the final generated size suffix so the
-    // gallery requests the manufacturer-uploaded original whenever it exists.
     parsed.pathname = parsed.pathname.replace(/-\d{2,5}x\d{2,5}(?=\.[a-z0-9]+$)/i, "");
     parsed.searchParams.delete("w");
     parsed.searchParams.delete("width");
@@ -75,7 +63,6 @@ function imageQualityScore(url: string) {
       score += width * height;
       if (width <= 300 || height <= 300) score -= 300_000_000;
     } else if (host.includes("thistlescientific.com")) {
-      // WordPress originals normally omit the generated -600x600 / -150x150 suffix.
       score += 900_000_000;
     }
 
@@ -105,11 +92,10 @@ function preferredPhotos(image: string | undefined, images: string[] | undefined
     .map((entry) => entry.url);
 }
 
-export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const requestedSlug = slug.at(-1) || "";
-  const query = searchParams ? await searchParams : undefined;
-  const lookup = requestedSlug === MULTISUB_MINI_SLUG ? normalizeMultiSubMiniSku(query?.item) : requestedSlug;
+  const lookup = requestedSlug === MULTISUB_MINI_SLUG ? "MSMINI10" : requestedSlug;
   const product = await getCleaverProduct(lookup);
   if (!product) return { title: "Product not found" };
   const displayTitle = cleaverDisplayTitle(product);
@@ -120,22 +106,18 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   };
 }
 
-export default async function CleaverProductDetailPage({ params, searchParams }: PageProps) {
+export default async function CleaverProductDetailPage({ params }: PageProps) {
   const { slug } = await params;
   const requestedSlug = slug.at(-1) || "";
-  const query = searchParams ? await searchParams : undefined;
-  const lookup = requestedSlug === MULTISUB_MINI_SLUG ? normalizeMultiSubMiniSku(query?.item) : requestedSlug;
+  const lookup = requestedSlug === MULTISUB_MINI_SLUG ? "MSMINI10" : requestedSlug;
   const product = await getCleaverProduct(lookup);
   if (!product) notFound();
 
   const sourceFidelity = Boolean(product.cleaverSourceTitle);
   const multiSubMiniReference = sourceFidelity && isMultiSubMiniSku(product.sku);
 
-  // The old ITS BIO records were individual variation slugs. The manufacturer
-  // exposes MSMINI10 / MSMINI7 / MSMINIDUO as items on one parent product page,
-  // so keep the old links working while canonicalising them to the source title.
   if (multiSubMiniReference && requestedSlug !== MULTISUB_MINI_SLUG) {
-    redirect(multiSubMiniPath(product.sku));
+    redirect(multiSubMiniPath());
   }
 
   const displayTitle = cleaverDisplayTitle(product);
@@ -143,7 +125,6 @@ export default async function CleaverProductDetailPage({ params, searchParams }:
   const highlights = (product.highlights || []).filter(Boolean).slice(0, 6);
   const atAGlance = (product.cleaverAtAGlance || []).filter(Boolean);
   const quoteHref = `/quote?product=${encodeURIComponent(displayTitle)}&catNo=${encodeURIComponent(product.sku)}`;
-  const canonicalPath = `/products/cleaver/item/${MULTISUB_MINI_SLUG}`;
   const crumbs = [
     { label: "Home", href: "/" },
     { label: "Products", href: "/products" },
@@ -174,22 +155,7 @@ export default async function CleaverProductDetailPage({ params, searchParams }:
                 </div>
               ) : null}
 
-              {multiSubMiniReference ? (
-                <form action={canonicalPath} method="get" className="mt-7 border-t border-slate-200 pt-5">
-                  <label htmlFor="cleaver-item" className="block text-[13px] font-semibold uppercase tracking-[0.08em] text-slate-600">Item</label>
-                  <div className="mt-2 flex max-w-[520px] flex-col gap-2.5 sm:flex-row">
-                    <select id="cleaver-item" name="item" defaultValue={product.sku} className="h-11 min-w-0 flex-1 border border-slate-300 bg-white px-3 text-[14px] text-slate-800 outline-none transition focus:border-[#6d2c86]">
-                      <option value="MSMINI10">MSMINI10 — 7 x 10cm Gel tray</option>
-                      <option value="MSMINI7">MSMINI7 — 7 x 7cm Gel tray</option>
-                      <option value="MSMINIDUO">MSMINIDUO — 7 x 7cm & 7 x 10cm Gel trays</option>
-                    </select>
-                    <button type="submit" className="h-11 shrink-0 border border-[#61247b] px-5 text-[13px] font-semibold text-[#61247b] transition hover:bg-[#f5eef8]">View Item</button>
-                  </div>
-                  <p className="mt-2 text-[12px] leading-5 text-slate-500">What&apos;s Included and CAT.NO update to the selected manufacturer item.</p>
-                </form>
-              ) : null}
-
-              <div className={`${multiSubMiniReference ? "mt-5" : "mt-7 border-t border-slate-200 pt-5"} flex flex-wrap items-center gap-x-5 gap-y-3`}>
+              <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-slate-200 pt-5">
                 <span data-cat-no={product.sku} className="text-[14px] text-slate-600">CAT.NO: <strong className="font-semibold text-slate-900">{product.sku}</strong></span>
                 <Link href={quoteHref} className="inline-flex h-11 items-center justify-center bg-[#61247b] px-6 text-[14px] font-semibold text-white transition hover:bg-[#471659]">Request a Quote</Link>
               </div>
