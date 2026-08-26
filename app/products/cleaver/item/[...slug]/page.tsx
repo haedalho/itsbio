@@ -13,6 +13,47 @@ export const revalidate = 300;
 
 type PageProps = { params: Promise<{ slug: string[] }> };
 
+function imageQualityScore(url: string) {
+  let score = 0;
+
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+    const path = decodeURIComponent(parsed.pathname);
+
+    if (host === "www.thistlescientific.com" || host === "thistlescientific.com") score += 2_000_000_000;
+    if (host === "cdn.sanity.io") score += 500_000_000;
+
+    const dimensionMatches = [...path.matchAll(/(?:-|_)(\d{2,5})x(\d{2,5})(?=[-_.])/g)];
+    const dimensions = dimensionMatches.at(-1);
+    if (dimensions) {
+      const width = Number(dimensions[1]);
+      const height = Number(dimensions[2]);
+      score += width * height;
+      if (width <= 300 || height <= 300) score -= 300_000_000;
+    } else if (host.includes("thistlescientific.com")) {
+      // WordPress originals normally omit the generated -600x600 / -150x150 suffix.
+      score += 900_000_000;
+    }
+
+    const requestedWidth = Number(parsed.searchParams.get("w") || parsed.searchParams.get("width") || 0);
+    const requestedHeight = Number(parsed.searchParams.get("h") || parsed.searchParams.get("height") || 0);
+    if (requestedWidth && requestedHeight) score += requestedWidth * requestedHeight;
+  } catch {
+    // Keep unknown URLs available, but behind verified manufacturer/high-resolution sources.
+  }
+
+  return score;
+}
+
+function preferredPhotos(image: string | undefined, images: string[] | undefined) {
+  const unique = Array.from(new Set([...(images || []), image].filter((value): value is string => Boolean(value))));
+  return unique
+    .map((url, index) => ({ url, index, score: imageQualityScore(url) }))
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .map((entry) => entry.url);
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const product = await getCleaverProduct(slug.at(-1) || "");
@@ -30,11 +71,11 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
   if (!product) notFound();
 
   const displayTitle = cleaverDisplayTitle(product);
-  const photos = Array.from(new Set([product.image, ...(product.images || [])].filter((image): image is string => Boolean(image))));
+  const photos = preferredPhotos(product.image, product.images);
   const highlights = (product.highlights || []).filter(Boolean).slice(0, 6);
   const atAGlance = (product.cleaverAtAGlance || []).filter(Boolean);
   const sourceFidelity = Boolean(product.cleaverSourceTitle);
-  const quoteHref = `/quote?product=${encodeURIComponent(`${displayTitle} (${product.sku})`)}`;
+  const quoteHref = `/quote?product=${encodeURIComponent(displayTitle)}&catNo=${encodeURIComponent(product.sku)}`;
   const crumbs = [
     { label: "Home", href: "/" },
     { label: "Products", href: "/products" },
@@ -54,7 +95,7 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
 
           {sourceFidelity ? (
             <section className="py-1 lg:py-2">
-              <h1 className="text-[32px] font-semibold leading-[1.12] tracking-[-0.025em] text-slate-950 md:text-[42px]">{displayTitle}</h1>
+              <h1 data-product-name={displayTitle} className="text-[32px] font-semibold leading-[1.12] tracking-[-0.025em] text-slate-950 md:text-[42px]">{displayTitle}</h1>
 
               {atAGlance.length ? (
                 <div className="mt-7">
@@ -66,15 +107,15 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
               ) : null}
 
               <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-slate-200 pt-5">
-                <span className="text-[14px] text-slate-600">SKU: <strong className="font-semibold text-slate-900">{product.sku}</strong></span>
+                <span data-cat-no={product.sku} className="text-[14px] text-slate-600">SKU: <strong className="font-semibold text-slate-900">{product.sku}</strong></span>
                 <Link href={quoteHref} className="inline-flex h-11 items-center justify-center bg-[#61247b] px-6 text-[14px] font-semibold text-white transition hover:bg-[#471659]">Request a Quote</Link>
               </div>
             </section>
           ) : (
             <section className="py-2 lg:py-5">
               <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.24em] text-[#8650a0]"><span className="h-px w-8 bg-[#8650a0]" />Cleaver Scientific</div>
-              <h1 className="mt-5 text-[32px] font-semibold leading-[1.12] tracking-tight text-slate-950 md:text-[44px]">{displayTitle}</h1>
-              <div className="mt-6 inline-flex rounded-full bg-[#f4edf8] px-4 py-2 text-sm font-semibold text-[#61247b]">Catalog No. {product.sku}</div>
+              <h1 data-product-name={displayTitle} className="mt-5 text-[32px] font-semibold leading-[1.12] tracking-tight text-slate-950 md:text-[44px]">{displayTitle}</h1>
+              <div data-cat-no={product.sku} className="mt-6 inline-flex rounded-full bg-[#f4edf8] px-4 py-2 text-sm font-semibold text-[#61247b]">Catalog No. {product.sku}</div>
               {product.summary ? <p className="mt-7 text-[15px] leading-8 text-slate-600">{product.summary}</p> : null}
               {highlights.length ? <ul className="mt-7 grid gap-3 border-t border-slate-100 pt-6">{highlights.map((highlight) => <li key={highlight} className="flex items-start gap-3 text-sm leading-6 text-slate-700"><span aria-hidden className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f3ebf8] text-xs font-bold text-[#743693]">✓</span><span>{highlight}</span></li>)}</ul> : null}
               <div className="mt-8 rounded-2xl border border-slate-200 bg-[#fbfafc] p-5"><div className="grid grid-cols-[105px_minmax(0,1fr)] gap-x-4 gap-y-3 text-sm"><span className="font-semibold text-slate-700">Brand</span><span className="text-slate-600">{CLEAVER_BRAND_NAME}</span><span className="font-semibold text-slate-700">Catalog No.</span><span className="text-slate-600">{product.sku}</span>{product.categoryPathTitles.length ? <><span className="font-semibold text-slate-700">Category</span><span className="text-slate-600">{product.categoryPathTitles.at(-1)}</span></> : null}</div></div>
