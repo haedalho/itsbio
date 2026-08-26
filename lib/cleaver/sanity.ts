@@ -53,6 +53,19 @@ const PRODUCT_PROJECTION = `{
   cleaverSourceSectionsMigratedAt
 }`;
 
+const LISTING_PROJECTION = `{
+  _id,
+  title,
+  sku,
+  order,
+  sourceUrl,
+  categoryPath,
+  categoryPathTitles,
+  "slug": slug.current,
+  "image": images[defined(asset->url)][0].asset->url,
+  cleaverSourceTitle
+}`;
+
 type ProductPage = {
   products: CleaverProduct[];
   total: number;
@@ -60,48 +73,87 @@ type ProductPage = {
   pageCount: number;
 };
 
+function normalizedSourceUrl(value?: string) {
+  if (!value) return "";
+  try {
+    const url = new URL(value);
+    url.hash = "";
+    url.search = "";
+    return `${url.hostname.toLowerCase()}${url.pathname.replace(/\/+$/, "")}`;
+  } catch {
+    return value.trim().toLowerCase().replace(/\/+$/, "");
+  }
+}
+
+function groupManufacturerProducts(products: CleaverProduct[]) {
+  const grouped = new Map<string, CleaverProduct>();
+
+  for (const product of products) {
+    const sourceKey = product.cleaverSourceTitle?.trim() && product.sourceUrl ? normalizedSourceUrl(product.sourceUrl) : "";
+    const key = sourceKey ? `source:${sourceKey}` : `item:${product._id || product.slug || product.sku}`;
+    const existing = grouped.get(key);
+
+    if (!existing) {
+      grouped.set(key, product);
+      continue;
+    }
+
+    const existingHasImage = Boolean(existing.image);
+    const candidateHasImage = Boolean(product.image);
+    const existingOrder = Number.isFinite(existing.order) ? existing.order : Number.MAX_SAFE_INTEGER;
+    const candidateOrder = Number.isFinite(product.order) ? product.order : Number.MAX_SAFE_INTEGER;
+
+    if ((!existingHasImage && candidateHasImage) || candidateOrder < existingOrder) {
+      grouped.set(key, { ...product, image: product.image || existing.image });
+    }
+  }
+
+  return Array.from(grouped.values()).sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (a.cleaverSourceTitle || a.title).localeCompare(b.cleaverSourceTitle || b.title));
+}
+
 function localProductPage(path: string[], query: string, requestedPage: number): ProductPage {
   const needle = query.trim().toLowerCase();
-  const matches = CLEAVER_INVENTORY.filter((product) => {
-    const inCategory = path.every((segment, index) => product.categoryPath[index] === segment);
-    const matchesQuery = !needle || product.title.toLowerCase().includes(needle) || product.sku.toLowerCase().includes(needle);
-    return inCategory && matchesQuery;
-  });
-  const pageCount = Math.max(1, Math.ceil(matches.length / CLEAVER_PAGE_SIZE));
+  const matches = CLEAVER_INVENTORY
+    .map((product) => {
+      const fixture = getVerifiedCleaverSourceFixture(product.sku);
+      return fixture ? ({ ...product, ...fixture } as CleaverProduct) : product;
+    })
+    .filter((product) => {
+      const inCategory = path.every((segment, index) => product.categoryPath[index] === segment);
+      const displayTitle = product.cleaverSourceTitle || product.title;
+      const matchesQuery = !needle || displayTitle.toLowerCase().includes(needle) || product.title.toLowerCase().includes(needle) || product.sku.toLowerCase().includes(needle);
+      return inCategory && matchesQuery;
+    });
+  const grouped = groupManufacturerProducts(matches);
+  const pageCount = Math.max(1, Math.ceil(grouped.length / CLEAVER_PAGE_SIZE));
   const page = Math.min(Math.max(1, requestedPage), pageCount);
   const start = (page - 1) * CLEAVER_PAGE_SIZE;
-  return { products: matches.slice(start, start + CLEAVER_PAGE_SIZE), total: matches.length, page, pageCount };
+  return { products: grouped.slice(start, start + CLEAVER_PAGE_SIZE), total: grouped.length, page, pageCount };
 }
 
 export async function getCleaverProductPage(path: string[], query: string, requestedPage = 1): Promise<ProductPage> {
-  const page = Math.max(1, requestedPage);
-  const start = (page - 1) * CLEAVER_PAGE_SIZE;
   const category = path.join("/");
   const match = `*${query.replace(/\*/g, "").trim()}*`;
 
   try {
-    const result = await sanityCdnClient.fetch<{ products?: CleaverProduct[]; total?: number }>(`
-      {
-        "total": count(*[
-          ${CLEAVER_FILTER}
-          && ($category == "" || $category in listingPaths)
-          && ($searchTerm == "" || title match $match || sku match $match)
-        ]),
-        "products": *[
-          ${CLEAVER_FILTER}
-          && ($category == "" || $category in listingPaths)
-          && ($searchTerm == "" || title match $match || sku match $match)
-        ] | order(order asc, title asc)[$start...$end] ${PRODUCT_PROJECTION}
-      }
-    `, { category, searchTerm: query, match, start, end: start + CLEAVER_PAGE_SIZE }, CLEAVER_CATALOG_CACHE);
+    const rows = await sanityCdnClient.fetch<CleaverProduct[]>(`
+      *[
+        ${CLEAVER_FILTER}
+        && ($category == "" || $category in listingPaths)
+        && ($searchTerm == "" || title match $match || sku match $match || cleaverSourceTitle match $match)
+      ] | order(order asc, title asc)[0...5000] ${LISTING_PROJECTION}
+    `, { category, searchTerm: query, match }, CLEAVER_CATALOG_CACHE);
 
-    const total = Number(result?.total || 0);
-    if (total > 0) {
+    const grouped = groupManufacturerProducts(Array.isArray(rows) ? rows : []);
+    if (grouped.length) {
+      const pageCount = Math.max(1, Math.ceil(grouped.length / CLEAVER_PAGE_SIZE));
+      const page = Math.min(Math.max(1, requestedPage), pageCount);
+      const start = (page - 1) * CLEAVER_PAGE_SIZE;
       return {
-        products: Array.isArray(result.products) ? result.products : [],
-        total,
+        products: grouped.slice(start, start + CLEAVER_PAGE_SIZE),
+        total: grouped.length,
         page,
-        pageCount: Math.max(1, Math.ceil(total / CLEAVER_PAGE_SIZE)),
+        pageCount,
       };
     }
   } catch (error) {
@@ -111,18 +163,41 @@ export async function getCleaverProductPage(path: string[], query: string, reque
   return localProductPage(path, query, requestedPage);
 }
 
+function manufacturerSourceUrls(slugOrSku: string) {
+  const value = decodeURIComponent(slugOrSku).trim().replace(/^\/+|\/+$/g, "");
+  if (!value || value.includes("/")) return [];
+  return [
+    `https://www.thistlescientific.com/product/${value}/`,
+    `https://www.thistlescientific.com/product/${value}`,
+    `https://thistlescientific.com/product/${value}/`,
+    `https://thistlescientific.com/product/${value}`,
+    `http://www.thistlescientific.com/product/${value}/`,
+    `http://www.thistlescientific.com/product/${value}`,
+  ];
+}
+
 export const getCleaverProduct = cache(async (slugOrSku: string): Promise<CleaverProduct | null> => {
-  const local = findLocalCleaverProduct(slugOrSku);
+  const decoded = decodeURIComponent(slugOrSku);
+  const local = findLocalCleaverProduct(decoded);
+  const sourceUrls = manufacturerSourceUrls(decoded);
 
   try {
     const product = await sanityCdnClient.fetch<CleaverProduct | null>(`
-      *[${CLEAVER_FILTER} && (slug.current == $slug || lower(sku) == lower($slug))][0] ${PRODUCT_PROJECTION}
-    `, { slug: decodeURIComponent(slugOrSku) }, CLEAVER_CATALOG_CACHE);
+      *[
+        ${CLEAVER_FILTER}
+        && (
+          slug.current == $slug
+          || lower(sku) == lower($slug)
+          || sourceUrl in $sourceUrls
+        )
+      ] | order(order asc)[0] ${PRODUCT_PROJECTION}
+    `, { slug: decoded, sourceUrls }, CLEAVER_CATALOG_CACHE);
     if (product) {
-      const categoryPath = Array.isArray(product.categoryPath) && product.categoryPath.length ? product.categoryPath : local?.categoryPath || [];
-      const fixture = getVerifiedCleaverSourceFixture(product.sku || local?.sku || "");
+      const productLocal = local || findLocalCleaverProduct(product.sku || "");
+      const categoryPath = Array.isArray(product.categoryPath) && product.categoryPath.length ? product.categoryPath : productLocal?.categoryPath || [];
+      const fixture = getVerifiedCleaverSourceFixture(product.sku || productLocal?.sku || "");
       return {
-        ...local,
+        ...productLocal,
         ...product,
         ...fixture,
         categoryPath,
