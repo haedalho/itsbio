@@ -6,11 +6,16 @@ on:
       - main
     paths:
       - .github/workflows/migrate-cleaver-content.yml
+      - data/cleaver-source-map.json
       - scripts/migrate-cleaver-content-to-sanity.mjs
       - scripts/migrate-cleaver-thistle-sections-to-sanity.mjs
+      - scripts/apply-cleaver-source-map-to-sanity.mjs
   pull_request:
     paths:
       - .github/workflows/migrate-cleaver-content.yml
+      - data/cleaver-source-map.json
+      - scripts/generate-cleaver-source-map.mjs
+      - scripts/apply-cleaver-source-map-to-sanity.mjs
       - scripts/migrate-cleaver-thistle-sections-to-sanity.mjs
       - scripts/diagnose-thistle-sections.mjs
       - lib/cleaver/**
@@ -39,6 +44,8 @@ jobs:
           cache: npm
       - name: Install reviewed project dependencies
         run: npm install --no-audit --no-fund
+      - name: Verify complete Cleaver manufacturer title and URL map
+        run: node scripts/apply-cleaver-source-map-to-sanity.mjs
       - name: Inspect public Thistle product data routes
         run: node scripts/diagnose-thistle-sections.mjs
       - name: Probe complete Thistle HTML through Vercel runtime
@@ -86,3 +93,5 @@ jobs:
         run: node scripts/migrate-cleaver-content-to-sanity.mjs --apply
       - name: Import complete Thistle product sections and verify the microDOC reference fixture
         run: node scripts/migrate-cleaver-thistle-sections-to-sanity.mjs --apply
+      - name: Persist complete manufacturer titles and canonical URLs
+        run: node scripts/apply-cleaver-source-map-to-sanity.mjs --apply
