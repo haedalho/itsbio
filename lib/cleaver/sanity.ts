@@ -97,13 +97,10 @@ function sourceIdentityForSku(sku?: string) {
 function applySourceIdentity(product: CleaverProduct): CleaverProduct {
   const identity = sourceIdentityForSku(product.sku);
   if (!identity) return product;
-  const sourceImages = Array.isArray(identity.images) ? identity.images.filter(Boolean) : [];
   return {
     ...product,
     sourceUrl: identity.sourceUrl || product.sourceUrl,
     cleaverSourceTitle: identity.sourceTitle?.trim() || product.cleaverSourceTitle,
-    image: sourceImages[0] || product.image,
-    images: sourceImages.length ? sourceImages : product.images,
   };
 }
 
