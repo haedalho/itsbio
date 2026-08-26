@@ -13,6 +13,28 @@ export const revalidate = 300;
 
 type PageProps = { params: Promise<{ slug: string[] }> };
 
+function manufacturerOriginalUrl(url: string) {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+    const isManufacturer = host === "www.thistlescientific.com" || host === "thistlescientific.com";
+
+    if (!isManufacturer || !parsed.pathname.includes("/wp-content/uploads/")) return url;
+
+    // WordPress creates derivative files such as product-600x600.jpg and
+    // product-150x150.webp. Strip only the final generated size suffix so the
+    // gallery requests the manufacturer-uploaded original whenever it exists.
+    parsed.pathname = parsed.pathname.replace(/-\d{2,5}x\d{2,5}(?=\.[a-z0-9]+$)/i, "");
+    parsed.searchParams.delete("w");
+    parsed.searchParams.delete("width");
+    parsed.searchParams.delete("h");
+    parsed.searchParams.delete("height");
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
 function imageQualityScore(url: string) {
   let score = 0;
 
@@ -47,7 +69,13 @@ function imageQualityScore(url: string) {
 }
 
 function preferredPhotos(image: string | undefined, images: string[] | undefined) {
-  const unique = Array.from(new Set([...(images || []), image].filter((value): value is string => Boolean(value))));
+  const sourceImages = [...(images || []), image].filter((value): value is string => Boolean(value));
+  const expanded = sourceImages.flatMap((url) => {
+    const original = manufacturerOriginalUrl(url);
+    return original === url ? [url] : [original, url];
+  });
+  const unique = Array.from(new Set(expanded));
+
   return unique
     .map((url, index) => ({ url, index, score: imageQualityScore(url) }))
     .sort((a, b) => b.score - a.score || a.index - b.index)
