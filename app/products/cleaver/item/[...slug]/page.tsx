@@ -68,12 +68,14 @@ function imageQualityScore(url: string) {
   return score;
 }
 
-function preferredPhotos(image: string | undefined, images: string[] | undefined) {
+function preferredPhotos(image: string | undefined, images: string[] | undefined, verifiedSourceAssetsOnly = false) {
   const sourceImages = [...(images || []), image].filter((value): value is string => Boolean(value));
-  const expanded = sourceImages.flatMap((url) => {
-    const original = manufacturerOriginalUrl(url);
-    return original === url ? [url] : [original, url];
-  });
+  const expanded = verifiedSourceAssetsOnly
+    ? sourceImages
+    : sourceImages.flatMap((url) => {
+        const original = manufacturerOriginalUrl(url);
+        return original === url ? [url] : [original, url];
+      });
   const unique = Array.from(new Set(expanded));
 
   return unique
@@ -82,11 +84,16 @@ function preferredPhotos(image: string | undefined, images: string[] | undefined
     .map((entry) => entry.url);
 }
 
+function isMsmini10Reference(sku: string, hasSource: boolean) {
+  return hasSource && sku.trim().toUpperCase() === "MSMINI10";
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const product = await getCleaverProduct(slug.at(-1) || "");
   if (!product) return { title: "Product not found" };
-  const displayTitle = cleaverDisplayTitle(product);
+  const sourceTitle = cleaverDisplayTitle(product);
+  const displayTitle = isMsmini10Reference(product.sku, Boolean(product.cleaverSourceTitle)) ? product.title : sourceTitle;
   return {
     title: `${displayTitle} | ${product.sku} | ${CLEAVER_BRAND_NAME}`,
     description: product.summary || `${displayTitle} (${product.sku}) from Cleaver Scientific. Request product information and a quote from ITS BIO.`,
@@ -98,11 +105,13 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
   const product = await getCleaverProduct(slug.at(-1) || "");
   if (!product) notFound();
 
-  const displayTitle = cleaverDisplayTitle(product);
-  const photos = preferredPhotos(product.image, product.images);
+  const sourceFidelity = Boolean(product.cleaverSourceTitle);
+  const goldenReference = isMsmini10Reference(product.sku, sourceFidelity);
+  const sourceTitle = cleaverDisplayTitle(product);
+  const displayTitle = goldenReference ? product.title : sourceTitle;
+  const photos = preferredPhotos(product.image, product.images, goldenReference);
   const highlights = (product.highlights || []).filter(Boolean).slice(0, 6);
   const atAGlance = (product.cleaverAtAGlance || []).filter(Boolean);
-  const sourceFidelity = Boolean(product.cleaverSourceTitle);
   const quoteHref = `/quote?product=${encodeURIComponent(displayTitle)}&catNo=${encodeURIComponent(product.sku)}`;
   const crumbs = [
     { label: "Home", href: "/" },
@@ -124,6 +133,7 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
           {sourceFidelity ? (
             <section className="py-1 lg:py-2">
               <h1 data-product-name={displayTitle} className="text-[32px] font-semibold leading-[1.12] tracking-[-0.025em] text-slate-950 md:text-[42px]">{displayTitle}</h1>
+              {goldenReference && sourceTitle !== displayTitle ? <p className="mt-3 text-[14px] font-medium leading-6 text-[#6d2c86]">{sourceTitle}</p> : null}
 
               {atAGlance.length ? (
                 <div className="mt-7">
@@ -135,7 +145,7 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
               ) : null}
 
               <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-slate-200 pt-5">
-                <span data-cat-no={product.sku} className="text-[14px] text-slate-600">SKU: <strong className="font-semibold text-slate-900">{product.sku}</strong></span>
+                <span data-cat-no={product.sku} className="text-[14px] text-slate-600">CAT.NO: <strong className="font-semibold text-slate-900">{product.sku}</strong></span>
                 <Link href={quoteHref} className="inline-flex h-11 items-center justify-center bg-[#61247b] px-6 text-[14px] font-semibold text-white transition hover:bg-[#471659]">Request a Quote</Link>
               </div>
             </section>
