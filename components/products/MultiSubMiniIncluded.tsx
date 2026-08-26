@@ -62,7 +62,7 @@ export default function MultiSubMiniIncluded() {
     <details className="group border-t border-[#d9d9d9]">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-5 py-[18px] text-left marker:content-none md:py-5 [&::-webkit-details-marker]:hidden">
         <span className="flex min-w-0 items-center gap-3">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-[22px] w-[22px] shrink-0 text-[#5a2df5]" aria-hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-[22px] w-[22px] shrink-0 text-[#6d2c86]" aria-hidden>
             <rect x="3" y="4" width="18" height="16" rx="1" />
             <path d="M3 9h18M8 4v16M13 4v16M18 4v16" />
           </svg>
@@ -75,24 +75,28 @@ export default function MultiSubMiniIncluded() {
       </summary>
 
       <div className="pb-10 pt-5 md:pb-12 md:pt-7">
-        <div className="grid max-w-[1040px] grid-cols-2 gap-x-7 gap-y-10 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-9 lg:gap-y-12">
+        <div className="grid w-full max-w-[1040px] grid-cols-2 gap-x-7 gap-y-12 sm:gap-x-8 lg:grid-cols-4 lg:gap-x-9 lg:gap-y-14">
           {ITEMS.map((item) => (
-            <article key={item.title} className="min-w-0">
-              <Link href={item.href} className="group/card block w-fit max-w-full" aria-label={`View ${item.title} in ITS BIO`}>
-                <div className="relative aspect-[1.08/1] w-full max-w-[190px] overflow-hidden bg-white">
+            <article key={item.title} className="h-full min-w-0">
+              <Link
+                href={item.href}
+                className="group/card grid h-full w-full grid-rows-[150px_minmax(52px,auto)_24px] text-left sm:grid-rows-[165px_minmax(52px,auto)_24px] lg:grid-rows-[190px_minmax(52px,auto)_24px]"
+                aria-label={`View ${item.title} in ITS BIO`}
+              >
+                <div className="relative h-full w-full overflow-hidden bg-white">
                   <Image
                     src={item.image}
                     alt={item.title}
                     fill
                     unoptimized
-                    sizes="(max-width: 640px) 42vw, (max-width: 1024px) 28vw, 190px"
+                    sizes="(max-width: 640px) 42vw, (max-width: 1024px) 28vw, 240px"
                     className="object-contain object-center transition-transform duration-200 group-hover/card:scale-[1.03]"
                   />
                 </div>
-                <h3 className="mt-4 max-w-[210px] text-[15px] font-semibold leading-[1.35] text-[#5b24f2] transition group-hover/card:underline md:text-[16px]">
+                <h3 className="mt-4 w-full pr-2 text-[15px] font-semibold leading-[1.35] text-[#5b24f2] transition group-hover/card:underline md:text-[16px]">
                   {item.title}
                 </h3>
-                <p className="mt-3 text-[14px] leading-5 text-[#5b24f2]">Qty: {item.quantity}</p>
+                <p className="mt-2 self-end text-[14px] leading-5 text-[#5b24f2]">Qty: {item.quantity}</p>
               </Link>
             </article>
           ))}
