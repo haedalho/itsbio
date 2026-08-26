@@ -9,31 +9,53 @@ on:
       - 'lib/cleaver/source-fixtures.ts'
       - 'components/site/FloatingQuoteButton.tsx'
       - 'app/api/quote/route.ts'
+      - 'app/products/cleaver/item/**'
 
 jobs:
   inspect:
     if: github.head_ref == 'agent/cleaver-full-thistle-sections'
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for Vercel preview
-        run: sleep 45
-      - name: Read official gallery through Vercel source probe
+      - name: Read exact manufacturer gallery from Thistle HTML
         run: |
-          set -euxo pipefail
-          curl --location --fail --show-error --silent --retry 4 --retry-delay 15 \
-            'https://itsbio-git-agent-cleaver-full-thistle-461aba-hadel-hos-projects.vercel.app/api/cleaver-source-probe' \
-            | tee /tmp/cleaver-source-probe.json
-          python - <<'PY'
-          import json
-          with open('/tmp/cleaver-source-probe.json', encoding='utf-8') as f:
-              data = json.load(f)
-          print('SOURCE_STATUS', data.get('status'))
-          print('LIKELY_GALLERY_COUNT', data.get('likelyGalleryCount'))
-          print('LIKELY_GALLERY')
-          for i, url in enumerate(data.get('likelyGallery') or [], 1):
-              print(i, url)
-          print('ALL_MSMINI_IMAGES')
-          for i, url in enumerate(data.get('imageUrls') or [], 1):
-              print(i, url)
-          print('SECTION_ICON_KEYS', list((data.get('sectionIcons') or {}).keys()))
-          PY
+          node <<'NODE'
+          const source = 'https://www.thistlescientific.com/product/multisub-mini-mini-horizontal-electrophoresis-system/';
+          const response = await fetch(source, {
+            headers: {
+              'user-agent': 'Mozilla/5.0 (compatible; ITS-BIO source audit)',
+              'accept-language': 'en-GB,en;q=0.9',
+            },
+          });
+          const html = await response.text();
+          console.log('SOURCE_STATUS', response.status);
+          console.log('SOURCE_BYTES', html.length);
+
+          const decode = (value) => value
+            .replaceAll('&quot;', '"')
+            .replaceAll('&#039;', "'")
+            .replaceAll('&#39;', "'")
+            .replaceAll('&amp;', '&');
+
+          const largeImages = [...html.matchAll(/data-large_image=["']([^"']+)["']/gi)]
+            .map((match) => decode(match[1]));
+          console.log('DATA_LARGE_IMAGE_COUNT', largeImages.length);
+          largeImages.forEach((url, index) => console.log(`DATA_LARGE_IMAGE_${index + 1}`, url));
+
+          const galleryImages = [];
+          const figureStart = html.search(/<figure[^>]*class=["'][^"']*woocommerce-product-gallery__wrapper/i);
+          if (figureStart >= 0) {
+            const figureEnd = html.indexOf('</figure>', figureStart);
+            const figure = html.slice(figureStart, figureEnd >= 0 ? figureEnd + 9 : figureStart + 50000);
+            for (const match of figure.matchAll(/data-large_image=["']([^"']+)["']/gi)) {
+              galleryImages.push(decode(match[1]));
+            }
+            if (!galleryImages.length) {
+              for (const match of figure.matchAll(/<a[^>]+href=["']([^"']+\.(?:jpe?g|png|webp))(?:\?[^"']*)?["']/gi)) {
+                galleryImages.push(decode(match[1]));
+              }
+            }
+          }
+          const exactGallery = [...new Set(galleryImages)];
+          console.log('EXACT_GALLERY_COUNT', exactGallery.length);
+          exactGallery.forEach((url, index) => console.log(`EXACT_GALLERY_${index + 1}`, url));
+          NODE
