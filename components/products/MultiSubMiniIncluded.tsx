@@ -66,11 +66,11 @@ export default function MultiSubMiniIncluded() {
             <rect x="3" y="4" width="18" height="16" rx="1" />
             <path d="M3 9h18M8 4v16M13 4v16M18 4v16" />
           </svg>
-          <span className="text-[17px] font-semibold leading-6 tracking-[-0.01em] text-[#111] md:text-[18px]">WHAT&apos;S INCLUDED</span>
+          <span className="text-[17px] font-semibold leading-6 tracking-[-0.01em] text-[#252525] md:text-[18px]">What&apos;s Included</span>
         </span>
-        <span aria-hidden className="relative h-6 w-6 shrink-0 text-[#111]">
-          <span className="absolute inset-0 hidden items-center justify-center text-[22px] leading-none group-open:flex">×</span>
-          <span className="absolute inset-0 flex items-center justify-center text-[22px] leading-none group-open:hidden">+</span>
+        <span aria-hidden className="relative h-6 w-6 shrink-0 text-[#6d2c86]">
+          <span className="absolute inset-0 flex items-center justify-center text-[24px] font-light leading-none group-open:hidden">+</span>
+          <span className="absolute inset-0 hidden items-center justify-center text-[24px] font-light leading-none group-open:flex">−</span>
         </span>
       </summary>
 
