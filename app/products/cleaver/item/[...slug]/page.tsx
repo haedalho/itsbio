@@ -5,25 +5,31 @@ import { notFound, redirect } from "next/navigation";
 import CleaverHeroBanner from "@/components/products/CleaverHeroBanner";
 import CleaverProductGallery from "@/components/products/CleaverProductGallery";
 import CleaverProductSections from "@/components/products/CleaverProductSections";
-import MultiSubMiniIncluded from "@/components/products/MultiSubMiniIncluded";
 import Breadcrumb from "@/components/site/Breadcrumb";
-import { CLEAVER_BRAND_NAME, cleaverDisplayTitle } from "@/lib/cleaver/catalog";
+import { CLEAVER_BRAND_NAME, cleaverDisplayTitle, slugifyCleaver } from "@/lib/cleaver/catalog";
 import { getCleaverProduct } from "@/lib/cleaver/sanity";
 
 export const revalidate = 300;
 
-const MULTISUB_MINI_SLUG = "multisub-mini-mini-horizontal-electrophoresis-system";
-const MULTISUB_MINI_SKUS = ["MSMINI10", "MSMINI7", "MSMINIDUO"] as const;
-type MultiSubMiniSku = (typeof MULTISUB_MINI_SKUS)[number];
-
 type PageProps = { params: Promise<{ slug: string[] }> };
 
-function isMultiSubMiniSku(value: string | undefined) {
-  return Boolean(value && MULTISUB_MINI_SKUS.includes(value.trim().toUpperCase() as MultiSubMiniSku));
+function manufacturerProductSlug(sourceUrl: string | undefined, sourceTitle: string | undefined) {
+  if (sourceUrl) {
+    try {
+      const url = new URL(sourceUrl);
+      const parts = url.pathname.split("/").filter(Boolean);
+      const productIndex = parts.findIndex((part) => part.toLowerCase() === "product");
+      if (productIndex >= 0 && parts[productIndex + 1]) return decodeURIComponent(parts[productIndex + 1]);
+    } catch {
+      // Fall through to the manufacturer title when a legacy URL is malformed.
+    }
+  }
+  return sourceTitle ? slugifyCleaver(sourceTitle) : "";
 }
 
-function multiSubMiniPath() {
-  return `/products/cleaver/item/${MULTISUB_MINI_SLUG}`;
+function canonicalProductPath(product: { sourceUrl?: string; cleaverSourceTitle?: string; slug: string }) {
+  const manufacturerSlug = manufacturerProductSlug(product.sourceUrl, product.cleaverSourceTitle);
+  return `/products/cleaver/item/${encodeURIComponent(manufacturerSlug || product.slug)}`;
 }
 
 function manufacturerOriginalUrl(url: string) {
@@ -77,9 +83,9 @@ function imageQualityScore(url: string) {
   return score;
 }
 
-function preferredPhotos(image: string | undefined, images: string[] | undefined, verifiedSourceAssetsOnly = false) {
+function preferredPhotos(image: string | undefined, images: string[] | undefined, exactSourceAssetsOnly = false) {
   const sourceImages = [...(images || []), image].filter((value): value is string => Boolean(value));
-  const expanded = verifiedSourceAssetsOnly
+  const expanded = exactSourceAssetsOnly
     ? sourceImages
     : sourceImages.flatMap((url) => {
         const original = manufacturerOriginalUrl(url);
@@ -96,13 +102,12 @@ function preferredPhotos(image: string | undefined, images: string[] | undefined
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const requestedSlug = slug.at(-1) || "";
-  const lookup = requestedSlug === MULTISUB_MINI_SLUG ? "MSMINI10" : requestedSlug;
-  const product = await getCleaverProduct(lookup);
+  const product = await getCleaverProduct(requestedSlug);
   if (!product) return { title: "Product not found" };
   const displayTitle = cleaverDisplayTitle(product);
-  const isParentProduct = Boolean(product.cleaverSourceTitle) && isMultiSubMiniSku(product.sku);
+  const sourceFidelity = Boolean(product.cleaverSourceTitle);
   return {
-    title: isParentProduct ? `${displayTitle} | ${CLEAVER_BRAND_NAME}` : `${displayTitle} | ${product.sku} | ${CLEAVER_BRAND_NAME}`,
+    title: sourceFidelity ? `${displayTitle} | ${CLEAVER_BRAND_NAME}` : `${displayTitle} | ${product.sku} | ${CLEAVER_BRAND_NAME}`,
     description: product.summary || `${displayTitle} from Cleaver Scientific. Request product information and a quote from ITS BIO.`,
   };
 }
@@ -110,42 +115,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function CleaverProductDetailPage({ params }: PageProps) {
   const { slug } = await params;
   const requestedSlug = slug.at(-1) || "";
-  const lookup = requestedSlug === MULTISUB_MINI_SLUG ? "MSMINI10" : requestedSlug;
-  const product = await getCleaverProduct(lookup);
+  const product = await getCleaverProduct(requestedSlug);
   if (!product) notFound();
 
   const sourceFidelity = Boolean(product.cleaverSourceTitle);
-  const multiSubMiniReference = sourceFidelity && isMultiSubMiniSku(product.sku);
+  const canonicalPath = canonicalProductPath(product);
+  const canonicalSlug = decodeURIComponent(canonicalPath.split("/").at(-1) || "");
 
-  if (multiSubMiniReference && requestedSlug !== MULTISUB_MINI_SLUG) {
-    redirect(multiSubMiniPath());
+  if (sourceFidelity && requestedSlug !== canonicalSlug) {
+    redirect(canonicalPath);
   }
 
   const displayTitle = cleaverDisplayTitle(product);
-  const photos = preferredPhotos(product.image, product.images, multiSubMiniReference);
+  const photos = preferredPhotos(product.image, product.images, sourceFidelity);
   const highlights = (product.highlights || []).filter(Boolean).slice(0, 6);
   const atAGlance = (product.cleaverAtAGlance || []).filter(Boolean);
   const quoteHref = `/quote?product=${encodeURIComponent(displayTitle)}&catNo=${encodeURIComponent(product.sku)}`;
-
-  const beforeIncludedProduct = multiSubMiniReference ? {
-    ...product,
-    cleaverIncludedItems: [],
-    docs: [],
-    documentsHtml: undefined,
-    cleaverVariations: [],
-    cleaverAccessories: [],
-    cleaverVideos: [],
-  } : product;
-
-  const afterIncludedProduct = multiSubMiniReference ? {
-    ...product,
-    overviewHtml: undefined,
-    specsHtml: undefined,
-    specRows: [],
-    cleaverSpecificationMatrix: undefined,
-    cleaverIncludedItems: [],
-  } : product;
-
   const crumbs = [
     { label: "Home", href: "/" },
     { label: "Products", href: "/products" },
@@ -194,15 +179,7 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
           )}
         </div>
 
-        {multiSubMiniReference ? (
-          <>
-            <CleaverProductSections product={beforeIncludedProduct} />
-            <MultiSubMiniIncluded />
-            <div className="-mt-12 md:-mt-16">
-              <CleaverProductSections product={afterIncludedProduct} />
-            </div>
-          </>
-        ) : <CleaverProductSections product={product} />}
+        <CleaverProductSections product={product} />
 
         {sourceFidelity ? null : <section className="mt-14 flex flex-col gap-5 rounded-2xl bg-[#f5f1f8] px-7 py-8 md:mt-20 md:flex-row md:items-center md:justify-between md:px-9"><div><h2 className="text-lg font-semibold text-slate-900">Need help selecting the right system?</h2><p className="mt-1 text-sm leading-6 text-slate-600">Our team can help with product specifications, compatibility, and quotations.</p></div><Link href="/contact" className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#61247b] px-6 text-sm font-semibold text-white transition hover:bg-[#471659]">Contact our specialists</Link></section>}
       </div>
