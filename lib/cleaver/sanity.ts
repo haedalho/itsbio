@@ -85,10 +85,34 @@ function normalizedSourceUrl(value?: string) {
   }
 }
 
+function manufacturerProductSlugFromUrl(value?: string) {
+  if (!value) return "";
+  try {
+    const url = new URL(value);
+    const parts = url.pathname.split("/").filter(Boolean);
+    const productIndex = parts.findIndex((part) => part.toLowerCase() === "product");
+    return productIndex >= 0 && parts[productIndex + 1] ? decodeURIComponent(parts[productIndex + 1]) : "";
+  } catch {
+    return "";
+  }
+}
+
+function manufacturerListingProduct(product: CleaverProduct) {
+  const sourceTitle = product.cleaverSourceTitle?.trim();
+  const sourceSlug = sourceTitle && product.sourceUrl ? manufacturerProductSlugFromUrl(product.sourceUrl) : "";
+  if (!sourceTitle) return product;
+  return {
+    ...product,
+    title: sourceTitle,
+    slug: sourceSlug || product.slug,
+  };
+}
+
 function groupManufacturerProducts(products: CleaverProduct[]) {
   const grouped = new Map<string, CleaverProduct>();
 
-  for (const product of products) {
+  for (const rawProduct of products) {
+    const product = manufacturerListingProduct(rawProduct);
     const sourceKey = product.cleaverSourceTitle?.trim() && product.sourceUrl ? normalizedSourceUrl(product.sourceUrl) : "";
     const key = sourceKey ? `source:${sourceKey}` : `item:${product._id || product.slug || product.sku}`;
     const existing = grouped.get(key);
@@ -108,7 +132,7 @@ function groupManufacturerProducts(products: CleaverProduct[]) {
     }
   }
 
-  return Array.from(grouped.values()).sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (a.cleaverSourceTitle || a.title).localeCompare(b.cleaverSourceTitle || b.title));
+  return Array.from(grouped.values()).sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || a.title.localeCompare(b.title));
 }
 
 function localProductPage(path: string[], query: string, requestedPage: number): ProductPage {
@@ -190,7 +214,7 @@ export const getCleaverProduct = cache(async (slugOrSku: string): Promise<Cleave
           || lower(sku) == lower($slug)
           || sourceUrl in $sourceUrls
         )
-      ] | order(order asc)[0] ${PRODUCT_PROJECTION}
+      ] | order(sku asc, order asc)[0] ${PRODUCT_PROJECTION}
     `, { slug: decoded, sourceUrls }, CLEAVER_CATALOG_CACHE);
     if (product) {
       const productLocal = local || findLocalCleaverProduct(product.sku || "");
