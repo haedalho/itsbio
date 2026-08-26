@@ -92,8 +92,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const product = await getCleaverProduct(slug.at(-1) || "");
   if (!product) return { title: "Product not found" };
-  const sourceTitle = cleaverDisplayTitle(product);
-  const displayTitle = isMsmini10Reference(product.sku, Boolean(product.cleaverSourceTitle)) ? product.title : sourceTitle;
+  const displayTitle = cleaverDisplayTitle(product);
   return {
     title: `${displayTitle} | ${product.sku} | ${CLEAVER_BRAND_NAME}`,
     description: product.summary || `${displayTitle} (${product.sku}) from Cleaver Scientific. Request product information and a quote from ITS BIO.`,
@@ -107,8 +106,7 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
 
   const sourceFidelity = Boolean(product.cleaverSourceTitle);
   const goldenReference = isMsmini10Reference(product.sku, sourceFidelity);
-  const sourceTitle = cleaverDisplayTitle(product);
-  const displayTitle = goldenReference ? product.title : sourceTitle;
+  const displayTitle = cleaverDisplayTitle(product);
   const photos = preferredPhotos(product.image, product.images, goldenReference);
   const highlights = (product.highlights || []).filter(Boolean).slice(0, 6);
   const atAGlance = (product.cleaverAtAGlance || []).filter(Boolean);
@@ -133,7 +131,6 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
           {sourceFidelity ? (
             <section className="py-1 lg:py-2">
               <h1 data-product-name={displayTitle} className="text-[32px] font-semibold leading-[1.12] tracking-[-0.025em] text-slate-950 md:text-[42px]">{displayTitle}</h1>
-              {goldenReference && sourceTitle !== displayTitle ? <p className="mt-3 text-[14px] font-medium leading-6 text-[#6d2c86]">{sourceTitle}</p> : null}
 
               {atAGlance.length ? (
                 <div className="mt-7">
