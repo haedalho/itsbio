@@ -163,6 +163,8 @@ export default function FloatingQuoteButton() {
 
   if (pathname === "/quote") return null;
 
+  const labelClass = "mb-1.5 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500";
+
   return (
     <>
       {open ? (
@@ -219,19 +221,25 @@ export default function FloatingQuoteButton() {
                 placeholder="Email *"
               />
 
-              <div className="space-y-3">
-                <input
-                  ref={productRef}
-                  name="product"
-                  className="h-11 w-full rounded-xl border border-slate-300 px-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-                  placeholder="Product name"
-                />
-                <input
-                  ref={catNoRef}
-                  name="catNo"
-                  className="h-11 w-full rounded-xl border border-slate-300 px-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-                  placeholder="Cat No"
-                />
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label>
+                  <span className={labelClass}>PRODUCT NAME</span>
+                  <input
+                    ref={productRef}
+                    name="product"
+                    className="h-11 w-full rounded-xl border border-slate-300 px-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                    placeholder="Product name"
+                  />
+                </label>
+                <label>
+                  <span className={labelClass}>CAT.NO</span>
+                  <input
+                    ref={catNoRef}
+                    name="catNo"
+                    className="h-11 w-full rounded-xl border border-slate-300 px-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                    placeholder="Catalog number"
+                  />
+                </label>
               </div>
 
               <textarea
