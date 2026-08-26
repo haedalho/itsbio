@@ -183,7 +183,11 @@ export async function getCleaverProductPage(path: string[], query: string, reque
       ] | order(order asc, title asc)[0...5000] ${LISTING_PROJECTION}
     `, { category, searchTerm: query, match }, CLEAVER_CATALOG_CACHE);
 
-    const grouped = groupManufacturerProducts(Array.isArray(rows) ? rows : []);
+    const sourceBackedRows = (Array.isArray(rows) ? rows : []).map((product) => {
+      const fixture = getVerifiedCleaverSourceFixture(product.sku || "");
+      return fixture ? ({ ...product, ...fixture } as CleaverProduct) : product;
+    });
+    const grouped = groupManufacturerProducts(sourceBackedRows);
     if (grouped.length) {
       const pageCount = Math.max(1, Math.ceil(grouped.length / CLEAVER_PAGE_SIZE));
       const page = Math.min(Math.max(1, requestedPage), pageCount);
