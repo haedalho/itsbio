@@ -1,0 +1,47 @@
+name: Generate Cleaver manufacturer identity map
+
+on:
+  pull_request:
+    paths:
+      - scripts/generate-cleaver-source-map.mjs
+      - data/cleaver-product-catalog.json
+      - lib/cleaver/**
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cleaver-source-map-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate-source-map:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install reviewed project dependencies
+        run: npm install --no-audit --no-fund
+      - name: Generate all Cleaver manufacturer titles, URLs and galleries
+        run: node scripts/generate-cleaver-source-map.mjs --write
+      - name: Commit updated source map to preview branch
+        shell: bash
+        run: |
+          if git diff --quiet -- data/cleaver-source-map.json; then
+            echo "Cleaver source map already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/cleaver-source-map.json
+          git commit -m "Refresh complete Cleaver manufacturer source map"
+          git push origin HEAD:${{ github.event.pull_request.head.ref || github.ref_name }}
