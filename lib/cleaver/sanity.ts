@@ -97,6 +97,21 @@ function manufacturerProductSlugFromUrl(value?: string) {
   }
 }
 
+function findFixtureBackedProductBySourceSlug(value: string): CleaverProduct | null {
+  const normalized = decodeURIComponent(value).trim().toLowerCase();
+  if (!normalized) return null;
+
+  for (const localProduct of CLEAVER_INVENTORY) {
+    const fixture = getVerifiedCleaverSourceFixture(localProduct.sku);
+    if (!fixture?.sourceUrl) continue;
+    const sourceSlug = manufacturerProductSlugFromUrl(fixture.sourceUrl).trim().toLowerCase();
+    if (sourceSlug !== normalized) continue;
+    return { ...localProduct, ...fixture } as CleaverProduct;
+  }
+
+  return null;
+}
+
 function manufacturerListingProduct(product: CleaverProduct) {
   const sourceTitle = product.cleaverSourceTitle?.trim();
   const sourceSlug = sourceTitle && product.sourceUrl ? manufacturerProductSlugFromUrl(product.sourceUrl) : "";
@@ -203,6 +218,8 @@ function manufacturerSourceUrls(slugOrSku: string) {
 export const getCleaverProduct = cache(async (slugOrSku: string): Promise<CleaverProduct | null> => {
   const decoded = decodeURIComponent(slugOrSku);
   const local = findLocalCleaverProduct(decoded);
+  const fixtureBacked = local ? null : findFixtureBackedProductBySourceSlug(decoded);
+  if (fixtureBacked) return fixtureBacked;
   const sourceUrls = manufacturerSourceUrls(decoded);
 
   try {
