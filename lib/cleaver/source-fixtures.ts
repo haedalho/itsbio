@@ -4,28 +4,31 @@ const SOURCE_URL = "https://www.thistlescientific.com/product/multisub-mini-mini
 const SOURCE_TITLE = "multiSUB Mini, Mini Horizontal Electrophoresis System";
 
 const internalHref = (title: string, sku: string) => `/products/cleaver/item/${encodeURIComponent(cleaverProductSlug(title, sku))}`;
-const originalWpImage = (url: string) => url.replace(/-\d+x\d+(?=\.[a-z0-9]+(?:\?|$))/i, "");
 
+// Keep the exact WordPress image derivatives exposed by the manufacturer page.
+// These URLs are verified source assets; guessing a larger filename by stripping
+// the WordPress size suffix can yield a broken image when the original upload
+// name differs from the generated derivative name.
 const variations = [
   {
     title: "multiSUB Mini with 7 x 10cm Gel tray",
     sku: "MSMINI10",
     packSize: "1 / Each",
-    imageUrl: originalWpImage("https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-4.WEB_-600x600.jpg"),
+    imageUrl: "https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-4.WEB_-600x600.jpg",
     internalHref: internalHref("multiSUB Mini with 7 x 10cm Gel tray", "MSMINI10"),
   },
   {
     title: "multiSUB Mini with 7 x 7cm & 7 x 10cm Gel tray",
     sku: "MSMINIDUO",
     packSize: "1 / Each",
-    imageUrl: originalWpImage("https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-3.WEB_-600x600.jpg"),
+    imageUrl: "https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-3.WEB_-600x600.jpg",
     internalHref: internalHref("multiSUB Mini with 7 x 7cm & 7 x 10cm Gel tray", "MSMINIDUO"),
   },
   {
     title: "multiSUB Mini with 7 x 7cm Gel tray",
     sku: "MSMINI7",
     packSize: "1 / Each",
-    imageUrl: originalWpImage("https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-4.WEB_-600x600.jpg"),
+    imageUrl: "https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-4.WEB_-600x600.jpg",
     internalHref: internalHref("multiSUB Mini with 7 x 7cm Gel tray", "MSMINI7"),
   },
 ];
@@ -47,7 +50,7 @@ const accessories = [
 ].map(([title, sku, imageUrl, packSize]) => ({
   title,
   sku,
-  imageUrl: originalWpImage(imageUrl),
+  imageUrl,
   packSize,
   internalHref: internalHref(title, sku),
 }));
@@ -55,7 +58,7 @@ const accessories = [
 const combAccessory = {
   title: "multiSUB Mini Combs",
   packSize: "1 / Each",
-  imageUrl: originalWpImage("https://www.thistlescientific.com/wp-content/uploads/2024/11/MS7-10-1-1.WEB_-150x150.jpg"),
+  imageUrl: "https://www.thistlescientific.com/wp-content/uploads/2024/11/MS7-10-1-1.WEB_-150x150.jpg",
   internalHref: "/products/cleaver?q=multiSUB+Mini+Comb",
 };
 
