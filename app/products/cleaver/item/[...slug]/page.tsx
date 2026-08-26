@@ -125,6 +125,20 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
   const highlights = (product.highlights || []).filter(Boolean).slice(0, 6);
   const atAGlance = (product.cleaverAtAGlance || []).filter(Boolean);
   const quoteHref = `/quote?product=${encodeURIComponent(displayTitle)}&catNo=${encodeURIComponent(product.sku)}`;
+  const sectionProduct = multiSubMiniReference ? {
+    ...product,
+    // Match the manufacturer's default What's Included block exactly, in source order.
+    cleaverIncludedItems: [
+      { title: "multiSUB Mini - 7 x 7cm Gel tray", quantity: "1" },
+      { title: "multiSUB Mini Lid", quantity: "1" },
+      { title: "multiSUB Mini Tank (Including Electrodes)", quantity: "1" },
+      { title: "multiSUB Mini Combs", quantity: "2" },
+      { title: "multiSUB Mini - Viewing Platform", quantity: "1" },
+      { title: "multiSUB Mini - Loading Guides", quantity: "1" },
+      { title: "multiSUB Mini - Gel tray Dams", quantity: "1" },
+      { title: "Electrophoresis cable (Black & Red)", quantity: "1" },
+    ],
+  } : product;
   const crumbs = [
     { label: "Home", href: "/" },
     { label: "Products", href: "/products" },
@@ -173,7 +187,7 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
           )}
         </div>
 
-        <CleaverProductSections product={product} />
+        <CleaverProductSections product={sectionProduct} />
 
         {sourceFidelity ? null : <section className="mt-14 flex flex-col gap-5 rounded-2xl bg-[#f5f1f8] px-7 py-8 md:mt-20 md:flex-row md:items-center md:justify-between md:px-9"><div><h2 className="text-lg font-semibold text-slate-900">Need help selecting the right system?</h2><p className="mt-1 text-sm leading-6 text-slate-600">Our team can help with product specifications, compatibility, and quotations.</p></div><Link href="/contact" className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#61247b] px-6 text-sm font-semibold text-white transition hover:bg-[#471659]">Contact our specialists</Link></section>}
       </div>
