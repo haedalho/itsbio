@@ -16,19 +16,22 @@ jobs:
     if: github.head_ref == 'agent/cleaver-full-thistle-sections'
     runs-on: ubuntu-latest
     steps:
-      - name: Read exact manufacturer gallery from Thistle HTML
+      - name: Read exact manufacturer gallery through browser renderer
         run: |
           node <<'NODE'
           const source = 'https://www.thistlescientific.com/product/multisub-mini-mini-horizontal-electrophoresis-system/';
-          const response = await fetch(source, {
+          const reader = `https://r.jina.ai/${source}`;
+          const response = await fetch(reader, {
             headers: {
-              'user-agent': 'Mozilla/5.0 (compatible; ITS-BIO source audit)',
-              'accept-language': 'en-GB,en;q=0.9',
+              'x-engine': 'browser',
+              'x-respond-with': 'html',
+              'x-no-cache': 'true',
+              'x-timeout': '30',
             },
           });
           const html = await response.text();
-          console.log('SOURCE_STATUS', response.status);
-          console.log('SOURCE_BYTES', html.length);
+          console.log('READER_STATUS', response.status);
+          console.log('READER_BYTES', html.length);
 
           const decode = (value) => value
             .replaceAll('&quot;', '"')
@@ -36,26 +39,24 @@ jobs:
             .replaceAll('&#39;', "'")
             .replaceAll('&amp;', '&');
 
-          const largeImages = [...html.matchAll(/data-large_image=["']([^"']+)["']/gi)]
-            .map((match) => decode(match[1]));
-          console.log('DATA_LARGE_IMAGE_COUNT', largeImages.length);
-          largeImages.forEach((url, index) => console.log(`DATA_LARGE_IMAGE_${index + 1}`, url));
-
           const galleryImages = [];
           const figureStart = html.search(/<figure[^>]*class=["'][^"']*woocommerce-product-gallery__wrapper/i);
           if (figureStart >= 0) {
             const figureEnd = html.indexOf('</figure>', figureStart);
-            const figure = html.slice(figureStart, figureEnd >= 0 ? figureEnd + 9 : figureStart + 50000);
-            for (const match of figure.matchAll(/data-large_image=["']([^"']+)["']/gi)) {
-              galleryImages.push(decode(match[1]));
-            }
+            const figure = html.slice(figureStart, figureEnd >= 0 ? figureEnd + 9 : figureStart + 60000);
+            for (const match of figure.matchAll(/data-large_image=["']([^"']+)["']/gi)) galleryImages.push(decode(match[1]));
             if (!galleryImages.length) {
-              for (const match of figure.matchAll(/<a[^>]+href=["']([^"']+\.(?:jpe?g|png|webp))(?:\?[^"']*)?["']/gi)) {
-                galleryImages.push(decode(match[1]));
-              }
+              for (const match of figure.matchAll(/<a[^>]+href=["']([^"']+\.(?:jpe?g|png|webp))(?:\?[^"']*)?["']/gi)) galleryImages.push(decode(match[1]));
             }
           }
           const exactGallery = [...new Set(galleryImages)];
           console.log('EXACT_GALLERY_COUNT', exactGallery.length);
           exactGallery.forEach((url, index) => console.log(`EXACT_GALLERY_${index + 1}`, url));
+
+          const h1 = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1]?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+          console.log('SOURCE_H1', h1 || 'NOT_FOUND');
+
+          const allMsmini = [...html.matchAll(/https:\/\/www\.thistlescientific\.com\/wp-content\/uploads\/[^"'<>\s]+MSMINI[^"'<>\s]+\.(?:jpe?g|png|webp)/gi)]
+            .map((match) => decode(match[0]));
+          [...new Set(allMsmini)].forEach((url, index) => console.log(`ALL_MSMINI_${index + 1}`, url));
           NODE
