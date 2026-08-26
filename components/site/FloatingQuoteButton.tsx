@@ -221,8 +221,8 @@ export default function FloatingQuoteButton() {
                 placeholder="Email *"
               />
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label>
+              <div className="grid gap-3">
+                <label className="block w-full">
                   <span className={labelClass}>PRODUCT NAME</span>
                   <input
                     ref={productRef}
@@ -231,7 +231,7 @@ export default function FloatingQuoteButton() {
                     placeholder="Product name"
                   />
                 </label>
-                <label>
+                <label className="block w-full">
                   <span className={labelClass}>CAT.NO</span>
                   <input
                     ref={catNoRef}
