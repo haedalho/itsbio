@@ -1,5 +1,6 @@
 import { cache } from "react";
 
+import sourceMap from "@/data/cleaver-source-map.json";
 import {
   CLEAVER_INVENTORY,
   CLEAVER_PAGE_SIZE,
@@ -73,6 +74,39 @@ type ProductPage = {
   pageCount: number;
 };
 
+type CleaverSourceIdentity = {
+  sourceTitle?: string;
+  sourceUrl?: string;
+  sourceSlug?: string;
+  images?: string[];
+};
+
+const CLEAVER_SOURCE_MAP = sourceMap as Record<string, CleaverSourceIdentity>;
+const PREFERRED_SOURCE_SKU: Record<string, string> = {
+  "multisub-mini-mini-horizontal-electrophoresis-system": "MSMINI10",
+};
+
+function normalizedSku(value?: string) {
+  return String(value || "").normalize("NFKC").trim().toUpperCase();
+}
+
+function sourceIdentityForSku(sku?: string) {
+  return CLEAVER_SOURCE_MAP[normalizedSku(sku)] || null;
+}
+
+function applySourceIdentity(product: CleaverProduct): CleaverProduct {
+  const identity = sourceIdentityForSku(product.sku);
+  if (!identity) return product;
+  const sourceImages = Array.isArray(identity.images) ? identity.images.filter(Boolean) : [];
+  return {
+    ...product,
+    sourceUrl: identity.sourceUrl || product.sourceUrl,
+    cleaverSourceTitle: identity.sourceTitle?.trim() || product.cleaverSourceTitle,
+    image: sourceImages[0] || product.image,
+    images: sourceImages.length ? sourceImages : product.images,
+  };
+}
+
 function normalizedSourceUrl(value?: string) {
   if (!value) return "";
   try {
@@ -100,8 +134,13 @@ function manufacturerProductSlugFromUrl(value?: string) {
 function findFixtureBackedProductBySourceSlug(value: string): CleaverProduct | null {
   const normalized = decodeURIComponent(value).trim().toLowerCase();
   if (!normalized) return null;
+  const preferredSku = PREFERRED_SOURCE_SKU[normalized];
 
-  for (const localProduct of CLEAVER_INVENTORY) {
+  const orderedInventory = preferredSku
+    ? [...CLEAVER_INVENTORY].sort((a, b) => Number(normalizedSku(b.sku) === preferredSku) - Number(normalizedSku(a.sku) === preferredSku))
+    : CLEAVER_INVENTORY;
+
+  for (const localProduct of orderedInventory) {
     const fixture = getVerifiedCleaverSourceFixture(localProduct.sku);
     if (!fixture?.sourceUrl) continue;
     const sourceSlug = manufacturerProductSlugFromUrl(fixture.sourceUrl).trim().toLowerCase();
@@ -112,7 +151,27 @@ function findFixtureBackedProductBySourceSlug(value: string): CleaverProduct | n
   return null;
 }
 
-function manufacturerListingProduct(product: CleaverProduct) {
+function findMappedProductBySourceSlug(value: string): CleaverProduct | null {
+  const normalized = decodeURIComponent(value).trim().toLowerCase();
+  if (!normalized) return null;
+  const preferredSku = PREFERRED_SOURCE_SKU[normalized];
+  let fallback: CleaverProduct | null = null;
+
+  for (const localProduct of CLEAVER_INVENTORY) {
+    const identity = sourceIdentityForSku(localProduct.sku);
+    if (!identity) continue;
+    const sourceSlug = String(identity.sourceSlug || manufacturerProductSlugFromUrl(identity.sourceUrl)).trim().toLowerCase();
+    if (sourceSlug !== normalized) continue;
+    const merged = applySourceIdentity(localProduct);
+    if (preferredSku && normalizedSku(localProduct.sku) === preferredSku) return merged;
+    if (!fallback || (localProduct.order ?? Number.MAX_SAFE_INTEGER) < (fallback.order ?? Number.MAX_SAFE_INTEGER)) fallback = merged;
+  }
+
+  return fallback;
+}
+
+function manufacturerListingProduct(rawProduct: CleaverProduct) {
+  const product = applySourceIdentity(rawProduct);
   const sourceTitle = product.cleaverSourceTitle?.trim();
   const sourceSlug = sourceTitle && product.sourceUrl ? manufacturerProductSlugFromUrl(product.sourceUrl) : "";
   if (!sourceTitle) return product;
@@ -150,13 +209,17 @@ function groupManufacturerProducts(products: CleaverProduct[]) {
   return Array.from(grouped.values()).sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || a.title.localeCompare(b.title));
 }
 
+function sourceBackedProduct(product: CleaverProduct) {
+  let merged = applySourceIdentity(product);
+  const fixture = getVerifiedCleaverSourceFixture(product.sku || "");
+  if (fixture) merged = { ...merged, ...fixture } as CleaverProduct;
+  return merged;
+}
+
 function localProductPage(path: string[], query: string, requestedPage: number): ProductPage {
   const needle = query.trim().toLowerCase();
   const matches = CLEAVER_INVENTORY
-    .map((product) => {
-      const fixture = getVerifiedCleaverSourceFixture(product.sku);
-      return fixture ? ({ ...product, ...fixture } as CleaverProduct) : product;
-    })
+    .map(sourceBackedProduct)
     .filter((product) => {
       const inCategory = path.every((segment, index) => product.categoryPath[index] === segment);
       const displayTitle = product.cleaverSourceTitle || product.title;
@@ -183,11 +246,7 @@ export async function getCleaverProductPage(path: string[], query: string, reque
       ] | order(order asc, title asc)[0...5000] ${LISTING_PROJECTION}
     `, { category, searchTerm: query, match }, CLEAVER_CATALOG_CACHE);
 
-    const sourceBackedRows = (Array.isArray(rows) ? rows : []).map((product) => {
-      const fixture = getVerifiedCleaverSourceFixture(product.sku || "");
-      return fixture ? ({ ...product, ...fixture } as CleaverProduct) : product;
-    });
-    const grouped = groupManufacturerProducts(sourceBackedRows);
+    const grouped = groupManufacturerProducts((Array.isArray(rows) ? rows : []).map(sourceBackedProduct));
     if (grouped.length) {
       const pageCount = Math.max(1, Math.ceil(grouped.length / CLEAVER_PAGE_SIZE));
       const page = Math.min(Math.max(1, requestedPage), pageCount);
@@ -224,6 +283,9 @@ export const getCleaverProduct = cache(async (slugOrSku: string): Promise<Cleave
   const local = findLocalCleaverProduct(decoded);
   const fixtureBacked = local ? null : findFixtureBackedProductBySourceSlug(decoded);
   if (fixtureBacked) return fixtureBacked;
+  const mappedLocal = local ? null : findMappedProductBySourceSlug(decoded);
+  const resolvedLocal = local || mappedLocal;
+  const lookupSku = resolvedLocal?.sku || decoded;
   const sourceUrls = manufacturerSourceUrls(decoded);
 
   try {
@@ -232,30 +294,30 @@ export const getCleaverProduct = cache(async (slugOrSku: string): Promise<Cleave
         ${CLEAVER_FILTER}
         && (
           slug.current == $slug
-          || lower(sku) == lower($slug)
+          || lower(sku) == lower($lookupSku)
           || sourceUrl in $sourceUrls
         )
       ] | order(sku asc, order asc)[0] ${PRODUCT_PROJECTION}
-    `, { slug: decoded, sourceUrls }, CLEAVER_CATALOG_CACHE);
+    `, { slug: decoded, lookupSku, sourceUrls }, CLEAVER_CATALOG_CACHE);
     if (product) {
-      const productLocal = local || findLocalCleaverProduct(product.sku || "");
+      const productLocal = resolvedLocal || findLocalCleaverProduct(product.sku || "");
       const categoryPath = Array.isArray(product.categoryPath) && product.categoryPath.length ? product.categoryPath : productLocal?.categoryPath || [];
-      const fixture = getVerifiedCleaverSourceFixture(product.sku || productLocal?.sku || "");
-      return {
+      let merged = applySourceIdentity({
         ...productLocal,
         ...product,
-        ...fixture,
         categoryPath,
         categoryPathTitles: product.categoryPathTitles?.length ? product.categoryPathTitles : cleaverCategoryTitles(categoryPath),
-      };
+      } as CleaverProduct);
+      const fixture = getVerifiedCleaverSourceFixture(product.sku || productLocal?.sku || "");
+      if (fixture) merged = { ...merged, ...fixture } as CleaverProduct;
+      return merged;
     }
   } catch (error) {
     console.error("Unable to load Cleaver product from Sanity:", error instanceof Error ? error.message : error);
   }
 
-  if (!local) return null;
-  const fixture = getVerifiedCleaverSourceFixture(local.sku);
-  return fixture ? { ...local, ...fixture } : local;
+  if (!resolvedLocal) return null;
+  return sourceBackedProduct(resolvedLocal);
 });
 
 export async function getCleaverCategoryCovers() {
@@ -283,7 +345,7 @@ export async function getCleaverShowcase() {
     const rows = await sanityCdnClient.fetch<CleaverProduct[]>(`
       *[${CLEAVER_FILTER} && sku in $featured && defined(images[0].asset->url)] ${PRODUCT_PROJECTION}
     `, { featured }, CLEAVER_CATALOG_CACHE);
-    const bySku = new Map((Array.isArray(rows) ? rows : []).map((product) => [product.sku, product]));
+    const bySku = new Map((Array.isArray(rows) ? rows : []).map((product) => [product.sku, sourceBackedProduct(product)]));
     return featured.map((sku) => bySku.get(sku)).filter((product): product is CleaverProduct => Boolean(product));
   } catch {
     return [];
