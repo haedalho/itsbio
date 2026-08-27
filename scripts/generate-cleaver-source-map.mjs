@@ -17,6 +17,15 @@ const cleanText = (value) => {
   const $ = cheerio.load(`<div>${String(value || "")}</div>`);
   return $("div").text().replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
 };
+const normalizedSourceKey = (value) => String(value || "").trim().replace(/\/+$/, "").toLowerCase();
+const packageFamilyKey = (value) => {
+  const sku = normalizeSku(value);
+  if (!/(?:^|[-_/])PP\d+(?:KIT)?$|KIT$/i.test(sku)) return "";
+  return sku
+    .replace(/(?:[-_/]?PP\d+)(?:KIT)?$/i, "")
+    .replace(/KIT$/i, "")
+    .replace(/[-_/]+$/g, "");
+};
 
 const inventory = JSON.parse(await readFile(path.join(process.cwd(), "data/cleaver-product-catalog.json"), "utf8"));
 if (!Array.isArray(inventory) || inventory.length !== 1432) {
@@ -117,7 +126,7 @@ for (const row of inventory) {
     .filter((url) => /^https:\/\//i.test(url))));
 
   if (!sourceTitle || !sourceUrl || !sourceSlug) continue;
-  familyKeys.add(sourceUrl.replace(/\/+$/, "").toLowerCase());
+  familyKeys.add(normalizedSourceKey(sourceUrl));
   output[sku] = {
     sourceTitle,
     sourceUrl,
@@ -126,11 +135,48 @@ for (const row of inventory) {
   };
 }
 
+// Fill image gaps only from deterministic manufacturer-family relationships.
+// 1) Exact manufacturer source URL peers are the same product family.
+// 2) Package siblings such as XXX-PP500 / XXX-PP500KIT are the same reviewed package family.
+const imagesBySource = new Map();
+const imagesByPackageFamily = new Map();
+for (const [sku, identity] of Object.entries(output)) {
+  if (!Array.isArray(identity.images) || !identity.images.length) continue;
+  const sourceKey = normalizedSourceKey(identity.sourceUrl);
+  if (sourceKey && !imagesBySource.has(sourceKey)) imagesBySource.set(sourceKey, identity.images);
+  const packageKey = packageFamilyKey(sku);
+  if (packageKey && !imagesByPackageFamily.has(packageKey)) imagesByPackageFamily.set(packageKey, identity.images);
+}
+
+let inheritedBySource = 0;
+let inheritedByPackageFamily = 0;
+for (const [sku, identity] of Object.entries(output)) {
+  if (Array.isArray(identity.images) && identity.images.length) continue;
+
+  const sourceImages = imagesBySource.get(normalizedSourceKey(identity.sourceUrl));
+  if (sourceImages?.length) {
+    identity.images = [...sourceImages];
+    inheritedBySource += 1;
+    continue;
+  }
+
+  const packageKey = packageFamilyKey(sku);
+  const packageImages = packageKey ? imagesByPackageFamily.get(packageKey) : null;
+  if (packageImages?.length) {
+    identity.images = [...packageImages];
+    inheritedByPackageFamily += 1;
+  }
+}
+
 const mapped = Object.keys(output).length;
+const mappedWithImages = Object.values(output).filter((identity) => Array.isArray(identity.images) && identity.images.length).length;
 const stats = {
   reviewedInventory: inventory.length,
   manufacturerSkuMatches: productsBySku.size,
   mapped,
+  mappedWithImages,
+  inheritedBySource,
+  inheritedByPackageFamily,
   manufacturerFamilies: familyKeys.size,
   skuBatchFailures,
   parentBatchFailures,
