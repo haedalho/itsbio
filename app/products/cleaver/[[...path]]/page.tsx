@@ -3,8 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import CleaverCatalogImage from "@/components/products/CleaverCatalogImage";
 import CleaverHeroBanner from "@/components/products/CleaverHeroBanner";
 import Breadcrumb from "@/components/site/Breadcrumb";
+import sourceMap from "@/data/cleaver-source-map.json";
 import {
   CLEAVER_BRAND_NAME,
   CLEAVER_CATEGORIES,
@@ -22,6 +24,15 @@ type PageProps = {
   params: Promise<{ path?: string[] }>;
   searchParams?: Promise<{ q?: string; page?: string }>;
 };
+
+type SourceImageIdentity = { images?: string[] };
+const CLEAVER_SOURCE_IMAGES = sourceMap as Record<string, SourceImageIdentity>;
+
+function productImageSources(product: CleaverProduct) {
+  const sku = String(product.sku || "").normalize("NFKC").trim().toUpperCase();
+  const mapped = CLEAVER_SOURCE_IMAGES[sku]?.images || [];
+  return Array.from(new Set([product.image, ...mapped].map((value) => String(value || "").trim()).filter(Boolean)));
+}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { path = [] } = await params;
@@ -79,17 +90,12 @@ function CleaverSidebar({ activePath }: { activePath: string[] }) {
 }
 
 function ProductCard({ product }: { product: CleaverProduct }) {
+  const imageSources = productImageSources(product);
   return (
     <Link href={cleaverProductHref(product)} prefetch={false} className="group block h-full">
       <article className="flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-200 hover:-translate-y-0.5 hover:border-purple-200 hover:shadow-lg">
         <div className="relative aspect-[1.12] border-b border-slate-100 bg-white">
-          {product.image ? (
-            <Image src={product.image} alt={product.title} fill quality={85} sizes="(max-width: 768px) 48vw, (max-width: 1280px) 32vw, 350px" className="object-contain p-3 transition duration-500 group-hover:scale-[1.04]" />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-[#faf8fc] p-10">
-              <Image src="/partners/Cleaverscientific-logo.png" alt="Cleaver Scientific" width={185} height={70} className="h-auto max-h-16 w-auto max-w-full object-contain opacity-70" />
-            </div>
-          )}
+          <CleaverCatalogImage title={product.title} sources={imageSources} />
         </div>
         <div className="flex flex-1 flex-col p-4">
           <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#8650a0]">{product.sku}</div>
