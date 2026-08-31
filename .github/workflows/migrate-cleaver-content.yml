@@ -9,6 +9,7 @@ on:
       - data/cleaver-source-map.json
       - scripts/migrate-cleaver-content-to-sanity.mjs
       - scripts/migrate-cleaver-thistle-sections-to-sanity.mjs
+      - scripts/migrate-cleaver-thistle-sections-v2.mjs
       - scripts/apply-cleaver-source-map-to-sanity.mjs
   pull_request:
     paths:
@@ -17,6 +18,7 @@ on:
       - scripts/generate-cleaver-source-map.mjs
       - scripts/apply-cleaver-source-map-to-sanity.mjs
       - scripts/migrate-cleaver-thistle-sections-to-sanity.mjs
+      - scripts/migrate-cleaver-thistle-sections-v2.mjs
       - scripts/diagnose-thistle-sections.mjs
       - lib/cleaver/**
       - components/products/CleaverProductSections.tsx
@@ -63,8 +65,8 @@ jobs:
             sleep 5
           done
           cat /tmp/cleaver-source-probe.json || true
-      - name: Verify Overview, Specifications, What's Included, Documents, All Variations, Accessories and video discovery
-        run: node scripts/migrate-cleaver-thistle-sections-to-sanity.mjs
+      - name: Verify complete Cleaver sections through resilient manufacturer reader
+        run: node scripts/migrate-cleaver-thistle-sections-v2.mjs
 
   publish-reviewed-cleaver-content:
     if: github.event_name != 'pull_request'
@@ -92,6 +94,6 @@ jobs:
       - name: Import exact-SKU descriptions, specifications, PDFs, and high-resolution galleries
         run: node scripts/migrate-cleaver-content-to-sanity.mjs --apply
       - name: Import complete Thistle product sections and verify the microDOC reference fixture
-        run: node scripts/migrate-cleaver-thistle-sections-to-sanity.mjs --apply
+        run: node scripts/migrate-cleaver-thistle-sections-v2.mjs --apply
       - name: Persist complete manufacturer titles and canonical URLs
         run: node scripts/apply-cleaver-source-map-to-sanity.mjs --apply
