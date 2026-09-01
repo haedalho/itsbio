@@ -81,6 +81,25 @@ function IncludedCard({ title, quantity, imageUrl, href }: IncludedCardProps) {
   return <Link href={href} className="group/card block h-full w-full" aria-label={`View ${title} in ITS BIO`}>{body}</Link>;
 }
 
+function youtubeEmbedUrl(value?: string) {
+  if (!value) return "";
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase().replace(/^www\./, "");
+    let id = "";
+    if (host === "youtu.be") id = url.pathname.split("/").filter(Boolean)[0] || "";
+    if (host === "youtube.com" || host === "m.youtube.com" || host === "youtube-nocookie.com") {
+      if (url.pathname.startsWith("/embed/")) id = url.pathname.split("/embed/")[1]?.split("/")[0] || "";
+      else if (url.pathname.startsWith("/shorts/")) id = url.pathname.split("/shorts/")[1]?.split("/")[0] || "";
+      else if (url.pathname.startsWith("/live/")) id = url.pathname.split("/live/")[1]?.split("/")[0] || "";
+      else id = url.searchParams.get("v") || "";
+    }
+    return /^[A-Za-z0-9_-]{6,}$/.test(id) ? `https://www.youtube.com/embed/${id}` : "";
+  } catch {
+    return "";
+  }
+}
+
 export default function CleaverProductSections({ product }: { product: CleaverProduct }) {
   const specifications = (product.specRows || []).filter((row) => row.label && row.value);
   const matrix = product.cleaverSpecificationMatrix;
@@ -112,7 +131,6 @@ export default function CleaverProductSections({ product }: { product: CleaverPr
       href: accessory?.internalHref || variation?.internalHref,
     };
   });
-  const hasIncludedMedia = includedCards.some((item) => Boolean(item.imageUrl));
 
   if (!hasOverview && !hasSpecs && !included.length && !hasDocuments && !variations.length && !accessories.length && !videos.length) return null;
 
@@ -141,27 +159,21 @@ export default function CleaverProductSections({ product }: { product: CleaverPr
 
       {included.length ? (
         <SectionShell title="What's Included">
-          {hasIncludedMedia ? (
-            <div className="grid w-full max-w-[1040px] grid-cols-2 gap-x-7 gap-y-12 sm:gap-x-8 lg:grid-cols-4 lg:gap-x-9 lg:gap-y-14">
-              {includedCards.map((item, index) => <IncludedCard key={`${item.title}-${index}`} {...item} />)}
-            </div>
-          ) : (
-            <div className="max-w-[1040px] divide-y divide-[#dedede] border-y border-[#dedede]">
-              {includedCards.map((item, index) => (
-                <div key={`${item.title}-${index}`} className="flex min-h-[54px] items-center justify-between gap-5 py-3.5 text-[14px] leading-6">
-                  <ProductLink href={item.href}>{item.title}</ProductLink>
-                  <span className="shrink-0 text-[#555]">Qty: <strong className="font-semibold text-[#303030]">{item.quantity || "—"}</strong></span>
-                </div>
-              ))}
-            </div>
-          )}
+          <div className="grid w-full max-w-[1040px] grid-cols-2 gap-x-7 gap-y-12 sm:gap-x-8 lg:grid-cols-4 lg:gap-x-9 lg:gap-y-14">
+            {includedCards.map((item, index) => <IncludedCard key={`${item.title}-${index}`} {...item} />)}
+          </div>
         </SectionShell>
       ) : null}
 
       {videos.length ? (
         <SectionShell title="Video">
           <div className="grid max-w-[1040px] gap-6 lg:grid-cols-2">
-            {videos.map((video, index) => video.embedUrl ? <div key={`${video.url}-${index}`}><div className="overflow-hidden bg-black"><iframe src={video.embedUrl} title={video.title || `${product.title} product video`} className="aspect-video w-full" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen /></div>{video.title ? <p className="mt-3 text-[14px] font-medium leading-6 text-[#333]">{video.title}</p> : null}</div> : /\.(?:mp4|webm)(?:$|\?)/i.test(video.url) ? <video key={`${video.url}-${index}`} controls preload="metadata" className="aspect-video w-full bg-black"><source src={video.url} /></video> : null)}
+            {videos.map((video, index) => {
+              const embedUrl = video.embedUrl || youtubeEmbedUrl(video.url);
+              if (embedUrl) return <div key={`${video.url}-${index}`}><div className="overflow-hidden bg-black"><iframe src={embedUrl} title={video.title || `${product.title} product video`} className="aspect-video w-full" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen /></div>{video.title ? <p className="mt-3 text-[14px] font-medium leading-6 text-[#333]">{video.title}</p> : null}</div>;
+              if (/\.(?:mp4|webm)(?:$|\?)/i.test(video.url)) return <video key={`${video.url}-${index}`} controls preload="metadata" className="aspect-video w-full bg-black"><source src={video.url} /></video>;
+              return null;
+            })}
           </div>
         </SectionShell>
       ) : null}
