@@ -50,6 +50,11 @@ export type CleaverSpecificationMatrix = {
   rows: Array<{ label: string; values: string[] }>;
 };
 
+export type CleaverExtraSection = {
+  title: string;
+  html?: string;
+};
+
 export type CleaverProduct = {
   _id: string;
   title: string;
@@ -70,6 +75,8 @@ export type CleaverProduct = {
   docs?: Array<{ title?: string; label?: string; group?: string; url?: string }>;
   cleaverSourceTitle?: string;
   cleaverAtAGlance?: string[];
+  cleaverSourceSectionOrder?: string[];
+  cleaverExtraSections?: CleaverExtraSection[];
   cleaverSpecificationMatrix?: CleaverSpecificationMatrix;
   cleaverIncludedItems?: CleaverIncludedItem[];
   cleaverVariations?: CleaverVariation[];
