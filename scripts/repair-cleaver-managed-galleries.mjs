@@ -50,7 +50,7 @@ async function retry(label, operation, maximum = 5) {
       return await operation();
     } catch (error) {
       const status = Number(error?.statusCode || error?.response?.statusCode || 0);
-      if (attempt === maximum - 1 || (status && status < 500 && status !== 408 && status !== 409 && status !== 429)) throw error;
+      if (attempt === maximum - 1 || (status && status < 500 && status !== 403 && status !== 408 && status !== 409 && status !== 429)) throw error;
       await new Promise((resolve) => setTimeout(resolve, Math.min(15_000, 750 * (2 ** attempt))));
     }
   }
@@ -100,7 +100,12 @@ async function managedAsset(rawUrl, sku) {
 
   const task = retry(`download ${sku}`, async () => {
     const response = await fetch(url, {
-      headers: { Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8", "User-Agent": "ITS-BIO-CleaverGalleryRepair/1.0" },
+      headers: {
+        Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+        "Accept-Language": "en-GB,en;q=0.9",
+        Referer: "https://www.thistlescientific.com/",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      },
       redirect: "follow",
       signal: AbortSignal.timeout(60_000),
     });
