@@ -11711,5 +11711,83 @@
     "images": [
       "https://www.thistlescientific.com/wp-content/uploads/2024/11/CSL-RULER-1.WEB_.jpg"
     ]
+  },
+  "CSLFDYEKIT1": {
+    "sourceTitle": "Dye Experiment Kit",
+    "sourceUrl": "https://www.thistlescientific.com/product/dye-experiment-kit/",
+    "sourceSlug": "dye-experiment-kit",
+    "images": [
+      "https://www.thistlescientific.com/wp-content/uploads/2024/11/DYEKIT.WEB_.jpg"
+    ]
+  },
+  "CSL-BRD-X1": {
+    "sourceTitle": "Bridge 1 station for supported membrane",
+    "sourceUrl": "https://www.thistlescientific.com/product/bridge-1-station-for-supported-membrane/",
+    "sourceSlug": "bridge-1-station-for-supported-membrane",
+    "images": [
+      "https://www.thistlescientific.com/wp-content/uploads/2025/09/CSL-BRD-X-1.png",
+      "https://www.thistlescientific.com/wp-content/uploads/2025/09/CSL-BRD-X-2.png",
+      "https://www.thistlescientific.com/wp-content/uploads/2025/09/CSL-BRD-X.jpg"
+    ]
+  },
+  "CSL-MICRODOC": {
+    "sourceTitle": "microDOC Gel Documentation Hood with Screen",
+    "sourceUrl": "https://www.thistlescientific.com/product/microdoc-gel-documentation-hood-with-screen/",
+    "sourceSlug": "microdoc-gel-documentation-hood-with-screen",
+    "images": [
+      "https://www.thistlescientific.com/wp-content/uploads/2024/11/Microdoc-scaled.jpg",
+      "https://www.thistlescientific.com/wp-content/uploads/2024/11/Microdoc-door-open-1-scaled.jpg",
+      "https://www.thistlescientific.com/wp-content/uploads/2024/11/Microdoc-UVT-1-2-scaled.jpg",
+      "https://www.thistlescientific.com/wp-content/uploads/2024/11/Microdoc-DNA-bands-1-scaled.jpg",
+      "https://www.thistlescientific.com/wp-content/uploads/2024/11/Microdoc-filter-1-scaled.jpg"
+    ]
+  },
+  "VT-H5": {
+    "sourceTitle": "1.5ml Eppendorf/Tube Foam Rack",
+    "sourceUrl": "https://www.thistlescientific.com/product/1-5ml-eppendorf-tube-foam-rack/",
+    "sourceSlug": "1-5ml-eppendorf-tube-foam-rack",
+    "images": [
+      "https://www.thistlescientific.com/wp-content/uploads/2025/02/VT-H5.png"
+    ]
+  },
+  "VT-H7": {
+    "sourceTitle": "50ml Tube Foam Rack",
+    "sourceUrl": "https://www.thistlescientific.com/product/50ml-tube-foam-rack/",
+    "sourceSlug": "50ml-tube-foam-rack",
+    "images": [
+      "https://www.thistlescientific.com/wp-content/uploads/2025/02/VT-H7-50ml-Tube-Foam-Rack.jpg"
+    ]
+  },
+  "VT-H6": {
+    "sourceTitle": "15ml Tube Foam Rack",
+    "sourceUrl": "https://www.thistlescientific.com/product/15ml-tube-foam-rack/",
+    "sourceSlug": "15ml-tube-foam-rack",
+    "images": [
+      "https://www.thistlescientific.com/wp-content/uploads/2025/02/VT-H6-15ml-Tube-Foam-Rack.jpg"
+    ]
+  },
+  "VT-H8": {
+    "sourceTitle": "96-well PCR Plate Foam Platform",
+    "sourceUrl": "https://www.thistlescientific.com/product/96-well-pcr-plate-foam-platform/",
+    "sourceSlug": "96-well-pcr-plate-foam-platform",
+    "images": [
+      "https://www.thistlescientific.com/wp-content/uploads/2025/02/VT-H8-96-well-PCR-Plate-Foam-Platform-1.png"
+    ]
+  },
+  "VT-H9": {
+    "sourceTitle": "96-well Microplate Foam Platform",
+    "sourceUrl": "https://www.thistlescientific.com/product/96-well-microplate-foam-platform/",
+    "sourceSlug": "96-well-microplate-foam-platform",
+    "images": [
+      "https://www.thistlescientific.com/wp-content/uploads/2025/02/VT-H9-96-well-Microplate-Foam-Platform-1.png"
+    ]
+  },
+  "AQUALAB-ECO-RESERVOIR": {
+    "sourceTitle": "Reservoir for the AquaLab Eco, 30 litres",
+    "sourceUrl": "https://www.thistlescientific.com/product/reservoir-for-the-aqualab-eco-30-litres-2/",
+    "sourceSlug": "reservoir-for-the-aqualab-eco-30-litres-2",
+    "images": [
+      "https://www.thistlescientific.com/wp-content/uploads/2024/11/AQUALAB-PRO-RESERVOIR.jpg"
+    ]
   }
 }
