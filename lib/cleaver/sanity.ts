@@ -43,6 +43,8 @@ const PRODUCT_PROJECTION = `{
   docs[]{title, label, group, url},
   cleaverSourceTitle,
   cleaverAtAGlance,
+  cleaverSourceSectionOrder,
+  cleaverExtraSections[]{title, html},
   cleaverSpecificationMatrix{
     headers,
     rows[]{label, values}
