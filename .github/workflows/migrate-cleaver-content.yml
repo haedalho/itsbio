@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - agent/cleaver-full-thistle-sections
     paths:
       - .github/workflows/migrate-cleaver-content.yml
       - data/cleaver-source-map.json
