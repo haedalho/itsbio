@@ -94,13 +94,22 @@ function sourceIdentityForSku(sku?: string) {
   return CLEAVER_SOURCE_MAP[normalizedSku(sku)] || null;
 }
 
+function sourceImages(identity: CleaverSourceIdentity | null) {
+  return Array.from(new Set((identity?.images || []).map((value) => String(value || "").trim()).filter(Boolean)));
+}
+
 function applySourceIdentity(product: CleaverProduct): CleaverProduct {
   const identity = sourceIdentityForSku(product.sku);
   if (!identity) return product;
+  const manufacturerImages = sourceImages(identity);
+  const fallbackImages = (product.images || []).filter(Boolean);
+  const images = manufacturerImages.length ? manufacturerImages : fallbackImages;
   return {
     ...product,
     sourceUrl: identity.sourceUrl || product.sourceUrl,
     cleaverSourceTitle: identity.sourceTitle?.trim() || product.cleaverSourceTitle,
+    image: images[0] || product.image,
+    images: images.length ? images : product.images,
   };
 }
 
@@ -340,7 +349,7 @@ export async function getCleaverShowcase() {
 
   try {
     const rows = await sanityCdnClient.fetch<CleaverProduct[]>(`
-      *[${CLEAVER_FILTER} && sku in $featured && defined(images[0].asset->url)] ${PRODUCT_PROJECTION}
+      *[${CLEAVER_FILTER} && sku in $featured] ${PRODUCT_PROJECTION}
     `, { featured }, CLEAVER_CATALOG_CACHE);
     const bySku = new Map((Array.isArray(rows) ? rows : []).map((product) => [product.sku, sourceBackedProduct(product)]));
     return featured.map((sku) => bySku.get(sku)).filter((product): product is CleaverProduct => Boolean(product));
