@@ -67,7 +67,7 @@ async function readSource(sourceUrl) {
   for (let attempt = 0; attempt < 6; attempt += 1) {
     try {
       const response = await fetch(`${READER}${sourceUrl}`, {
-        headers: { Accept: "text/plain,text/markdown;q=0.9,*/*;q=0.8", "User-Agent": "ITS-BIO-CleaverFidelity/1.0" },
+        headers: { Accept: "text/plain,text/markdown;q=0.9,*/*;q=0.8", "User-Agent": "ITS-BIO-CleaverFidelity/1.1" },
         redirect: "follow",
         signal: AbortSignal.timeout(60_000),
       });
@@ -100,9 +100,9 @@ function extractAtAGlance(markdown) {
       .trim();
     if (!text || text.length < 3 || text.length > 500) return;
     if (/^(?:item|choose an option|select|order now|add to quote|in stock|sku\s*:|qty\s*:|poa|£)/i.test(text)) return;
-    const key = text.toLowerCase();
-    if (seen.has(key)) return;
-    seen.add(key);
+    const itemKey = text.toLowerCase();
+    if (seen.has(itemKey)) return;
+    seen.add(itemKey);
     items.push(text);
   };
 
@@ -218,18 +218,17 @@ await pooled([...families.entries()], 4, async ([sourceUrl, familyProducts]) => 
         _key: hash(`${sourceUrl}:${item.title}`).slice(0, 12),
         title: item.title,
         html: simpleHtml(item.body),
-      }))
-      .filter((item) => item.html);
+      }));
 
     for (const section of extraSections) unknownSectionCounts.set(section.title, (unknownSectionCounts.get(section.title) || 0) + 1);
 
     for (const product of familyProducts) {
-      const patch = {};
-      if (atAGlance.length) patch.cleaverAtAGlance = atAGlance;
-      if (sourceSectionOrder.length) patch.cleaverSourceSectionOrder = sourceSectionOrder;
-      if (extraSections.length) patch.cleaverExtraSections = extraSections;
-      if (!Object.keys(patch).length) continue;
-      patch.cleaverSourceSectionsMigratedAt = new Date().toISOString();
+      const patch = {
+        cleaverAtAGlance: atAGlance,
+        cleaverSourceSectionOrder: sourceSectionOrder,
+        cleaverExtraSections: extraSections,
+        cleaverSourceSectionsMigratedAt: new Date().toISOString(),
+      };
       try {
         await client.patch(product._id).set(patch).commit({ visibility: "async" });
         productsPatched += 1;
