@@ -1,5 +1,6 @@
 name: Audit and repair Cleaver representative images
 
+# Verifies the official API identity first, then checks the exact Thistle product page before syncing Sanity.
 on:
   push:
     branches:
