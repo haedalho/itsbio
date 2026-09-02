@@ -39,6 +39,8 @@ export type CleaverAccessory = {
   internalHref?: string;
 };
 
+export type CleaverWorksWithItem = CleaverAccessory;
+
 export type CleaverVideo = {
   title?: string;
   url: string;
@@ -81,6 +83,7 @@ export type CleaverProduct = {
   cleaverIncludedItems?: CleaverIncludedItem[];
   cleaverVariations?: CleaverVariation[];
   cleaverAccessories?: CleaverAccessory[];
+  cleaverWorksWith?: CleaverWorksWithItem[];
   cleaverVideos?: CleaverVideo[];
   cleaverSourceSectionsMigratedAt?: string;
 };

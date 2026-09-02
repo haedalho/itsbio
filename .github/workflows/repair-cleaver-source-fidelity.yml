@@ -38,5 +38,7 @@ jobs:
           cache: npm
       - name: Install project dependencies
         run: npm install --no-audit --no-fund
+      - name: Verify Works With boundary and exact MS7-UVS relationships
+        run: node scripts/repair-cleaver-source-fidelity.mjs --verify-fixture
       - name: Restore At a Glance and record manufacturer section layout
         run: node scripts/repair-cleaver-source-fidelity.mjs

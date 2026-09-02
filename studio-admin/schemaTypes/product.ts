@@ -384,6 +384,13 @@ export default defineType({
       description: "Compatible accessories from the manufacturer product page.",
     }),
     defineField({
+      name: "cleaverWorksWith",
+      title: "Cleaver / Thistle - Works With",
+      type: "array",
+      of: [defineField({ name: "cleaverWorksWithItem", title: "Compatible Product", type: "object", fields: cleaverProductItemFields })],
+      description: "Products listed specifically in the manufacturer's Works With section; excludes Related products.",
+    }),
+    defineField({
       name: "cleaverVideos",
       title: "Cleaver / Thistle - Product Videos",
       type: "array",

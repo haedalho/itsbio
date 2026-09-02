@@ -10,25 +10,13 @@ const { createClient } = require("@sanity/client");
 
 const MIGRATION_KEY = "cleaver-products-2026-08-24";
 const READER = "https://r.jina.ai/";
+const VERIFY_FIXTURE = process.argv.includes("--verify-fixture");
 const APPROVED_HOSTS = new Set(["www.thistlescientific.com", "thistlescientific.com"]);
 const hash = (value) => createHash("sha256").update(String(value)).digest("hex");
 const oneLine = (value) => String(value || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
 const normalizeSku = (value) => oneLine(value).normalize("NFKC").toUpperCase();
 
 const sourceMap = JSON.parse(await readFile(path.join(process.cwd(), "data/cleaver-source-map.json"), "utf8"));
-const token = [process.env.SANITY_WRITE_TOKEN, process.env.SANITY_API_WRITE_TOKEN, process.env.SANITY_API_TOKEN, process.env.SANITY_TOKEN, process.env.SANITY_AUTH_TOKEN]
-  .map((value) => String(value || "").trim()).find(Boolean);
-if (!token) throw new Error("Cleaver source fidelity repair requires a Production Sanity write token.");
-
-const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || "9b5twpc8",
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || "production",
-  apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION || "2025-01-01",
-  token,
-  useCdn: false,
-  perspective: "published",
-});
-
 function htmlEscape(value) {
   return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
@@ -57,7 +45,14 @@ const KNOWN = new Set([
   "documents",
   "all variations",
   "accessories",
+  "works with",
 ]);
+
+const TARGET_WORKS_WITH_FIXTURE = "https://www.thistlescientific.com/product/multisub-mini-7cm-uv-gel-scoop/";
+const TARGET_WORKS_WITH_TITLES = [
+  "multiSUB Mini DUO with mini runVIEW gel viewer",
+  "multiSUB Mini, Mini Horizontal Electrophoresis System",
+];
 
 async function readSource(sourceUrl) {
   const parsed = new URL(sourceUrl);
@@ -122,17 +117,74 @@ function extractAtAGlance(markdown) {
 
 function extractAccordionSections(markdown) {
   const source = String(markdown || "").replace(/\r/g, "");
-  const matches = [...source.matchAll(/^#{2,6}\s+(.+?)\s*\+\s*$/gm)];
+  const headings = [...source.matchAll(/^(#{2,6})\s+(.+?)\s*$/gm)].map((match) => ({
+    index: match.index,
+    end: match.index + match[0].length,
+    level: match[1].length,
+    rawTitle: match[2],
+  }));
+  const matches = headings.filter((heading) => /\+\s*$/.test(heading.rawTitle));
   const sections = [];
   for (let index = 0; index < matches.length; index += 1) {
     const current = matches[index];
-    const title = cleanTitle(current[1]);
+    const title = cleanTitle(current.rawTitle);
     if (!title) continue;
-    const from = current.index + current[0].length;
-    const to = index + 1 < matches.length ? matches[index + 1].index : source.length;
+    const from = current.end;
+    const boundary = headings.find((heading) => heading.index >= from && heading.level <= current.level);
+    const to = boundary?.index ?? source.length;
     sections.push({ title, body: source.slice(from, to).trim() });
   }
   return sections;
+}
+
+function packText(value) {
+  return oneLine(value).match(/\b\d+\s*\/\s*(?:Each|Pack|Box|Case|Kit|Unit|Set|Pair)\b/i)?.[0] || "";
+}
+
+function priceText(value) {
+  return oneLine(value).match(/£\s*[\d,.]+(?:\s*[–-]\s*£?\s*[\d,.]+)?(?:\s*(?:ex\.?\s*VAT|inc\.?\s*VAT))?/i)?.[0] || "";
+}
+
+function normalizeSourceUrl(value) {
+  try {
+    const url = new URL(value);
+    url.search = "";
+    url.hash = "";
+    return `${url.origin}${url.pathname.replace(/\/+$/, "")}/`;
+  } catch {
+    return "";
+  }
+}
+
+const identityBySourceUrl = new Map();
+for (const [sku, identity] of Object.entries(sourceMap || {})) {
+  const sourceUrl = normalizeSourceUrl(identity?.sourceUrl);
+  if (sourceUrl && !identityBySourceUrl.has(sourceUrl)) identityBySourceUrl.set(sourceUrl, { sku, ...identity });
+}
+
+function extractWorksWith(body) {
+  const items = new Map();
+  const linkPattern = /\[([^\]]+)\]\((https?:\/\/(?:www\.)?thistlescientific\.com\/product\/[^)]+)\)/gi;
+  for (const match of String(body || "").matchAll(linkPattern)) {
+    const title = stripMarkdown(match[1]);
+    if (!title || /^(?:view product|add to basket|image:)/i.test(title)) continue;
+    const sourceUrl = normalizeSourceUrl(match[2]);
+    if (!sourceUrl || items.has(sourceUrl)) continue;
+    const identity = identityBySourceUrl.get(sourceUrl);
+    const context = String(body || "").slice((match.index || 0) + match[0].length, (match.index || 0) + match[0].length + 400);
+    const sourceSlug = new URL(sourceUrl).pathname.split("/").filter(Boolean).at(-1) || "";
+    items.set(sourceUrl, {
+      _key: hash(`works-with:${sourceUrl}`).slice(0, 12),
+      title: title.slice(0, 180),
+      sku: identity?.sku || "",
+      packSize: packText(context),
+      priceText: priceText(context),
+      sourceUrl,
+      imageUrl: String(identity?.images?.[0] || ""),
+      internalHref: sourceSlug ? `/products/cleaver/item/${sourceSlug}` : "",
+    });
+  }
+  return [...items.values()].slice(0, 60);
 }
 
 function simpleHtml(markdown) {
@@ -183,6 +235,36 @@ async function pooled(items, limit, worker) {
   }));
 }
 
+if (VERIFY_FIXTURE) {
+  const markdown = await readSource(TARGET_WORKS_WITH_FIXTURE);
+  const sections = extractAccordionSections(markdown);
+  const worksWithSection = sections.find((item) => titleKey(item.title) === "works with");
+  const worksWith = worksWithSection ? extractWorksWith(worksWithSection.body) : [];
+  const actual = worksWith.map((item) => titleKey(item.title));
+  const expected = TARGET_WORKS_WITH_TITLES.map(titleKey);
+  if (actual.length !== expected.length || expected.some((title) => !actual.includes(title))) {
+    throw new Error(`Works With fixture mismatch: ${JSON.stringify(worksWith.map((item) => item.title))}`);
+  }
+  if (/related products|stay curious|head office|newsletter signup/i.test(worksWithSection?.body || "")) {
+    throw new Error("Works With fixture includes content beyond its manufacturer accordion boundary.");
+  }
+  console.log(JSON.stringify({ sourceUrl: TARGET_WORKS_WITH_FIXTURE, worksWith }));
+  process.exit(0);
+}
+
+const token = [process.env.SANITY_WRITE_TOKEN, process.env.SANITY_API_WRITE_TOKEN, process.env.SANITY_API_TOKEN, process.env.SANITY_TOKEN, process.env.SANITY_AUTH_TOKEN]
+  .map((value) => String(value || "").trim()).find(Boolean);
+if (!token) throw new Error("Cleaver source fidelity repair requires a Production Sanity write token.");
+
+const client = createClient({
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || "9b5twpc8",
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || "production",
+  apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION || "2025-01-01",
+  token,
+  useCdn: false,
+  perspective: "published",
+});
+
 const products = await client.fetch(`*[_type == "product" && migrationKey == $key]{_id,sku,sourceUrl}`, { key: MIGRATION_KEY });
 const bySku = new Map((products || []).map((product) => [normalizeSku(product.sku), product]));
 const families = new Map();
@@ -198,11 +280,13 @@ for (const [rawSku, identity] of Object.entries(sourceMap || {})) {
 
 let familiesRead = 0;
 let familiesWithAtAGlance = 0;
+let familiesWithWorksWith = 0;
 let productsPatched = 0;
 let patchFailures = 0;
 const readerFailures = [];
 const unknownSectionCounts = new Map();
 const samples = [];
+let targetWorksWithVerified = false;
 
 await pooled([...families.entries()], 4, async ([sourceUrl, familyProducts]) => {
   try {
@@ -212,6 +296,9 @@ await pooled([...families.entries()], 4, async ([sourceUrl, familyProducts]) => 
     if (atAGlance.length) familiesWithAtAGlance += 1;
     const sourceSections = extractAccordionSections(markdown);
     const sourceSectionOrder = sourceSections.map((item) => item.title);
+    const worksWithSection = sourceSections.find((item) => titleKey(item.title) === "works with");
+    const worksWith = worksWithSection ? extractWorksWith(worksWithSection.body) : [];
+    if (worksWith.length) familiesWithWorksWith += 1;
     const extraSections = sourceSections
       .filter((item) => !KNOWN.has(titleKey(item.title)))
       .map((item) => ({
@@ -220,6 +307,18 @@ await pooled([...families.entries()], 4, async ([sourceUrl, familyProducts]) => 
         html: simpleHtml(item.body),
       }));
 
+    if (extraSections.some((section) => /related products|stay curious|head office|newsletter signup/i.test(section.html))) {
+      throw new Error(`Accordion boundary leak detected for ${sourceUrl}`);
+    }
+    if (normalizeSourceUrl(sourceUrl) === TARGET_WORKS_WITH_FIXTURE) {
+      const actual = worksWith.map((item) => titleKey(item.title));
+      const expected = TARGET_WORKS_WITH_TITLES.map(titleKey);
+      if (actual.length !== expected.length || expected.some((title) => !actual.includes(title))) {
+        throw new Error(`Works With fixture mismatch: ${JSON.stringify(worksWith.map((item) => item.title))}`);
+      }
+      targetWorksWithVerified = true;
+    }
+
     for (const section of extraSections) unknownSectionCounts.set(section.title, (unknownSectionCounts.get(section.title) || 0) + 1);
 
     for (const product of familyProducts) {
@@ -227,6 +326,7 @@ await pooled([...families.entries()], 4, async ([sourceUrl, familyProducts]) => 
         cleaverAtAGlance: atAGlance,
         cleaverSourceSectionOrder: sourceSectionOrder,
         cleaverExtraSections: extraSections,
+        cleaverWorksWith: worksWith,
         cleaverSourceSectionsMigratedAt: new Date().toISOString(),
       };
       try {
@@ -247,13 +347,15 @@ const totals = await client.fetch(`{
   "products": count(*[_type == "product" && migrationKey == $key]),
   "atAGlance": count(*[_type == "product" && migrationKey == $key && count(cleaverAtAGlance) > 0]),
   "sourceOrder": count(*[_type == "product" && migrationKey == $key && count(cleaverSourceSectionOrder) > 0]),
-  "extraSections": count(*[_type == "product" && migrationKey == $key && count(cleaverExtraSections) > 0])
+  "extraSections": count(*[_type == "product" && migrationKey == $key && count(cleaverExtraSections) > 0]),
+  "worksWith": count(*[_type == "product" && migrationKey == $key && count(cleaverWorksWith) > 0])
 }`, { key: MIGRATION_KEY });
 
 console.log(JSON.stringify({
   sourceFamilies: families.size,
   familiesRead,
   familiesWithAtAGlance,
+  familiesWithWorksWith,
   productsPatched,
   patchFailures,
   readerFailures: readerFailures.length,
@@ -263,4 +365,5 @@ console.log(JSON.stringify({
   totals,
 }));
 
+if (!targetWorksWithVerified) throw new Error("Required MS7-UVS Works With fixture was not verified.");
 if (patchFailures > Math.max(10, productsPatched * 0.03)) throw new Error(`Cleaver fidelity patch failures too high: ${patchFailures}`);

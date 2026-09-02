@@ -25,6 +25,7 @@ function sectionKey(value: string) {
   if (key === "documents" || key === "document" || key === "downloads") return "documents";
   if (key === "all variations" || key === "variations") return "variations";
   if (key === "accessories" || key === "accessory") return "accessories";
+  if (key === "works with") return "works-with";
   return `extra:${key}`;
 }
 function SectionIcon({ name }: { name: string }) {
@@ -46,7 +47,7 @@ function SectionIcon({ name }: { name: string }) {
   if (key === "variations") {
     return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={common} aria-hidden><rect x="3" y="4" width="6" height="6" rx="1"/><rect x="15" y="4" width="6" height="6" rx="1"/><rect x="9" y="14" width="6" height="6" rx="1"/><path d="M6 10v2h12v-2M12 12v2"/></svg>;
   }
-  if (key === "accessories") {
+  if (key === "accessories" || key === "works-with") {
     return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={common} aria-hidden><path d="M14.2 6.1a4 4 0 0 0-5.3 5.3L3.5 16.8a2.6 2.6 0 1 0 3.7 3.7l5.4-5.4a4 4 0 0 0 5.3-5.3l-2.7 2.7-2.7-2.7 2.7-2.7Z"/></svg>;
   }
   if (/purchasing|platform|framework|procurement/i.test(name)) {
@@ -120,6 +121,7 @@ export default function CleaverProductSections({ product }: { product: CleaverPr
   const included = (product.cleaverIncludedItems || []).filter((item) => item.title);
   const variations = (product.cleaverVariations || []).filter((item) => item.title);
   const accessories = (product.cleaverAccessories || []).filter((item) => item.title);
+  const worksWith = (product.cleaverWorksWith || []).filter((item) => item.title);
   const videos = (product.cleaverVideos || []).filter((item) => item.url);
   const extraSections = (sourceProduct.cleaverExtraSections || []).filter((section) => section.title && section.html);
   const hasOverview = Boolean(product.overviewHtml);
@@ -147,7 +149,7 @@ export default function CleaverProductSections({ product }: { product: CleaverPr
     };
   });
 
-  const fallbackOrder = ["Overview", "Specifications", "What's Included", "Video", "Documents", "All Variations", "Accessories"];
+  const fallbackOrder = ["Overview", "Specifications", "What's Included", "Video", "Documents", "All Variations", "Accessories", "Works With"];
   const rawOrder = (sourceProduct.cleaverSourceSectionOrder || []).filter(Boolean);
   const sectionOrder = rawOrder.length ? rawOrder : [...fallbackOrder, ...extraSections.map((section) => section.title)];
   const seen = new Set<string>();
@@ -224,6 +226,11 @@ export default function CleaverProductSections({ product }: { product: CleaverPr
     if (key === "accessories") {
       if (!accessories.length) return null;
       return <SectionShell key={`section-${key}`} title={title || "Accessories"}><div className="overflow-x-auto border border-[#dedede]"><table className="w-full min-w-[680px] border-collapse text-left text-[14px]"><thead className="bg-[#f5f5f5]"><tr><th className="w-24 px-4 py-3.5 font-semibold text-[#303030]">Image</th><th className="px-5 py-3.5 font-semibold text-[#303030]">Accessory</th><th className="w-40 px-5 py-3.5 font-semibold text-[#303030]">Pack/Size</th></tr></thead><tbody>{accessories.map((item, itemIndex) => <tr key={`${item.sourceUrl || item.sku || item.title}-${itemIndex}`} className="border-t border-[#dedede]"><td className="px-4 py-3">{item.imageUrl ? <div className="relative h-16 w-16 bg-white"><CleaverSourceImage src={item.imageUrl} alt={item.title} size={64} /></div> : null}</td><td className="px-5 py-3.5"><ProductLink href={item.internalHref}>{item.title}</ProductLink></td><td className="px-5 py-3.5 text-[#4a4a4a]">{item.packSize || "—"}</td></tr>)}</tbody></table></div></SectionShell>;
+    }
+
+    if (key === "works-with") {
+      if (!worksWith.length) return null;
+      return <SectionShell key={`section-${key}`} title={title || "Works With"}><div className="overflow-x-auto border border-[#dedede]"><table className="w-full min-w-[680px] border-collapse text-left text-[14px]"><thead className="bg-[#f5f5f5]"><tr><th className="w-24 px-4 py-3.5 font-semibold text-[#303030]">Image</th><th className="px-5 py-3.5 font-semibold text-[#303030]">Product</th><th className="w-40 px-5 py-3.5 font-semibold text-[#303030]">Pack/Size</th></tr></thead><tbody>{worksWith.map((item, itemIndex) => <tr key={`${item.sourceUrl || item.sku || item.title}-${itemIndex}`} className="border-t border-[#dedede]"><td className="px-4 py-3">{item.imageUrl ? <div className="relative h-16 w-16 bg-white"><CleaverSourceImage src={item.imageUrl} alt={item.title} size={64} /></div> : null}</td><td className="px-5 py-3.5"><ProductLink href={item.internalHref}>{item.title}</ProductLink></td><td className="px-5 py-3.5 text-[#4a4a4a]">{item.packSize || "—"}</td></tr>)}</tbody></table></div></SectionShell>;
     }
 
     const extra = extraSections.find((section) => sectionKey(section.title) === key);

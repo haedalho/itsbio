@@ -52,6 +52,7 @@ const PRODUCT_PROJECTION = `{
   cleaverIncludedItems[]{title, quantity, sourceUrl, imageUrl},
   cleaverVariations[]{title, sku, packSize, priceText, imageUrl, internalHref},
   cleaverAccessories[]{title, sku, packSize, priceText, sourceUrl, imageUrl, internalHref},
+  cleaverWorksWith[]{title, sku, packSize, priceText, sourceUrl, imageUrl, internalHref},
   cleaverVideos[]{title, url, embedUrl},
   cleaverSourceSectionsMigratedAt
 }`;
