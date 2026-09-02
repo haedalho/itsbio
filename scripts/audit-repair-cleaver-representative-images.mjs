@@ -5,7 +5,7 @@ import path from "node:path";
 
 const WRITE = process.argv.includes("--write");
 const SOURCE_HOST = "www.thistlescientific.com";
-const USER_AGENT = "Mozilla/5.0 (compatible; ITS-BIO-CleaverImageAudit/1.0; +https://itsbio.co.kr)";
+const USER_AGENT = "Mozilla/5.0 (compatible; ITS-BIO-CleaverImageAudit/1.1; +https://itsbio.co.kr)";
 const MAP_PATH = path.join(process.cwd(), "data/cleaver-source-map.json");
 const INVENTORY_PATH = path.join(process.cwd(), "data/cleaver-product-catalog.json");
 
@@ -55,6 +55,20 @@ function imageFamilyTitle(value) {
     .replace(/[()[\]{},:+|]/g, " ")
     .replace(/[\s/_-]+/g, " ")
     .trim();
+}
+
+// Only a source title that explicitly says w/PPxxx may borrow the exact base
+// package SKU image. This prevents generic 500 g / 500 ml products from being
+// mistaken for electrophoresis packages simply because their SKU ends in 500.
+function explicitPowerPackageBaseSku(sku, title) {
+  const match = cleanText(title).match(/\b(?:w\s*\/\s*|with\s+)?PP\s*[-_]?\s*(\d+)\b/i);
+  if (!match) return "";
+  const power = match[1];
+  const normalized = normalizeSku(sku);
+  const ppSuffix = `PP${power}`;
+  if (normalized.endsWith(ppSuffix)) return normalized.slice(0, -ppSuffix.length).replace(/[-_/]+$/g, "");
+  if (normalized.endsWith(power)) return normalized.slice(0, -power.length).replace(/[-_/]+$/g, "");
+  return "";
 }
 
 async function pooled(items, limit, worker) {
@@ -190,6 +204,7 @@ let primaryChanged = 0;
 let recoveredMissing = 0;
 let directOfficial = 0;
 let inheritedSameSource = 0;
+let inheritedPowerPackage = 0;
 let inheritedTitleFamily = 0;
 let unresolvedNoOfficialImage = 0;
 const samples = [];
@@ -215,6 +230,16 @@ for (const rawSku of Object.keys(nextMap)) {
       candidate = donor;
       mode = "same-official-source-page";
       inheritedSameSource += 1;
+    }
+  }
+
+  if (!candidate) {
+    const baseSku = explicitPowerPackageBaseSku(sku, identity?.sourceTitle || product?.name);
+    const donor = baseSku ? direct.get(baseSku) : null;
+    if (donor) {
+      candidate = donor;
+      mode = `explicit-power-package:${baseSku}`;
+      inheritedPowerPackage += 1;
     }
   }
 
@@ -265,6 +290,7 @@ const stats = {
   primaryChanged,
   recoveredMissing,
   inheritedSameSource,
+  inheritedPowerPackage,
   inheritedTitleFamily,
   unresolvedNoOfficialImage,
   finalWithImages,
