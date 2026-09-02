@@ -19,7 +19,7 @@ permissions:
 
 concurrency:
   group: cleaver-managed-galleries-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   repair-cleaver-managed-galleries:
