@@ -104,8 +104,10 @@ function applySourceIdentity(product: CleaverProduct): CleaverProduct {
   const identity = sourceIdentityForSku(product.sku);
   if (!identity) return product;
   const manufacturerImages = sourceImages(identity);
-  const fallbackImages = (product.images || []).filter(Boolean);
-  const images = manufacturerImages.length ? manufacturerImages : fallbackImages;
+  const reviewedImages = (product.images || []).filter(Boolean);
+  // Preserve the reviewed/Sanity gallery and its order. Manufacturer images are
+  // only a fallback for products that still have no managed gallery.
+  const images = reviewedImages.length ? reviewedImages : manufacturerImages;
   return {
     ...product,
     sourceUrl: identity.sourceUrl || product.sourceUrl,
