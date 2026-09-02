@@ -1,5 +1,7 @@
 name: Repair Cleaver managed galleries
 
+# Re-run after representative-image source-map audits so Sanity keeps the
+# verified manufacturer image first for cards and product galleries.
 on:
   push:
     branches:
