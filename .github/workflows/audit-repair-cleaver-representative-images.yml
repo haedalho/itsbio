@@ -1,6 +1,6 @@
 name: Audit and repair Cleaver representative images
 
-# Verifies the official API identity first, then checks the exact Thistle product page before syncing Sanity.
+# Verifies the official API identity first, then checks the exact Thistle product page.
 on:
   push:
     branches:
@@ -16,22 +16,12 @@ permissions:
 
 concurrency:
   group: cleaver-representative-image-audit-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   audit-repair-representative-images:
     runs-on: ubuntu-latest
-    environment: Production
     timeout-minutes: 120
-    env:
-      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
-      NEXT_PUBLIC_SANITY_DATASET: production
-      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
-      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
-      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
-      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
-      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
-      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -47,8 +37,6 @@ jobs:
         run: node scripts/audit-repair-cleaver-representative-images.mjs --write
       - name: Recover remaining images from each official Thistle product page
         run: node scripts/repair-cleaver-source-page-images.mjs --write
-      - name: Apply verified representative images and gallery order to Sanity
-        run: node scripts/repair-cleaver-managed-galleries.mjs
       - name: Commit corrected manufacturer representative images
         shell: bash
         run: |
