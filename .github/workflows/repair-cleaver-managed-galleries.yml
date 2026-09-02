@@ -1,19 +1,21 @@
 name: Repair Cleaver managed galleries
 
-# Re-run after representative-image source-map audits so Sanity keeps the
-# verified manufacturer image first for cards and product galleries.
+# Reconcile every mapped SKU against the official API and exact Thistle
+# product page before Sanity keeps the verified manufacturer image first.
 on:
   push:
     branches:
       - agent/cleaver-full-thistle-sections
     paths:
+      - scripts/audit-repair-cleaver-representative-images.mjs
+      - scripts/repair-cleaver-source-page-images.mjs
       - scripts/repair-cleaver-managed-galleries.mjs
       - .github/workflows/repair-cleaver-managed-galleries.yml
       - data/cleaver-source-map.json
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: cleaver-managed-galleries-${{ github.ref }}
@@ -35,11 +37,30 @@ jobs:
       SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - name: Install project dependencies
         run: npm install --no-audit --no-fund
-      - name: Upload and order complete Thistle galleries in Sanity
+      - name: Verify representative images against official Thistle API
+        run: node scripts/audit-repair-cleaver-representative-images.mjs --write
+      - name: Recover remaining images from exact official Thistle product pages
+        run: node scripts/repair-cleaver-source-page-images.mjs --write
+      - name: Upload and order verified Thistle galleries in Sanity
         run: node scripts/repair-cleaver-managed-galleries.mjs
+      - name: Commit verified representative-image map
+        shell: bash
+        run: |
+          if git diff --quiet -- data/cleaver-source-map.json; then
+            echo "Cleaver representative image map is already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/cleaver-source-map.json
+          git commit -m "Repair Cleaver representative image fidelity"
+          git push origin HEAD:${{ github.ref_name }}
