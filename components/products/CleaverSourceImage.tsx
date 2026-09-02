@@ -29,21 +29,32 @@ function deliveryUrl(url: string) {
 }
 
 export default function CleaverSourceImage({ src, alt, size, className = "object-contain p-1" }: Props) {
-  const [failed, setFailed] = useState(false);
+  const [mode, setMode] = useState<"direct" | "proxy" | "failed">("direct");
+  const manufacturer = isManufacturerImage(src);
+  const proxy = deliveryUrl(src);
+  const resolvedSrc = mode === "proxy" ? proxy : src;
 
-  if (failed) {
+  if (mode === "failed") {
     return <span className="absolute inset-0 flex items-center justify-center bg-[#faf8fc] px-2 text-center text-xs text-slate-400">Image unavailable</span>;
   }
 
   return (
     <Image
-      src={deliveryUrl(src)}
+      key={`${resolvedSrc}-${mode}`}
+      src={resolvedSrc}
       alt={alt}
       fill
-      unoptimized={isManufacturerImage(src)}
+      unoptimized={manufacturer || mode === "proxy"}
+      quality={100}
       sizes={`${size}px`}
       className={className}
-      onError={() => setFailed(true)}
+      onError={() => {
+        if (manufacturer && mode === "direct" && proxy !== src) {
+          setMode("proxy");
+          return;
+        }
+        setMode("failed");
+      }}
     />
   );
 }
