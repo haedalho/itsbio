@@ -31,7 +31,9 @@ const CLEAVER_SOURCE_IMAGES = sourceMap as Record<string, SourceImageIdentity>;
 function productImageSources(product: CleaverProduct) {
   const sku = String(product.sku || "").normalize("NFKC").trim().toUpperCase();
   const mapped = CLEAVER_SOURCE_IMAGES[sku]?.images || [];
-  return Array.from(new Set([product.image, ...mapped].map((value) => String(value || "").trim()).filter(Boolean)));
+  // The audited Thistle representative image is authoritative for product cards.
+  // Sanity remains the fallback for SKUs where the manufacturer exposes no safe image.
+  return Array.from(new Set([...mapped, product.image].map((value) => String(value || "").trim()).filter(Boolean)));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
