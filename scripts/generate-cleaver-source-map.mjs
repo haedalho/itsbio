@@ -11,6 +11,7 @@ const WRITE = process.argv.includes("--write");
 const SOURCE_HOST = "www.thistlescientific.com";
 const USER_AGENT = "Mozilla/5.0 (compatible; ITS-BIO-CleaverCatalog/1.0; +https://itsbio.co.kr)";
 const OUTPUT_PATH = path.join(process.cwd(), "data/cleaver-source-map.json");
+const OVERRIDES_PATH = path.join(process.cwd(), "data/cleaver-source-overrides.json");
 
 const normalizeSku = (value) => String(value || "").normalize("NFKC").trim().toUpperCase();
 const cleanText = (value) => {
@@ -28,8 +29,16 @@ const packageFamilyKey = (value) => {
 };
 
 const inventory = JSON.parse(await readFile(path.join(process.cwd(), "data/cleaver-product-catalog.json"), "utf8"));
+const overrides = JSON.parse(await readFile(OVERRIDES_PATH, "utf8"));
 if (!Array.isArray(inventory) || inventory.length !== 1432) {
   throw new Error(`Expected exactly 1,432 reviewed Cleaver SKUs, got ${Array.isArray(inventory) ? inventory.length : "invalid data"}.`);
+}
+const inventorySkuSet = new Set(inventory.map((row) => normalizeSku(row.sku)));
+for (const [rawSku, override] of Object.entries(overrides)) {
+  const sku = normalizeSku(rawSku);
+  if (!inventorySkuSet.has(sku)) throw new Error(`Cleaver source override references an unknown reviewed SKU: ${sku}`);
+  const modes = [override?.canonicalSku, override?.sourceSlug, override?.exclude].filter(Boolean).length;
+  if (modes !== 1) throw new Error(`Cleaver source override must define exactly one resolution mode: ${sku}`);
 }
 
 async function pooled(items, limit, worker) {
@@ -135,6 +144,55 @@ for (const row of inventory) {
   };
 }
 
+// Some reviewed catalog rows use retired/legacy SKU spellings while the current
+// manufacturer catalog exposes only the canonical family page or a renamed SKU.
+// Resolve only reviewed, explicit aliases so title similarity can never attach a
+// product to the wrong manufacturer page.
+const directSlugs = [...new Set(Object.values(overrides).map((override) => String(override?.sourceSlug || "").trim()).filter(Boolean))];
+const directProductsBySlug = new Map();
+await pooled(directSlugs, 4, async (slug) => {
+  const url = new URL(`https://${SOURCE_HOST}/wp-json/wc/store/v1/products`);
+  url.searchParams.set("slug", slug);
+  url.searchParams.set("per_page", "10");
+  const rows = await fetchJson(url.toString());
+  const product = (Array.isArray(rows) ? rows : []).find((row) => String(row?.slug || "").trim() === slug);
+  if (!product) throw new Error(`Cleaver source override slug no longer resolves: ${slug}`);
+  directProductsBySlug.set(slug, product);
+});
+
+let canonicalOverrides = 0;
+let directOverrides = 0;
+const excludedSkus = [];
+for (const [rawSku, override] of Object.entries(overrides)) {
+  const sku = normalizeSku(rawSku);
+  if (override.exclude) {
+    excludedSkus.push(sku);
+    continue;
+  }
+
+  if (override.canonicalSku) {
+    const canonicalSku = normalizeSku(override.canonicalSku);
+    const identity = output[canonicalSku];
+    if (!identity) throw new Error(`Cleaver source override canonical SKU did not resolve: ${sku} -> ${canonicalSku}`);
+    output[sku] = { ...identity, images: [...(identity.images || [])] };
+    familyKeys.add(normalizedSourceKey(identity.sourceUrl));
+    canonicalOverrides += 1;
+    continue;
+  }
+
+  const product = directProductsBySlug.get(String(override.sourceSlug || "").trim());
+  const sourceTitle = cleanText(product?.name);
+  const sourceUrl = String(product?.permalink || "").trim();
+  const sourceSlug = String(product?.slug || "").trim();
+  const images = Array.from(new Set((Array.isArray(product?.images) ? product.images : [])
+    .map((image) => String(image?.src || "").trim())
+    .filter((url) => /^https:\/\//i.test(url))));
+  if (!sourceTitle || !sourceUrl || !sourceSlug) throw new Error(`Cleaver direct source override is incomplete: ${sku}`);
+  output[sku] = { sourceTitle, sourceUrl, sourceSlug, images };
+  familyKeys.add(normalizedSourceKey(sourceUrl));
+  directOverrides += 1;
+}
+
 // Fill image gaps only from deterministic manufacturer-family relationships.
 // 1) Exact manufacturer source URL peers are the same product family.
 // 2) Package siblings such as XXX-PP500 / XXX-PP500KIT are the same reviewed package family.
@@ -174,7 +232,11 @@ const stats = {
   reviewedInventory: inventory.length,
   manufacturerSkuMatches: productsBySku.size,
   mapped,
+  unmapped: inventory.length - mapped - excludedSkus.length,
+  excludedSkus,
   mappedWithImages,
+  canonicalOverrides,
+  directOverrides,
   inheritedBySource,
   inheritedByPackageFamily,
   manufacturerFamilies: familyKeys.size,
@@ -183,7 +245,7 @@ const stats = {
 };
 console.log(JSON.stringify(stats));
 
-if (productsBySku.size < 900 || mapped < 900 || familyKeys.size < 100) {
+if (productsBySku.size < 900 || mapped + excludedSkus.length !== inventory.length || familyKeys.size < 100) {
   throw new Error(`Cleaver source identity coverage unexpectedly low: ${JSON.stringify(stats)}`);
 }
 

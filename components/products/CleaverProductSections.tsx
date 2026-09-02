@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 
+import CleaverSourceImage from "@/components/products/CleaverSourceImage";
 import HtmlContent from "@/components/site/HtmlContent";
 import type { CleaverProduct } from "@/lib/cleaver/catalog";
 
@@ -27,7 +27,6 @@ function sectionKey(value: string) {
   if (key === "accessories" || key === "accessory") return "accessories";
   return `extra:${key}`;
 }
-
 function SectionIcon({ name }: { name: string }) {
   const key = sectionKey(name);
   const common = "h-[22px] w-[22px] shrink-0 text-[#6d2c86]";
@@ -79,17 +78,11 @@ function ProductLink({ href, children }: { href?: string; children: React.ReactN
   return <Link href={href} className="font-medium text-[#292929] transition hover:text-[#61247b]">{children}</Link>;
 }
 
-function SourceImage({ src, alt, size, className = "object-contain p-1" }: { src: string; alt: string; size: number; className?: string }) {
-  let direct = false;
-  try { direct = /(^|\.)thistlescientific\.com$/i.test(new URL(src).hostname); } catch { direct = false; }
-  return <Image src={src} alt={alt} fill unoptimized={direct} sizes={`${size}px`} className={className} />;
-}
-
 function IncludedCard({ title, quantity, imageUrl, href }: IncludedCardProps) {
   const body = (
     <>
       <div className="relative h-[150px] w-full overflow-hidden bg-white sm:h-[165px] lg:h-[190px]">
-        {imageUrl ? <SourceImage src={imageUrl} alt={title} size={240} className="object-contain object-center transition-transform duration-200 group-hover/card:scale-[1.03]" /> : <div className="absolute inset-0 flex items-center justify-center bg-[#faf8fc] text-xs text-slate-400">Image unavailable</div>}
+        {imageUrl ? <CleaverSourceImage src={imageUrl} alt={title} size={240} className="object-contain object-center transition-transform duration-200 group-hover/card:scale-[1.03]" /> : <div className="absolute inset-0 flex items-center justify-center bg-[#faf8fc] text-xs text-slate-400">Image unavailable</div>}
       </div>
       <h3 className="mt-4 min-h-[52px] w-full pr-2 text-[15px] font-semibold leading-[1.35] text-[#5b24f2] transition group-hover/card:underline md:text-[16px]">{title}</h3>
       <p className="mt-2 text-[14px] leading-5 text-[#5b24f2]">Qty: {quantity || "—"}</p>
@@ -225,12 +218,12 @@ export default function CleaverProductSections({ product }: { product: CleaverPr
 
     if (key === "variations") {
       if (!variations.length) return null;
-      return <SectionShell key={`section-${key}`} title={title || "All Variations"}><div className="overflow-x-auto border border-[#dedede]"><table className="w-full min-w-[680px] border-collapse text-left text-[14px]"><thead className="bg-[#f5f5f5]"><tr><th className="w-24 px-4 py-3.5 font-semibold text-[#303030]">Image</th><th className="px-5 py-3.5 font-semibold text-[#303030]">Variant</th><th className="w-40 px-5 py-3.5 font-semibold text-[#303030]">Pack/Size</th></tr></thead><tbody>{variations.map((item, itemIndex) => <tr key={`${item.sku || item.title}-${itemIndex}`} className="border-t border-[#dedede]"><td className="px-4 py-3">{item.imageUrl ? <div className="relative h-16 w-16 bg-white"><SourceImage src={item.imageUrl} alt={item.title} size={64} /></div> : null}</td><td className="px-5 py-3.5"><ProductLink href={item.internalHref}>{item.title}</ProductLink></td><td className="px-5 py-3.5 text-[#4a4a4a]">{item.packSize || "—"}</td></tr>)}</tbody></table></div></SectionShell>;
+      return <SectionShell key={`section-${key}`} title={title || "All Variations"}><div className="overflow-x-auto border border-[#dedede]"><table className="w-full min-w-[680px] border-collapse text-left text-[14px]"><thead className="bg-[#f5f5f5]"><tr><th className="w-24 px-4 py-3.5 font-semibold text-[#303030]">Image</th><th className="px-5 py-3.5 font-semibold text-[#303030]">Variant</th><th className="w-40 px-5 py-3.5 font-semibold text-[#303030]">Pack/Size</th></tr></thead><tbody>{variations.map((item, itemIndex) => <tr key={`${item.sku || item.title}-${itemIndex}`} className="border-t border-[#dedede]"><td className="px-4 py-3">{item.imageUrl ? <div className="relative h-16 w-16 bg-white"><CleaverSourceImage src={item.imageUrl} alt={item.title} size={64} /></div> : null}</td><td className="px-5 py-3.5"><ProductLink href={item.internalHref}>{item.title}</ProductLink></td><td className="px-5 py-3.5 text-[#4a4a4a]">{item.packSize || "—"}</td></tr>)}</tbody></table></div></SectionShell>;
     }
 
     if (key === "accessories") {
       if (!accessories.length) return null;
-      return <SectionShell key={`section-${key}`} title={title || "Accessories"}><div className="overflow-x-auto border border-[#dedede]"><table className="w-full min-w-[680px] border-collapse text-left text-[14px]"><thead className="bg-[#f5f5f5]"><tr><th className="w-24 px-4 py-3.5 font-semibold text-[#303030]">Image</th><th className="px-5 py-3.5 font-semibold text-[#303030]">Accessory</th><th className="w-40 px-5 py-3.5 font-semibold text-[#303030]">Pack/Size</th></tr></thead><tbody>{accessories.map((item, itemIndex) => <tr key={`${item.sourceUrl || item.sku || item.title}-${itemIndex}`} className="border-t border-[#dedede]"><td className="px-4 py-3">{item.imageUrl ? <div className="relative h-16 w-16 bg-white"><SourceImage src={item.imageUrl} alt={item.title} size={64} /></div> : null}</td><td className="px-5 py-3.5"><ProductLink href={item.internalHref}>{item.title}</ProductLink></td><td className="px-5 py-3.5 text-[#4a4a4a]">{item.packSize || "—"}</td></tr>)}</tbody></table></div></SectionShell>;
+      return <SectionShell key={`section-${key}`} title={title || "Accessories"}><div className="overflow-x-auto border border-[#dedede]"><table className="w-full min-w-[680px] border-collapse text-left text-[14px]"><thead className="bg-[#f5f5f5]"><tr><th className="w-24 px-4 py-3.5 font-semibold text-[#303030]">Image</th><th className="px-5 py-3.5 font-semibold text-[#303030]">Accessory</th><th className="w-40 px-5 py-3.5 font-semibold text-[#303030]">Pack/Size</th></tr></thead><tbody>{accessories.map((item, itemIndex) => <tr key={`${item.sourceUrl || item.sku || item.title}-${itemIndex}`} className="border-t border-[#dedede]"><td className="px-4 py-3">{item.imageUrl ? <div className="relative h-16 w-16 bg-white"><CleaverSourceImage src={item.imageUrl} alt={item.title} size={64} /></div> : null}</td><td className="px-5 py-3.5"><ProductLink href={item.internalHref}>{item.title}</ProductLink></td><td className="px-5 py-3.5 text-[#4a4a4a]">{item.packSize || "—"}</td></tr>)}</tbody></table></div></SectionShell>;
     }
 
     const extra = extraSections.find((section) => sectionKey(section.title) === key);

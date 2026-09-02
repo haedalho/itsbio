@@ -91,7 +91,6 @@ const PREFERRED_SOURCE_SKU: Record<string, string> = {
 function normalizedSku(value?: string) {
   return String(value || "").normalize("NFKC").trim().toUpperCase();
 }
-
 function sourceIdentityForSku(sku?: string) {
   return CLEAVER_SOURCE_MAP[normalizedSku(sku)] || null;
 }
@@ -195,6 +194,7 @@ function groupManufacturerProducts(products: CleaverProduct[]) {
 
   for (const rawProduct of products) {
     const product = manufacturerListingProduct(rawProduct);
+    if (!product.cleaverSourceTitle?.trim() || !product.sourceUrl) continue;
     const sourceKey = product.cleaverSourceTitle?.trim() && product.sourceUrl ? normalizedSourceUrl(product.sourceUrl) : "";
     const key = sourceKey ? `source:${sourceKey}` : `item:${product._id || product.slug || product.sku}`;
     const existing = grouped.get(key);
@@ -217,10 +217,26 @@ function groupManufacturerProducts(products: CleaverProduct[]) {
   return Array.from(grouped.values()).sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || a.title.localeCompare(b.title));
 }
 
+function applyVerifiedFixture(product: CleaverProduct, fixture: Partial<CleaverProduct>) {
+  const fixtureImages = (fixture.images || []).filter((url) => {
+    try { return new URL(url).hostname === "cdn.sanity.io"; } catch { return false; }
+  });
+  const productImages = (product.images || []).filter((url) => {
+    try { return new URL(url).hostname === "cdn.sanity.io"; } catch { return false; }
+  });
+  const managedImages = fixtureImages.length ? fixtureImages : productImages;
+  const merged = { ...product, ...fixture } as CleaverProduct;
+  if (managedImages.length) {
+    merged.images = managedImages;
+    merged.image = managedImages[0];
+  }
+  return merged;
+}
+
 function sourceBackedProduct(product: CleaverProduct) {
   let merged = applySourceIdentity(product);
   const fixture = getVerifiedCleaverSourceFixture(product.sku || "");
-  if (fixture) merged = { ...merged, ...fixture } as CleaverProduct;
+  if (fixture) merged = applyVerifiedFixture(merged, fixture);
   return merged;
 }
 
@@ -293,6 +309,7 @@ export const getCleaverProduct = cache(async (slugOrSku: string): Promise<Cleave
   if (fixtureBacked) return fixtureBacked;
   const mappedLocal = local ? null : findMappedProductBySourceSlug(decoded);
   const resolvedLocal = local || mappedLocal;
+  if (resolvedLocal && !sourceIdentityForSku(resolvedLocal.sku) && !getVerifiedCleaverSourceFixture(resolvedLocal.sku || "")) return null;
   const lookupSku = resolvedLocal?.sku || decoded;
   const sourceUrls = manufacturerSourceUrls(decoded);
 
@@ -317,7 +334,7 @@ export const getCleaverProduct = cache(async (slugOrSku: string): Promise<Cleave
         categoryPathTitles: product.categoryPathTitles?.length ? product.categoryPathTitles : cleaverCategoryTitles(categoryPath),
       } as CleaverProduct);
       const fixture = getVerifiedCleaverSourceFixture(product.sku || productLocal?.sku || "");
-      if (fixture) merged = { ...merged, ...fixture } as CleaverProduct;
+      if (fixture) merged = applyVerifiedFixture(merged, fixture);
       return merged;
     }
   } catch (error) {

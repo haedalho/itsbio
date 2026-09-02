@@ -5,6 +5,7 @@ on:
     paths:
       - scripts/generate-cleaver-source-map.mjs
       - data/cleaver-product-catalog.json
+      - data/cleaver-source-overrides.json
       - lib/cleaver/**
   workflow_dispatch:
 

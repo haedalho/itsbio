@@ -7,6 +7,7 @@ on:
     paths:
       - .github/workflows/migrate-cleaver-content.yml
       - data/cleaver-source-map.json
+      - data/cleaver-source-overrides.json
       - scripts/migrate-cleaver-content-to-sanity.mjs
       - scripts/migrate-cleaver-thistle-sections-to-sanity.mjs
       - scripts/migrate-cleaver-thistle-sections-v2.mjs
@@ -16,6 +17,7 @@ on:
     paths:
       - .github/workflows/migrate-cleaver-content.yml
       - data/cleaver-source-map.json
+      - data/cleaver-source-overrides.json
       - scripts/generate-cleaver-source-map.mjs
       - scripts/apply-cleaver-source-map-to-sanity.mjs
       - scripts/migrate-cleaver-thistle-sections-to-sanity.mjs
@@ -95,7 +97,7 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Import exact-SKU descriptions, specifications, PDFs, and high-resolution galleries
         run: node scripts/migrate-cleaver-content-to-sanity.mjs --apply
-      - name: Import complete Thistle product sections and verify the microDOC reference fixture
+      - name: Import complete Thistle sections and verify multiSUB Mini plus complex fixtures
         run: node scripts/run-cleaver-thistle-sections-production.mjs
       - name: Persist complete manufacturer titles and canonical URLs
         run: node scripts/apply-cleaver-source-map-to-sanity.mjs --apply

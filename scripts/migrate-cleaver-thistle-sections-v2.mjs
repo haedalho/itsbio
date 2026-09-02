@@ -10,9 +10,13 @@ const { createClient } = require("@sanity/client");
 
 const APPLY = process.argv.includes("--apply");
 const MIGRATION_KEY = "cleaver-products-2026-08-24";
-const SAMPLE_SKU = "CSL-MDOCUV254/3651D";
+const APPROVED_SAMPLE_SKU = "MSMINI10";
+const COMPLEX_SAMPLE_SKU = "CSL-MDOCUV254/3651D";
 const SOURCE_HOST = "www.thistlescientific.com";
 const READER = "https://r.jina.ai/";
+const READER_CONCURRENCY = Math.max(1, Math.min(12, Number.parseInt(process.env.CLEAVER_READER_CONCURRENCY || "6", 10) || 6));
+const READER_RETRY_CONCURRENCY = 2;
+const READER_RETRY_PASSES = 2;
 const normalizeSku = (value) => String(value || "").normalize("NFKC").trim().toUpperCase();
 const clean = (value) => String(value || "").replace(/\u00a0/g, " ").replace(/\r/g, "").replace(/[ \t]+/g, " ").trim();
 const oneLine = (value) => clean(value).replace(/\s+/g, " ");
@@ -260,9 +264,10 @@ function variations(family) {
 }
 
 const candidates = new Map();
-const failures = [];
+const failedFamilies = new Map();
 let completedFamilies = 0;
-await pooled([...sourceByUrl.entries()], 4, async ([sourceUrl, family]) => {
+
+async function readFamily(sourceUrl, family) {
   try {
     const markdown = await reader(sourceUrl);
     const shared = {
@@ -275,14 +280,44 @@ await pooled([...sourceByUrl.entries()], 4, async ([sourceUrl, family]) => {
       videos: videos(markdown),
     };
     for (const member of family) candidates.set(member.sku, { ...shared, sku: member.sku, specRows: specificationRows(markdown, member.sku) });
+    failedFamilies.delete(sourceUrl);
   } catch (error) {
-    failures.push({ sourceUrl, error: error instanceof Error ? error.message : String(error) });
+    failedFamilies.set(sourceUrl, { sourceUrl, family, error: error instanceof Error ? error.message : String(error) });
   }
+}
+
+await pooled([...sourceByUrl.entries()], READER_CONCURRENCY, async ([sourceUrl, family]) => {
+  await readFamily(sourceUrl, family);
   completedFamilies += 1;
-  if (completedFamilies <= 5 || completedFamilies % 50 === 0 || completedFamilies === sourceByUrl.size) console.log(`[Cleaver reader] families ${completedFamilies}/${sourceByUrl.size}, candidates=${candidates.size}, failures=${failures.length}`);
+  if (completedFamilies <= 5 || completedFamilies % 50 === 0 || completedFamilies === sourceByUrl.size) console.log(`[Cleaver reader] families ${completedFamilies}/${sourceByUrl.size}, candidates=${candidates.size}, failures=${failedFamilies.size}`);
 });
 
-const sample = candidates.get(SAMPLE_SKU);
+const initialReaderFailures = failedFamilies.size;
+for (let pass = 1; pass <= READER_RETRY_PASSES && failedFamilies.size; pass += 1) {
+  await new Promise((resolve) => setTimeout(resolve, 5_000 * pass));
+  const pending = [...failedFamilies.values()];
+  let retried = 0;
+  await pooled(pending, READER_RETRY_CONCURRENCY, async ({ sourceUrl, family }) => {
+    await readFamily(sourceUrl, family);
+    retried += 1;
+    if (retried % 20 === 0 || retried === pending.length) console.log(`[Cleaver reader] retry ${pass}/${READER_RETRY_PASSES}: ${retried}/${pending.length}, remaining=${failedFamilies.size}`);
+  });
+}
+
+const failures = [...failedFamilies.values()].map(({ sourceUrl, error }) => ({ sourceUrl, error }));
+
+const approvedSample = candidates.get(APPROVED_SAMPLE_SKU);
+const complexSample = candidates.get(COMPLEX_SAMPLE_SKU);
+const sampleStats = (sample) => sample && ({
+  sku: sample.sku,
+  overviewCharacters: sample.overviewHtml.length,
+  specifications: sample.specRows.length,
+  included: sample.includedItems.length,
+  documents: sample.docs.length,
+  variations: sample.variations.length,
+  accessories: sample.accessories.length,
+  videos: sample.videos.length,
+});
 const coverage = {
   overview: [...candidates.values()].filter((row) => row.overviewHtml).length,
   specifications: [...candidates.values()].filter((row) => row.specRows.length).length,
@@ -297,15 +332,21 @@ const stats = {
   reviewedInventory: inventory.length,
   mappedSkus: Object.keys(sourceMap).length,
   manufacturerFamilies: sourceByUrl.size,
+  readerConcurrency: READER_CONCURRENCY,
+  initialReaderFailures,
   candidates: candidates.size,
   readerFailures: failures.length,
   coverage,
-  sample: sample && { sku: sample.sku, overviewCharacters: sample.overviewHtml.length, specifications: sample.specRows.length, included: sample.includedItems.length, documents: sample.docs.length, variations: sample.variations.length, accessories: sample.accessories.length, videos: sample.videos.length },
+  approvedSample: sampleStats(approvedSample),
+  complexSample: sampleStats(complexSample),
   firstFailures: failures.slice(0, 8),
 };
 console.log(JSON.stringify(stats));
-if (!sample || sample.overviewHtml.length < 180 || sample.specRows.length < 6 || sample.includedItems.length < 2 || sample.docs.length < 2 || sample.variations.length < 10 || sample.accessories.length < 4) {
-  throw new Error(`Cleaver reader fixture failed: ${JSON.stringify(stats.sample || null)}`);
+if (!approvedSample || approvedSample.overviewHtml.length < 180 || approvedSample.specRows.length < 6 || approvedSample.includedItems.length < 2 || approvedSample.docs.length < 2 || approvedSample.variations.length < 3 || approvedSample.accessories.length < 4) {
+  throw new Error(`Approved multiSUB Mini reader fixture failed: ${JSON.stringify(stats.approvedSample || null)}`);
+}
+if (!complexSample || complexSample.overviewHtml.length < 180 || complexSample.specRows.length < 6 || complexSample.includedItems.length < 2 || complexSample.docs.length < 2 || complexSample.variations.length < 10 || complexSample.accessories.length < 4) {
+  throw new Error(`Complex Cleaver reader fixture failed: ${JSON.stringify(stats.complexSample || null)}`);
 }
 if (candidates.size < 900 || failures.length > Math.max(40, sourceByUrl.size * 0.12)) throw new Error(`Cleaver reader coverage incomplete: ${candidates.size} candidates, ${failures.length} family failures.`);
 if (!APPLY) process.exit(0);

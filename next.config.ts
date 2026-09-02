@@ -38,6 +38,11 @@ const nextConfig: NextConfig = {
         hostname: "www.thistlescientific.com",
         pathname: "/wp-content/uploads/**",
       },
+      {
+        protocol: "https",
+        hostname: "i0.wp.com",
+        pathname: "/www.thistlescientific.com/wp-content/uploads/**",
+      },
     ],
   },
   async redirects() {
