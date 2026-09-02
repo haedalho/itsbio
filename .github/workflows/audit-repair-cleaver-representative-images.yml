@@ -6,6 +6,7 @@ on:
       - agent/cleaver-full-thistle-sections
     paths:
       - scripts/audit-repair-cleaver-representative-images.mjs
+      - scripts/repair-cleaver-source-page-images.mjs
       - .github/workflows/audit-repair-cleaver-representative-images.yml
   workflow_dispatch:
 
@@ -19,7 +20,17 @@ concurrency:
 jobs:
   audit-repair-representative-images:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    environment: Production
+    timeout-minutes: 120
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -28,17 +39,24 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Compare all mapped Cleaver SKU representative images with Thistle
+          cache: npm
+      - name: Install project dependencies
+        run: npm install --no-audit --no-fund
+      - name: Compare all mapped Cleaver SKU representative images with Thistle API
         run: node scripts/audit-repair-cleaver-representative-images.mjs --write
+      - name: Recover remaining images from each official Thistle product page
+        run: node scripts/repair-cleaver-source-page-images.mjs --write
+      - name: Apply verified representative images and gallery order to Sanity
+        run: node scripts/repair-cleaver-managed-galleries.mjs
       - name: Commit corrected manufacturer representative images
         shell: bash
         run: |
           if git diff --quiet -- data/cleaver-source-map.json; then
-            echo "Cleaver representative images already match the verified manufacturer map."
+            echo "Cleaver representative images already match the verified manufacturer sources."
             exit 0
           fi
           git config user.name "github-actions[bot]"
-          git config user.email "4189826+github-actions[bot]@users.noreply.github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/cleaver-source-map.json
           git commit -m "Repair Cleaver representative image fidelity"
           git push origin HEAD:${{ github.ref_name }}
