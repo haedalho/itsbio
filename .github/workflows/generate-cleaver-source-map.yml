@@ -4,9 +4,12 @@ on:
   pull_request:
     paths:
       - scripts/generate-cleaver-source-map.mjs
+      - scripts/audit-repair-cleaver-representative-images.mjs
       - data/cleaver-product-catalog.json
       - data/cleaver-source-overrides.json
+      - data/cleaver-source-map.json
       - lib/cleaver/**
+      - .github/workflows/generate-cleaver-source-map.yml
   workflow_dispatch:
 
 permissions:
@@ -20,7 +23,7 @@ jobs:
   generate-source-map:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -34,15 +37,17 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Generate all Cleaver manufacturer titles, URLs and galleries
         run: node scripts/generate-cleaver-source-map.mjs --write
+      - name: Re-verify representative images against official Thistle SKU/parent identity
+        run: node scripts/audit-repair-cleaver-representative-images.mjs --write
       - name: Commit updated source map to preview branch
         shell: bash
         run: |
           if git diff --quiet -- data/cleaver-source-map.json; then
-            echo "Cleaver source map already current."
+            echo "Cleaver source map already current and representative images are verified."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/cleaver-source-map.json
-          git commit -m "Refresh complete Cleaver manufacturer source map"
+          git commit -m "Refresh verified Cleaver manufacturer source map"
           git push origin HEAD:${{ github.event.pull_request.head.ref || github.ref_name }}
