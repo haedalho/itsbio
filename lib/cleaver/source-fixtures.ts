@@ -82,14 +82,14 @@ const includedBySku = {
   ],
 } as const;
 
-// The manufacturer product gallery has four logical images in this exact order:
-// MSMINI-4, MSMINI-3, MSMINI-2, MSMINI-1. These are the reviewed Sanity-managed
-// copies, so the approved sample never depends on Thistle hotlink availability.
+// The manufacturer product gallery has four logical images in this exact order.
+// Use the verified full-size uploads rather than treating variation thumbnails as
+// the product gallery: MSMINI-4, MSMINI-3, MSMINI-2, MSMINI-1.
 const manufacturerImages = [
-  "https://cdn.sanity.io/images/9b5twpc8/production/38102520b913ca9f09516add4b74fabbafedf46a-1000x1000.jpg",
-  "https://cdn.sanity.io/images/9b5twpc8/production/1285a9daf1ca513b859f4bc8f71afd6b91a88997-3000x3000.jpg",
-  "https://cdn.sanity.io/images/9b5twpc8/production/4789f1f09eeff7c8877a899d8f30e794d2b2e3b6-3000x3000.jpg",
-  "https://cdn.sanity.io/images/9b5twpc8/production/76af60aa855d7ad4bd60ac722905619f306c81db-3000x3000.jpg",
+  "https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-4.WEB_.jpg",
+  "https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-3.WEB_.jpg",
+  "https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-2.WEB_.jpg",
+  "https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-1.WEB_.jpg",
 ];
 
 const baseFixture: Partial<CleaverProduct> = {
