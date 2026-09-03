@@ -7,23 +7,6 @@ import BrandLogo from "./BrandLogo";
 import ProductsMegaMenu from "./ProductsMegaMenu";
 import SearchBox from "./SearchBox";
 
-const CLEAVER_MENU_ROUTE_MAP: Record<string, string> = {
-  "/products/cleaver/electrophoresis-equipment": "/products/cleaver/main-products/electrophoresis-systems",
-  "/products/cleaver/gel-documentation": "/products/cleaver/main-products/gel-documentation-imaging",
-  "/products/cleaver/electrophoresis-reagents": "/products/cleaver/main-products/electrophoresis-reagents",
-  "/products/cleaver/general-laboratory-products": "/products/cleaver/main-products/general-laboratory-equipment",
-  "/products/cleaver/teaching-and-education": "/products/cleaver/main-products/teaching-education",
-  "/products/cleaver/electrophoresis-accessories": "/products/cleaver/accessories/electrophoresis-accessories",
-  "/products/cleaver/gel-documentation-accessories": "/products/cleaver/accessories/gel-documentation-accessories",
-  "/products/cleaver/general-laboratory-accessories": "/products/cleaver/accessories/general-laboratory-accessories",
-  "/products/cleaver/replacement-parts-spares": "/products/cleaver/accessories/replacement-parts-spares",
-};
-
-function resolvedCleaverHref(url: URL) {
-  const pathname = CLEAVER_MENU_ROUTE_MAP[url.pathname] || url.pathname;
-  return `${pathname}${url.search}${url.hash}`;
-}
-
 function useClickOutside<T extends HTMLElement>(onOutside: () => void) {
   const ref = useRef<T | null>(null);
 
@@ -61,28 +44,6 @@ export default function Header() {
       document.body.style.overflow = prev;
     };
   }, [mobileOpen]);
-
-  useEffect(() => {
-    const rewriteCleaverLinks = () => {
-      document.querySelectorAll<HTMLAnchorElement>('a[href^="/products/cleaver/"]').forEach((anchor) => {
-        let url: URL;
-        try {
-          url = new URL(anchor.href, window.location.href);
-        } catch {
-          return;
-        }
-        const correctedPath = CLEAVER_MENU_ROUTE_MAP[url.pathname];
-        if (!correctedPath) return;
-        const correctedHref = `${correctedPath}${url.search}${url.hash}`;
-        if (anchor.getAttribute("href") !== correctedHref) anchor.setAttribute("href", correctedHref);
-      });
-    };
-
-    rewriteCleaverLinks();
-    const observer = new MutationObserver(rewriteCleaverLinks);
-    observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -129,41 +90,14 @@ export default function Header() {
       if (url.origin !== window.location.origin) return;
       if (!url.pathname.startsWith("/products/cleaver")) return;
 
-      const href = resolvedCleaverHref(url);
+      const href = `${url.pathname}${url.search}`;
       if (prefetched.has(href)) return;
       prefetched.add(href);
       router.prefetch(href);
     };
 
-    const onClick = (event: MouseEvent) => {
-      if (event.defaultPrevented || event.button !== 0) return;
-      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-
-      const target = event.target as Element | null;
-      const anchor = target?.closest?.("a[href]") as HTMLAnchorElement | null;
-      if (!anchor) return;
-
-      let url: URL;
-      try {
-        url = new URL(anchor.href, window.location.href);
-      } catch {
-        return;
-      }
-
-      if (url.origin !== window.location.origin) return;
-      const correctedPath = CLEAVER_MENU_ROUTE_MAP[url.pathname];
-      if (!correctedPath) return;
-
-      event.preventDefault();
-      router.push(`${correctedPath}${url.search}${url.hash}`);
-    };
-
     document.addEventListener("pointerover", onPointerOver, { passive: true });
-    document.addEventListener("click", onClick, true);
-    return () => {
-      document.removeEventListener("pointerover", onPointerOver);
-      document.removeEventListener("click", onClick, true);
-    };
+    return () => document.removeEventListener("pointerover", onPointerOver);
   }, [router]);
 
   return (
