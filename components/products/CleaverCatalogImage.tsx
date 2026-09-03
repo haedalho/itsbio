@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type Props = {
   title: string;
@@ -18,7 +18,7 @@ function isManufacturerImage(url: string) {
 
 export default function CleaverCatalogImage({ title, sources }: Props) {
   const [fallbackImages, setFallbackImages] = useState<string[]>([]);
-  const [fallbackRequested, setFallbackRequested] = useState(false);
+  const fallbackRequested = useRef(false);
   const candidates = useMemo(
     () => Array.from(new Set([...sources, ...fallbackImages].map((value) => String(value || "").trim()).filter(Boolean))),
     [sources, fallbackImages],
@@ -27,8 +27,8 @@ export default function CleaverCatalogImage({ title, sources }: Props) {
   const active = candidates[index] || "";
 
   useEffect(() => {
-    if (active || fallbackRequested) return;
-    setFallbackRequested(true);
+    if (active || fallbackRequested.current) return;
+    fallbackRequested.current = true;
 
     const controller = new AbortController();
     const params = new URLSearchParams({ title });
@@ -46,7 +46,7 @@ export default function CleaverCatalogImage({ title, sources }: Props) {
       });
 
     return () => controller.abort();
-  }, [active, fallbackRequested, title]);
+  }, [active, title]);
 
   if (!active) {
     return (
