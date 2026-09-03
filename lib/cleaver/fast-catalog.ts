@@ -6,7 +6,6 @@ import {
   type CleaverProduct,
 } from "@/lib/cleaver/catalog";
 import { getVerifiedCleaverSourceFixture } from "@/lib/cleaver/source-fixtures";
-import { sanityCdnClient } from "@/lib/sanity/sanity.client";
 
 type SourceIdentity = {
   sourceTitle?: string;
@@ -22,22 +21,7 @@ type ProductPage = {
   pageCount: number;
 };
 
-type ManagedImageRow = {
-  sku?: string;
-  images?: string[];
-};
-
 const SOURCE_MAP = sourceMap as Record<string, SourceIdentity>;
-const IMAGE_CACHE = { next: { revalidate: 86400 } } as const;
-const CLEAVER_FILTER = `
-  _type == "product"
-  && (!defined(isActive) || isActive == true)
-  && (
-    brandSlug in ["cleaver", "cleaverscientific"]
-    || brand->slug.current in ["cleaver", "cleaverscientific"]
-    || brand->themeKey in ["cleaver", "cleaverscientific"]
-  )
-`;
 
 function normalizedSku(value?: string) {
   return String(value || "").normalize("NFKC").trim().toUpperCase();
@@ -49,16 +33,6 @@ function sourceIdentityForSku(sku?: string) {
 
 function uniqueUrls(values: Array<string | undefined>) {
   return Array.from(new Set(values.map((value) => String(value || "").trim()).filter(Boolean)));
-}
-
-function sanityImages(values?: string[]) {
-  return uniqueUrls(values || []).filter((value) => {
-    try {
-      return new URL(value).hostname === "cdn.sanity.io";
-    } catch {
-      return false;
-    }
-  });
 }
 
 function normalizedSourceUrl(value?: string) {
@@ -116,7 +90,11 @@ function groupedProducts(products: CleaverProduct[]) {
     const existingOrder = Number.isFinite(existing.order) ? existing.order : Number.MAX_SAFE_INTEGER;
     const candidateOrder = Number.isFinite(product.order) ? product.order : Number.MAX_SAFE_INTEGER;
     if ((!existing.image && product.image) || candidateOrder < existingOrder) {
-      grouped.set(key, { ...product, image: product.image || existing.image, images: product.images?.length ? product.images : existing.images });
+      grouped.set(key, {
+        ...product,
+        image: product.image || existing.image,
+        images: product.images?.length ? product.images : existing.images,
+      });
     }
   }
 
@@ -125,41 +103,12 @@ function groupedProducts(products: CleaverProduct[]) {
   );
 }
 
-async function managedImagesBySku(skus: string[]) {
-  const normalized = Array.from(new Set(skus.map(normalizedSku).filter(Boolean)));
-  if (!normalized.length) return new Map<string, string[]>();
-
-  try {
-    const rows = await sanityCdnClient.fetch<ManagedImageRow[]>(`
-      *[
-        ${CLEAVER_FILTER}
-        && upper(sku) in $skus
-        && defined(images[0].asset->url)
-      ]{
-        sku,
-        "images": images[defined(asset->url)][].asset->url
-      }
-    `, { skus: normalized }, IMAGE_CACHE);
-
-    const result = new Map<string, string[]>();
-    for (const row of Array.isArray(rows) ? rows : []) {
-      const sku = normalizedSku(row.sku);
-      const images = sanityImages(row.images);
-      if (sku && images.length && !result.has(sku)) result.set(sku, images);
-    }
-    return result;
-  } catch (error) {
-    console.error("Unable to load Cleaver managed card images:", error instanceof Error ? error.message : error);
-    return new Map<string, string[]>();
-  }
-}
-
-function applyManagedImages(product: CleaverProduct, managed: Map<string, string[]>) {
-  const images = managed.get(normalizedSku(product.sku));
-  if (!images?.length) return product;
-  return { ...product, image: images[0], images };
-}
-
+/**
+ * Category/list navigation must stay independent from Sanity and the
+ * manufacturer site. All information required to choose and render the first
+ * page is already in the checked-in Cleaver inventory/source map. This keeps
+ * client navigation responsive even when an external service is cold/slow.
+ */
 export async function getFastCleaverProductPage(path: string[], query: string, requestedPage = 1): Promise<ProductPage> {
   const needle = query.normalize("NFKC").trim().toLowerCase();
   const matches = CLEAVER_INVENTORY
@@ -176,11 +125,9 @@ export async function getFastCleaverProductPage(path: string[], query: string, r
   const pageCount = Math.max(1, Math.ceil(grouped.length / CLEAVER_PAGE_SIZE));
   const page = Math.min(Math.max(1, requestedPage), pageCount);
   const start = (page - 1) * CLEAVER_PAGE_SIZE;
-  const products = grouped.slice(start, start + CLEAVER_PAGE_SIZE);
-  const managed = await managedImagesBySku(products.map((product) => product.sku));
 
   return {
-    products: products.map((product) => applyManagedImages(product, managed)),
+    products: grouped.slice(start, start + CLEAVER_PAGE_SIZE),
     total: grouped.length,
     page,
     pageCount,
@@ -188,16 +135,12 @@ export async function getFastCleaverProductPage(path: string[], query: string, r
 }
 
 export async function getFastCleaverCategoryCovers() {
-  const representativeProducts = CLEAVER_CATEGORIES.map((category) =>
-    CLEAVER_INVENTORY.find((product) => product.categoryPath[0] === category.slug),
-  ).filter((product): product is CleaverProduct => Boolean(product));
-  const managed = await managedImagesBySku(representativeProducts.map((product) => product.sku));
   const covers: Record<string, string> = {};
 
   for (const category of CLEAVER_CATEGORIES) {
-    const localProduct = representativeProducts.find((product) => product.categoryPath[0] === category.slug);
+    const localProduct = CLEAVER_INVENTORY.find((product) => product.categoryPath[0] === category.slug);
     if (!localProduct) continue;
-    const product = applyManagedImages(fastProduct(localProduct), managed);
+    const product = fastProduct(localProduct);
     if (product.image) covers[category.slug] = product.image;
   }
 
