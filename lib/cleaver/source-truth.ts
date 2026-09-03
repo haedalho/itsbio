@@ -50,9 +50,52 @@ const SPARSE_PRODUCT_OVERRIDES: Record<string, Partial<CleaverProduct>> = {
     cleaverWorksWith: [],
     cleaverVideos: [],
   },
+  "CSL-MDOCEB": {
+    overviewHtml: "",
+    cleaverAtAGlance: [],
+    specsHtml: "",
+    specRows: [],
+    docs: [],
+    cleaverIncludedItems: [],
+    cleaverVariations: [],
+    cleaverAccessories: [],
+    cleaverWorksWith: [],
+    cleaverVideos: [],
+  },
+  "CSL-MDOCSBRG": {
+    overviewHtml: "",
+    cleaverAtAGlance: [],
+    specsHtml: "",
+    specRows: [],
+    docs: [],
+    cleaverIncludedItems: [],
+    cleaverVariations: [],
+    cleaverAccessories: [],
+    cleaverWorksWith: [],
+    cleaverVideos: [],
+  },
 };
 
 const VERIFIED_PRODUCT_OVERRIDES: Record<string, Partial<CleaverProduct>> = {
+  "CSL-MDOCWLB": {
+    cleaverAtAGlance: [
+      "White light box for Microdoc or standalone 240V",
+      "Dimmable LED lights",
+      "Energy Efficient",
+      "2m USB cable",
+    ],
+    overviewHtml: "<p>A white light tablet is used in gel documentation systems to visualize protein gels that have been stained with visible dyes such as Coomassie blue or silver stain. These tablets provide a uniform light source that illuminates the gel from below, allowing for clear visualization and documentation of the stained proteins. This is particularly useful in laboratories for analysing and recording protein samples separated by electrophoresis.</p>",
+    specRows: [
+      { label: "Power", value: "Main UK/EU Plug with USB Slot" },
+      { label: "Overall Dimensions", value: "36 x 27 x 8mm" },
+      { label: "Working light area", value: "32 x 23cm" },
+      { label: "Weight", value: "0.9Kg" },
+    ],
+    cleaverSourceSectionOrder: ["Overview", "Specifications"],
+    docs: [],
+    cleaverVideos: [],
+    cleaverWorksWith: [],
+  },
   "MS7-UV7": {
     cleaverAtAGlance: [
       "7 x 7cm agarose gel electrophoresis casting tray.",
