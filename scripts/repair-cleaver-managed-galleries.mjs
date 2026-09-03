@@ -44,6 +44,27 @@ function canonicalImageUrl(value) {
   }
 }
 
+function imageBasename(value) {
+  try {
+    return decodeURIComponent(new URL(String(value || "")).pathname.split("/").filter(Boolean).at(-1) || "");
+  } catch {
+    return "";
+  }
+}
+
+function imageFilename(value) {
+  return imageBasename(value).toLowerCase();
+}
+
+function reviewedDownloadCandidates(officialUrl) {
+  const filename = imageBasename(officialUrl);
+  if (!filename) return [officialUrl];
+  return [
+    officialUrl,
+    `https://wisertech.it/wp-content/uploads/2025/12/${encodeURIComponent(filename)}`,
+  ];
+}
+
 async function retry(label, operation, maximum = 5) {
   for (let attempt = 0; attempt < maximum; attempt += 1) {
     try {
@@ -77,10 +98,13 @@ const targets = Object.entries(sourceMap || {})
   .filter((entry) => entry.product && Array.isArray(entry.identity?.images) && entry.identity.images.length);
 
 const assetByUrl = new Map();
+const assetByFilename = new Map();
 for (const product of products || []) {
   for (const image of product.images || []) {
     const sourceUrl = canonicalImageUrl(image?.sourceUrl);
     if (sourceUrl && image?.assetId && !assetByUrl.has(sourceUrl)) assetByUrl.set(sourceUrl, Promise.resolve({ _id: image.assetId }));
+    const filename = imageFilename(image?.sourceUrl);
+    if (filename && image?.assetId && !assetByFilename.has(filename)) assetByFilename.set(filename, Promise.resolve({ _id: image.assetId }));
   }
 }
 
@@ -98,19 +122,35 @@ async function managedAsset(rawUrl, sku) {
     reusedAssets += 1;
     return assetByUrl.get(url);
   }
+  const filenameKey = imageFilename(url);
+  if (filenameKey && assetByFilename.has(filenameKey)) {
+    reusedAssets += 1;
+    return assetByFilename.get(filenameKey);
+  }
 
   const task = retry(`download ${sku}`, async () => {
-    const response = await fetch(url, {
-      headers: {
-        Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-        "Accept-Language": "en-GB,en;q=0.9",
-        Referer: "https://www.thistlescientific.com/",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
-      },
-      redirect: "follow",
-      signal: AbortSignal.timeout(60_000),
-    });
-    if (!response.ok) throw Object.assign(new Error(`image HTTP ${response.status}`), { statusCode: response.status });
+    let response;
+    let downloadedFrom = "";
+    let lastStatus = 0;
+    for (const candidate of reviewedDownloadCandidates(url)) {
+      const candidateUrl = new URL(candidate);
+      response = await fetch(candidateUrl, {
+        headers: {
+          Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+          "Accept-Language": "en-GB,en;q=0.9",
+          Referer: `${candidateUrl.origin}/`,
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+        },
+        redirect: "follow",
+        signal: AbortSignal.timeout(60_000),
+      });
+      lastStatus = response.status;
+      if (response.ok) {
+        downloadedFrom = candidate;
+        break;
+      }
+    }
+    if (!response?.ok) throw Object.assign(new Error(`image HTTP ${lastStatus}`), { statusCode: lastStatus });
     const contentType = String(response.headers.get("content-type") || "").toLowerCase();
     const declared = Number.parseInt(response.headers.get("content-length") || "0", 10);
     if (!contentType.startsWith("image/") || declared > MAX_IMAGE_BYTES) throw new Error(`Unsupported image response for ${url}`);
@@ -121,17 +161,19 @@ async function managedAsset(rawUrl, sku) {
     const asset = await retry(`upload ${sku}`, () => client.assets.upload("image", bytes, {
       filename,
       contentType,
-      source: { id: url, name: "Cleaver / Thistle manufacturer gallery" },
+      source: { id: url, name: downloadedFrom === url ? "Cleaver / Thistle manufacturer gallery" : "Cleaver / Thistle exact-filename reviewed mirror" },
     }));
     uploads += 1;
     return asset;
   });
 
   assetByUrl.set(url, task);
+  if (filenameKey) assetByFilename.set(filenameKey, task);
   try {
     return await task;
   } catch (error) {
     assetByUrl.delete(url);
+    if (filenameKey) assetByFilename.delete(filenameKey);
     throw error;
   }
 }
