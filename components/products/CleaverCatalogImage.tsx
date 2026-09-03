@@ -3,7 +3,10 @@
 import Image from "next/image";
 import { useMemo, useState } from "react";
 
+import { useCleaverManagedImages } from "./CleaverCatalogImageProvider";
+
 type Props = {
+  sku: string;
   title: string;
   sources: string[];
 };
@@ -16,10 +19,11 @@ function isManufacturerImage(url: string) {
   }
 }
 
-export default function CleaverCatalogImage({ title, sources }: Props) {
+export default function CleaverCatalogImage({ sku, title, sources }: Props) {
+  const managedImages = useCleaverManagedImages(sku);
   const candidates = useMemo(
-    () => Array.from(new Set(sources.map((value) => String(value || "").trim()).filter(Boolean))),
-    [sources],
+    () => Array.from(new Set([...sources, ...managedImages].map((value) => String(value || "").trim()).filter(Boolean))),
+    [sources, managedImages],
   );
   const [index, setIndex] = useState(0);
   const active = candidates[index] || "";
