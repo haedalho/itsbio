@@ -5,6 +5,7 @@ import {
   CLEAVER_PAGE_SIZE,
   type CleaverProduct,
 } from "@/lib/cleaver/catalog";
+import { verifiedCleaverFamilyImages } from "@/lib/cleaver/source-fallbacks";
 import { getVerifiedCleaverSourceFixture } from "@/lib/cleaver/source-fixtures";
 
 type SourceIdentity = {
@@ -50,10 +51,14 @@ function normalizedSourceUrl(value?: string) {
 function fastProduct(localProduct: CleaverProduct): CleaverProduct {
   const identity = sourceIdentityForSku(localProduct.sku);
   const fixture = getVerifiedCleaverSourceFixture(localProduct.sku || "") as Partial<CleaverProduct> | null;
-  const manufacturerImages = uniqueUrls(identity?.images || []);
+  const exactManufacturerImages = uniqueUrls(identity?.images || []);
   const sourceTitle = String(
     identity?.sourceTitle || fixture?.cleaverSourceTitle || fixture?.title || localProduct.cleaverSourceTitle || localProduct.title,
   ).trim();
+  const familyImages = exactManufacturerImages.length
+    ? []
+    : verifiedCleaverFamilyImages(localProduct.sku, sourceTitle);
+  const manufacturerImages = exactManufacturerImages.length ? exactManufacturerImages : familyImages;
 
   return {
     ...localProduct,
