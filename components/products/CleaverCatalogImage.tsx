@@ -8,6 +8,14 @@ type Props = {
   sources: string[];
 };
 
+function isManufacturerImage(url: string) {
+  try {
+    return /(^|\.)thistlescientific\.com$/i.test(new URL(url).hostname);
+  } catch {
+    return false;
+  }
+}
+
 export default function CleaverCatalogImage({ title, sources }: Props) {
   const candidates = useMemo(
     () => Array.from(new Set(sources.map((value) => String(value || "").trim()).filter(Boolean))),
@@ -33,6 +41,7 @@ export default function CleaverCatalogImage({ title, sources }: Props) {
       src={active}
       alt={title}
       fill
+      unoptimized={isManufacturerImage(active)}
       quality={85}
       sizes="(max-width: 768px) 48vw, (max-width: 1280px) 32vw, 350px"
       className="object-contain p-3 transition duration-500 group-hover:scale-[1.04]"
