@@ -1,6 +1,7 @@
 import sourceMap from "@/data/cleaver-source-map.json";
 import { cleaverProductSlug, type CleaverProduct } from "@/lib/cleaver/catalog";
 import { mergeCleaverVideos, verifiedCleaverSourceVideos } from "@/lib/cleaver/source-fallbacks";
+import { getCleaverSourceTruthOverride } from "@/lib/cleaver/source-truth";
 
 const SOURCE_URL = "https://www.thistlescientific.com/product/multisub-mini-mini-horizontal-electrophoresis-system/";
 const SOURCE_TITLE = "multiSUB Mini, Mini Horizontal Electrophoresis System";
@@ -160,13 +161,18 @@ export function getVerifiedCleaverSourceFixture(sku: string) {
   const identity = SOURCE_MAP[key];
   const sourceUrl = identity?.sourceUrl || explicit?.sourceUrl;
   const sourceTitle = identity?.sourceTitle || explicit?.cleaverSourceTitle;
+  const truthOverride = getCleaverSourceTruthOverride(key, sourceUrl);
+  const truthDefinesVideos = Boolean(truthOverride && Object.prototype.hasOwnProperty.call(truthOverride, "cleaverVideos"));
   const sourceVideos = verifiedCleaverSourceVideos(sourceUrl, sourceTitle);
-  const videos = mergeCleaverVideos(explicit?.cleaverVideos, sourceVideos);
+  const videos = truthDefinesVideos
+    ? truthOverride?.cleaverVideos || []
+    : mergeCleaverVideos(explicit?.cleaverVideos, sourceVideos);
 
-  if (!explicit && !videos.length) return null;
+  if (!explicit && !truthOverride && !videos.length) return null;
 
   return {
     ...(explicit || {}),
-    ...(videos.length ? { cleaverVideos: videos } : {}),
+    ...(truthOverride || {}),
+    ...(truthDefinesVideos || videos.length ? { cleaverVideos: videos } : {}),
   } as Partial<CleaverProduct>;
 }
