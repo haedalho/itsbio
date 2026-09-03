@@ -7,13 +7,18 @@ import BrandLogo from "./BrandLogo";
 import ProductsMegaMenu from "./ProductsMegaMenu";
 import SearchBox from "./SearchBox";
 
-const CLEAVER_ROUTE_ALIASES: Record<string, string> = {
+const CLEAVER_MENU_ROUTE_MAP: Record<string, string> = {
   "/products/cleaver/electrophoresis-equipment": "/products/cleaver/main-products/electrophoresis-systems",
   "/products/cleaver/gel-documentation": "/products/cleaver/main-products/gel-documentation-imaging",
   "/products/cleaver/electrophoresis-reagents": "/products/cleaver/main-products/electrophoresis-reagents",
   "/products/cleaver/general-laboratory-products": "/products/cleaver/main-products/general-laboratory-equipment",
   "/products/cleaver/teaching-and-education": "/products/cleaver/main-products/teaching-education",
 };
+
+function resolvedCleaverHref(url: URL) {
+  const pathname = CLEAVER_MENU_ROUTE_MAP[url.pathname] || url.pathname;
+  return `${pathname}${url.search}${url.hash}`;
+}
 
 function useClickOutside<T extends HTMLElement>(onOutside: () => void) {
   const ref = useRef<T | null>(null);
@@ -56,9 +61,25 @@ export default function Header() {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       router.prefetch("/products/cleaver");
+
       if (pathname === "/products/cleaver" || pathname === "/products/cleaver/") {
         router.prefetch("/products/cleaver/main-products");
         router.prefetch("/products/cleaver/accessories");
+      } else if (pathname.startsWith("/products/cleaver/main-products")) {
+        [
+          "/products/cleaver/main-products/electrophoresis-systems",
+          "/products/cleaver/main-products/gel-documentation-imaging",
+          "/products/cleaver/main-products/general-laboratory-equipment",
+          "/products/cleaver/main-products/electrophoresis-reagents",
+          "/products/cleaver/main-products/teaching-education",
+        ].forEach((href) => router.prefetch(href));
+      } else if (pathname.startsWith("/products/cleaver/accessories")) {
+        [
+          "/products/cleaver/accessories/electrophoresis-accessories",
+          "/products/cleaver/accessories/gel-documentation-accessories",
+          "/products/cleaver/accessories/general-laboratory-accessories",
+          "/products/cleaver/accessories/replacement-parts-spares",
+        ].forEach((href) => router.prefetch(href));
       }
     }, 450);
 
@@ -67,36 +88,10 @@ export default function Header() {
 
   useEffect(() => {
     const prefetched = new Set<string>();
-
-    const resolvedCleaverHref = (anchor: HTMLAnchorElement) => {
-      let url: URL;
-      try {
-        url = new URL(anchor.href, window.location.href);
-      } catch {
-        return null;
-      }
-      if (url.origin !== window.location.origin) return null;
-      const pathname = CLEAVER_ROUTE_ALIASES[url.pathname] || url.pathname;
-      if (!pathname.startsWith("/products/cleaver")) return null;
-      return `${pathname}${url.search}`;
-    };
-
     const onPointerOver = (event: PointerEvent) => {
       const target = event.target as Element | null;
       const anchor = target?.closest?.("a[href]") as HTMLAnchorElement | null;
       if (!anchor) return;
-      const href = resolvedCleaverHref(anchor);
-      if (!href || prefetched.has(href)) return;
-      prefetched.add(href);
-      router.prefetch(href);
-    };
-
-    const onClick = (event: MouseEvent) => {
-      if (event.defaultPrevented || event.button !== 0) return;
-      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-      const target = event.target as Element | null;
-      const anchor = target?.closest?.("a[href]") as HTMLAnchorElement | null;
-      if (!anchor || (anchor.target && anchor.target !== "_self")) return;
 
       let url: URL;
       try {
@@ -104,19 +99,45 @@ export default function Header() {
       } catch {
         return;
       }
-      if (url.origin !== window.location.origin) return;
 
-      const corrected = CLEAVER_ROUTE_ALIASES[url.pathname];
-      if (!corrected) return;
+      if (url.origin !== window.location.origin) return;
+      if (!url.pathname.startsWith("/products/cleaver")) return;
+
+      const href = resolvedCleaverHref(url);
+      if (prefetched.has(href)) return;
+      prefetched.add(href);
+      router.prefetch(href);
+    };
+
+    const onClick = (event: MouseEvent) => {
+      if (event.defaultPrevented || event.button !== 0) return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+      const target = event.target as Element | null;
+      const anchor = target?.closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!anchor) return;
+
+      let url: URL;
+      try {
+        url = new URL(anchor.href, window.location.href);
+      } catch {
+        return;
+      }
+
+      if (url.origin !== window.location.origin) return;
+      const correctedPath = CLEAVER_MENU_ROUTE_MAP[url.pathname];
+      if (!correctedPath) return;
+
       event.preventDefault();
-      router.push(`${corrected}${url.search}`);
+      event.stopPropagation();
+      router.push(`${correctedPath}${url.search}${url.hash}`);
     };
 
     document.addEventListener("pointerover", onPointerOver, { passive: true });
-    document.addEventListener("click", onClick);
+    document.addEventListener("click", onClick, true);
     return () => {
       document.removeEventListener("pointerover", onPointerOver);
-      document.removeEventListener("click", onClick);
+      document.removeEventListener("click", onClick, true);
     };
   }, [router]);
 
