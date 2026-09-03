@@ -1,8 +1,22 @@
+import sourceMap from "@/data/cleaver-source-map.json";
 import { cleaverProductSlug, type CleaverProduct } from "@/lib/cleaver/catalog";
+import {
+  mergeCleaverVideos,
+  verifiedCleaverFamilyImages,
+  verifiedCleaverSourceVideos,
+} from "@/lib/cleaver/source-fallbacks";
 
 const SOURCE_URL = "https://www.thistlescientific.com/product/multisub-mini-mini-horizontal-electrophoresis-system/";
 const SOURCE_TITLE = "multiSUB Mini, Mini Horizontal Electrophoresis System";
 
+type SourceIdentity = {
+  sourceTitle?: string;
+  sourceUrl?: string;
+  sourceSlug?: string;
+  images?: string[];
+};
+
+const SOURCE_MAP = sourceMap as Record<string, SourceIdentity>;
 const internalHref = (title: string, sku: string) => `/products/cleaver/item/${encodeURIComponent(cleaverProductSlug(title, sku))}`;
 
 // Keep the exact WordPress image derivatives exposed by the manufacturer page.
@@ -83,8 +97,6 @@ const includedBySku = {
 } as const;
 
 // The manufacturer product gallery has four logical images in this exact order.
-// Use the verified full-size uploads rather than treating variation thumbnails as
-// the product gallery: MSMINI-4, MSMINI-3, MSMINI-2, MSMINI-1.
 const manufacturerImages = [
   "https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-4.WEB_.jpg",
   "https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-3.WEB_.jpg",
@@ -147,10 +159,75 @@ const baseFixture: Partial<CleaverProduct> = {
   ],
 };
 
-const fixtures: Record<string, Partial<CleaverProduct>> = Object.fromEntries(
-  Object.entries(includedBySku).map(([sku, included]) => [sku, { ...baseFixture, cleaverIncludedItems: [...included] }]),
-);
+const omniDocViewingWindowFixture: Partial<CleaverProduct> = {
+  sourceUrl: "https://www.thistlescientific.com/product/omnidoc-viewing-window-replacement/",
+  cleaverSourceTitle: "omniDOC Viewing Window Replacement",
+  image: "https://www.thistlescientific.com/wp-content/uploads/2024/11/OMNID-4.WEB_.jpg",
+  images: ["https://www.thistlescientific.com/wp-content/uploads/2024/11/OMNID-4.WEB_.jpg"],
+  overviewHtml: `<p>Replacement viewing window for the Cleaver Scientific omniDOC Gel Documentation System. The manufacturer identifies the omniDOC viewing window as a 560nm universal orange/amber filter used for safe, convenient gel inspection.</p>`,
+  cleaverAtAGlance: [
+    "Replacement viewing window for the omniDOC Gel Documentation System",
+    "Amber/orange filter",
+    "560nm viewing window",
+  ],
+  specRows: [
+    { label: "Accessory Type", value: "Replacement viewing window" },
+    { label: "Filter", value: "Amber / universal orange filter" },
+    { label: "Wavelength", value: "560nm" },
+    { label: "Compatible System", value: "omniDOC Gel Documentation System" },
+  ],
+  docs: [
+    {
+      group: "Instructions",
+      title: "TSL - OmniDOC MANUAL V1.1",
+      label: "TSL - OmniDOC MANUAL V1.1",
+      url: "https://files.plytix.com/api/v1.1/file/public_files/pim/assets/9e/65/2f/5c/5c2f659ed1855f04664d45e8/texts/17/fc/b7/69/69b7fc17308073ddaf43ac60/TSL-%20OmniDOC%20MANUAL%20V1.1.pdf",
+    },
+    {
+      group: "Product Flyers",
+      title: "OMNIDOC.WEB",
+      label: "OMNIDOC.WEB",
+      url: "https://files.plytix.com/api/v1.1/file/public_files/pim/assets/9e/65/2f/5c/5c2f659ed1855f04664d45e8/texts/d6/4c/a5/65/65a54cd67d2fb1e6195f9bb2/OMNIDOC.WEB.PDF",
+    },
+  ],
+  cleaverWorksWith: [
+    {
+      title: "omniDOC Gel Documentation System",
+      sku: "OMNIDOC",
+      packSize: "1 / Each",
+      imageUrl: "https://www.thistlescientific.com/wp-content/uploads/2024/11/OMNID-4.WEB_.jpg",
+      sourceUrl: "https://www.thistlescientific.com/product/omnidoc-gel-documentation-system/",
+      internalHref: "/products/cleaver/item/omnidoc-gel-documentation-system",
+    },
+  ],
+};
+
+const explicitFixtures: Record<string, Partial<CleaverProduct>> = {
+  ...Object.fromEntries(
+    Object.entries(includedBySku).map(([sku, included]) => [sku, { ...baseFixture, cleaverIncludedItems: [...included] }]),
+  ),
+  "OMNIDOC-F1": omniDocViewingWindowFixture,
+};
 
 export function getVerifiedCleaverSourceFixture(sku: string) {
-  return fixtures[sku.trim().toUpperCase()] || null;
+  const key = sku.trim().toUpperCase();
+  const explicit = explicitFixtures[key] || null;
+  const identity = SOURCE_MAP[key];
+  const exactImages = (identity?.images || []).filter(Boolean);
+  const familyImages = exactImages.length ? [] : verifiedCleaverFamilyImages(key, identity?.sourceTitle || explicit?.cleaverSourceTitle);
+  const sourceUrl = identity?.sourceUrl || explicit?.sourceUrl;
+  const sourceTitle = identity?.sourceTitle || explicit?.cleaverSourceTitle;
+  const sourceVideos = verifiedCleaverSourceVideos(sourceUrl, sourceTitle);
+  const videos = mergeCleaverVideos(explicit?.cleaverVideos, sourceVideos);
+
+  if (!explicit && !familyImages.length && !videos.length) return null;
+
+  return {
+    ...(familyImages.length ? { image: familyImages[0], images: familyImages } : {}),
+    ...(sourceUrl ? { sourceUrl } : {}),
+    ...(sourceTitle ? { cleaverSourceTitle: sourceTitle } : {}),
+    ...(videos.length ? { cleaverVideos: videos } : {}),
+    ...(explicit || {}),
+    ...(videos.length ? { cleaverVideos: videos } : {}),
+  } as Partial<CleaverProduct>;
 }
