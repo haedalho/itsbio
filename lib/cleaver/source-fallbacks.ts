@@ -86,6 +86,7 @@ const OMNIPAGE_MINI_VIDEO_PATHS = new Set([
 const WAVE_MAXI_VIDEO_PATHS = new Set([
   "/product/omnipage-wave-maxi",
   "/product/omnipage-wave-maxi-maxi-cooling-block",
+  "/product/omnipage-wave-maxi-packages",
 ]);
 
 /**
