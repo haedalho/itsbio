@@ -35,6 +35,8 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Compare all mapped Cleaver SKU representative images with Thistle API
         run: node scripts/audit-repair-cleaver-representative-images.mjs --write
+      - name: Verify official product-page reader image boundaries
+        run: node scripts/repair-cleaver-source-page-images.mjs --verify-reader-fixtures
       - name: Recover remaining images from each official Thistle product page
         run: node scripts/repair-cleaver-source-page-images.mjs --write
       - name: Commit corrected manufacturer representative images

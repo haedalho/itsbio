@@ -4,9 +4,11 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const WRITE = process.argv.includes("--write");
+const VERIFY_READER_FIXTURES = process.argv.includes("--verify-reader-fixtures");
 const MAP_PATH = path.join(process.cwd(), "data/cleaver-source-map.json");
 const INVENTORY_PATH = path.join(process.cwd(), "data/cleaver-product-catalog.json");
 const SOURCE_HOST = "www.thistlescientific.com";
+const READER_ORIGIN = "https://r.jina.ai/";
 const USER_AGENT = "Mozilla/5.0 (compatible; ITS-BIO-CleaverPageImageRepair/1.0; +https://itsbio.co.kr)";
 
 const normalizeSku = (value) => String(value || "").normalize("NFKC").trim().toUpperCase();
@@ -85,19 +87,40 @@ function extractOfficialProductImages(html) {
     }
   }
 
+  // Thistle blocks unattended HTML requests intermittently. Its read-only
+  // rendered response keeps each product gallery immediately before the H1.
+  // Scope markdown recovery to that small pre-title region so navigation and
+  // the unrelated "Related products" carousel can never become a product image.
+  const productHeading = text.search(/^#\s+.+$/m);
+  if (productHeading >= 0) {
+    const beforeHeading = text.slice(Math.max(0, productHeading - 12_000), productHeading);
+    const lastSectionBoundary = Math.max(
+      beforeHeading.lastIndexOf("\n## "),
+      beforeHeading.lastIndexOf("\n Products search"),
+      beforeHeading.lastIndexOf("\n[Account - Login]"),
+    );
+    const galleryRegion = beforeHeading.slice(Math.max(0, lastSectionBoundary));
+    for (const match of galleryRegion.matchAll(/!\[[^\]]*\]\((https?:\/\/[^)\s]+\/wp-content\/uploads\/[^)\s]+)\)/gi)) {
+      strongest.push(match[1]);
+    }
+    for (const match of galleryRegion.matchAll(/\]\((https?:\/\/[^)\s]+\/wp-content\/uploads\/[^)\s]+)\)/gi)) {
+      strongest.push(match[1]);
+    }
+  }
+
   const primary = uniqueImages(strongest);
   const secondary = uniqueImages(medium);
   const tertiary = uniqueImages(fallback);
   return Array.from(new Set([...primary, ...secondary, ...tertiary]));
 }
 
-async function fetchHtml(url, label) {
+async function fetchText(url, label, { reader = false } = {}) {
   let lastError = "";
   for (let attempt = 0; attempt < 7; attempt += 1) {
     try {
       const response = await fetch(url, {
         headers: {
-          Accept: "text/html,application/xhtml+xml",
+          Accept: reader ? "text/plain,text/markdown;q=0.9,*/*;q=0.8" : "text/html,application/xhtml+xml",
           "Accept-Language": "en-GB,en;q=0.9",
           Referer: `https://${SOURCE_HOST}/`,
           "User-Agent": USER_AGENT,
@@ -107,14 +130,36 @@ async function fetchHtml(url, label) {
       });
       if (response.ok) return await response.text();
       lastError = `${label} HTTP ${response.status}`;
-      if (![408, 425, 429, 500, 502, 503, 504].includes(response.status)) throw new Error(lastError);
+      if (![408, 425, 429, 500, 502, 503, 504].includes(response.status)) {
+        const error = new Error(lastError);
+        error.nonRetryable = true;
+        throw error;
+      }
     } catch (error) {
       lastError = error instanceof Error ? error.message : String(error);
+      if (error?.nonRetryable) throw error;
       if (attempt === 6) throw new Error(lastError);
     }
     await new Promise((resolve) => setTimeout(resolve, Math.min(35_000, 1600 * (2 ** attempt))));
   }
   throw new Error(lastError || `${label} unavailable`);
+}
+
+async function fetchProductPage(url, label) {
+  try {
+    return { text: await fetchText(url, label), transport: "direct" };
+  } catch (directError) {
+    const directMessage = directError instanceof Error ? directError.message : String(directError);
+    try {
+      return {
+        text: await fetchText(`${READER_ORIGIN}${url}`, `${label} reader`, { reader: true }),
+        transport: "reader",
+      };
+    } catch (readerError) {
+      const readerMessage = readerError instanceof Error ? readerError.message : String(readerError);
+      throw new Error(`${directMessage}; ${readerMessage}`);
+    }
+  }
 }
 
 async function pooled(items, limit, worker) {
@@ -126,6 +171,25 @@ async function pooled(items, limit, worker) {
       await new Promise((resolve) => setTimeout(resolve, 450));
     }
   }));
+}
+
+if (VERIFY_READER_FIXTURES) {
+  const imageFixtureUrl = "https://www.thistlescientific.com/product/multisub-mini-7cm-uv-gel-scoop/";
+  const noImageFixtureUrl = "https://www.thistlescientific.com/product/ms15-lid-fitted-with-buffer-recirculation-ports-no-cables/";
+  const [imageFixture, noImageFixture] = await Promise.all([
+    fetchText(`${READER_ORIGIN}${imageFixtureUrl}`, "image fixture reader", { reader: true }),
+    fetchText(`${READER_ORIGIN}${noImageFixtureUrl}`, "no-image fixture reader", { reader: true }),
+  ]);
+  const imageFixtureImages = extractOfficialProductImages(imageFixture);
+  const noImageFixtureImages = extractOfficialProductImages(noImageFixture);
+  if (!imageFixtureImages.some((url) => /\/MS7-UVS-1\.WEB_\.jpg$/i.test(url))) {
+    throw new Error(`Reader image fixture mismatch: ${JSON.stringify(imageFixtureImages)}`);
+  }
+  if (noImageFixtureImages.length) {
+    throw new Error(`Reader no-image fixture leaked unrelated images: ${JSON.stringify(noImageFixtureImages)}`);
+  }
+  console.log(JSON.stringify({ imageFixtureUrl, imageFixtureImages, noImageFixtureUrl, noImageFixtureImages }));
+  process.exit(0);
 }
 
 const inventory = JSON.parse(await readFile(INVENTORY_PATH, "utf8"));
@@ -155,11 +219,13 @@ const sourceUrls = [...byUrl.keys()];
 const pageImages = new Map();
 const pageFailures = [];
 const officialPageNoImage = [];
+const transportCounts = { direct: 0, reader: 0 };
 
 await pooled(sourceUrls, 2, async (sourceUrl, index) => {
   try {
-    const html = await fetchHtml(sourceUrl, `product page ${index + 1}`);
-    const images = extractOfficialProductImages(html);
+    const page = await fetchProductPage(sourceUrl, `product page ${index + 1}`);
+    transportCounts[page.transport] += 1;
+    const images = extractOfficialProductImages(page.text);
     pageImages.set(sourceUrl, images);
     if (!images.length) officialPageNoImage.push(sourceUrl);
   } catch (error) {
@@ -196,6 +262,7 @@ const stats = {
   sourcePagesChecked: sourceUrls.length,
   pagesRead: pageImages.size,
   pagesWithImages: [...pageImages.values()].filter((images) => images.length).length,
+  transportCounts,
   productsRecovered,
   officialPageNoImage: officialPageNoImage.length,
   pageFailures: pageFailures.length,
