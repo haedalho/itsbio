@@ -105,9 +105,9 @@ function applySourceIdentity(product: CleaverProduct): CleaverProduct {
   if (!identity) return product;
   const manufacturerImages = sourceImages(identity);
   const reviewedImages = (product.images || []).filter(Boolean);
-  // Preserve the reviewed/Sanity gallery and its order. Manufacturer images are
-  // only a fallback for products that still have no managed gallery.
-  const images = reviewedImages.length ? reviewedImages : manufacturerImages;
+  // The exact manufacturer page is the source of truth. Managed/Sanity images
+  // remain a fallback only when the source map has no verified page image.
+  const images = manufacturerImages.length ? manufacturerImages : reviewedImages;
   return {
     ...product,
     sourceUrl: identity.sourceUrl || product.sourceUrl,
@@ -221,17 +221,22 @@ function groupManufacturerProducts(products: CleaverProduct[]) {
 }
 
 function applyVerifiedFixture(product: CleaverProduct, fixture: Partial<CleaverProduct>) {
-  const fixtureImages = (fixture.images || []).filter((url) => {
-    try { return new URL(url).hostname === "cdn.sanity.io"; } catch { return false; }
-  });
+  const fixtureDefinesImages = Object.prototype.hasOwnProperty.call(fixture, "images") || Object.prototype.hasOwnProperty.call(fixture, "image");
+  const merged = { ...product, ...fixture } as CleaverProduct;
+
+  if (fixtureDefinesImages) {
+    const exactImages = (fixture.images || []).map((url) => String(url || "").trim()).filter(Boolean);
+    merged.images = exactImages;
+    merged.image = String(fixture.image || exactImages[0] || "").trim();
+    return merged;
+  }
+
   const productImages = (product.images || []).filter((url) => {
     try { return new URL(url).hostname === "cdn.sanity.io"; } catch { return false; }
   });
-  const managedImages = fixtureImages.length ? fixtureImages : productImages;
-  const merged = { ...product, ...fixture } as CleaverProduct;
-  if (managedImages.length) {
-    merged.images = managedImages;
-    merged.image = managedImages[0];
+  if (productImages.length) {
+    merged.images = productImages;
+    merged.image = productImages[0];
   }
   return merged;
 }
