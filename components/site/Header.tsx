@@ -13,6 +13,10 @@ const CLEAVER_MENU_ROUTE_MAP: Record<string, string> = {
   "/products/cleaver/electrophoresis-reagents": "/products/cleaver/main-products/electrophoresis-reagents",
   "/products/cleaver/general-laboratory-products": "/products/cleaver/main-products/general-laboratory-equipment",
   "/products/cleaver/teaching-and-education": "/products/cleaver/main-products/teaching-education",
+  "/products/cleaver/electrophoresis-accessories": "/products/cleaver/accessories/electrophoresis-accessories",
+  "/products/cleaver/gel-documentation-accessories": "/products/cleaver/accessories/gel-documentation-accessories",
+  "/products/cleaver/general-laboratory-accessories": "/products/cleaver/accessories/general-laboratory-accessories",
+  "/products/cleaver/replacement-parts-spares": "/products/cleaver/accessories/replacement-parts-spares",
 };
 
 function resolvedCleaverHref(url: URL) {
