@@ -20,6 +20,25 @@ const VERIFIED_SPARSE_MEDIA_PATHS = new Set([
   "/product/replacement-transilluminator-filter-26cm-365nm",
 ]);
 
+const MINI_WORKS_WITH = [
+  {
+    title: "multiSUB Mini DUO with mini runVIEW gel viewer",
+    sku: "CSL-RVMSMINI-S",
+    packSize: "1 / Each",
+    sourceUrl: "https://www.thistlescientific.com/product/multisub-mini-duo-with-mini-runview-gel-viewer/",
+    imageUrl: "https://www.thistlescientific.com/wp-content/uploads/2024/11/RUNVIEWOLD37.WEB_.jpg",
+    internalHref: "/products/cleaver/item/multisub-mini-duo-with-mini-runview-gel-viewer",
+  },
+  {
+    title: "multiSUB Mini, Mini Horizontal Electrophoresis System",
+    sku: "MSMINI10",
+    packSize: "1 / Each",
+    sourceUrl: "https://www.thistlescientific.com/product/multisub-mini-mini-horizontal-electrophoresis-system/",
+    imageUrl: "https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-4.WEB_.jpg",
+    internalHref: "/products/cleaver/item/multisub-mini-mini-horizontal-electrophoresis-system",
+  },
+];
+
 const SPARSE_PRODUCT_OVERRIDES: Record<string, Partial<CleaverProduct>> = {
   "OMNIDOC-F1": {
     image: "",
@@ -34,31 +53,54 @@ const SPARSE_PRODUCT_OVERRIDES: Record<string, Partial<CleaverProduct>> = {
 };
 
 const VERIFIED_PRODUCT_OVERRIDES: Record<string, Partial<CleaverProduct>> = {
+  "MS7-UV7": {
+    cleaverAtAGlance: [
+      "7 x 7cm agarose gel electrophoresis casting tray.",
+      "Designed to be transparent to ultraviolet (UV) light and is used to create and hold an agarose gel for separating DNA, RNA.",
+      "For use with multiSUB Mini horizontal electrophoresis system.",
+    ],
+    cleaverSourceSectionOrder: ["Documents", "Works With"],
+    cleaverVideos: [],
+    cleaverWorksWith: MINI_WORKS_WITH.map((item) => ({ ...item })),
+  },
+  "MS7-UV10": {
+    cleaverAtAGlance: [
+      "7 x 10cm agarose gel electrophoresis casting tray.",
+      "Designed to be transparent to ultraviolet (UV) light and is used to create and hold an agarose gel for separating DNA, RNA.",
+      "For use with multiSUB Mini horizontal electrophoresis system.",
+    ],
+    cleaverSourceSectionOrder: ["Documents", "Works With"],
+    cleaverVideos: [],
+    cleaverWorksWith: MINI_WORKS_WITH.map((item) => ({ ...item })),
+  },
+  "MS7-LG": {
+    cleaverAtAGlance: [
+      "To assist in the proper loading of DNA samples during electrophoresis by enhancing the visibility of the wells.",
+      "Ensure consistency, accuracy, and efficiency in the loading process, leading to better experimental outcomes and avoid errors, such as cross-contamination.",
+      "For use with MultiSUB Mini gel tank.",
+    ],
+    cleaverSourceSectionOrder: ["Documents", "Works With"],
+    cleaverVideos: [],
+    cleaverWorksWith: MINI_WORKS_WITH.map((item) => ({ ...item })),
+  },
+  "MS7-WP": {
+    cleaverAtAGlance: [
+      "To view nucleic acids bands.",
+      "For use with MultiSUB Mini gel tank.",
+    ],
+    cleaverSourceSectionOrder: ["Documents", "Works With"],
+    cleaverVideos: [],
+    cleaverWorksWith: MINI_WORKS_WITH.map((item) => ({ ...item })),
+  },
   "MS7-UVS": {
     cleaverAtAGlance: [
       "Made of UV-transmitting Acrylic.",
       "Gels can be observed directly on a UV transilluminator without needing to be removed from the scoop, which minimizes the risk of damaging them during handling.",
     ],
     overviewHtml: "<p>UV Scoops are designed to eliminate manual handling of agarose and polyacrylamide gels. This scoop has a 7cm width and 12.5cm length, perfect for use with multiSUB mini gels.</p>",
+    cleaverSourceSectionOrder: ["Overview", "Documents", "Works With"],
     cleaverVideos: [],
-    cleaverWorksWith: [
-      {
-        title: "multiSUB Mini DUO with mini runVIEW gel viewer",
-        sku: "CSL-RVMSMINI-S",
-        packSize: "1 / Each",
-        sourceUrl: "https://www.thistlescientific.com/product/multisub-mini-duo-with-mini-runview-gel-viewer/",
-        imageUrl: "https://www.thistlescientific.com/wp-content/uploads/2024/11/RUNVIEWOLD37.WEB_.jpg",
-        internalHref: "/products/cleaver/item/multisub-mini-duo-with-mini-runview-gel-viewer",
-      },
-      {
-        title: "multiSUB Mini, Mini Horizontal Electrophoresis System",
-        sku: "MSMINI10",
-        packSize: "1 / Each",
-        sourceUrl: "https://www.thistlescientific.com/product/multisub-mini-mini-horizontal-electrophoresis-system/",
-        imageUrl: "https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-4.WEB_.jpg",
-        internalHref: "/products/cleaver/item/multisub-mini-mini-horizontal-electrophoresis-system",
-      },
-    ],
+    cleaverWorksWith: MINI_WORKS_WITH.map((item) => ({ ...item })),
   },
 };
 
