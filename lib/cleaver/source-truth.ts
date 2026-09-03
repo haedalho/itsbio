@@ -10,7 +10,7 @@ function sourceProductPath(value?: string) {
   }
 }
 
-const VERIFIED_NO_VIDEO_PATHS = new Set([
+const VERIFIED_SPARSE_MEDIA_PATHS = new Set([
   "/product/replacement-transilluminator-cover",
   "/product/replacement-transilluminator-filter-21cm-254nm",
   "/product/replacement-transilluminator-filter-21cm-312nm",
@@ -42,12 +42,12 @@ export function getCleaverSourceTruthOverride(sku?: string, sourceUrl?: string):
   const key = String(sku || "").normalize("NFKC").trim().toUpperCase();
   const path = sourceProductPath(sourceUrl);
   const sparse = SPARSE_PRODUCT_OVERRIDES[key];
-  const noVideo = VERIFIED_NO_VIDEO_PATHS.has(path);
+  const sparseMedia = VERIFIED_SPARSE_MEDIA_PATHS.has(path);
 
-  if (!sparse && !noVideo) return null;
+  if (!sparse && !sparseMedia) return null;
 
   return {
     ...(sparse || {}),
-    ...(noVideo ? { cleaverVideos: [] } : {}),
+    ...(sparseMedia ? { image: "", images: [], cleaverVideos: [] } : {}),
   };
 }
