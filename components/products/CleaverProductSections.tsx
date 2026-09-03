@@ -96,12 +96,17 @@ function IncludedCard({ title, quantity, imageUrl, href }: IncludedCardProps) {
 
 function youtubeEmbedUrl(value?: string) {
   if (!value) return "";
+  let source = value.trim().replace(/&amp;/g, "&");
+  const iframeSrc = source.match(/<iframe[^>]+src=["']([^"']+)["']/i)?.[1];
+  if (iframeSrc) source = iframeSrc;
+  if (source.startsWith("//")) source = `https:${source}`;
+
   try {
-    const url = new URL(value);
+    const url = new URL(source);
     const host = url.hostname.toLowerCase().replace(/^www\./, "");
     let id = "";
     if (host === "youtu.be") id = url.pathname.split("/").filter(Boolean)[0] || "";
-    if (host === "youtube.com" || host === "m.youtube.com" || host === "youtube-nocookie.com") {
+    if (host === "youtube.com" || host.endsWith(".youtube.com") || host === "youtube-nocookie.com" || host.endsWith(".youtube-nocookie.com")) {
       if (url.pathname.startsWith("/embed/")) id = url.pathname.split("/embed/")[1]?.split("/")[0] || "";
       else if (url.pathname.startsWith("/shorts/")) id = url.pathname.split("/shorts/")[1]?.split("/")[0] || "";
       else if (url.pathname.startsWith("/live/")) id = url.pathname.split("/live/")[1]?.split("/")[0] || "";
@@ -122,7 +127,10 @@ export default function CleaverProductSections({ product }: { product: CleaverPr
   const variations = (product.cleaverVariations || []).filter((item) => item.title);
   const accessories = (product.cleaverAccessories || []).filter((item) => item.title);
   const worksWith = (product.cleaverWorksWith || []).filter((item) => item.title);
-  const videos = (product.cleaverVideos || []).filter((item) => item.url);
+  const videos = (product.cleaverVideos || []).filter((item) => item.url || item.embedUrl);
+  const playableVideos = videos
+    .map((video) => ({ ...video, resolvedEmbedUrl: youtubeEmbedUrl(video.embedUrl) || youtubeEmbedUrl(video.url) }))
+    .filter((video) => video.resolvedEmbedUrl || /\.(?:mp4|webm)(?:$|\?)/i.test(video.url || ""));
   const extraSections = (sourceProduct.cleaverExtraSections || []).filter((section) => section.title && section.html);
   const hasOverview = Boolean(product.overviewHtml);
   const hasSpecs = Boolean(matrix?.rows?.length && matrix?.headers?.length) || specifications.length > 0 || Boolean(product.specsHtml);
@@ -194,14 +202,13 @@ export default function CleaverProductSections({ product }: { product: CleaverPr
     }
 
     if (key === "video") {
-      if (!videos.length) return null;
+      if (!playableVideos.length) return null;
       return (
         <SectionShell key={`section-${key}`} title={title || "Video"}>
           <div className="grid max-w-[1040px] gap-6 lg:grid-cols-2">
-            {videos.map((video, videoIndex) => {
-              const embedUrl = video.embedUrl || youtubeEmbedUrl(video.url);
-              if (embedUrl) return <div key={`${video.url}-${videoIndex}`}><div className="overflow-hidden bg-black"><iframe src={embedUrl} title={video.title || `${product.title} product video`} className="aspect-video w-full" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen /></div>{video.title ? <p className="mt-3 text-[14px] font-medium leading-6 text-[#333]">{video.title}</p> : null}</div>;
-              if (/\.(?:mp4|webm)(?:$|\?)/i.test(video.url)) return <video key={`${video.url}-${videoIndex}`} controls preload="metadata" className="aspect-video w-full bg-black"><source src={video.url} /></video>;
+            {playableVideos.map((video, videoIndex) => {
+              if (video.resolvedEmbedUrl) return <div key={`${video.url || video.embedUrl}-${videoIndex}`}><div className="overflow-hidden bg-black"><iframe src={video.resolvedEmbedUrl} title={video.title || `${product.title} product video`} className="aspect-video w-full" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen /></div>{video.title ? <p className="mt-3 text-[14px] font-medium leading-6 text-[#333]">{video.title}</p> : null}</div>;
+              if (/\.(?:mp4|webm)(?:$|\?)/i.test(video.url || "")) return <video key={`${video.url}-${videoIndex}`} controls preload="metadata" className="aspect-video w-full bg-black"><source src={video.url} /></video>;
               return null;
             })}
           </div>
