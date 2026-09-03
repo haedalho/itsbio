@@ -1,34 +1,24 @@
 import type { CleaverVideo } from "@/lib/cleaver/catalog";
 
-const OMNIDOC_FAMILY_IMAGE = "https://www.thistlescientific.com/wp-content/uploads/2024/11/OMNID-4.WEB_.jpg";
-const UV_TRANSILLUMINATOR_IMAGE = "https://www.thistlescientific.com/wp-content/uploads/2024/11/UVTRAN2.WEB_-scaled.jpg";
-const RUNDOC_FAMILY_IMAGE = "https://www.thistlescientific.com/wp-content/uploads/2024/11/CSL-RVGELDOC-1.WEB_.jpg";
-
 function normalized(value?: string) {
   return String(value || "").normalize("NFKC").trim().toLowerCase();
 }
 
+function sourceProductPath(value?: string) {
+  if (!value) return "";
+  try {
+    const url = new URL(value);
+    return url.pathname.toLowerCase().replace(/\/+$/, "");
+  } catch {
+    return normalized(value).replace(/^https?:\/\/[^/]+/i, "").replace(/\/+$/, "");
+  }
+}
+
 /**
- * Some Thistle accessory pages intentionally have no standalone product image.
- * Use only a verified first-party image from the exact compatible product
- * family in those cases. Exact source-page images always take precedence.
+ * Source-of-truth rule: never substitute a parent/family product image when
+ * the exact Thistle product page has no standalone image.
  */
-export function verifiedCleaverFamilyImages(sku?: string, sourceTitle?: string) {
-  const normalizedSku = String(sku || "").normalize("NFKC").trim().toUpperCase();
-  const title = normalized(sourceTitle);
-
-  if (normalizedSku.startsWith("OMNIDOC-") || title.includes("omnidoc")) {
-    return [OMNIDOC_FAMILY_IMAGE];
-  }
-
-  if (/^CSL-F(?:21|26)/.test(normalizedSku) || title.includes("replacement transilluminator")) {
-    return [UV_TRANSILLUMINATOR_IMAGE];
-  }
-
-  if (normalizedSku === "CSL-CAMCHARGER" || title.includes("rundoc camera")) {
-    return [RUNDOC_FAMILY_IMAGE];
-  }
-
+export function verifiedCleaverFamilyImages(_sku?: string, _sourceTitle?: string) {
   return [];
 }
 
@@ -36,6 +26,12 @@ const VIDEO_MULTI_SUB: CleaverVideo = {
   title: "How To Cast And Run An Agarose Gel in The Multi Sub Mini Electrophoresis System",
   url: "https://www.youtube.com/watch?v=zXgM10ghY_w",
   embedUrl: "https://www.youtube.com/embed/zXgM10ghY_w",
+};
+
+const VIDEO_FLEXICASTER: CleaverVideo = {
+  title: "How To Cast An Agarose Gel Using The MS Screen Flexicaster",
+  url: "https://www.youtube.com/watch?v=UXt2F90fLpc",
+  embedUrl: "https://www.youtube.com/embed/UXt2F90fLpc",
 };
 
 const VIDEO_RUNVIEW: CleaverVideo = {
@@ -56,45 +52,54 @@ const VIDEO_WAVE_MAXI: CleaverVideo = {
   embedUrl: "https://www.youtube.com/embed/529G-tXO5s4",
 };
 
+const MULTI_SUB_VIDEO_PATHS = new Set([
+  "/product/multisub-mini-mini-horizontal-electrophoresis-system",
+  "/product/multisub-midi-midi-horizontal-electrophoresis-system",
+  "/product/multisub-choice-wide-midi-horizontal-electrophoresis-system",
+  "/product/multisub-maxi-maxi-horizontal-electrophoresis-system",
+  "/product/multisub-screen-high-throughput-horizontal-electrophoresis-system",
+  "/product/multisub-mini-rapide-mini-horizontal-electrophoresis-system",
+  "/product/multisub-system-package-deals",
+  "/product/hpage-horizontal-page-system",
+]);
+
+const RUNVIEW_VIDEO_PATHS = new Set([
+  "/product/runview-real-time-gel-visualisation-system",
+  "/product/rundoc-gel-documentation-system",
+  "/product/multisub-mini-duo-with-mini-runview-gel-viewer",
+  "/product/multisub-midi-duo-with-mini-runview-gel-viewer",
+  "/product/runview-base-station-bluview-lid-for-multisub-choice",
+  "/product/runview-base-station-bluview-lid-for-msmini-systems",
+  "/product/runview-base-station-bluview-lid-for-msmidi-systems",
+]);
+
+const OMNIPAGE_MINI_VIDEO_PATHS = new Set([
+  "/product/omnipage-mini-vertical-protein-electrophoresis-system",
+  "/product/omnipage-mini-tetrad-vertical-electrophoresis-for-4-handcast-gels",
+  "/product/glass-plates-for-the-omnipage-mini",
+  "/product/omnipage-mini-tank",
+  "/product/omnipage-mini-inner-running-module",
+  "/product/omnipage-mini-packages",
+  "/product/flatbed-ief-package-with-chiller-and-power-supply",
+]);
+
+const WAVE_MAXI_VIDEO_PATHS = new Set([
+  "/product/omnipage-wave-maxi",
+  "/product/omnipage-wave-maxi-maxi-cooling-block",
+]);
+
 /**
- * Videos are attached only where the corresponding Thistle product page is
- * verified to expose that video. This deliberately avoids a generic Cleaver
- * video being shown on unrelated products.
+ * Only exact Thistle product pages that were verified to contain the Video
+ * section are mapped here. Never infer a video from the product title/family.
  */
-export function verifiedCleaverSourceVideos(sourceUrl?: string, sourceTitle?: string): CleaverVideo[] {
-  const source = normalized(sourceUrl);
-  const title = normalized(sourceTitle);
+export function verifiedCleaverSourceVideos(sourceUrl?: string, _sourceTitle?: string): CleaverVideo[] {
+  const path = sourceProductPath(sourceUrl);
 
-  if (
-    source.includes("/product/multisub-mini-mini-horizontal-electrophoresis-system")
-    || source.includes("/product/multisub-midi-midi-horizontal-electrophoresis-system")
-    || source.includes("/product/multisub-choice-wide-midi-horizontal-electrophoresis-system")
-    || source.includes("/product/multisub-maxi-maxi-horizontal-electrophoresis-system")
-    || source.includes("/product/multisub-screen-high-throughput-horizontal-electrophoresis-system")
-    || source.includes("/product/multisub-mini-rapide-mini-horizontal-electrophoresis-system")
-    || source.includes("/product/multisub-system-package-deals")
-  ) {
-    return [VIDEO_MULTI_SUB];
-  }
-
-  if (
-    source.includes("/product/runview-real-time-gel-visualisation-system")
-    || source.includes("/product/rundoc-gel-documentation-system")
-    || source.includes("/product/multisub-mini-duo-with-mini-runview-gel-viewer")
-    || source.includes("/product/multisub-midi-duo-with-mini-runview-gel-viewer")
-    || title.includes("runview")
-    || title.includes("rundoc gel documentation system")
-  ) {
-    return [VIDEO_RUNVIEW];
-  }
-
-  if (source.includes("/product/omnipage-mini-") || source.includes("/product/glass-plates-for-the-omnipage-mini")) {
-    return [VIDEO_OMNIPAGE_MINI];
-  }
-
-  if (source.includes("/product/omnipage-wave-maxi")) {
-    return [VIDEO_WAVE_MAXI];
-  }
+  if (MULTI_SUB_VIDEO_PATHS.has(path)) return [VIDEO_MULTI_SUB];
+  if (path === "/product/multisub-flexicasters") return [VIDEO_FLEXICASTER];
+  if (RUNVIEW_VIDEO_PATHS.has(path)) return [VIDEO_RUNVIEW];
+  if (OMNIPAGE_MINI_VIDEO_PATHS.has(path)) return [VIDEO_OMNIPAGE_MINI];
+  if (WAVE_MAXI_VIDEO_PATHS.has(path)) return [VIDEO_WAVE_MAXI];
 
   return [];
 }
