@@ -87,6 +87,7 @@ for (const product of products || []) {
 let uploads = 0;
 let reusedAssets = 0;
 let productsReordered = 0;
+let legacyImagesRemoved = 0;
 let failures = 0;
 const failed = [];
 
@@ -162,22 +163,12 @@ await pooled(targets, 4, async ({ sku, identity, product }) => {
       });
     }
 
-    for (const image of existing) {
-      if (nextImages.length >= 10) break;
-      if (!image?.assetId) continue;
-      const sourceUrl = String(image.sourceUrl || "").trim();
-      const normalized = canonicalImageUrl(sourceUrl);
-      if (normalized && sourceUrls.includes(normalized)) continue;
-      if (nextImages.some((candidate) => candidate.asset._ref === image.assetId)) continue;
-      nextImages.push({
-        _key: image._key || hash(`${sku}:${image.assetId}`).slice(0, 12),
-        _type: "image",
-        asset: { _type: "reference", _ref: image.assetId },
-        ...(sourceUrl ? { sourceUrl } : {}),
-      });
-    }
-
     if (!nextImages.length) return;
+    legacyImagesRemoved += existing.filter((image) => {
+      if (!image?.assetId) return false;
+      const normalized = canonicalImageUrl(image.sourceUrl);
+      return !normalized || !sourceUrls.includes(normalized);
+    }).length;
     await retry(`patch gallery ${sku}`, () => client.patch(product._id).set({
       images: nextImages,
       detailedContentMigratedAt: new Date().toISOString(),
@@ -201,6 +192,7 @@ console.log(JSON.stringify({
   productsReordered,
   uploads,
   reusedAssets,
+  legacyImagesRemoved,
   failures,
   firstFailures: failed,
   totals,
