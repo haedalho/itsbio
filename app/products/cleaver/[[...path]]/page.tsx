@@ -16,9 +16,12 @@ import {
   cleaverProductHref,
   type CleaverProduct,
 } from "@/lib/cleaver/catalog";
-import { getCleaverCategoryCovers, getCleaverProductPage } from "@/lib/cleaver/sanity";
+import {
+  getFastCleaverCategoryCovers as getCleaverCategoryCovers,
+  getFastCleaverProductPage as getCleaverProductPage,
+} from "@/lib/cleaver/fast-catalog";
 
-export const revalidate = 30;
+export const revalidate = 86400;
 
 type PageProps = {
   params: Promise<{ path?: string[] }>;
@@ -31,9 +34,9 @@ const CLEAVER_SOURCE_IMAGES = sourceMap as Record<string, SourceImageIdentity>;
 function productImageSources(product: CleaverProduct) {
   const sku = String(product.sku || "").normalize("NFKC").trim().toUpperCase();
   const mapped = CLEAVER_SOURCE_IMAGES[sku]?.images || [];
-  // The audited Thistle representative image is authoritative for product cards.
-  // Sanity remains the fallback for SKUs where the manufacturer exposes no safe image.
-  return Array.from(new Set([...mapped, product.image].map((value) => String(value || "").trim()).filter(Boolean)));
+  // Prefer the verified managed copy so cards never wait on the manufacturer server.
+  // Manufacturer URLs remain a fidelity fallback for products without a managed asset.
+  return Array.from(new Set([product.image, ...(product.images || []), ...mapped].map((value) => String(value || "").trim()).filter(Boolean)));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -114,14 +117,14 @@ function Pagination({ path, query, page, pageCount }: { path: string[]; query: s
   const pages = Array.from(new Set([1, page - 1, page, page + 1, pageCount].filter((item) => item >= 1 && item <= pageCount))).sort((a, b) => a - b);
   return (
     <nav aria-label="Cleaver product pages" className="mt-10 flex flex-wrap items-center justify-center gap-2">
-      <Link href={categoryHref(path, query, Math.max(1, page - 1))} aria-disabled={page === 1} className={`rounded-full border px-4 py-2 text-sm ${page === 1 ? "pointer-events-none border-slate-200 text-slate-300" : "border-slate-300 text-slate-700 hover:border-purple-300"}`}>← Previous</Link>
+      <Link href={categoryHref(path, query, Math.max(1, page - 1))} prefetch={false} aria-disabled={page === 1} className={`rounded-full border px-4 py-2 text-sm ${page === 1 ? "pointer-events-none border-slate-200 text-slate-300" : "border-slate-300 text-slate-700 hover:border-purple-300"}`}>← Previous</Link>
       {pages.map((item, index) => (
         <span key={item} className="flex items-center gap-2">
           {index > 0 && item - pages[index - 1] > 1 ? <span className="px-1 text-slate-400">…</span> : null}
-          <Link href={categoryHref(path, query, item)} aria-current={item === page ? "page" : undefined} className={`flex h-10 min-w-10 items-center justify-center rounded-full border px-3 text-sm font-semibold ${item === page ? "border-[#61247b] bg-[#61247b] text-white" : "border-slate-300 text-slate-700 hover:border-purple-300"}`}>{item}</Link>
+          <Link href={categoryHref(path, query, item)} prefetch={false} aria-current={item === page ? "page" : undefined} className={`flex h-10 min-w-10 items-center justify-center rounded-full border px-3 text-sm font-semibold ${item === page ? "border-[#61247b] bg-[#61247b] text-white" : "border-slate-300 text-slate-700 hover:border-purple-300"}`}>{item}</Link>
         </span>
       ))}
-      <Link href={categoryHref(path, query, Math.min(pageCount, page + 1))} aria-disabled={page === pageCount} className={`rounded-full border px-4 py-2 text-sm ${page === pageCount ? "pointer-events-none border-slate-200 text-slate-300" : "border-slate-300 text-slate-700 hover:border-purple-300"}`}>Next →</Link>
+      <Link href={categoryHref(path, query, Math.min(pageCount, page + 1))} prefetch={false} aria-disabled={page === pageCount} className={`rounded-full border px-4 py-2 text-sm ${page === pageCount ? "pointer-events-none border-slate-200 text-slate-300" : "border-slate-300 text-slate-700 hover:border-purple-300"}`}>Next →</Link>
     </nav>
   );
 }
@@ -182,7 +185,7 @@ export default async function CleaverCatalogPage({ params, searchParams }: PageP
 
             {match && path.length === 1 && !query ? (
               <div className="mt-6 flex flex-wrap gap-2">
-                {match.root.children.map((child) => <Link key={child.slug} href={categoryHref([match.root.slug, child.slug])} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-purple-300 hover:text-[#61247b]">{child.title} <span className="ml-1 text-slate-400">{categoryCount([match.root.slug, child.slug])}</span></Link>)}
+                {match.root.children.map((child) => <Link key={child.slug} href={categoryHref([match.root.slug, child.slug])} prefetch={false} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-purple-300 hover:text-[#61247b]">{child.title} <span className="ml-1 text-slate-400">{categoryCount([match.root.slug, child.slug])}</span></Link>)}
               </div>
             ) : null}
 
