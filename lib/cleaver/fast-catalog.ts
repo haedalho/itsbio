@@ -86,7 +86,9 @@ function fastProduct(localProduct: CleaverProduct): CleaverProduct {
     ...(fixture || {}),
     _id: localProduct._id,
     sku: localProduct.sku,
-    slug: localProduct.slug,
+    // Use the manufacturer slug directly so product cards do not incur a
+    // second request through the local-SKU route before canonical redirect.
+    slug: identity?.sourceSlug || localProduct.slug,
     order: localProduct.order,
     categoryPath: localProduct.categoryPath,
     categoryPathTitles: localProduct.categoryPathTitles,
