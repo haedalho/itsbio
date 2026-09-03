@@ -19,10 +19,6 @@ type SourceIdentity = {
 const SOURCE_MAP = sourceMap as Record<string, SourceIdentity>;
 const internalHref = (title: string, sku: string) => `/products/cleaver/item/${encodeURIComponent(cleaverProductSlug(title, sku))}`;
 
-// Keep the exact WordPress image derivatives exposed by the manufacturer page.
-// These URLs are verified source assets; guessing a larger filename by stripping
-// the WordPress size suffix can yield a broken image when the original upload
-// name differs from the generated derivative name.
 const variations = [
   {
     title: "multiSUB Mini with 7 x 10cm Gel tray",
@@ -96,7 +92,6 @@ const includedBySku = {
   ],
 } as const;
 
-// The manufacturer product gallery has four logical images in this exact order.
 const manufacturerImages = [
   "https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-4.WEB_.jpg",
   "https://www.thistlescientific.com/wp-content/uploads/2024/11/MSMINI-3.WEB_.jpg",
@@ -224,8 +219,6 @@ export function getVerifiedCleaverSourceFixture(sku: string) {
 
   return {
     ...(familyImages.length ? { image: familyImages[0], images: familyImages } : {}),
-    ...(sourceUrl ? { sourceUrl } : {}),
-    ...(sourceTitle ? { cleaverSourceTitle: sourceTitle } : {}),
     ...(videos.length ? { cleaverVideos: videos } : {}),
     ...(explicit || {}),
     ...(videos.length ? { cleaverVideos: videos } : {}),
