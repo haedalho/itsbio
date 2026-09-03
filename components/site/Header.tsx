@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import BrandLogo from "./BrandLogo";
-import ProductsMegaMenu from "./ProductsMegaMenuFast";
+import ProductsMegaMenu from "./ProductsMegaMenu";
 import SearchBox from "./SearchBox";
 
 function useClickOutside<T extends HTMLElement>(onOutside: () => void) {
