@@ -46,21 +46,13 @@ export default function Header() {
   }, [mobileOpen]);
 
   useEffect(() => {
-    const warmRoutes = () => {
-      // Warm only the routes a Cleaver visitor is most likely to use next.
-      // This keeps the original mega-menu UI untouched while removing the
-      // cold-navigation delay from the first Cleaver click.
+    const timer = window.setTimeout(() => {
       router.prefetch("/products/cleaver");
-
-      if (!pathname.startsWith("/products/cleaver")) return;
 
       if (pathname === "/products/cleaver" || pathname === "/products/cleaver/") {
         router.prefetch("/products/cleaver/main-products");
         router.prefetch("/products/cleaver/accessories");
-        return;
-      }
-
-      if (pathname.startsWith("/products/cleaver/main-products")) {
+      } else if (pathname.startsWith("/products/cleaver/main-products")) {
         [
           "/products/cleaver/main-products/electrophoresis-systems",
           "/products/cleaver/main-products/gel-documentation-imaging",
@@ -68,10 +60,7 @@ export default function Header() {
           "/products/cleaver/main-products/electrophoresis-reagents",
           "/products/cleaver/main-products/teaching-education",
         ].forEach((href) => router.prefetch(href));
-        return;
-      }
-
-      if (pathname.startsWith("/products/cleaver/accessories")) {
+      } else if (pathname.startsWith("/products/cleaver/accessories")) {
         [
           "/products/cleaver/accessories/electrophoresis-accessories",
           "/products/cleaver/accessories/gel-documentation-accessories",
@@ -79,22 +68,37 @@ export default function Header() {
           "/products/cleaver/accessories/replacement-parts-spares",
         ].forEach((href) => router.prefetch(href));
       }
-    };
+    }, 450);
 
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    let idleId: number | null = null;
-
-    if ("requestIdleCallback" in window) {
-      idleId = window.requestIdleCallback(warmRoutes, { timeout: 1200 });
-    } else {
-      timeoutId = setTimeout(warmRoutes, 450);
-    }
-
-    return () => {
-      if (idleId !== null && "cancelIdleCallback" in window) window.cancelIdleCallback(idleId);
-      if (timeoutId) clearTimeout(timeoutId);
-    };
+    return () => window.clearTimeout(timer);
   }, [pathname, router]);
+
+  useEffect(() => {
+    const prefetched = new Set<string>();
+    const onPointerOver = (event: PointerEvent) => {
+      const target = event.target as Element | null;
+      const anchor = target?.closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!anchor) return;
+
+      let url: URL;
+      try {
+        url = new URL(anchor.href, window.location.href);
+      } catch {
+        return;
+      }
+
+      if (url.origin !== window.location.origin) return;
+      if (!url.pathname.startsWith("/products/cleaver")) return;
+
+      const href = `${url.pathname}${url.search}`;
+      if (prefetched.has(href)) return;
+      prefetched.add(href);
+      router.prefetch(href);
+    };
+
+    document.addEventListener("pointerover", onPointerOver, { passive: true });
+    return () => document.removeEventListener("pointerover", onPointerOver);
+  }, [router]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur">
