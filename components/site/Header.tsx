@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import BrandLogo from "./BrandLogo";
 import ProductsMegaMenu from "./ProductsMegaMenu";
@@ -24,6 +25,8 @@ function useClickOutside<T extends HTMLElement>(onOutside: () => void) {
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const panelRef = useClickOutside<HTMLDivElement>(() => setMobileOpen(false));
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -41,6 +44,57 @@ export default function Header() {
       document.body.style.overflow = prev;
     };
   }, [mobileOpen]);
+
+  useEffect(() => {
+    const warmRoutes = () => {
+      // Warm only the routes a Cleaver visitor is most likely to use next.
+      // This keeps the original mega-menu UI untouched while removing the
+      // cold-navigation delay from the first Cleaver click.
+      router.prefetch("/products/cleaver");
+
+      if (!pathname.startsWith("/products/cleaver")) return;
+
+      if (pathname === "/products/cleaver" || pathname === "/products/cleaver/") {
+        router.prefetch("/products/cleaver/main-products");
+        router.prefetch("/products/cleaver/accessories");
+        return;
+      }
+
+      if (pathname.startsWith("/products/cleaver/main-products")) {
+        [
+          "/products/cleaver/main-products/electrophoresis-systems",
+          "/products/cleaver/main-products/gel-documentation-imaging",
+          "/products/cleaver/main-products/general-laboratory-equipment",
+          "/products/cleaver/main-products/electrophoresis-reagents",
+          "/products/cleaver/main-products/teaching-education",
+        ].forEach((href) => router.prefetch(href));
+        return;
+      }
+
+      if (pathname.startsWith("/products/cleaver/accessories")) {
+        [
+          "/products/cleaver/accessories/electrophoresis-accessories",
+          "/products/cleaver/accessories/gel-documentation-accessories",
+          "/products/cleaver/accessories/general-laboratory-accessories",
+          "/products/cleaver/accessories/replacement-parts-spares",
+        ].forEach((href) => router.prefetch(href));
+      }
+    };
+
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let idleId: number | null = null;
+
+    if ("requestIdleCallback" in window) {
+      idleId = window.requestIdleCallback(warmRoutes, { timeout: 1200 });
+    } else {
+      timeoutId = setTimeout(warmRoutes, 450);
+    }
+
+    return () => {
+      if (idleId !== null && "cancelIdleCallback" in window) window.cancelIdleCallback(idleId);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [pathname, router]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur">
