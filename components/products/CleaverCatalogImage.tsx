@@ -1,12 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
-
-import { useCleaverManagedImages } from "./CleaverCatalogImageProvider";
+import { useEffect, useMemo, useState } from "react";
 
 type Props = {
-  sku: string;
   title: string;
   sources: string[];
 };
@@ -19,14 +16,37 @@ function isManufacturerImage(url: string) {
   }
 }
 
-export default function CleaverCatalogImage({ sku, title, sources }: Props) {
-  const managedImages = useCleaverManagedImages(sku);
+export default function CleaverCatalogImage({ title, sources }: Props) {
+  const [fallbackImages, setFallbackImages] = useState<string[]>([]);
+  const [fallbackRequested, setFallbackRequested] = useState(false);
   const candidates = useMemo(
-    () => Array.from(new Set([...sources, ...managedImages].map((value) => String(value || "").trim()).filter(Boolean))),
-    [sources, managedImages],
+    () => Array.from(new Set([...sources, ...fallbackImages].map((value) => String(value || "").trim()).filter(Boolean))),
+    [sources, fallbackImages],
   );
   const [index, setIndex] = useState(0);
   const active = candidates[index] || "";
+
+  useEffect(() => {
+    if (active || fallbackRequested) return;
+    setFallbackRequested(true);
+
+    const controller = new AbortController();
+    const params = new URLSearchParams({ title });
+    fetch(`/api/cleaver/card-images?${params.toString()}`, {
+      signal: controller.signal,
+      cache: "force-cache",
+    })
+      .then((response) => (response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`))))
+      .then((payload: { images?: string[] }) => {
+        if (Array.isArray(payload?.images) && payload.images.length) setFallbackImages(payload.images);
+      })
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        console.error("Unable to hydrate Cleaver card image:", error);
+      });
+
+    return () => controller.abort();
+  }, [active, fallbackRequested, title]);
 
   if (!active) {
     return (
