@@ -59,6 +59,28 @@ export default function Header() {
   }, [mobileOpen]);
 
   useEffect(() => {
+    const rewriteCleaverLinks = () => {
+      document.querySelectorAll<HTMLAnchorElement>('a[href^="/products/cleaver/"]').forEach((anchor) => {
+        let url: URL;
+        try {
+          url = new URL(anchor.href, window.location.href);
+        } catch {
+          return;
+        }
+        const correctedPath = CLEAVER_MENU_ROUTE_MAP[url.pathname];
+        if (!correctedPath) return;
+        const correctedHref = `${correctedPath}${url.search}${url.hash}`;
+        if (anchor.getAttribute("href") !== correctedHref) anchor.setAttribute("href", correctedHref);
+      });
+    };
+
+    rewriteCleaverLinks();
+    const observer = new MutationObserver(rewriteCleaverLinks);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
     const timer = window.setTimeout(() => {
       router.prefetch("/products/cleaver");
 
@@ -129,7 +151,6 @@ export default function Header() {
       if (!correctedPath) return;
 
       event.preventDefault();
-      event.stopPropagation();
       router.push(`${correctedPath}${url.search}${url.hash}`);
     };
 
