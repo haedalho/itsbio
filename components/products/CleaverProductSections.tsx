@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import sourceMap from "@/data/cleaver-source-map.json";
 import CleaverSourceImage from "@/components/products/CleaverSourceImage";
 import HtmlContent from "@/components/site/HtmlContent";
 import type { CleaverProduct } from "@/lib/cleaver/catalog";
@@ -15,6 +16,54 @@ type SourceAwareCleaverProduct = CleaverProduct & {
   cleaverSourceSectionOrder?: string[];
   cleaverExtraSections?: Array<{ title: string; html?: string }>;
 };
+
+type SourceIdentity = {
+  sourceUrl?: string;
+  images?: string[];
+};
+
+type RelationImageItem = {
+  sku?: string;
+  sourceUrl?: string;
+  imageUrl?: string;
+};
+
+const CLEAVER_SOURCE_MAP = sourceMap as Record<string, SourceIdentity>;
+
+function normalizedSku(value?: string) {
+  return String(value || "").normalize("NFKC").trim().toUpperCase();
+}
+
+function normalizedSourceUrl(value?: string) {
+  if (!value) return "";
+  try {
+    const url = new URL(value);
+    url.hash = "";
+    url.search = "";
+    return `${url.hostname.toLowerCase()}${url.pathname.replace(/\/+$/, "")}`;
+  } catch {
+    return String(value || "").trim().toLowerCase().replace(/\/+$/, "");
+  }
+}
+
+const SOURCE_IDENTITY_BY_URL = new Map<string, SourceIdentity>();
+for (const identity of Object.values(CLEAVER_SOURCE_MAP)) {
+  const key = normalizedSourceUrl(identity.sourceUrl);
+  if (key && !SOURCE_IDENTITY_BY_URL.has(key)) SOURCE_IDENTITY_BY_URL.set(key, identity);
+}
+
+function relationImageUrl(item?: RelationImageItem) {
+  if (!item) return "";
+  const bySku = item.sku ? CLEAVER_SOURCE_MAP[normalizedSku(item.sku)] : undefined;
+  const byUrl = !bySku && item.sourceUrl ? SOURCE_IDENTITY_BY_URL.get(normalizedSourceUrl(item.sourceUrl)) : undefined;
+  const exactSource = bySku || byUrl;
+
+  if (exactSource) {
+    return (exactSource.images || []).map((value) => String(value || "").trim()).find(Boolean) || "";
+  }
+
+  return String(item.imageUrl || "").trim();
+}
 
 function sectionKey(value: string) {
   const key = value.trim().toLowerCase().replace(/[’]/g, "'").replace(/\s+/g, " ");
@@ -152,7 +201,7 @@ export default function CleaverProductSections({ product }: { product: CleaverPr
     return {
       title: item.title,
       quantity: item.quantity,
-      imageUrl: item.imageUrl || accessory?.imageUrl || variation?.imageUrl,
+      imageUrl: item.imageUrl || relationImageUrl(accessory) || relationImageUrl(variation),
       href: accessory?.internalHref || variation?.internalHref,
     };
   });
@@ -227,17 +276,17 @@ export default function CleaverProductSections({ product }: { product: CleaverPr
 
     if (key === "variations") {
       if (!variations.length) return null;
-      return <SectionShell key={`section-${key}`} title={title || "All Variations"}><div className="overflow-x-auto border border-[#dedede]"><table className="w-full min-w-[680px] border-collapse text-left text-[14px]"><thead className="bg-[#f5f5f5]"><tr><th className="w-24 px-4 py-3.5 font-semibold text-[#303030]">Image</th><th className="px-5 py-3.5 font-semibold text-[#303030]">Variant</th><th className="w-40 px-5 py-3.5 font-semibold text-[#303030]">Pack/Size</th></tr></thead><tbody>{variations.map((item, itemIndex) => <tr key={`${item.sku || item.title}-${itemIndex}`} className="border-t border-[#dedede]"><td className="px-4 py-3">{item.imageUrl ? <div className="relative h-16 w-16 bg-white"><CleaverSourceImage src={item.imageUrl} alt={item.title} size={64} /></div> : null}</td><td className="px-5 py-3.5"><ProductLink href={item.internalHref}>{item.title}</ProductLink></td><td className="px-5 py-3.5 text-[#4a4a4a]">{item.packSize || "—"}</td></tr>)}</tbody></table></div></SectionShell>;
+      return <SectionShell key={`section-${key}`} title={title || "All Variations"}><div className="overflow-x-auto border border-[#dedede]"><table className="w-full min-w-[680px] border-collapse text-left text-[14px]"><thead className="bg-[#f5f5f5]"><tr><th className="w-24 px-4 py-3.5 font-semibold text-[#303030]">Image</th><th className="px-5 py-3.5 font-semibold text-[#303030]">Variant</th><th className="w-40 px-5 py-3.5 font-semibold text-[#303030]">Pack/Size</th></tr></thead><tbody>{variations.map((item, itemIndex) => { const imageUrl = relationImageUrl(item); return <tr key={`${item.sku || item.title}-${itemIndex}`} className="border-t border-[#dedede]"><td className="px-4 py-3">{imageUrl ? <div className="relative h-16 w-16 bg-white"><CleaverSourceImage src={imageUrl} alt={item.title} size={64} /></div> : null}</td><td className="px-5 py-3.5"><ProductLink href={item.internalHref}>{item.title}</ProductLink></td><td className="px-5 py-3.5 text-[#4a4a4a]">{item.packSize || "—"}</td></tr>; })}</tbody></table></div></SectionShell>;
     }
 
     if (key === "accessories") {
       if (!accessories.length) return null;
-      return <SectionShell key={`section-${key}`} title={title || "Accessories"}><div className="overflow-x-auto border border-[#dedede]"><table className="w-full min-w-[680px] border-collapse text-left text-[14px]"><thead className="bg-[#f5f5f5]"><tr><th className="w-24 px-4 py-3.5 font-semibold text-[#303030]">Image</th><th className="px-5 py-3.5 font-semibold text-[#303030]">Accessory</th><th className="w-40 px-5 py-3.5 font-semibold text-[#303030]">Pack/Size</th></tr></thead><tbody>{accessories.map((item, itemIndex) => <tr key={`${item.sourceUrl || item.sku || item.title}-${itemIndex}`} className="border-t border-[#dedede]"><td className="px-4 py-3">{item.imageUrl ? <div className="relative h-16 w-16 bg-white"><CleaverSourceImage src={item.imageUrl} alt={item.title} size={64} /></div> : null}</td><td className="px-5 py-3.5"><ProductLink href={item.internalHref}>{item.title}</ProductLink></td><td className="px-5 py-3.5 text-[#4a4a4a]">{item.packSize || "—"}</td></tr>)}</tbody></table></div></SectionShell>;
+      return <SectionShell key={`section-${key}`} title={title || "Accessories"}><div className="overflow-x-auto border border-[#dedede]"><table className="w-full min-w-[680px] border-collapse text-left text-[14px]"><thead className="bg-[#f5f5f5]"><tr><th className="w-24 px-4 py-3.5 font-semibold text-[#303030]">Image</th><th className="px-5 py-3.5 font-semibold text-[#303030]">Accessory</th><th className="w-40 px-5 py-3.5 font-semibold text-[#303030]">Pack/Size</th></tr></thead><tbody>{accessories.map((item, itemIndex) => { const imageUrl = relationImageUrl(item); return <tr key={`${item.sourceUrl || item.sku || item.title}-${itemIndex}`} className="border-t border-[#dedede]"><td className="px-4 py-3">{imageUrl ? <div className="relative h-16 w-16 bg-white"><CleaverSourceImage src={imageUrl} alt={item.title} size={64} /></div> : null}</td><td className="px-5 py-3.5"><ProductLink href={item.internalHref}>{item.title}</ProductLink></td><td className="px-5 py-3.5 text-[#4a4a4a]">{item.packSize || "—"}</td></tr>; })}</tbody></table></div></SectionShell>;
     }
 
     if (key === "works-with") {
       if (!worksWith.length) return null;
-      return <SectionShell key={`section-${key}`} title={title || "Works With"}><div className="overflow-x-auto border border-[#dedede]"><table className="w-full min-w-[680px] border-collapse text-left text-[14px]"><thead className="bg-[#f5f5f5]"><tr><th className="w-24 px-4 py-3.5 font-semibold text-[#303030]">Image</th><th className="px-5 py-3.5 font-semibold text-[#303030]">Product</th><th className="w-40 px-5 py-3.5 font-semibold text-[#303030]">Pack/Size</th></tr></thead><tbody>{worksWith.map((item, itemIndex) => <tr key={`${item.sourceUrl || item.sku || item.title}-${itemIndex}`} className="border-t border-[#dedede]"><td className="px-4 py-3">{item.imageUrl ? <div className="relative h-16 w-16 bg-white"><CleaverSourceImage src={item.imageUrl} alt={item.title} size={64} /></div> : null}</td><td className="px-5 py-3.5"><ProductLink href={item.internalHref}>{item.title}</ProductLink></td><td className="px-5 py-3.5 text-[#4a4a4a]">{item.packSize || "—"}</td></tr>)}</tbody></table></div></SectionShell>;
+      return <SectionShell key={`section-${key}`} title={title || "Works With"}><div className="overflow-x-auto border border-[#dedede]"><table className="w-full min-w-[680px] border-collapse text-left text-[14px]"><thead className="bg-[#f5f5f5]"><tr><th className="w-24 px-4 py-3.5 font-semibold text-[#303030]">Image</th><th className="px-5 py-3.5 font-semibold text-[#303030]">Product</th><th className="w-40 px-5 py-3.5 font-semibold text-[#303030]">Pack/Size</th></tr></thead><tbody>{worksWith.map((item, itemIndex) => { const imageUrl = relationImageUrl(item); return <tr key={`${item.sourceUrl || item.sku || item.title}-${itemIndex}`} className="border-t border-[#dedede]"><td className="px-4 py-3">{imageUrl ? <div className="relative h-16 w-16 bg-white"><CleaverSourceImage src={imageUrl} alt={item.title} size={64} /></div> : null}</td><td className="px-5 py-3.5"><ProductLink href={item.internalHref}>{item.title}</ProductLink></td><td className="px-5 py-3.5 text-[#4a4a4a]">{item.packSize || "—"}</td></tr>; })}</tbody></table></div></SectionShell>;
     }
 
     const extra = extraSections.find((section) => sectionKey(section.title) === key);
