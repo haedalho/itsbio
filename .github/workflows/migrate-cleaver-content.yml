@@ -12,6 +12,7 @@ on:
       - scripts/sync-cleaver-source-truth.mjs
       - scripts/repair-cleaver-short-overviews.mjs
       - scripts/audit-cleaver-source-parity.mjs
+      - scripts/run-cleaver-parity-audit-with-retries.mjs
       - scripts/run-cleaver-thistle-sections-production.mjs
       - scripts/migrate-cleaver-content-to-sanity.mjs
       - scripts/apply-cleaver-source-map-to-sanity.mjs
@@ -23,6 +24,7 @@ on:
       - scripts/sync-cleaver-source-truth.mjs
       - scripts/repair-cleaver-short-overviews.mjs
       - scripts/audit-cleaver-source-parity.mjs
+      - scripts/run-cleaver-parity-audit-with-retries.mjs
       - scripts/run-cleaver-thistle-sections-production.mjs
       - scripts/migrate-cleaver-content-to-sanity.mjs
       - scripts/apply-cleaver-source-map-to-sanity.mjs
@@ -41,6 +43,7 @@ concurrency:
 
 env:
   CLEAVER_SOURCE_TRUTH_CONCURRENCY: "6"
+  CLEAVER_PARITY_AUDIT_ATTEMPTS: "3"
 
 jobs:
   validate-source-truth:
@@ -58,7 +61,7 @@ jobs:
         run: node scripts/apply-cleaver-source-map-to-sanity.mjs
       - name: Strictly read every mapped Thistle family and all supported sections
         run: node scripts/sync-cleaver-source-truth.mjs
-      - name: Detect source Overview sections previously dropped for being short
+      - name: Validate verified short Overview regression fixtures
         run: node scripts/repair-cleaver-short-overviews.mjs
 
   publish-reviewed-cleaver-content:
@@ -88,9 +91,9 @@ jobs:
         run: node scripts/migrate-cleaver-content-to-sanity.mjs --apply
       - name: Apply strict Thistle source truth and verify every mapped SKU after publish
         run: node scripts/run-cleaver-thistle-sections-production.mjs
-      - name: Restore exact short Overview sections from Thistle and verify after publish
+      - name: Restore exact verified short Overview sections and verify after publish
         run: node scripts/repair-cleaver-short-overviews.mjs --apply
       - name: Persist complete manufacturer titles and canonical URLs
         run: node scripts/apply-cleaver-source-map-to-sanity.mjs --apply
       - name: Independently compare published Cleaver sections against Thistle source pages
-        run: node scripts/audit-cleaver-source-parity.mjs
+        run: node scripts/run-cleaver-parity-audit-with-retries.mjs
