@@ -13,6 +13,50 @@ export type CleaverCategory = {
   children: Array<{ slug: string; title: string }>;
 };
 
+export type CleaverIncludedItem = {
+  title: string;
+  quantity?: string;
+  sourceUrl?: string;
+  imageUrl?: string;
+};
+
+export type CleaverVariation = {
+  title: string;
+  sku?: string;
+  packSize?: string;
+  priceText?: string;
+  imageUrl?: string;
+  internalHref?: string;
+};
+
+export type CleaverAccessory = {
+  title: string;
+  sku?: string;
+  packSize?: string;
+  priceText?: string;
+  sourceUrl?: string;
+  imageUrl?: string;
+  internalHref?: string;
+};
+
+export type CleaverWorksWithItem = CleaverAccessory;
+
+export type CleaverVideo = {
+  title?: string;
+  url: string;
+  embedUrl?: string;
+};
+
+export type CleaverSpecificationMatrix = {
+  headers: string[];
+  rows: Array<{ label: string; values: string[] }>;
+};
+
+export type CleaverExtraSection = {
+  title: string;
+  html?: string;
+};
+
 export type CleaverProduct = {
   _id: string;
   title: string;
@@ -30,7 +74,18 @@ export type CleaverProduct = {
   documentsHtml?: string;
   highlights?: string[];
   specRows?: Array<{ label: string; value: string }>;
-  docs?: Array<{ title?: string; label?: string; url?: string }>;
+  docs?: Array<{ title?: string; label?: string; group?: string; url?: string }>;
+  cleaverSourceTitle?: string;
+  cleaverAtAGlance?: string[];
+  cleaverSourceSectionOrder?: string[];
+  cleaverExtraSections?: CleaverExtraSection[];
+  cleaverSpecificationMatrix?: CleaverSpecificationMatrix;
+  cleaverIncludedItems?: CleaverIncludedItem[];
+  cleaverVariations?: CleaverVariation[];
+  cleaverAccessories?: CleaverAccessory[];
+  cleaverWorksWith?: CleaverWorksWithItem[];
+  cleaverVideos?: CleaverVideo[];
+  cleaverSourceSectionsMigratedAt?: string;
 };
 
 export const CLEAVER_CATEGORIES = categories as CleaverCategory[];
@@ -49,73 +104,49 @@ export function cleaverProductSlug(title: string, sku: string) {
   return `${base || "cleaver-product"}-${suffix}`;
 }
 
+function isCleaverAccessory(value: string) {
+  const electrophoresisAccessory = /\bcomb\b|gel tray|tray dams?|positive electrode|negative electrode|\belectrode\b|loading guides?|viewing platform|cool-pack|buffer saver block|flexi\s*caster|gel scoop|electrophoresis cable|glass plates?|bonded spacer|\bspacer\b|\bgasket\b|casting (?:stand|base|gate|accessor)|platinum wire|tank \(including electrodes\)|\blid\b/.test(value);
+  const generalAccessory = /\breplacement\b|\bspares?\b|\badapt(?:er|or)\b|\bholder\b|\brack\b|\brotor\b|\bshelf\b|\bprobe\b|support rod|\bcover\b|\bplatform\b|\brotisserie\b|mesh plate|block lifter|\bliner\b|acrylic stand|imaging filter|camera filter|camera hood/.test(value);
+  return electrophoresisAccessory || generalAccessory;
+}
+
 export function classifyCleaverProduct(sku: string, title: string): [string, string] {
   const value = `${sku} ${title}`.toLowerCase();
+  const accessory = isCleaverAccessory(value);
+
+  if (accessory) {
+    if (/microdoc|omnidoc|gelone|gellite|gelpro|gel documentation|chemidoc|geldoc|gel imaging|transilluminator|blue light illuminator|uv illuminator|imaging filter|camera filter|camera hood/.test(value)) {
+      return ["accessories", "gel-documentation-accessories"];
+    }
+    if (/multisub|runview|runstation|clearsight|omnipage|propage|electroblot|omniblot|miniblot|\bblotter\b|semi[ -]?dry|powerpro|nanopac|electrophores|gel tray|\bcomb\b|\belectrode\b|flexi\s*caster|gel scoop|cellas|comet|\bdgge\b|isoelectric|\bief\b|dna sequencing|^csq/.test(value)) {
+      if (/\breplacement\b|\blid\b|\belectrode\b|electrophoresis cable|glass plates?|bonded spacer|\bgasket\b|tank \(including electrodes\)/.test(value)) {
+        return ["accessories", "replacement-parts-spares"];
+      }
+      return ["accessories", "electrophoresis-accessories"];
+    }
+    if (/\breplacement\b|\bspares?\b/.test(value)) {
+      return ["accessories", "replacement-parts-spares"];
+    }
+    return ["accessories", "general-laboratory-accessories"];
+  }
 
   if (/\bstudent\b|\beducation\b|\bteaching\b|^tgt|^labset/.test(value)) {
-    return ["teaching-and-education", /student|^tgt/.test(value) ? "student-electrophoresis-systems" : "teaching-kits-and-accessories"];
+    return ["main-products", "teaching-education"];
   }
-  if (/^csr-|\bbeta\s+(?:radiation\s+)?shield|\bgamma\s+(?:radiation\s+)?shield|radiation shield|pipette shield/.test(value)) {
-    return ["general-laboratory-products", "radiation-protection"];
+
+  if (/microdoc|omnidoc|gelone|gellite|gelpro|gel documentation|chemidoc|geldoc|gel imaging|transilluminator|blue light illuminator|uv illuminator|^csl-uvt/.test(value)) {
+    return ["main-products", "gel-documentation-imaging"];
   }
-  if (/glove\s*box|uv\s*(?:sterili[sz]ation\s*)?cabinet|pcr\s*(?:cabinet|hood|chamber)|^csl-gb|^csl-uvcab/.test(value)) {
-    return ["general-laboratory-products", "glove-boxes-and-pcr-cabinets"];
+
+  if (/complete .*agarose gel kit|system package|multisub|runview|runstation|clearsight|agarose electrophoresis|horizontal electrophoresis|omnipage|propage|\bpage\s+system|vertical electrophoresis|vertical gel|omniblot|miniblot|\bblotter\b|semi[ -]?dry|electroblot|western blot|vacuum blot|power\s*supply|powerpro|nanopac|power\s*pro|cellulose acetate|haemoglobin|hemoglobin|cellas|comet\s*assay|\bdgge\b|isoelectric|\bief\b|dna sequencing|^csq/.test(value)) {
+    return ["main-products", "electrophoresis-systems"];
   }
-  if (/safe\s*tray|spill\s*tray|biohazard|\btray\s*liner|^t[oy]\d/.test(value)) {
-    return ["general-laboratory-products", "laboratory-safety-and-accessories"];
+
+  if (/dna ladder|dna marker|protein marker|loading dye|gel stain|\brunsafe\b|sybr|ethidium|\bagarose\s*(?:powder|tablet|gel reagent)|\btbe\b|\btae\b|running buffer|transfer buffer|buffer concentrate|\breagent\b|precast|lysis|gel pack|^csl-mdna|^csl-ag\d|^csl-tbep/.test(value)) {
+    return ["main-products", "electrophoresis-reagents"];
   }
-  if (/omnipette|ezeepette|epette|\bpipett(?:e|or|ing)\b|^cv(?:-|\d)|multichannel pipette/.test(value)) {
-    return ["general-laboratory-products", "liquid-handling"];
-  }
-  if (/vortex|shaker|\bmixer\b|hybridisation|hybridization|\bincubat|orbital|rocker|rotator|^si-/.test(value)) {
-    return ["general-laboratory-products", "mixers-shakers-and-incubators"];
-  }
-  if (/water\s*bath|\bstirring\s*bath|aqualab|water\s*still|water distill/.test(value)) {
-    return ["general-laboratory-products", "water-baths-and-stills"];
-  }
-  if (/centrifuge|ezeefuge|\bph\s*meter|portable meter|conductivity meter|magnetic stirr/.test(value)) {
-    return ["general-laboratory-products", "centrifuges-and-meters"];
-  }
-  if (/cellulose acetate|haemoglobin|hemoglobin|cellas|^csl-ca(?:hb)?/.test(value)) {
-    return ["electrophoresis-equipment", "cellulose-acetate"];
-  }
-  if (/comet\s*assay|^csl-com/.test(value)) {
-    return ["electrophoresis-equipment", "comet-assay"];
-  }
-  if (/\bdgge\b|isoelectric|\bief\b|dna sequencing|^csq/.test(value)) {
-    return ["electrophoresis-equipment", "dgge-and-sequencing"];
-  }
-  if (/power\s*supply|powerpro|nanopac|power\s*pro|^pp\d|^eps\d/.test(value) && !/with (?:a |\d+v )?power supply|package with power supply/.test(value)) {
-    return ["electrophoresis-equipment", "power-supplies"];
-  }
-  if (/omniblot|miniblot|\bblotter\b|semi[ -]?dry|electroblot|western blot|vacuum blot|^sd\d/.test(value)) {
-    return ["electrophoresis-equipment", "electroblotters"];
-  }
-  if (/transilluminator|blue light illuminator|uv illuminator|^csl-uvt/.test(value)) {
-    return ["gel-documentation", "transilluminators"];
-  }
-  if (/microdoc|omnidoc|gelone|gellite|gelpro|gel documentation|chemidoc|geldoc|gel imaging|camera|imaging filter|^mu-/.test(value)) {
-    return ["gel-documentation", /filter|camera|hood|replacement|accessor|^mu-/.test(value) ? "imaging-accessories" : "gel-documentation-systems"];
-  }
-  if (/dna ladder|dna marker|protein marker|loading dye|gel stain|\brunsafe\b|sybr|ethidium|\bagarose\s*(?:powder|tablet|gel reagent)|^csl-mdna|^csl-ag\d/.test(value)) {
-    return ["electrophoresis-reagents", /ladder|marker|stain|dye|runsafe|sybr|ethidium/.test(value) ? "dna-ladders-and-stains" : "agarose-and-gel-reagents"];
-  }
-  if (/\btbe\b|\btae\b|running buffer|transfer buffer|buffer concentrate|^csl-tbep/.test(value)) {
-    return ["electrophoresis-reagents", "buffers-and-components"];
-  }
-  if (/omnipage|propage|\bpage\s+system|vertical electrophoresis|vertical gel|glass plates?|bonded spacer|^vs\d|^cvs\d|^hpage/.test(value)) {
-    return ["electrophoresis-equipment", "page-tanks"];
-  }
-  if (/multisub|runview|runstation|clearsight|agarose electrophoresis|horizontal electrophoresis|gel tray|flexicaster|^ms(?:mini|midi|choice|maxi|screen|\d)|^cs[lt]-rv/.test(value)) {
-    return ["electrophoresis-equipment", "agarose-gel-tanks"];
-  }
-  if (/comb|electrode|casting|platinum wire|gel scoop|electrophoresis cable/.test(value)) {
-    return ["electrophoresis-equipment", "spares-and-accessories"];
-  }
-  if (/reagent|agarose|buffer|precast|lysis|gel pack/.test(value)) {
-    return ["electrophoresis-reagents", "agarose-and-gel-reagents"];
-  }
-  return ["general-laboratory-products", "laboratory-safety-and-accessories"];
+
+  return ["main-products", "general-laboratory-equipment"];
 }
 
 export function cleaverCategory(path: string[]) {
@@ -158,4 +189,8 @@ export function searchLocalCleaverProducts(query: string) {
   const normalized = query.normalize("NFKC").trim().toLowerCase();
   if (!normalized) return [];
   return CLEAVER_INVENTORY.filter((product) => product.sku.toLowerCase().includes(normalized) || product.title.toLowerCase().includes(normalized));
+}
+
+export function cleaverDisplayTitle(product: Pick<CleaverProduct, "title" | "cleaverSourceTitle">) {
+  return product.cleaverSourceTitle?.trim() || product.title;
 }

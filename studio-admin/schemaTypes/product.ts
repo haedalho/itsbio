@@ -49,40 +49,51 @@ const variantFields = [
   defineField({ name: "catNo", title: "Cat. No. / Item #", type: "string" }),
   defineField({ name: "optionSummary", title: "Option Summary", type: "string" }),
   defineField({
-      name: "optionValues",
-      title: "Option Values",
-      type: "array",
-      of: [
-        defineField({
-          name: "optionValuePair",
-          title: "Option Value Pair",
-          type: "object",
-          fields: [
-            defineField({ name: "key", title: "Key", type: "string" }),
-            defineField({ name: "label", title: "Label", type: "string" }),
-            defineField({ name: "value", title: "Value", type: "string" }),
-          ],
-        }),
-      ],
-    }),
-    defineField({
-      name: "attributes",
-      title: "Raw Attributes",
-      type: "array",
-      of: [
-        defineField({
-          name: "attributePair",
-          title: "Attribute Pair",
-          type: "object",
-          fields: [
-            defineField({ name: "key", title: "Key", type: "string" }),
-            defineField({ name: "value", title: "Value", type: "string" }),
-          ],
-        }),
-      ],
-    }),
+    name: "optionValues",
+    title: "Option Values",
+    type: "array",
+    of: [
+      defineField({
+        name: "optionValuePair",
+        title: "Option Value Pair",
+        type: "object",
+        fields: [
+          defineField({ name: "key", title: "Key", type: "string" }),
+          defineField({ name: "label", title: "Label", type: "string" }),
+          defineField({ name: "value", title: "Value", type: "string" }),
+        ],
+      }),
+    ],
+  }),
+  defineField({
+    name: "attributes",
+    title: "Raw Attributes",
+    type: "array",
+    of: [
+      defineField({
+        name: "attributePair",
+        title: "Attribute Pair",
+        type: "object",
+        fields: [
+          defineField({ name: "key", title: "Key", type: "string" }),
+          defineField({ name: "value", title: "Value", type: "string" }),
+        ],
+      }),
+    ],
+  }),
   defineField({ name: "imageUrl", title: "Variant Image URL", type: "url" }),
   defineField({ name: "sourceVariationId", title: "Source Variation ID", type: "string" }),
+];
+
+const cleaverProductItemFields = [
+  defineField({ name: "title", title: "Title", type: "string" }),
+  defineField({ name: "sku", title: "Catalog No.", type: "string" }),
+  defineField({ name: "quantity", title: "Quantity", type: "string" }),
+  defineField({ name: "packSize", title: "Pack / Size", type: "string" }),
+  defineField({ name: "priceText", title: "Source Price", type: "string" }),
+  defineField({ name: "sourceUrl", title: "Manufacturer Source URL", type: "url" }),
+  defineField({ name: "imageUrl", title: "Source Image URL", type: "url" }),
+  defineField({ name: "internalHref", title: "ITS BIO Internal Path", type: "string" }),
 ];
 
 export default defineType({
@@ -349,6 +360,58 @@ export default defineType({
           ],
         }),
       ],
+    }),
+
+    defineField({
+      name: "cleaverIncludedItems",
+      title: "Cleaver / Thistle - What's Included",
+      type: "array",
+      of: [defineField({ name: "cleaverIncludedItem", title: "Included Item", type: "object", fields: cleaverProductItemFields })],
+      description: "Reviewed contents of the manufacturer What's Included section.",
+    }),
+    defineField({
+      name: "cleaverVariations",
+      title: "Cleaver / Thistle - All Variations",
+      type: "array",
+      of: [defineField({ name: "cleaverVariation", title: "Variation", type: "object", fields: cleaverProductItemFields })],
+      description: "Manufacturer product-family variations, linked to ITS BIO product pages when an exact reviewed product exists.",
+    }),
+    defineField({
+      name: "cleaverAccessories",
+      title: "Cleaver / Thistle - Accessories",
+      type: "array",
+      of: [defineField({ name: "cleaverAccessory", title: "Accessory", type: "object", fields: cleaverProductItemFields })],
+      description: "Compatible accessories from the manufacturer product page.",
+    }),
+    defineField({
+      name: "cleaverWorksWith",
+      title: "Cleaver / Thistle - Works With",
+      type: "array",
+      of: [defineField({ name: "cleaverWorksWithItem", title: "Compatible Product", type: "object", fields: cleaverProductItemFields })],
+      description: "Products listed specifically in the manufacturer's Works With section; excludes Related products.",
+    }),
+    defineField({
+      name: "cleaverVideos",
+      title: "Cleaver / Thistle - Product Videos",
+      type: "array",
+      of: [
+        defineField({
+          name: "cleaverVideo",
+          title: "Product Video",
+          type: "object",
+          fields: [
+            defineField({ name: "title", title: "Title", type: "string" }),
+            defineField({ name: "url", title: "Source URL", type: "url" }),
+            defineField({ name: "embedUrl", title: "Embed URL", type: "url" }),
+          ],
+        }),
+      ],
+    }),
+    defineField({
+      name: "cleaverSourceSectionsMigratedAt",
+      title: "Cleaver Source Sections Migrated At",
+      type: "datetime",
+      readOnly: true,
     }),
 
     defineField({

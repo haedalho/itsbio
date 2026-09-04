@@ -1,0 +1,53 @@
+name: Audit and repair Cleaver representative images
+
+# Verifies the official API identity first, then checks the exact Thistle product page.
+on:
+  push:
+    branches:
+      - agent/cleaver-full-thistle-sections
+    paths:
+      - scripts/audit-repair-cleaver-representative-images.mjs
+      - scripts/repair-cleaver-source-page-images.mjs
+      - .github/workflows/audit-repair-cleaver-representative-images.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cleaver-representative-image-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit-repair-representative-images:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install project dependencies
+        run: npm install --no-audit --no-fund
+      - name: Compare all mapped Cleaver SKU representative images with Thistle API
+        run: node scripts/audit-repair-cleaver-representative-images.mjs --write
+      - name: Verify official product-page reader image boundaries
+        run: node scripts/repair-cleaver-source-page-images.mjs --verify-reader-fixtures
+      - name: Recover remaining images from each official Thistle product page
+        run: node scripts/repair-cleaver-source-page-images.mjs --write
+      - name: Commit corrected manufacturer representative images
+        shell: bash
+        run: |
+          if git diff --quiet -- data/cleaver-source-map.json; then
+            echo "Cleaver representative images already match the verified manufacturer sources."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/cleaver-source-map.json
+          git commit -m "Repair Cleaver representative image fidelity"
+          git push origin HEAD:${{ github.ref_name }}

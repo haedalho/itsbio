@@ -1,26 +1,75 @@
-name: Publish verified Cleaver specifications, manuals, and galleries
+name: Validate and publish complete Cleaver manufacturer content
 
 on:
   push:
     branches:
       - main
+      - agent/cleaver-full-thistle-sections
     paths:
       - .github/workflows/migrate-cleaver-content.yml
+      - data/cleaver-source-map.json
+      - data/cleaver-source-overrides.json
+      - scripts/sync-cleaver-source-truth.mjs
+      - scripts/repair-cleaver-short-overviews.mjs
+      - scripts/audit-cleaver-source-parity.mjs
+      - scripts/run-cleaver-parity-audit-with-retries.mjs
+      - scripts/run-cleaver-thistle-sections-production.mjs
       - scripts/migrate-cleaver-content-to-sanity.mjs
+      - scripts/apply-cleaver-source-map-to-sanity.mjs
+  pull_request:
+    paths:
+      - .github/workflows/migrate-cleaver-content.yml
+      - data/cleaver-source-map.json
+      - data/cleaver-source-overrides.json
+      - scripts/sync-cleaver-source-truth.mjs
+      - scripts/repair-cleaver-short-overviews.mjs
+      - scripts/audit-cleaver-source-parity.mjs
+      - scripts/run-cleaver-parity-audit-with-retries.mjs
+      - scripts/run-cleaver-thistle-sections-production.mjs
+      - scripts/migrate-cleaver-content-to-sanity.mjs
+      - scripts/apply-cleaver-source-map-to-sanity.mjs
+      - lib/cleaver/**
+      - components/products/CleaverProductSections.tsx
+      - app/products/cleaver/item/**
+      - studio-admin/schemaTypes/product.ts
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: cleaver-product-content-production
-  cancel-in-progress: false
+  group: cleaver-product-content-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CLEAVER_SOURCE_TRUTH_CONCURRENCY: "6"
+  CLEAVER_PARITY_AUDIT_ATTEMPTS: "3"
 
 jobs:
+  validate-source-truth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install reviewed project dependencies
+        run: npm install --no-audit --no-fund
+      - name: Verify complete Cleaver manufacturer title and URL map
+        run: node scripts/apply-cleaver-source-map-to-sanity.mjs
+      - name: Strictly read every mapped Thistle family and all supported sections
+        run: node scripts/sync-cleaver-source-truth.mjs
+      - name: Validate verified short Overview regression fixtures
+        run: node scripts/repair-cleaver-short-overviews.mjs
+
   publish-reviewed-cleaver-content:
+    if: github.event_name != 'pull_request'
+    needs: validate-source-truth
     runs-on: ubuntu-latest
     environment: Production
-    timeout-minutes: 120
+    timeout-minutes: 180
     env:
       NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
       NEXT_PUBLIC_SANITY_DATASET: production
@@ -30,7 +79,6 @@ jobs:
       SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
       SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
       SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -39,5 +87,13 @@ jobs:
           cache: npm
       - name: Install reviewed project dependencies
         run: npm install --no-audit --no-fund
-      - name: Import exact-SKU manufacturer descriptions, specifications, PDFs, and high-resolution galleries
+      - name: Import exact-SKU descriptions, specifications, PDFs, and high-resolution galleries
         run: node scripts/migrate-cleaver-content-to-sanity.mjs --apply
+      - name: Apply strict Thistle source truth and verify every mapped SKU after publish
+        run: node scripts/run-cleaver-thistle-sections-production.mjs
+      - name: Restore exact verified short Overview sections and verify after publish
+        run: node scripts/repair-cleaver-short-overviews.mjs --apply
+      - name: Persist complete manufacturer titles and canonical URLs
+        run: node scripts/apply-cleaver-source-map-to-sanity.mjs --apply
+      - name: Independently compare published Cleaver sections against Thistle source pages
+        run: node scripts/run-cleaver-parity-audit-with-retries.mjs

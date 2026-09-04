@@ -1,0 +1,44 @@
+name: Repair complete Cleaver specifications
+
+on:
+  push:
+    branches:
+      - agent/cleaver-full-thistle-sections
+    paths:
+      - scripts/repair-cleaver-specifications.mjs
+      - .github/workflows/repair-cleaver-specifications.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cleaver-specifications-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  repair-cleaver-specifications:
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 120
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install project dependencies
+        run: npm install --no-audit --no-fund
+      - name: Verify full multiSUB Mini specification matrix
+        run: node scripts/repair-cleaver-specifications.mjs --verify-fixture
+      - name: Restore complete Thistle specification tables
+        run: node scripts/repair-cleaver-specifications.mjs

@@ -52,6 +52,20 @@ function categoryItems(baseHref: string, labels: string[]): CategoryItem[] {
   return labels.map((label) => ({ label, href: `${baseHref}/${slugify(label)}` }));
 }
 
+const CLEAVER_CATEGORY_HREFS: Record<string, string> = {
+  "Electrophoresis Equipment": "/products/cleaver/main-products/electrophoresis-systems",
+  "Gel Documentation": "/products/cleaver/main-products/gel-documentation-imaging",
+  "Electrophoresis Reagents": "/products/cleaver/main-products/electrophoresis-reagents",
+  "General Laboratory Products": "/products/cleaver/main-products/general-laboratory-equipment",
+  "Teaching and Education": "/products/cleaver/main-products/teaching-education",
+};
+
+function productCategoryHref(brand: Brand, category: string) {
+  if (brand.key === "cleaver") return CLEAVER_CATEGORY_HREFS[category] || brand.href;
+  if (brand.key === "kent") return `/products/kent/${slugify(category)}`;
+  return `/search?q=${encodeURIComponent(category)}&brand=${encodeURIComponent(brand.searchKey)}`;
+}
+
 const THEMES: Record<string, BrandTheme> = {
   abm: {
     gradient: "from-orange-600 via-orange-500 to-orange-400",
@@ -539,13 +553,12 @@ export default function ProductsMegaMenu() {
                     </div>
                     <div className="mt-3 grid gap-x-7 sm:grid-cols-2 xl:grid-cols-3">
                       {activeBrand.categories.map((category) => {
-                        const href = activeBrand.key === "kent" || activeBrand.key === "cleaver"
-                          ? `/products/${activeBrand.key}/${slugify(category)}`
-                          : `/search?q=${encodeURIComponent(category)}&brand=${encodeURIComponent(activeBrand.searchKey)}`;
+                        const href = productCategoryHref(activeBrand, category);
                         return (
                           <Link
                             key={category}
                             href={href}
+                            prefetch={activeBrand.key === "cleaver" ? false : undefined}
                             onClick={closeMenu}
                             className={`group/category flex min-h-10 items-center justify-between gap-3 border-b border-slate-200 py-2 text-[13px] font-medium text-slate-700 transition ${theme.hoverText} ${theme.hoverBorder}`}
                           >
