@@ -33,7 +33,10 @@ permissions:
 
 concurrency:
   group: cleaver-product-content-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
+
+env:
+  CLEAVER_SOURCE_TRUTH_CONCURRENCY: "6"
 
 jobs:
   validate-source-truth:
