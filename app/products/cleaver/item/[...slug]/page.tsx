@@ -6,7 +6,13 @@ import CleaverHeroBanner from "@/components/products/CleaverHeroBanner";
 import CleaverProductGallery from "@/components/products/CleaverProductGallery";
 import CleaverProductSections from "@/components/products/CleaverProductSections";
 import Breadcrumb from "@/components/site/Breadcrumb";
-import { CLEAVER_BRAND_NAME, cleaverDisplayTitle, slugifyCleaver } from "@/lib/cleaver/catalog";
+import {
+  CLEAVER_BRAND_NAME,
+  classifyCleaverProduct,
+  cleaverCategoryTitles,
+  cleaverDisplayTitle,
+  slugifyCleaver,
+} from "@/lib/cleaver/catalog";
 import { getCleaverProduct } from "@/lib/cleaver/sanity";
 
 export const revalidate = 300;
@@ -127,6 +133,8 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
   }
 
   const displayTitle = cleaverDisplayTitle(product);
+  const categoryPath = classifyCleaverProduct(product.sku, displayTitle);
+  const categoryPathTitles = cleaverCategoryTitles(categoryPath);
   const photos = preferredPhotos(product.image, product.images, sourceFidelity);
   const highlights = (product.highlights || []).filter(Boolean).slice(0, 6);
   const atAGlance = (product.cleaverAtAGlance || []).filter(Boolean);
@@ -135,7 +143,7 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
     { label: "Home", href: "/" },
     { label: "Products", href: "/products" },
     { label: CLEAVER_BRAND_NAME, href: "/products/cleaver" },
-    ...product.categoryPathTitles.map((label, index) => ({ label, href: `/products/cleaver/${product.categoryPath.slice(0, index + 1).join("/")}` })),
+    ...categoryPathTitles.map((label, index) => ({ label, href: `/products/cleaver/${categoryPath.slice(0, index + 1).join("/")}` })),
     { label: displayTitle },
   ];
 
@@ -173,7 +181,7 @@ export default async function CleaverProductDetailPage({ params }: PageProps) {
               <div data-cat-no={product.sku} className="mt-6 inline-flex rounded-full bg-[#f4edf8] px-4 py-2 text-sm font-semibold text-[#61247b]">Catalog No. {product.sku}</div>
               {product.summary ? <p className="mt-7 text-[15px] leading-8 text-slate-600">{product.summary}</p> : null}
               {highlights.length ? <ul className="mt-7 grid gap-3 border-t border-slate-100 pt-6">{highlights.map((highlight) => <li key={highlight} className="flex items-start gap-3 text-sm leading-6 text-slate-700"><span aria-hidden className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f3ebf8] text-xs font-bold text-[#743693]">✓</span><span>{highlight}</span></li>)}</ul> : null}
-              <div className="mt-8 rounded-2xl border border-slate-200 bg-[#fbfafc] p-5"><div className="grid grid-cols-[105px_minmax(0,1fr)] gap-x-4 gap-y-3 text-sm"><span className="font-semibold text-slate-700">Brand</span><span className="text-slate-600">{CLEAVER_BRAND_NAME}</span><span className="font-semibold text-slate-700">Catalog No.</span><span className="text-slate-600">{product.sku}</span>{product.categoryPathTitles.length ? <><span className="font-semibold text-slate-700">Category</span><span className="text-slate-600">{product.categoryPathTitles.at(-1)}</span></> : null}</div></div>
+              <div className="mt-8 rounded-2xl border border-slate-200 bg-[#fbfafc] p-5"><div className="grid grid-cols-[105px_minmax(0,1fr)] gap-x-4 gap-y-3 text-sm"><span className="font-semibold text-slate-700">Brand</span><span className="text-slate-600">{CLEAVER_BRAND_NAME}</span><span className="font-semibold text-slate-700">Catalog No.</span><span className="text-slate-600">{product.sku}</span>{categoryPathTitles.length ? <><span className="font-semibold text-slate-700">Category</span><span className="text-slate-600">{categoryPathTitles.at(-1)}</span></> : null}</div></div>
               <div className="mt-7 flex flex-wrap gap-3"><Link href={quoteHref} className="inline-flex h-12 items-center rounded-full bg-[#61247b] px-7 text-sm font-semibold text-white transition hover:bg-[#471659]">Request a Quote</Link><Link href="/contact" className="inline-flex h-12 items-center rounded-full border border-slate-300 px-6 text-sm font-semibold text-slate-700 transition hover:border-purple-300 hover:text-[#61247b]">Technical Support</Link></div>
             </section>
           )}
