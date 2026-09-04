@@ -10,6 +10,7 @@ on:
       - data/cleaver-source-map.json
       - data/cleaver-source-overrides.json
       - scripts/sync-cleaver-source-truth.mjs
+      - scripts/repair-cleaver-short-overviews.mjs
       - scripts/run-cleaver-thistle-sections-production.mjs
       - scripts/migrate-cleaver-content-to-sanity.mjs
       - scripts/apply-cleaver-source-map-to-sanity.mjs
@@ -19,6 +20,7 @@ on:
       - data/cleaver-source-map.json
       - data/cleaver-source-overrides.json
       - scripts/sync-cleaver-source-truth.mjs
+      - scripts/repair-cleaver-short-overviews.mjs
       - scripts/run-cleaver-thistle-sections-production.mjs
       - scripts/migrate-cleaver-content-to-sanity.mjs
       - scripts/apply-cleaver-source-map-to-sanity.mjs
@@ -54,6 +56,8 @@ jobs:
         run: node scripts/apply-cleaver-source-map-to-sanity.mjs
       - name: Strictly read every mapped Thistle family and all supported sections
         run: node scripts/sync-cleaver-source-truth.mjs
+      - name: Detect source Overview sections previously dropped for being short
+        run: node scripts/repair-cleaver-short-overviews.mjs
 
   publish-reviewed-cleaver-content:
     if: github.event_name != 'pull_request'
@@ -82,5 +86,7 @@ jobs:
         run: node scripts/migrate-cleaver-content-to-sanity.mjs --apply
       - name: Apply strict Thistle source truth and verify every mapped SKU after publish
         run: node scripts/run-cleaver-thistle-sections-production.mjs
+      - name: Restore exact short Overview sections from Thistle and verify after publish
+        run: node scripts/repair-cleaver-short-overviews.mjs --apply
       - name: Persist complete manufacturer titles and canonical URLs
         run: node scripts/apply-cleaver-source-map-to-sanity.mjs --apply
