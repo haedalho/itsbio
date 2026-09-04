@@ -77,6 +77,33 @@ const SPARSE_PRODUCT_OVERRIDES: Record<string, Partial<CleaverProduct>> = {
 };
 
 const VERIFIED_PRODUCT_OVERRIDES: Record<string, Partial<CleaverProduct>> = {
+  "MSO-1-12/22DS": {
+    cleaverAtAGlance: [
+      "Molded, 1 mm thick double-sided comb.",
+      "12/22 well.",
+      "For MSMINIONE Large Tray.",
+    ],
+    overviewHtml: "<p>Comb 12/22, 1mm thick DS</p>",
+    specRows: [
+      { label: "COMPATIBLE ELECTROPHORESIS SYSTEM", value: "multiSUM MINI ONE" },
+      { label: "WELL NUMBER", value: "22/12" },
+      { label: "COMB SPECS", value: "3mmx1mmx22 (30 µl) 5.6mmx1mmx12 (15 µl) Teeth width x Teeth thickness x Teeth no." },
+    ],
+    cleaverSourceSectionOrder: ["Overview", "Specifications", "Documents", "Works With"],
+    cleaverIncludedItems: [],
+    cleaverVariations: [],
+    cleaverAccessories: [],
+    cleaverWorksWith: [
+      {
+        title: "multiSUB MINI ONE, All in One Horizontal Electrophoresis System",
+        sku: "MSMINIONE",
+        packSize: "1 / Each",
+        sourceUrl: "https://www.thistlescientific.com/product/multisub-mini-one-all-in-one-horizontal-electrophoresis-system/",
+        internalHref: "/products/cleaver/item/multisub-mini-one-all-in-one-horizontal-electrophoresis-system",
+      },
+    ],
+    cleaverVideos: [],
+  },
   "CSL-MDOCWLB": {
     cleaverAtAGlance: [
       "White light box for Microdoc or standalone 240V",
