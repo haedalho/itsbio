@@ -4,26 +4,24 @@ on:
   push:
     branches:
       - main
+      - agent/cleaver-full-thistle-sections
     paths:
       - .github/workflows/migrate-cleaver-content.yml
       - data/cleaver-source-map.json
       - data/cleaver-source-overrides.json
-      - scripts/migrate-cleaver-content-to-sanity.mjs
-      - scripts/migrate-cleaver-thistle-sections-to-sanity.mjs
-      - scripts/migrate-cleaver-thistle-sections-v2.mjs
+      - scripts/sync-cleaver-source-truth.mjs
       - scripts/run-cleaver-thistle-sections-production.mjs
+      - scripts/migrate-cleaver-content-to-sanity.mjs
       - scripts/apply-cleaver-source-map-to-sanity.mjs
   pull_request:
     paths:
       - .github/workflows/migrate-cleaver-content.yml
       - data/cleaver-source-map.json
       - data/cleaver-source-overrides.json
-      - scripts/generate-cleaver-source-map.mjs
-      - scripts/apply-cleaver-source-map-to-sanity.mjs
-      - scripts/migrate-cleaver-thistle-sections-to-sanity.mjs
-      - scripts/migrate-cleaver-thistle-sections-v2.mjs
+      - scripts/sync-cleaver-source-truth.mjs
       - scripts/run-cleaver-thistle-sections-production.mjs
-      - scripts/diagnose-thistle-sections.mjs
+      - scripts/migrate-cleaver-content-to-sanity.mjs
+      - scripts/apply-cleaver-source-map-to-sanity.mjs
       - lib/cleaver/**
       - components/products/CleaverProductSections.tsx
       - app/products/cleaver/item/**
@@ -38,8 +36,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  validate-thistle-six-sections:
-    if: github.event_name == 'pull_request'
+  validate-source-truth:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -52,31 +49,15 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Verify complete Cleaver manufacturer title and URL map
         run: node scripts/apply-cleaver-source-map-to-sanity.mjs
-      - name: Inspect public Thistle product data routes
-        run: node scripts/diagnose-thistle-sections.mjs
-      - name: Probe complete Thistle HTML through Vercel runtime
-        shell: bash
-        run: |
-          URL="https://itsbio-git-agent-cleaver-full-thistle-461aba-hadel-hos-projects.vercel.app/api/cleaver-source-probe"
-          for attempt in $(seq 1 24); do
-            code=$(curl -L -sS -o /tmp/cleaver-source-probe.json -w "%{http_code}" "$URL" || true)
-            echo "[vercel-probe] attempt=$attempt status=$code"
-            if [ "$code" = "200" ]; then
-              cat /tmp/cleaver-source-probe.json
-              echo
-              exit 0
-            fi
-            sleep 5
-          done
-          cat /tmp/cleaver-source-probe.json || true
-      - name: Verify complete Cleaver sections through resilient manufacturer reader
-        run: node scripts/migrate-cleaver-thistle-sections-v2.mjs
+      - name: Strictly read every mapped Thistle family and all supported sections
+        run: node scripts/sync-cleaver-source-truth.mjs
 
   publish-reviewed-cleaver-content:
     if: github.event_name != 'pull_request'
+    needs: validate-source-truth
     runs-on: ubuntu-latest
     environment: Production
-    timeout-minutes: 120
+    timeout-minutes: 180
     env:
       NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
       NEXT_PUBLIC_SANITY_DATASET: production
@@ -86,7 +67,6 @@ jobs:
       SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
       SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
       SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -97,7 +77,7 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Import exact-SKU descriptions, specifications, PDFs, and high-resolution galleries
         run: node scripts/migrate-cleaver-content-to-sanity.mjs --apply
-      - name: Import complete Thistle sections and verify multiSUB Mini plus complex fixtures
+      - name: Apply strict Thistle source truth and verify every mapped SKU after publish
         run: node scripts/run-cleaver-thistle-sections-production.mjs
       - name: Persist complete manufacturer titles and canonical URLs
         run: node scripts/apply-cleaver-source-map-to-sanity.mjs --apply
