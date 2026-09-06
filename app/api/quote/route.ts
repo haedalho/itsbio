@@ -309,7 +309,7 @@ export async function POST(req: Request) {
       return Response.json({ ok: false, error: "The message service is temporarily unavailable because SMTP credentials are incomplete." }, { status: 503 });
     }
 
-    const subject = `[${inquiryType || "Quote Request"}] ${product || catNo || "General inquiry"} - ${name || "Unknown"}`;
+    const subject = `[${inquiryType || "견적서"}] ${product || catNo || "General inquiry"} - ${name || "Unknown"}`;
     const text = `
 New website inquiry received:
 
