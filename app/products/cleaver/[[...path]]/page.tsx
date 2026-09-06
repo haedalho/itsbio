@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -16,10 +15,7 @@ import {
   cleaverProductHref,
   type CleaverProduct,
 } from "@/lib/cleaver/catalog";
-import {
-  getFastCleaverCategoryCovers as getCleaverCategoryCovers,
-  getFastCleaverProductPage as getCleaverProductPage,
-} from "@/lib/cleaver/fast-catalog";
+import { getFastCleaverProductPage as getCleaverProductPage } from "@/lib/cleaver/fast-catalog";
 
 export const revalidate = 86400;
 
@@ -73,9 +69,8 @@ function CleaverSidebar({ activePath }: { activePath: string[] }) {
           const active = activePath[0] === category.slug;
           return (
             <div key={category.slug}>
-              <Link href={categoryHref([category.slug])} prefetch={false} className={`flex items-start justify-between gap-3 rounded-xl px-3 py-2.5 text-[13px] transition ${active ? "bg-purple-50 font-semibold text-[#61247b]" : "text-slate-700 hover:bg-slate-50"}`}>
-                <span>{category.title}</span>
-                <span className="shrink-0 text-xs text-slate-400">{categoryCount([category.slug])}</span>
+              <Link href={categoryHref([category.slug])} prefetch={false} className={`block rounded-xl px-3 py-2.5 text-[13px] transition ${active ? "bg-purple-50 font-semibold text-[#61247b]" : "text-slate-700 hover:bg-slate-50"}`}>
+                {category.title}
               </Link>
               {active ? (
                 <div className="mb-2 ml-4 space-y-0.5 border-l border-dashed border-purple-200 pl-3">
@@ -136,10 +131,7 @@ export default async function CleaverCatalogPage({ params, searchParams }: PageP
 
   const query = String(search.q || "").trim();
   const requestedPage = Math.max(1, Number.parseInt(String(search.page || "1"), 10) || 1);
-  const [listing, covers] = await Promise.all([
-    getCleaverProductPage(path, query, requestedPage),
-    path.length ? Promise.resolve({} as Record<string, string>) : getCleaverCategoryCovers(),
-  ]);
+  const listing = await getCleaverProductPage(path, query, requestedPage);
   const heading = match?.current.title || CLEAVER_BRAND_NAME;
   const breadcrumbs = [
     { label: "Home", href: "/" },
@@ -166,22 +158,6 @@ export default async function CleaverCatalogPage({ params, searchParams }: PageP
                 <button className="h-11 rounded-full bg-[#61247b] px-5 text-sm font-semibold text-white hover:bg-[#471659]">Search</button>
               </form>
             </div>
-
-            {!path.length && !query ? (
-              <section className="mt-8" aria-label="Browse Cleaver Scientific equipment ranges">
-                <div className="mb-5 flex items-end justify-between gap-3"><div><div className="text-[11px] font-semibold uppercase tracking-[0.17em] text-[#8650a0]">Purpose-built for discovery</div><h3 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">Browse the range</h3></div></div>
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  {CLEAVER_CATEGORIES.map((category) => (
-                    <Link key={category.slug} href={categoryHref([category.slug])} prefetch={false} className="group overflow-hidden rounded-2xl border border-[#ece8ef] bg-white transition duration-300 hover:-translate-y-0.5 hover:border-[#cbb8d4] hover:shadow-[0_14px_36px_rgba(86,39,105,0.1)]">
-                      <div className="relative flex h-44 items-center justify-center overflow-hidden bg-gradient-to-b from-white to-[#faf8fc] p-4">
-                        {covers[category.slug] ? <Image src={covers[category.slug]} alt={category.title} fill quality={85} sizes="(max-width: 768px) 46vw, 340px" className="object-contain p-3 transition duration-500 group-hover:scale-[1.05]" /> : <Image src="/partners/Cleaverscientific-logo.png" alt="" width={170} height={70} className="h-auto max-h-14 w-auto object-contain opacity-65" />}
-                      </div>
-                      <div className="border-t border-slate-100 p-4"><div className="text-[14px] font-semibold text-slate-900 group-hover:text-[#61247b]">{category.title}</div><p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">{category.description}</p><div className="mt-3 text-xs font-medium text-[#8650a0]">{categoryCount([category.slug]).toLocaleString()} products <span aria-hidden>→</span></div></div>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            ) : null}
 
             {match && path.length === 1 && !query ? (
               <div className="mt-6 flex flex-wrap gap-2">
