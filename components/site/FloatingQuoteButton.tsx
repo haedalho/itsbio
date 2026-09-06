@@ -117,6 +117,7 @@ export default function FloatingQuoteButton() {
       name: String(form.get("name") ?? ""),
       org: String(form.get("org") ?? ""),
       email: String(form.get("email") ?? ""),
+      phone: String(form.get("phone") ?? ""),
       product: String(form.get("product") ?? ""),
       catNo: String(form.get("catNo") ?? ""),
       message: String(form.get("message") ?? ""),
@@ -144,11 +145,12 @@ export default function FloatingQuoteButton() {
     } catch (error) {
       console.error("Quote send failed:", error);
       setDone("fail");
-      const subject = `[ITS BIO] Quote request - ${payload.product || payload.catNo || payload.name || "New inquiry"}`;
+      const subject = `[견적서] ${payload.product || payload.catNo || payload.name || "New inquiry"}`;
       const body = [
         `Name: ${payload.name}`,
         `Company / Lab: ${payload.org}`,
         `Email: ${payload.email}`,
+        `Phone: ${payload.phone}`,
         `Product name: ${payload.product}`,
         `Cat No: ${payload.catNo}`,
         "",
@@ -163,6 +165,7 @@ export default function FloatingQuoteButton() {
 
   if (pathname === "/quote") return null;
 
+  const inputClass = "h-11 w-full rounded-xl border border-slate-300 px-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100";
   const labelClass = "mb-1.5 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500";
 
   return (
@@ -201,44 +204,21 @@ export default function FloatingQuoteButton() {
 
             <form onSubmit={onSubmit} className="space-y-3 p-5 md:p-6">
               <div className="grid gap-3 sm:grid-cols-2">
-                <input
-                  name="name"
-                  className="h-11 w-full rounded-xl border border-slate-300 px-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-                  placeholder="Name"
-                />
-                <input
-                  name="org"
-                  className="h-11 w-full rounded-xl border border-slate-300 px-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-                  placeholder="Company / Lab"
-                />
+                <input name="name" className={inputClass} placeholder="Name" />
+                <input name="org" className={inputClass} placeholder="Company / Lab" />
               </div>
 
-              <input
-                name="email"
-                type="email"
-                required
-                className="h-11 w-full rounded-xl border border-slate-300 px-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-                placeholder="Email *"
-              />
+              <input name="email" type="email" required className={inputClass} placeholder="Email *" />
+              <input name="phone" type="tel" className={inputClass} placeholder="Phone" autoComplete="tel" />
 
               <div className="grid gap-3">
                 <label className="block w-full">
                   <span className={labelClass}>PRODUCT NAME</span>
-                  <input
-                    ref={productRef}
-                    name="product"
-                    className="h-11 w-full rounded-xl border border-slate-300 px-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-                    placeholder="Product name"
-                  />
+                  <input ref={productRef} name="product" className={inputClass} placeholder="Product name" />
                 </label>
                 <label className="block w-full">
                   <span className={labelClass}>CAT.NO</span>
-                  <input
-                    ref={catNoRef}
-                    name="catNo"
-                    className="h-11 w-full rounded-xl border border-slate-300 px-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-                    placeholder="Catalog number"
-                  />
+                  <input ref={catNoRef} name="catNo" className={inputClass} placeholder="Catalog number" />
                 </label>
               </div>
 
