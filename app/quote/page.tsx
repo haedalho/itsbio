@@ -55,27 +55,14 @@ export default function QuotePage() {
       });
       const data = await res.json().catch(() => ({} as { ok?: boolean; error?: string }));
       if (!res.ok || data.ok !== true) {
-        const msg = data?.error || `Request failed (status ${res.status})`;
-        setErrorMsg(msg);
-        throw new Error(msg);
+        throw new Error(data?.error || `Request failed (status ${res.status})`);
       }
       setDone("ok");
       formEl.reset();
     } catch (err) {
       console.error("Send failed:", err);
       setDone("fail");
-      const subject = `[ITS BIO] Quote request - ${payload.product || payload.catNo || payload.name || "New inquiry"}`;
-      const body = [
-        `Name: ${payload.name}`,
-        `Company / Lab: ${payload.org}`,
-        `Email: ${payload.email}`,
-        `Product name: ${payload.product}`,
-        `Cat No: ${payload.catNo}`,
-        "",
-        payload.message,
-      ].join("\n");
-      window.location.href = `mailto:info@itsbio.co.kr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      setErrorMsg("Direct sending is temporarily unavailable. Your email app has been opened with the request filled in.");
+      setErrorMsg(err instanceof Error ? err.message : "Direct sending is temporarily unavailable.");
     } finally {
       setLoading(false);
     }
@@ -141,7 +128,7 @@ export default function QuotePage() {
             </button>
 
             {done === "ok" ? <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">Sent! We will contact you soon.</div> : null}
-            {done === "fail" ? <div className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">Failed to send{errorMsg ? `: ${errorMsg}` : ". Please try again."}</div> : null}
+            {done === "fail" ? <div className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">Failed to send{errorMsg ? `: ${errorMsg}` : ". Please try again."} <a href="mailto:info@itsbio.co.kr" className="font-semibold underline underline-offset-2">Email info@itsbio.co.kr</a></div> : null}
           </form>
         </div>
       </section>
