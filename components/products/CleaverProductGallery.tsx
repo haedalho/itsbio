@@ -61,8 +61,8 @@ export default function CleaverProductGallery({ title, images }: Props) {
   if (!active) {
     return (
       <div className="relative aspect-square overflow-hidden border border-slate-200 bg-[#fbf9fd]">
-        <div className="absolute inset-0 flex items-center justify-center p-16">
-          <Image src="/partners/Cleaverscientific-logo.png" alt="Cleaver Scientific" width={220} height={92} className="h-auto max-w-full object-contain opacity-60" />
+        <div className="absolute inset-0 flex items-center justify-center px-8 text-center">
+          <span className="text-sm font-medium text-slate-400">Product image not provided by manufacturer</span>
         </div>
       </div>
     );
