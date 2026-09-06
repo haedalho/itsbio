@@ -1,6 +1,9 @@
 import tls from "node:tls";
+import { Resend } from "resend";
 
 export const runtime = "nodejs";
+export const preferredRegion = "icn1";
+export const maxDuration = 30;
 
 const REQUEST_WINDOW_MS = 10 * 60 * 1000;
 const REQUEST_LIMIT = 5;
@@ -37,6 +40,19 @@ function isRateLimited(ip: string) {
 }
 
 type SmtpResponse = { code: number; text: string };
+type SmtpStage = "connection" | "greeting" | "ehlo" | "authentication" | "sender" | "recipient" | "data" | "delivery";
+
+class MailplugSmtpError extends Error {
+  stage: SmtpStage;
+  status?: number;
+
+  constructor(stage: SmtpStage, message: string, status?: number) {
+    super(message);
+    this.name = "MailplugSmtpError";
+    this.stage = stage;
+    this.status = status;
+  }
+}
 
 function createResponseReader(socket: tls.TLSSocket) {
   let buffer = "";
@@ -72,7 +88,7 @@ function createResponseReader(socket: tls.TLSSocket) {
     }
   });
 
-  socket.on("error", (error) => fail(error));
+  socket.on("error", fail);
   socket.on("close", () => {
     if (waiters.length) fail(new Error("Mailplug SMTP connection closed unexpectedly."));
   });
@@ -90,9 +106,9 @@ function createResponseReader(socket: tls.TLSSocket) {
   });
 }
 
-function expect(response: SmtpResponse, accepted: number[], stage: string) {
+function expect(response: SmtpResponse, accepted: number[], stage: SmtpStage) {
   if (!accepted.includes(response.code)) {
-    throw new Error(`Mailplug SMTP ${stage} failed with status ${response.code}.`);
+    throw new MailplugSmtpError(stage, `Mailplug SMTP ${stage} failed with status ${response.code}.`, response.code);
   }
 }
 
@@ -130,15 +146,20 @@ async function sendMailplugEmail({
     servername: MAILPLUG_SMTP_HOST,
     rejectUnauthorized: true,
   });
+  const nextResponse = createResponseReader(socket);
   socket.setTimeout(25_000, () => socket.destroy(new Error("Mailplug SMTP connection timed out.")));
 
-  await new Promise<void>((resolve, reject) => {
-    socket.once("secureConnect", resolve);
-    socket.once("error", reject);
-  });
+  try {
+    await new Promise<void>((resolve, reject) => {
+      socket.once("secureConnect", resolve);
+      socket.once("error", reject);
+    });
+  } catch (error) {
+    socket.destroy();
+    throw new MailplugSmtpError("connection", error instanceof Error ? error.message : "Mailplug SMTP connection failed.");
+  }
 
-  const nextResponse = createResponseReader(socket);
-  const command = async (value: string, accepted: number[], stage: string) => {
+  const command = async (value: string, accepted: number[], stage: SmtpStage) => {
     const pending = nextResponse();
     socket.write(`${value}\r\n`);
     const response = await pending;
@@ -148,13 +169,13 @@ async function sendMailplugEmail({
 
   try {
     expect(await nextResponse(), [220], "greeting");
-    await command("EHLO itsbio.co.kr", [250], "EHLO");
-    await command("AUTH LOGIN", [334], "authentication start");
-    await command(Buffer.from(username, "utf8").toString("base64"), [334], "username authentication");
-    await command(Buffer.from(password, "utf8").toString("base64"), [235], "password authentication");
+    await command("EHLO itsbio.co.kr", [250], "ehlo");
+    await command("AUTH LOGIN", [334], "authentication");
+    await command(Buffer.from(username, "utf8").toString("base64"), [334], "authentication");
+    await command(Buffer.from(password, "utf8").toString("base64"), [235], "authentication");
     await command(`MAIL FROM:<${username}>`, [250], "sender");
     await command(`RCPT TO:<${to}>`, [250, 251], "recipient");
-    await command("DATA", [354], "message data");
+    await command("DATA", [354], "data");
 
     const message = [
       `From: ITS BIO <${username}>`,
@@ -171,16 +192,48 @@ async function sendMailplugEmail({
 
     const accepted = nextResponse();
     socket.write(`${message}\r\n.\r\n`);
-    expect(await accepted, [250], "message delivery");
+    expect(await accepted, [250], "delivery");
 
-    try {
-      await command("QUIT", [221], "QUIT");
-    } catch {
-      // The message is already accepted; a QUIT failure must not turn it into a false delivery failure.
-    }
+    const quitResponse = nextResponse();
+    socket.write("QUIT\r\n");
+    await quitResponse.catch(() => undefined);
+  } catch (error) {
+    if (error instanceof MailplugSmtpError) throw error;
+    throw new MailplugSmtpError("connection", error instanceof Error ? error.message : "Mailplug SMTP failed.");
   } finally {
     socket.end();
   }
+}
+
+async function sendResendFallback({ to, replyTo, subject, text }: { to: string; replyTo: string; subject: string; text: string }) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return false;
+
+  const resend = new Resend(apiKey);
+  const { error } = await resend.emails.send({
+    from: process.env.QUOTE_FROM_EMAIL || "ITS BIO <onboarding@resend.dev>",
+    to: [to],
+    subject,
+    text,
+    replyTo,
+  });
+
+  if (error) {
+    console.error("Resend fallback failed:", error.message);
+    return false;
+  }
+  return true;
+}
+
+function publicMailError(error: unknown) {
+  if (!(error instanceof MailplugSmtpError)) return "Mail delivery failed before completion.";
+  if (error.stage === "authentication") {
+    return "Mailplug SMTP authentication failed. If external-app security is enabled, use a Mailplug app password for SMTP.";
+  }
+  if (error.stage === "connection" || error.stage === "greeting" || error.stage === "ehlo") {
+    return "Mailplug SMTP connection failed. Please try again shortly.";
+  }
+  return `Mailplug SMTP failed during ${error.stage}.`;
 }
 
 export async function POST(req: Request) {
@@ -213,12 +266,12 @@ export async function POST(req: Request) {
     }
 
     const smtpUser = oneLine(process.env.MAILPLUG_SMTP_USER || DEFAULT_MAILBOX, 254).toLowerCase();
-    const smtpPassword = String(process.env.MAILPLUG_SMTP_PASSWORD || "");
+    const smtpPassword = String(process.env.MAILPLUG_SMTP_PASSWORD || "").trim();
     const toEmail = oneLine(process.env.QUOTE_TO_EMAIL || DEFAULT_MAILBOX, 254).toLowerCase();
 
     if (!validEmail(smtpUser) || !smtpPassword || !validEmail(toEmail)) {
       console.error("Quote email is not configured: Mailplug SMTP credentials are incomplete.");
-      return Response.json({ ok: false, error: "The message service is temporarily unavailable." }, { status: 503 });
+      return Response.json({ ok: false, error: "The message service is temporarily unavailable because SMTP credentials are incomplete." }, { status: 503 });
     }
 
     const subject = `[${inquiryType || "Quote Request"}] ${product || catNo || "General inquiry"} - ${name || "Unknown"}`;
@@ -239,18 +292,18 @@ Message:
 ${message}
     `.trim();
 
-    await sendMailplugEmail({
-      username: smtpUser,
-      password: smtpPassword,
-      to: toEmail,
-      replyTo: email,
-      subject,
-      text,
-    });
-
-    return Response.json({ ok: true });
+    try {
+      await sendMailplugEmail({ username: smtpUser, password: smtpPassword, to: toEmail, replyTo: email, subject, text });
+      return Response.json({ ok: true, provider: "mailplug" });
+    } catch (mailplugError) {
+      console.error("Mailplug quote delivery failed:", mailplugError instanceof Error ? mailplugError.message : mailplugError);
+      if (await sendResendFallback({ to: toEmail, replyTo: email, subject, text })) {
+        return Response.json({ ok: true, provider: "resend-fallback" });
+      }
+      return Response.json({ ok: false, error: publicMailError(mailplugError) }, { status: 502 });
+    }
   } catch (error) {
-    console.error("Mailplug quote delivery failed:", error instanceof Error ? error.message : error);
-    return Response.json({ ok: false, error: "We could not send your message. Please email info@itsbio.co.kr." }, { status: 502 });
+    console.error("Quote request failed:", error);
+    return Response.json({ ok: false, error: "We could not process your message." }, { status: 500 });
   }
 }
