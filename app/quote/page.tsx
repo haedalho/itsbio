@@ -39,6 +39,7 @@ export default function QuotePage() {
       name: String(form.get("name") ?? ""),
       org: String(form.get("org") ?? ""),
       email: String(form.get("email") ?? ""),
+      phone: String(form.get("phone") ?? ""),
       product: String(form.get("product") ?? ""),
       catNo: String(form.get("catNo") ?? ""),
       message: String(form.get("message") ?? ""),
@@ -100,6 +101,7 @@ export default function QuotePage() {
               <input name="org" className={fieldClass} placeholder="Company / Lab" />
             </div>
             <input name="email" type="email" className={`${fieldClass} mt-3`} placeholder="Email *" required />
+            <input name="phone" type="tel" autoComplete="tel" className={`${fieldClass} mt-3`} placeholder="Phone" />
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <label>
