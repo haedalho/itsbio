@@ -1,9 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
 import HtmlContent from "@/components/site/HtmlContent";
-import QuoteTriggerButton from "@/components/site/QuoteTriggerButton";
 import AbmHeroBanner from "@/components/products/AbmHeroBanner";
 import AbmCatalogSideNav from "@/components/products/AbmCatalogSideNav";
 import ProductGalleryClient from "@/components/products/ProductGalleryClient";
@@ -42,7 +40,6 @@ export default async function AbmStagedDetailPage({
   if (!record) notFound();
 
   const title = record.title || record.sku || "ABM item";
-  const quoteProduct = `${title}${record.sku ? ` — Cat. No. ${record.sku}` : ""}`;
   const galleryUrls = Array.from(new Set([
     String(record.previewImage || "").trim(),
     ...(record.images || []),
@@ -96,7 +93,11 @@ export default async function AbmStagedDetailPage({
             <AbmCatalogSideNav mode={kind} activeProductRoot={activeProductRoot} activeServicePath={activeServicePath} />
           </aside>
 
-          <section className="min-w-0">
+          <section
+            className="min-w-0"
+            data-product-name={title}
+            data-cat-no={record.sku || undefined}
+          >
             <h1 className="max-w-4xl text-3xl font-bold leading-tight tracking-tight text-neutral-950">{title}</h1>
 
             <div className={[
@@ -114,8 +115,8 @@ export default async function AbmStagedDetailPage({
                   <h2 className="text-lg font-semibold text-[#dc5a2b]">{kind === "product" ? "Product Information" : "Service Information"}</h2>
                 </div>
 
-                <div className={hasGallery ? "" : "md:grid md:grid-cols-[minmax(0,1.35fr)_minmax(280px,.65fr)]"}>
-                  <dl className={hasGallery ? "px-6 py-2" : "px-6 py-3 md:border-r md:border-orange-100 md:px-7"}>
+                <div>
+                  <dl className={hasGallery ? "px-6 py-2" : "px-6 py-3 md:px-7"}>
                     {record.sku ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Cat. No.</dt><dd className="font-medium text-slate-700">{record.sku}</dd></div> : null}
                     {record.unit ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Unit</dt><dd className="text-slate-700">{record.unit}</dd></div> : null}
                     {(record.category || record.searchCategory || record.filterTitle) ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Category</dt><dd className="text-slate-700">{record.category || record.searchCategory || record.filterTitle}</dd></div> : null}
@@ -124,15 +125,6 @@ export default async function AbmStagedDetailPage({
                       <div key={label} className={infoRowClass}><dt className="font-semibold text-slate-900">{label}</dt><dd className="text-slate-700">{value}</dd></div>
                     ))}
                   </dl>
-
-                  <div className={`${hasGallery ? "border-t border-orange-100 p-5" : "bg-orange-50/35 p-6 md:flex md:flex-col md:justify-center"}`}>
-                    <p className="mb-4 text-sm leading-6 text-slate-600">For availability, lead time, and technical questions, contact ITS BIO.</p>
-                    <QuoteTriggerButton
-                      product={quoteProduct}
-                      className="inline-flex w-full items-center justify-center bg-[#f2632f] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#d95221]"
-                    />
-                    <Link href="/contact" className="mt-3 inline-flex w-full items-center justify-center border border-[#f2632f] bg-white px-4 py-3 text-sm font-semibold text-[#dc5a2b] transition hover:bg-orange-50">Contact ITS BIO</Link>
-                  </div>
                 </div>
               </aside>
             </div>
