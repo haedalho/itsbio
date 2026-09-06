@@ -188,21 +188,15 @@ async function sendMailplugEmail({
     const ehlo = await command("EHLO itsbio.co.kr", [250], "ehlo");
     const methods = advertisedAuthMethods(ehlo);
 
-    if (methods.includes("LOGIN") || methods.length === 0) {
-      try {
-        await command("AUTH LOGIN", [334], "auth-method");
-        await command(Buffer.from(username, "utf8").toString("base64"), [334], "auth-username");
-        await command(Buffer.from(password, "utf8").toString("base64"), [235], "auth-password");
-      } catch (loginError) {
-        if (!(loginError instanceof MailplugSmtpError) || !methods.includes("PLAIN") || loginError.stage === "auth-password") {
-          throw loginError;
-        }
-        const authPlain = Buffer.from(`\u0000${username}\u0000${password}`, "utf8").toString("base64");
-        await command(`AUTH PLAIN ${authPlain}`, [235], "auth-password");
-      }
-    } else if (methods.includes("PLAIN")) {
+    // AUTH PLAIN sends the username and password in one authenticated TLS exchange,
+    // reducing round trips compared with AUTH LOGIN when the server advertises it.
+    if (methods.includes("PLAIN")) {
       const authPlain = Buffer.from(`\u0000${username}\u0000${password}`, "utf8").toString("base64");
       await command(`AUTH PLAIN ${authPlain}`, [235], "auth-password");
+    } else if (methods.includes("LOGIN") || methods.length === 0) {
+      await command("AUTH LOGIN", [334], "auth-method");
+      await command(Buffer.from(username, "utf8").toString("base64"), [334], "auth-username");
+      await command(Buffer.from(password, "utf8").toString("base64"), [235], "auth-password");
     } else {
       throw new MailplugSmtpError("auth-method", "Mailplug SMTP did not advertise a supported authentication method.");
     }
@@ -228,9 +222,9 @@ async function sendMailplugEmail({
     socket.write(`${message}\r\n.\r\n`);
     expect(await accepted, [250], "delivery");
 
-    const quitResponse = nextResponse();
+    // Delivery is confirmed by the 250 response above. Do not hold the UI open
+    // for the optional QUIT acknowledgement.
     socket.write("QUIT\r\n");
-    await quitResponse.catch(() => undefined);
   } catch (error) {
     if (error instanceof MailplugSmtpError) throw error;
     throw new MailplugSmtpError("connection", error instanceof Error ? error.message : "Mailplug SMTP failed.");
@@ -287,9 +281,6 @@ export async function POST(req: Request) {
     const org = oneLine(body.org, 150);
     const email = oneLine(body.email, 254).toLowerCase();
     const phone = oneLine(body.phone, 50);
-    const field = oneLine(body.field, 100);
-    const department = oneLine(body.department, 100);
-    const inquiryType = oneLine(body.inquiryType, 100);
     const product = oneLine(body.product, 300);
     const catNo = oneLine(body.catNo, 150);
     const message = clean(body.message, 5000);
@@ -309,7 +300,7 @@ export async function POST(req: Request) {
       return Response.json({ ok: false, error: "The message service is temporarily unavailable because SMTP credentials are incomplete." }, { status: 503 });
     }
 
-    const subject = `[${inquiryType || "견적서"}] ${product || catNo || "General inquiry"} - ${name || "Unknown"}`;
+    const subject = `[견적서] ${product || catNo || "General inquiry"} - ${name || "Unknown"}`;
     const text = `
 New website inquiry received:
 
@@ -317,9 +308,6 @@ Name: ${name}
 Org: ${org}
 Email: ${email}
 Phone: ${phone}
-Field: ${field}
-Department: ${department}
-Inquiry type: ${inquiryType}
 Product name: ${product}
 Cat No: ${catNo}
 ${sourceUrl ? `Source page: ${sourceUrl}\n` : ""}
