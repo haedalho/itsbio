@@ -40,7 +40,17 @@ function isRateLimited(ip: string) {
 }
 
 type SmtpResponse = { code: number; text: string };
-type SmtpStage = "connection" | "greeting" | "ehlo" | "authentication" | "sender" | "recipient" | "data" | "delivery";
+type SmtpStage =
+  | "connection"
+  | "greeting"
+  | "ehlo"
+  | "auth-method"
+  | "auth-username"
+  | "auth-password"
+  | "sender"
+  | "recipient"
+  | "data"
+  | "delivery";
 
 class MailplugSmtpError extends Error {
   stage: SmtpStage;
@@ -125,6 +135,11 @@ function smtpBody(value: string) {
     .join("\r\n");
 }
 
+function advertisedAuthMethods(ehlo: SmtpResponse) {
+  const match = ehlo.text.match(/(?:^|\n)250[- ]AUTH\s+([^\r\n]+)/i);
+  return match ? match[1].toUpperCase().split(/\s+/).filter(Boolean) : [];
+}
+
 async function sendMailplugEmail({
   username,
   password,
@@ -169,10 +184,28 @@ async function sendMailplugEmail({
 
   try {
     expect(await nextResponse(), [220], "greeting");
-    await command("EHLO itsbio.co.kr", [250], "ehlo");
-    await command("AUTH LOGIN", [334], "authentication");
-    await command(Buffer.from(username, "utf8").toString("base64"), [334], "authentication");
-    await command(Buffer.from(password, "utf8").toString("base64"), [235], "authentication");
+    const ehlo = await command("EHLO itsbio.co.kr", [250], "ehlo");
+    const methods = advertisedAuthMethods(ehlo);
+
+    if (methods.includes("LOGIN") || methods.length === 0) {
+      try {
+        await command("AUTH LOGIN", [334], "auth-method");
+        await command(Buffer.from(username, "utf8").toString("base64"), [334], "auth-username");
+        await command(Buffer.from(password, "utf8").toString("base64"), [235], "auth-password");
+      } catch (loginError) {
+        if (!(loginError instanceof MailplugSmtpError) || !methods.includes("PLAIN") || loginError.stage === "auth-password") {
+          throw loginError;
+        }
+        const authPlain = Buffer.from(`\u0000${username}\u0000${password}`, "utf8").toString("base64");
+        await command(`AUTH PLAIN ${authPlain}`, [235], "auth-password");
+      }
+    } else if (methods.includes("PLAIN")) {
+      const authPlain = Buffer.from(`\u0000${username}\u0000${password}`, "utf8").toString("base64");
+      await command(`AUTH PLAIN ${authPlain}`, [235], "auth-password");
+    } else {
+      throw new MailplugSmtpError("auth-method", "Mailplug SMTP did not advertise a supported authentication method.");
+    }
+
     await command(`MAIL FROM:<${username}>`, [250], "sender");
     await command(`RCPT TO:<${to}>`, [250, 251], "recipient");
     await command("DATA", [354], "data");
@@ -227,13 +260,14 @@ async function sendResendFallback({ to, replyTo, subject, text }: { to: string; 
 
 function publicMailError(error: unknown) {
   if (!(error instanceof MailplugSmtpError)) return "Mail delivery failed before completion.";
-  if (error.stage === "authentication") {
-    return "Mailplug SMTP authentication failed. If external-app security is enabled, use a Mailplug app password for SMTP.";
-  }
+  const status = error.status ? ` (SMTP ${error.status})` : "";
+  if (error.stage === "auth-method") return `Mailplug rejected the SMTP authentication method${status}.`;
+  if (error.stage === "auth-username") return `Mailplug rejected the SMTP username${status}. Expected account: info@itsbio.co.kr.`;
+  if (error.stage === "auth-password") return `Mailplug rejected the SMTP app password${status}. The server accepted the username but not the password.`;
   if (error.stage === "connection" || error.stage === "greeting" || error.stage === "ehlo") {
-    return "Mailplug SMTP connection failed. Please try again shortly.";
+    return `Mailplug SMTP connection failed${status}. Please try again shortly.`;
   }
-  return `Mailplug SMTP failed during ${error.stage}.`;
+  return `Mailplug SMTP failed during ${error.stage}${status}.`;
 }
 
 export async function POST(req: Request) {
@@ -266,7 +300,7 @@ export async function POST(req: Request) {
     }
 
     const smtpUser = oneLine(process.env.MAILPLUG_SMTP_USER || DEFAULT_MAILBOX, 254).toLowerCase();
-    const smtpPassword = String(process.env.MAILPLUG_SMTP_PASSWORD || "").trim();
+    const smtpPassword = String(process.env.MAILPLUG_SMTP_PASSWORD || "").replace(/\s+/g, "");
     const toEmail = oneLine(process.env.QUOTE_TO_EMAIL || DEFAULT_MAILBOX, 254).toLowerCase();
 
     if (!validEmail(smtpUser) || !smtpPassword || !validEmail(toEmail)) {
