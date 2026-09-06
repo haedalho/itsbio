@@ -14,12 +14,14 @@ const MIGRATION_KEY = "cleaver-products-2026-08-24";
 const PUBLIC_HOSTS = new Set(["www.msesupplies.com", "www.thistlescientific.com"]);
 const DOCUMENT_HOSTS = new Set(["cdn.shopify.com", "files.plytix.com"]);
 const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
+const MAX_GALLERY_IMAGES = 10;
 const normalizeSku = (value) => String(value || "").normalize("NFKC").trim().toUpperCase();
 const cleanText = (value) => String(value || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
 const hash = (value) => createHash("sha256").update(String(value)).digest("hex");
 const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character]));
 
 const inventory = JSON.parse(await readFile(path.join(process.cwd(), "data/cleaver-product-catalog.json"), "utf8"));
+const sourceMap = JSON.parse(await readFile(path.join(process.cwd(), "data/cleaver-source-map.json"), "utf8"));
 const reviewedSkus = new Map(inventory.map((product) => [normalizeSku(product.sku), product]));
 if (inventory.length !== 1432 || reviewedSkus.size !== 1432) throw new Error("Expected exactly 1,432 reviewed Cleaver product SKUs.");
 
@@ -258,6 +260,18 @@ for (const [sku, product] of manufacturerProducts) {
 }
 
 const candidates = new Map([...manufacturerContent, ...distributorContent]);
+let sourceMapGalleryCandidates = 0;
+for (const [rawSku, identity] of Object.entries(sourceMap)) {
+  const sku = normalizeSku(rawSku);
+  if (!reviewedSkus.has(sku)) continue;
+  const manufacturerImages = Array.from(new Set((Array.isArray(identity?.images) ? identity.images : [])
+    .map((url) => String(url || "").trim())
+    .filter((url) => /^https:\/\/(?:www\.)?thistlescientific\.com\/wp-content\/uploads\//i.test(url))));
+  if (!manufacturerImages.length) continue;
+  sourceMapGalleryCandidates += 1;
+  const existing = candidates.get(sku) || { sku, overviewHtml: "", summary: "", highlights: [], specRows: [], docs: [], images: [] };
+  candidates.set(sku, { ...existing, manufacturerImages });
+}
 const candidateRows = [...candidates.values()];
 const sample = distributorContent.get("MSMINI10");
 const stats = {
@@ -272,6 +286,7 @@ const stats = {
   skuSpecificSpecifications: candidateRows.filter((row) => row.specRows.length).length,
   manufacturerDocuments: candidateRows.filter((row) => row.docs.length).length,
   manufacturerGalleryCandidates: candidateRows.filter((row) => row.images.length > 1).length,
+  sourceMapGalleryCandidates,
   sample: sample && { sku: sample.sku, overviewCharacters: sample.overviewHtml.length, specifications: sample.specRows, documents: sample.docs.length, galleryImages: sample.images.length },
 };
 console.log(JSON.stringify(stats));
@@ -294,7 +309,11 @@ async function uploadGalleryImage(url, sku) {
   const previous = uploadedAssets.get(url);
   if (previous) return previous;
   const task = (async () => {
-    const response = await fetch(url, { headers: { Accept: "image/*,*/*;q=0.8" }, redirect: "follow", signal: AbortSignal.timeout(40_000) });
+    const source = new URL(url);
+    const fetchUrl = /(^|\.)thistlescientific\.com$/i.test(source.hostname)
+      ? `https://i0.wp.com/${source.hostname}${source.pathname}${source.search}`
+      : url;
+    const response = await fetch(fetchUrl, { headers: { Accept: "image/*,*/*;q=0.8", "User-Agent": "ITS-BIO-CleaverCatalog/2.0" }, redirect: "follow", signal: AbortSignal.timeout(40_000) });
     if ([401, 403].includes(response.status)) throw new Error(`Reviewed manufacturer gallery denied access (HTTP ${response.status})`);
     if (!response.ok) throw new Error(`Reviewed manufacturer gallery returned HTTP ${response.status}`);
     const contentType = String(response.headers.get("content-type") || "").toLowerCase();
@@ -333,17 +352,27 @@ await pooled(candidateRows, 6, async (candidate) => {
     }
     if (candidate.docs.length) fields.docs = candidate.docs;
 
-    const images = Array.isArray(existing.images) ? existing.images.filter((image) => image?.asset?._ref) : [];
-    const knownSources = new Set(images.map((image) => image.sourceUrl).filter(Boolean));
-    for (const imageUrl of candidate.images) {
-      if (images.length >= 5) break;
+    const existingImages = Array.isArray(existing.images) ? existing.images.filter((image) => image?.asset?._ref) : [];
+    const images = [];
+    const knownSources = new Set();
+    const manufacturerImages = candidate.manufacturerImages || [];
+    const preferredImages = manufacturerImages.length ? manufacturerImages : (candidate.images || []);
+    for (const imageUrl of preferredImages) {
+      if (images.length >= MAX_GALLERY_IMAGES) break;
       if (knownSources.has(imageUrl)) continue;
       const asset = await uploadGalleryImage(imageUrl, candidate.sku);
       if (images.some((image) => image.asset?._ref === asset._id)) continue;
       images.push({ _key: hash(`${candidate.sku}:${imageUrl}`).slice(0, 12), _type: "image", asset: { _type: "reference", _ref: asset._id }, sourceUrl: imageUrl });
       knownSources.add(imageUrl);
     }
-    if (images.length && images.length !== (existing.images || []).length) fields.images = images;
+    if (!manufacturerImages.length) {
+      for (const image of existingImages) {
+        if (images.length >= MAX_GALLERY_IMAGES) break;
+        if (images.some((candidateImage) => candidateImage.asset?._ref === image.asset?._ref)) continue;
+        images.push(image);
+      }
+    }
+    if (images.length && JSON.stringify(images) !== JSON.stringify(existingImages)) fields.images = images;
 
     await retry(`Cleaver detailed content ${candidate.sku}`, () => client.patch(existing._id).set(fields).commit({ visibility: "async" }));
     published += 1;

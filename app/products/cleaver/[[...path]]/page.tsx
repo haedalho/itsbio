@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import CleaverCatalogImage from "@/components/products/CleaverCatalogImage";
 import CleaverHeroBanner from "@/components/products/CleaverHeroBanner";
 import Breadcrumb from "@/components/site/Breadcrumb";
+import sourceMap from "@/data/cleaver-source-map.json";
 import {
   CLEAVER_BRAND_NAME,
   CLEAVER_CATEGORIES,
@@ -14,14 +15,25 @@ import {
   cleaverProductHref,
   type CleaverProduct,
 } from "@/lib/cleaver/catalog";
-import { getCleaverCategoryCovers, getCleaverProductPage } from "@/lib/cleaver/sanity";
+import { getFastCleaverProductPage as getCleaverProductPage } from "@/lib/cleaver/fast-catalog";
 
-export const revalidate = 30;
+export const revalidate = 86400;
 
 type PageProps = {
   params: Promise<{ path?: string[] }>;
   searchParams?: Promise<{ q?: string; page?: string }>;
 };
+
+type SourceImageIdentity = { images?: string[] };
+const CLEAVER_SOURCE_IMAGES = sourceMap as Record<string, SourceImageIdentity>;
+
+function productImageSources(product: CleaverProduct) {
+  const sku = String(product.sku || "").normalize("NFKC").trim().toUpperCase();
+  const mapped = CLEAVER_SOURCE_IMAGES[sku]?.images || [];
+  // Prefer the verified managed copy so cards never wait on the manufacturer server.
+  // Manufacturer URLs remain a fidelity fallback for products without a managed asset.
+  return Array.from(new Set([product.image, ...(product.images || []), ...mapped].map((value) => String(value || "").trim()).filter(Boolean)));
+}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { path = [] } = await params;
@@ -57,9 +69,8 @@ function CleaverSidebar({ activePath }: { activePath: string[] }) {
           const active = activePath[0] === category.slug;
           return (
             <div key={category.slug}>
-              <Link href={categoryHref([category.slug])} prefetch={false} className={`flex items-start justify-between gap-3 rounded-xl px-3 py-2.5 text-[13px] transition ${active ? "bg-purple-50 font-semibold text-[#61247b]" : "text-slate-700 hover:bg-slate-50"}`}>
-                <span>{category.title}</span>
-                <span className="shrink-0 text-xs text-slate-400">{categoryCount([category.slug])}</span>
+              <Link href={categoryHref([category.slug])} prefetch={false} className={`block rounded-xl px-3 py-2.5 text-[13px] transition ${active ? "bg-purple-50 font-semibold text-[#61247b]" : "text-slate-700 hover:bg-slate-50"}`}>
+                {category.title}
               </Link>
               {active ? (
                 <div className="mb-2 ml-4 space-y-0.5 border-l border-dashed border-purple-200 pl-3">
@@ -79,17 +90,12 @@ function CleaverSidebar({ activePath }: { activePath: string[] }) {
 }
 
 function ProductCard({ product }: { product: CleaverProduct }) {
+  const imageSources = productImageSources(product);
   return (
     <Link href={cleaverProductHref(product)} prefetch={false} className="group block h-full">
       <article className="flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition duration-200 hover:-translate-y-0.5 hover:border-purple-200 hover:shadow-lg">
         <div className="relative aspect-[1.12] border-b border-slate-100 bg-white">
-          {product.image ? (
-            <Image src={product.image} alt={product.title} fill quality={85} sizes="(max-width: 768px) 48vw, (max-width: 1280px) 32vw, 350px" className="object-contain p-3 transition duration-500 group-hover:scale-[1.04]" />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-[#faf8fc] p-10">
-              <Image src="/partners/Cleaverscientific-logo.png" alt="Cleaver Scientific" width={185} height={70} className="h-auto max-h-16 w-auto max-w-full object-contain opacity-70" />
-            </div>
-          )}
+          <CleaverCatalogImage title={product.title} sources={imageSources} />
         </div>
         <div className="flex flex-1 flex-col p-4">
           <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#8650a0]">{product.sku}</div>
@@ -106,14 +112,14 @@ function Pagination({ path, query, page, pageCount }: { path: string[]; query: s
   const pages = Array.from(new Set([1, page - 1, page, page + 1, pageCount].filter((item) => item >= 1 && item <= pageCount))).sort((a, b) => a - b);
   return (
     <nav aria-label="Cleaver product pages" className="mt-10 flex flex-wrap items-center justify-center gap-2">
-      <Link href={categoryHref(path, query, Math.max(1, page - 1))} aria-disabled={page === 1} className={`rounded-full border px-4 py-2 text-sm ${page === 1 ? "pointer-events-none border-slate-200 text-slate-300" : "border-slate-300 text-slate-700 hover:border-purple-300"}`}>← Previous</Link>
+      <Link href={categoryHref(path, query, Math.max(1, page - 1))} prefetch={false} aria-disabled={page === 1} className={`rounded-full border px-4 py-2 text-sm ${page === 1 ? "pointer-events-none border-slate-200 text-slate-300" : "border-slate-300 text-slate-700 hover:border-purple-300"}`}>← Previous</Link>
       {pages.map((item, index) => (
         <span key={item} className="flex items-center gap-2">
           {index > 0 && item - pages[index - 1] > 1 ? <span className="px-1 text-slate-400">…</span> : null}
-          <Link href={categoryHref(path, query, item)} aria-current={item === page ? "page" : undefined} className={`flex h-10 min-w-10 items-center justify-center rounded-full border px-3 text-sm font-semibold ${item === page ? "border-[#61247b] bg-[#61247b] text-white" : "border-slate-300 text-slate-700 hover:border-purple-300"}`}>{item}</Link>
+          <Link href={categoryHref(path, query, item)} prefetch={false} aria-current={item === page ? "page" : undefined} className={`flex h-10 min-w-10 items-center justify-center rounded-full border px-3 text-sm font-semibold ${item === page ? "border-[#61247b] bg-[#61247b] text-white" : "border-slate-300 text-slate-700 hover:border-purple-300"}`}>{item}</Link>
         </span>
       ))}
-      <Link href={categoryHref(path, query, Math.min(pageCount, page + 1))} aria-disabled={page === pageCount} className={`rounded-full border px-4 py-2 text-sm ${page === pageCount ? "pointer-events-none border-slate-200 text-slate-300" : "border-slate-300 text-slate-700 hover:border-purple-300"}`}>Next →</Link>
+      <Link href={categoryHref(path, query, Math.min(pageCount, page + 1))} prefetch={false} aria-disabled={page === pageCount} className={`rounded-full border px-4 py-2 text-sm ${page === pageCount ? "pointer-events-none border-slate-200 text-slate-300" : "border-slate-300 text-slate-700 hover:border-purple-300"}`}>Next →</Link>
     </nav>
   );
 }
@@ -125,10 +131,7 @@ export default async function CleaverCatalogPage({ params, searchParams }: PageP
 
   const query = String(search.q || "").trim();
   const requestedPage = Math.max(1, Number.parseInt(String(search.page || "1"), 10) || 1);
-  const [listing, covers] = await Promise.all([
-    getCleaverProductPage(path, query, requestedPage),
-    path.length ? Promise.resolve({} as Record<string, string>) : getCleaverCategoryCovers(),
-  ]);
+  const listing = await getCleaverProductPage(path, query, requestedPage);
   const heading = match?.current.title || CLEAVER_BRAND_NAME;
   const breadcrumbs = [
     { label: "Home", href: "/" },
@@ -156,25 +159,9 @@ export default async function CleaverCatalogPage({ params, searchParams }: PageP
               </form>
             </div>
 
-            {!path.length && !query ? (
-              <section className="mt-8" aria-label="Browse Cleaver Scientific equipment ranges">
-                <div className="mb-5 flex items-end justify-between gap-3"><div><div className="text-[11px] font-semibold uppercase tracking-[0.17em] text-[#8650a0]">Purpose-built for discovery</div><h3 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">Browse the range</h3></div></div>
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  {CLEAVER_CATEGORIES.map((category) => (
-                    <Link key={category.slug} href={categoryHref([category.slug])} prefetch={false} className="group overflow-hidden rounded-2xl border border-[#ece8ef] bg-white transition duration-300 hover:-translate-y-0.5 hover:border-[#cbb8d4] hover:shadow-[0_14px_36px_rgba(86,39,105,0.1)]">
-                      <div className="relative flex h-44 items-center justify-center overflow-hidden bg-gradient-to-b from-white to-[#faf8fc] p-4">
-                        {covers[category.slug] ? <Image src={covers[category.slug]} alt={category.title} fill quality={85} sizes="(max-width: 768px) 46vw, 340px" className="object-contain p-3 transition duration-500 group-hover:scale-[1.05]" /> : <Image src="/partners/Cleaverscientific-logo.png" alt="" width={170} height={70} className="h-auto max-h-14 w-auto object-contain opacity-65" />}
-                      </div>
-                      <div className="border-t border-slate-100 p-4"><div className="text-[14px] font-semibold text-slate-900 group-hover:text-[#61247b]">{category.title}</div><p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">{category.description}</p><div className="mt-3 text-xs font-medium text-[#8650a0]">{categoryCount([category.slug]).toLocaleString()} products <span aria-hidden>→</span></div></div>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            ) : null}
-
             {match && path.length === 1 && !query ? (
               <div className="mt-6 flex flex-wrap gap-2">
-                {match.root.children.map((child) => <Link key={child.slug} href={categoryHref([match.root.slug, child.slug])} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-purple-300 hover:text-[#61247b]">{child.title} <span className="ml-1 text-slate-400">{categoryCount([match.root.slug, child.slug])}</span></Link>)}
+                {match.root.children.map((child) => <Link key={child.slug} href={categoryHref([match.root.slug, child.slug])} prefetch={false} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-purple-300 hover:text-[#61247b]">{child.title} <span className="ml-1 text-slate-400">{categoryCount([match.root.slug, child.slug])}</span></Link>)}
               </div>
             ) : null}
 

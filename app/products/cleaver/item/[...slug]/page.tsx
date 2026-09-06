@@ -1,83 +1,195 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import CleaverHeroBanner from "@/components/products/CleaverHeroBanner";
 import CleaverProductGallery from "@/components/products/CleaverProductGallery";
+import CleaverProductSections from "@/components/products/CleaverProductSections";
 import Breadcrumb from "@/components/site/Breadcrumb";
-import HtmlContent from "@/components/site/HtmlContent";
-import { CLEAVER_BRAND_NAME } from "@/lib/cleaver/catalog";
+import {
+  CLEAVER_BRAND_NAME,
+  classifyCleaverProduct,
+  cleaverCategoryTitles,
+  cleaverDisplayTitle,
+  slugifyCleaver,
+} from "@/lib/cleaver/catalog";
 import { getCleaverProduct } from "@/lib/cleaver/sanity";
 
-export const revalidate = 30;
+export const revalidate = 300;
 
 type PageProps = { params: Promise<{ slug: string[] }> };
 
+function manufacturerProductSlug(sourceUrl: string | undefined, sourceTitle: string | undefined) {
+  if (sourceUrl) {
+    try {
+      const url = new URL(sourceUrl);
+      const parts = url.pathname.split("/").filter(Boolean);
+      const productIndex = parts.findIndex((part) => part.toLowerCase() === "product");
+      if (productIndex >= 0 && parts[productIndex + 1]) return decodeURIComponent(parts[productIndex + 1]);
+    } catch {
+      // Fall through to the manufacturer title when a legacy URL is malformed.
+    }
+  }
+  return sourceTitle ? slugifyCleaver(sourceTitle) : "";
+}
+
+function canonicalProductPath(product: { sourceUrl?: string; cleaverSourceTitle?: string; slug: string }) {
+  const manufacturerSlug = manufacturerProductSlug(product.sourceUrl, product.cleaverSourceTitle);
+  return `/products/cleaver/item/${encodeURIComponent(manufacturerSlug || product.slug)}`;
+}
+
+function manufacturerOriginalUrl(url: string) {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+    const isManufacturer = host === "www.thistlescientific.com" || host === "thistlescientific.com";
+
+    if (!isManufacturer || !parsed.pathname.includes("/wp-content/uploads/")) return url;
+
+    parsed.pathname = parsed.pathname.replace(/-\d{2,5}x\d{2,5}(?=\.[a-z0-9]+$)/i, "");
+    parsed.searchParams.delete("w");
+    parsed.searchParams.delete("width");
+    parsed.searchParams.delete("h");
+    parsed.searchParams.delete("height");
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
+function imageQualityScore(url: string) {
+  let score = 0;
+
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+    const path = decodeURIComponent(parsed.pathname);
+
+    if (host === "www.thistlescientific.com" || host === "thistlescientific.com") score += 2_000_000_000;
+    if (host === "cdn.sanity.io") score += 500_000_000;
+
+    const dimensionMatches = [...path.matchAll(/(?:-|_)(\d{2,5})x(\d{2,5})(?=[-_.])/g)];
+    const dimensions = dimensionMatches.at(-1);
+    if (dimensions) {
+      const width = Number(dimensions[1]);
+      const height = Number(dimensions[2]);
+      score += width * height;
+      if (width <= 300 || height <= 300) score -= 300_000_000;
+    } else if (host.includes("thistlescientific.com")) {
+      score += 900_000_000;
+    }
+
+    const requestedWidth = Number(parsed.searchParams.get("w") || parsed.searchParams.get("width") || 0);
+    const requestedHeight = Number(parsed.searchParams.get("h") || parsed.searchParams.get("height") || 0);
+    if (requestedWidth && requestedHeight) score += requestedWidth * requestedHeight;
+  } catch {
+    // Keep unknown URLs available, but behind verified manufacturer/high-resolution sources.
+  }
+
+  return score;
+}
+
+function preferredPhotos(image: string | undefined, images: string[] | undefined, exactSourceAssetsOnly = false) {
+  const sourceImages = [...(images || []), image].filter((value): value is string => Boolean(value));
+  const expanded = exactSourceAssetsOnly
+    ? sourceImages
+    : sourceImages.flatMap((url) => {
+        const original = manufacturerOriginalUrl(url);
+        return original === url ? [url] : [original, url];
+      });
+  const unique = Array.from(new Set(expanded));
+
+  return unique
+    .map((url, index) => ({ url, index, score: imageQualityScore(url) }))
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .map((entry) => entry.url);
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = await getCleaverProduct(slug.at(-1) || "");
+  const requestedSlug = slug.at(-1) || "";
+  const product = await getCleaverProduct(requestedSlug);
   if (!product) return { title: "Product not found" };
+  const displayTitle = cleaverDisplayTitle(product);
+  const sourceFidelity = Boolean(product.cleaverSourceTitle);
   return {
-    title: `${product.title} | ${product.sku} | ${CLEAVER_BRAND_NAME}`,
-    description: product.summary || `${product.title} (${product.sku}) from Cleaver Scientific. Request product information and a quote from ITS BIO.`,
+    title: sourceFidelity ? `${displayTitle} | ${CLEAVER_BRAND_NAME}` : `${displayTitle} | ${product.sku} | ${CLEAVER_BRAND_NAME}`,
+    description: product.summary || `${displayTitle} from Cleaver Scientific. Request product information and a quote from ITS BIO.`,
   };
 }
 
 export default async function CleaverProductDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const product = await getCleaverProduct(slug.at(-1) || "");
+  const requestedSlug = slug.at(-1) || "";
+  const product = await getCleaverProduct(requestedSlug);
   if (!product) notFound();
 
-  const photos = Array.from(new Set([product.image, ...(product.images || [])].filter((image): image is string => Boolean(image))));
+  const sourceFidelity = Boolean(product.cleaverSourceTitle);
+  const canonicalPath = canonicalProductPath(product);
+  const canonicalSlug = decodeURIComponent(canonicalPath.split("/").at(-1) || "");
+
+  if (sourceFidelity && requestedSlug !== canonicalSlug) {
+    redirect(canonicalPath);
+  }
+
+  const displayTitle = cleaverDisplayTitle(product);
+  const categoryPath = classifyCleaverProduct(product.sku, displayTitle);
+  const categoryPathTitles = cleaverCategoryTitles(categoryPath);
+  const photos = preferredPhotos(product.image, product.images, sourceFidelity);
   const highlights = (product.highlights || []).filter(Boolean).slice(0, 6);
-  const specifications = (product.specRows || []).filter((row) => row.label && row.value);
-  const documents = (product.docs || []).filter((document) => document.url);
-  const sections = [
-    product.overviewHtml ? { id: "overview", label: "Overview" } : null,
-    specifications.length || product.specsHtml ? { id: "specifications", label: "Specifications" } : null,
-    documents.length || product.documentsHtml ? { id: "documents", label: "Documents" } : null,
-  ].filter((section): section is { id: string; label: string } => Boolean(section));
-  const quoteHref = `/quote?product=${encodeURIComponent(`${product.title} (${product.sku})`)}`;
+  const atAGlance = (product.cleaverAtAGlance || []).filter(Boolean);
+  const quoteHref = `/quote?product=${encodeURIComponent(displayTitle)}&catNo=${encodeURIComponent(product.sku)}`;
   const crumbs = [
     { label: "Home", href: "/" },
     { label: "Products", href: "/products" },
     { label: CLEAVER_BRAND_NAME, href: "/products/cleaver" },
-    ...product.categoryPathTitles.map((label, index) => ({ label, href: `/products/cleaver/${product.categoryPath.slice(0, index + 1).join("/")}` })),
-    { label: product.title },
+    ...categoryPathTitles.map((label, index) => ({ label, href: `/products/cleaver/${categoryPath.slice(0, index + 1).join("/")}` })),
+    { label: displayTitle },
   ];
 
   return (
     <main className="bg-white pb-20">
-      <CleaverHeroBanner title={product.title} eyebrow="Cleaver Scientific product" />
-      <section className="border-b border-slate-200 bg-[#fbfafc]"><div className="mx-auto max-w-[1260px] px-6 py-6"><Breadcrumb items={crumbs} /></div></section>
-      <div className="mx-auto max-w-[1260px] px-6 pt-10 md:pt-16">
-        <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.04fr)_minmax(0,.9fr)] lg:gap-16">
-          <CleaverProductGallery images={photos} title={product.title} />
+      <CleaverHeroBanner title={displayTitle} eyebrow="Cleaver Scientific product" />
+      <section className="border-b border-slate-200 bg-[#fbfafc]"><div className="mx-auto max-w-[1260px] px-6 py-5 md:py-6"><Breadcrumb items={crumbs} /></div></section>
 
-          <section className="py-2 lg:py-5">
-            <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.24em] text-[#8650a0]"><span className="h-px w-8 bg-[#8650a0]" />Cleaver Scientific</div>
-            <h1 className="mt-5 text-[32px] font-semibold leading-[1.12] tracking-tight text-slate-950 md:text-[44px]">{product.title}</h1>
-            <div className="mt-6 inline-flex rounded-full bg-[#f4edf8] px-4 py-2 text-sm font-semibold text-[#61247b]">Catalog No. {product.sku}</div>
-            {product.summary ? <p className="mt-7 text-[15px] leading-8 text-slate-600">{product.summary}</p> : null}
-            {highlights.length ? <ul className="mt-7 grid gap-3 border-t border-slate-100 pt-6">{highlights.map((highlight) => <li key={highlight} className="flex items-start gap-3 text-sm leading-6 text-slate-700"><span aria-hidden className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f3ebf8] text-xs font-bold text-[#743693]">✓</span><span>{highlight}</span></li>)}</ul> : null}
+      <div className="mx-auto max-w-[1260px] px-6 pt-10 md:pt-14">
+        <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,.98fr)] lg:gap-16">
+          <CleaverProductGallery images={photos} title={displayTitle} />
 
-            <div className="mt-8 rounded-2xl border border-slate-200 bg-[#fbfafc] p-5">
-              <div className="grid grid-cols-[105px_minmax(0,1fr)] gap-x-4 gap-y-3 text-sm"><span className="font-semibold text-slate-700">Brand</span><span className="text-slate-600">{CLEAVER_BRAND_NAME}</span><span className="font-semibold text-slate-700">Catalog No.</span><span className="text-slate-600">{product.sku}</span>{product.categoryPathTitles.length ? <><span className="font-semibold text-slate-700">Category</span><span className="text-slate-600">{product.categoryPathTitles.at(-1)}</span></> : null}</div>
-            </div>
+          {sourceFidelity ? (
+            <section className="py-1 lg:py-2">
+              <h1 data-product-name={displayTitle} className="text-[32px] font-semibold leading-[1.12] tracking-[-0.025em] text-slate-950 md:text-[42px]">{displayTitle}</h1>
 
-            <div className="mt-7 flex flex-wrap gap-3"><Link href={quoteHref} className="inline-flex h-12 items-center rounded-full bg-[#61247b] px-7 text-sm font-semibold text-white transition hover:bg-[#471659]">Request a Quote</Link><Link href="/contact" className="inline-flex h-12 items-center rounded-full border border-slate-300 px-6 text-sm font-semibold text-slate-700 transition hover:border-purple-300 hover:text-[#61247b]">Technical Support</Link></div>
-          </section>
+              {atAGlance.length ? (
+                <div className="mt-7">
+                  <h2 className="text-[15px] font-semibold text-slate-900">At a Glance</h2>
+                  <ul className="mt-3.5 space-y-2 border-l-2 border-[#6d2c86] pl-5">
+                    {atAGlance.map((item) => <li key={item} className="text-[14px] leading-6 text-slate-700 md:text-[15px]">{item}</li>)}
+                  </ul>
+                </div>
+              ) : null}
+
+              <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-slate-200 pt-5">
+                <span data-cat-no={product.sku} className="text-[14px] text-slate-600">CAT.NO: <strong className="font-semibold text-slate-900">{product.sku}</strong></span>
+                <Link href={quoteHref} className="inline-flex h-11 items-center justify-center bg-[#61247b] px-6 text-[14px] font-semibold text-white transition hover:bg-[#471659]">Request a Quote</Link>
+              </div>
+            </section>
+          ) : (
+            <section className="py-2 lg:py-5">
+              <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.24em] text-[#8650a0]"><span className="h-px w-8 bg-[#8650a0]" />Cleaver Scientific</div>
+              <h1 data-product-name={displayTitle} className="mt-5 text-[32px] font-semibold leading-[1.12] tracking-tight text-slate-950 md:text-[44px]">{displayTitle}</h1>
+              <div data-cat-no={product.sku} className="mt-6 inline-flex rounded-full bg-[#f4edf8] px-4 py-2 text-sm font-semibold text-[#61247b]">Catalog No. {product.sku}</div>
+              {product.summary ? <p className="mt-7 text-[15px] leading-8 text-slate-600">{product.summary}</p> : null}
+              {highlights.length ? <ul className="mt-7 grid gap-3 border-t border-slate-100 pt-6">{highlights.map((highlight) => <li key={highlight} className="flex items-start gap-3 text-sm leading-6 text-slate-700"><span aria-hidden className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f3ebf8] text-xs font-bold text-[#743693]">✓</span><span>{highlight}</span></li>)}</ul> : null}
+              <div className="mt-8 rounded-2xl border border-slate-200 bg-[#fbfafc] p-5"><div className="grid grid-cols-[105px_minmax(0,1fr)] gap-x-4 gap-y-3 text-sm"><span className="font-semibold text-slate-700">Brand</span><span className="text-slate-600">{CLEAVER_BRAND_NAME}</span><span className="font-semibold text-slate-700">Catalog No.</span><span className="text-slate-600">{product.sku}</span>{categoryPathTitles.length ? <><span className="font-semibold text-slate-700">Category</span><span className="text-slate-600">{categoryPathTitles.at(-1)}</span></> : null}</div></div>
+              <div className="mt-7 flex flex-wrap gap-3"><Link href={quoteHref} className="inline-flex h-12 items-center rounded-full bg-[#61247b] px-7 text-sm font-semibold text-white transition hover:bg-[#471659]">Request a Quote</Link><Link href="/contact" className="inline-flex h-12 items-center rounded-full border border-slate-300 px-6 text-sm font-semibold text-slate-700 transition hover:border-purple-300 hover:text-[#61247b]">Technical Support</Link></div>
+            </section>
+          )}
         </div>
 
-        <div className="mt-16 border-t border-slate-200 md:mt-24">
-          {sections.length ? <nav aria-label="Product information sections" className="flex flex-wrap gap-x-8 gap-y-2 border-b border-slate-200 py-5">{sections.map((section) => <a key={section.id} href={`#${section.id}`} className="text-sm font-semibold text-slate-600 transition hover:text-[#61247b]">{section.label}</a>)}</nav> : null}
-          <div className="space-y-16 py-12 md:py-16">
-            {product.overviewHtml ? <section id="overview" className="scroll-mt-28"><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8650a0]">Product information</p><h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Overview</h2><HtmlContent html={product.overviewHtml} className="prose prose-slate mt-6 max-w-[920px] text-[15px] leading-8 [&_h2]:mt-9 [&_h2]:text-xl [&_h3]:mt-8 [&_h3]:text-lg [&_li]:my-1 [&_p]:my-4" /></section> : null}
-            {specifications.length || product.specsHtml ? <section id="specifications" className="scroll-mt-28"><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8650a0]">Technical details</p><h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Specifications</h2>{specifications.length ? <div className="mt-6 max-w-[980px] overflow-hidden rounded-2xl border border-slate-200"><table className="w-full border-collapse text-left text-sm"><tbody>{specifications.map((row, index) => <tr key={`${row.label}-${index}`} className="border-b border-slate-200 last:border-b-0 even:bg-[#faf9fb]"><th scope="row" className="w-[42%] px-5 py-4 font-semibold text-slate-700 md:px-7">{row.label}</th><td className="px-5 py-4 text-slate-600 md:px-7">{row.value}</td></tr>)}</tbody></table></div> : <HtmlContent html={product.specsHtml || ""} className="prose prose-slate mt-6 max-w-none overflow-x-auto text-sm [&_table]:w-full [&_td]:border [&_td]:border-slate-200 [&_td]:p-4 [&_th]:border [&_th]:border-slate-200 [&_th]:bg-slate-50 [&_th]:p-4" />}</section> : null}
-            {documents.length ? <section id="documents" className="scroll-mt-28"><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8650a0]">Downloads & resources</p><h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Documents</h2><div className="mt-6 grid gap-4 sm:grid-cols-2">{documents.map((document) => <a key={document.url} href={document.url} target="_blank" rel="noopener noreferrer" className="group flex min-h-24 items-center gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 transition hover:border-[#b99ac8] hover:bg-[#fcfaff]"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#f4edf8] text-[11px] font-bold tracking-wide text-[#61247b]">PDF</span><span className="min-w-0 flex-1 text-sm font-semibold leading-6 text-slate-700 group-hover:text-[#61247b]">{document.title || document.label || "Product document"}</span><span aria-hidden className="text-lg text-slate-400 transition group-hover:text-[#61247b]">↗</span></a>)}</div></section> : product.documentsHtml ? <section id="documents" className="scroll-mt-28"><h2 className="text-3xl font-semibold tracking-tight text-slate-950">Documents</h2><HtmlContent html={product.documentsHtml} className="prose prose-slate mt-5 max-w-none text-sm" /></section> : null}
-          </div>
-        </div>
-        <section className="flex flex-col gap-5 rounded-2xl bg-[#f5f1f8] px-7 py-8 md:flex-row md:items-center md:justify-between md:px-9"><div><h2 className="text-lg font-semibold text-slate-900">Need help selecting the right system?</h2><p className="mt-1 text-sm leading-6 text-slate-600">Our team can help with product specifications, compatibility, and quotations.</p></div><Link href="/contact" className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#61247b] px-6 text-sm font-semibold text-white transition hover:bg-[#471659]">Contact our specialists</Link></section>
+        <CleaverProductSections product={product} />
+
+        {sourceFidelity ? null : <section className="mt-14 flex flex-col gap-5 rounded-2xl bg-[#f5f1f8] px-7 py-8 md:mt-20 md:flex-row md:items-center md:justify-between md:px-9"><div><h2 className="text-lg font-semibold text-slate-900">Need help selecting the right system?</h2><p className="mt-1 text-sm leading-6 text-slate-600">Our team can help with product specifications, compatibility, and quotations.</p></div><Link href="/contact" className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#61247b] px-6 text-sm font-semibold text-white transition hover:bg-[#471659]">Contact our specialists</Link></section>}
       </div>
     </main>
   );

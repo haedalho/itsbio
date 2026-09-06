@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 type QuoteOpenDetail = {
   product?: string;
+  catNo?: string;
 };
 
 export default function FloatingQuoteButton() {
@@ -15,7 +16,9 @@ export default function FloatingQuoteButton() {
   const [errorMsg, setErrorMsg] = useState("");
   const panelRef = useRef<HTMLDivElement | null>(null);
   const productRef = useRef<HTMLInputElement | null>(null);
+  const catNoRef = useRef<HTMLInputElement | null>(null);
   const pendingProductRef = useRef("");
+  const pendingCatNoRef = useRef("");
 
   useEffect(() => {
     if (!open) return;
@@ -32,7 +35,8 @@ export default function FloatingQuoteButton() {
     const onOpenQuote = (event: Event) => {
       const detail = (event as CustomEvent<QuoteOpenDetail>).detail;
       pendingProductRef.current = String(detail?.product || "").trim();
-      openPanel(pendingProductRef.current);
+      pendingCatNoRef.current = String(detail?.catNo || "").trim();
+      openPanel(pendingProductRef.current, pendingCatNoRef.current);
     };
 
     window.addEventListener("itsbio:open-quote", onOpenQuote);
@@ -44,10 +48,32 @@ export default function FloatingQuoteButton() {
     setDone(null);
     setErrorMsg("");
     pendingProductRef.current = "";
+    pendingCatNoRef.current = "";
   }, [pathname]);
 
-  function openPanel(productOverride = "") {
+  function pageProductName() {
+    const explicit = document.querySelector<HTMLElement>("[data-product-name]")?.dataset.productName?.trim();
+    if (explicit) return explicit;
+    return document.querySelector("main h1")?.textContent?.trim() || "";
+  }
+
+  function pageCatNo() {
+    const explicit = document.querySelector<HTMLElement>("[data-cat-no]")?.dataset.catNo?.trim();
+    if (explicit) return explicit;
+
+    const skuNode = Array.from(document.querySelectorAll("main span, main p, main div")).find((node) =>
+      /^\s*(?:SKU|CAT(?:ALOG)?\.?\s*NO\.?)\s*:/i.test(node.textContent || ""),
+    );
+    const strong = skuNode?.querySelector("strong")?.textContent?.trim();
+    if (strong) return strong;
+
+    const text = skuNode?.textContent || "";
+    return text.replace(/^\s*(?:SKU|CAT(?:ALOG)?\.?\s*NO\.?)\s*:\s*/i, "").trim();
+  }
+
+  function openPanel(productOverride = "", catNoOverride = "") {
     const explicitProduct = String(productOverride || pendingProductRef.current || "").trim();
+    const explicitCatNo = String(catNoOverride || pendingCatNoRef.current || "").trim();
     setOpen(true);
     setDone(null);
     setErrorMsg("");
@@ -58,14 +84,24 @@ export default function FloatingQuoteButton() {
       if (explicitProduct) {
         productRef.current.value = explicitProduct;
         pendingProductRef.current = "";
-        return;
       }
 
-      if (productRef.current.value.trim()) return;
+      if (catNoRef.current && explicitCatNo) {
+        catNoRef.current.value = explicitCatNo;
+        pendingCatNoRef.current = "";
+      }
+
       if (!pathname.startsWith("/products")) return;
 
-      const heading = document.querySelector("main h1")?.textContent?.trim();
-      if (heading) productRef.current.value = heading;
+      if (!productRef.current.value.trim()) {
+        const productName = pageProductName();
+        if (productName) productRef.current.value = productName;
+      }
+
+      if (catNoRef.current && !catNoRef.current.value.trim()) {
+        const catNo = pageCatNo();
+        if (catNo) catNoRef.current.value = catNo;
+      }
     }, 0);
   }
 
@@ -82,6 +118,7 @@ export default function FloatingQuoteButton() {
       org: String(form.get("org") ?? ""),
       email: String(form.get("email") ?? ""),
       product: String(form.get("product") ?? ""),
+      catNo: String(form.get("catNo") ?? ""),
       message: String(form.get("message") ?? ""),
       privacyAccepted: form.get("privacyAccepted") === "on",
       website: String(form.get("website") ?? ""),
@@ -107,8 +144,16 @@ export default function FloatingQuoteButton() {
     } catch (error) {
       console.error("Quote send failed:", error);
       setDone("fail");
-      const subject = `[ITS BIO] Quote request - ${payload.product || payload.name || "New inquiry"}`;
-      const body = [`Name: ${payload.name}`, `Company / Lab: ${payload.org}`, `Email: ${payload.email}`, `Product / Cat No: ${payload.product}`, "", payload.message].join("\n");
+      const subject = `[ITS BIO] Quote request - ${payload.product || payload.catNo || payload.name || "New inquiry"}`;
+      const body = [
+        `Name: ${payload.name}`,
+        `Company / Lab: ${payload.org}`,
+        `Email: ${payload.email}`,
+        `Product name: ${payload.product}`,
+        `Cat No: ${payload.catNo}`,
+        "",
+        payload.message,
+      ].join("\n");
       window.location.href = `mailto:info@itsbio.co.kr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       setErrorMsg("Direct sending is temporarily unavailable. Your email app has been opened with the request filled in.");
     } finally {
@@ -117,6 +162,8 @@ export default function FloatingQuoteButton() {
   }
 
   if (pathname === "/quote") return null;
+
+  const labelClass = "mb-1.5 block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500";
 
   return (
     <>
@@ -174,12 +221,26 @@ export default function FloatingQuoteButton() {
                 placeholder="Email *"
               />
 
-              <input
-                ref={productRef}
-                name="product"
-                className="h-11 w-full rounded-xl border border-slate-300 px-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-                placeholder="Product name / Cat No"
-              />
+              <div className="grid gap-3">
+                <label className="block w-full">
+                  <span className={labelClass}>PRODUCT NAME</span>
+                  <input
+                    ref={productRef}
+                    name="product"
+                    className="h-11 w-full rounded-xl border border-slate-300 px-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                    placeholder="Product name"
+                  />
+                </label>
+                <label className="block w-full">
+                  <span className={labelClass}>CAT.NO</span>
+                  <input
+                    ref={catNoRef}
+                    name="catNo"
+                    className="h-11 w-full rounded-xl border border-slate-300 px-4 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                    placeholder="Catalog number"
+                  />
+                </label>
+              </div>
 
               <textarea
                 name="message"

@@ -1,12 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PageHero from "@/components/site/PageHero";
+
+function splitLegacyProduct(value: string) {
+  const cleaned = value.trim();
+  const match = cleaned.match(/^(.*?)\s*\(([^()]+)\)\s*$/);
+  if (!match) return { product: cleaned, catNo: "" };
+  return { product: match[1].trim(), catNo: match[2].trim() };
+}
 
 export default function QuotePage() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState<null | "ok" | "fail">(null);
   const [errorMsg, setErrorMsg] = useState("");
+  const productRef = useRef<HTMLInputElement | null>(null);
+  const catNoRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const rawProduct = String(params.get("product") || "").trim();
+    const rawCatNo = String(params.get("catNo") || "").trim();
+    const legacy = rawCatNo ? { product: rawProduct, catNo: rawCatNo } : splitLegacyProduct(rawProduct);
+
+    if (productRef.current) productRef.current.value = legacy.product;
+    if (catNoRef.current) catNoRef.current.value = legacy.catNo;
+  }, []);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -21,6 +40,7 @@ export default function QuotePage() {
       org: String(form.get("org") ?? ""),
       email: String(form.get("email") ?? ""),
       product: String(form.get("product") ?? ""),
+      catNo: String(form.get("catNo") ?? ""),
       message: String(form.get("message") ?? ""),
       privacyAccepted: form.get("privacyAccepted") === "on",
       website: String(form.get("website") ?? ""),
@@ -44,8 +64,16 @@ export default function QuotePage() {
     } catch (err) {
       console.error("Send failed:", err);
       setDone("fail");
-      const subject = `[ITS BIO] Quote request - ${payload.product || payload.name || "New inquiry"}`;
-      const body = [`Name: ${payload.name}`, `Company / Lab: ${payload.org}`, `Email: ${payload.email}`, `Product / Cat No: ${payload.product}`, "", payload.message].join("\n");
+      const subject = `[ITS BIO] Quote request - ${payload.product || payload.catNo || payload.name || "New inquiry"}`;
+      const body = [
+        `Name: ${payload.name}`,
+        `Company / Lab: ${payload.org}`,
+        `Email: ${payload.email}`,
+        `Product name: ${payload.product}`,
+        `Cat No: ${payload.catNo}`,
+        "",
+        payload.message,
+      ].join("\n");
       window.location.href = `mailto:info@itsbio.co.kr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       setErrorMsg("Direct sending is temporarily unavailable. Your email app has been opened with the request filled in.");
     } finally {
@@ -54,6 +82,7 @@ export default function QuotePage() {
   }
 
   const fieldClass = "h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-50";
+  const labelClass = "mb-1.5 block text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500";
 
   return (
     <main className="bg-slate-50/70">
@@ -84,7 +113,18 @@ export default function QuotePage() {
               <input name="org" className={fieldClass} placeholder="Company / Lab" />
             </div>
             <input name="email" type="email" className={`${fieldClass} mt-3`} placeholder="Email *" required />
-            <input name="product" className={`${fieldClass} mt-3`} placeholder="Product name / Catalog No." />
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label>
+                <span className={labelClass}>PRODUCT NAME</span>
+                <input ref={productRef} name="product" className={fieldClass} placeholder="Product name" />
+              </label>
+              <label>
+                <span className={labelClass}>CAT.NO</span>
+                <input ref={catNoRef} name="catNo" className={fieldClass} placeholder="Catalog number" />
+              </label>
+            </div>
+
             <textarea name="message" className="mt-3 min-h-[150px] w-full resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-50" placeholder="Message *" required />
             <input name="website" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />
 
