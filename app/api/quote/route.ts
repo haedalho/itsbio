@@ -9,7 +9,8 @@ const REQUEST_WINDOW_MS = 10 * 60 * 1000;
 const REQUEST_LIMIT = 5;
 const MAILPLUG_SMTP_HOST = "smtp.mailplug.co.kr";
 const MAILPLUG_SMTP_PORT = 465;
-const DEFAULT_MAILBOX = "info@itsbio.co.kr";
+const DEFAULT_SMTP_USER = "bclim@itsbio.co.kr";
+const DEFAULT_TO_EMAIL = "info@itsbio.co.kr";
 const requestLog = new Map<string, number[]>();
 
 function clean(value: unknown, maxLength: number) {
@@ -258,12 +259,12 @@ async function sendResendFallback({ to, replyTo, subject, text }: { to: string; 
   return true;
 }
 
-function publicMailError(error: unknown) {
+function publicMailError(error: unknown, smtpUser: string) {
   if (!(error instanceof MailplugSmtpError)) return "Mail delivery failed before completion.";
   const status = error.status ? ` (SMTP ${error.status})` : "";
   if (error.stage === "auth-method") return `Mailplug rejected the SMTP authentication method${status}.`;
-  if (error.stage === "auth-username") return `Mailplug rejected the SMTP username${status}. Expected account: info@itsbio.co.kr.`;
-  if (error.stage === "auth-password") return `Mailplug rejected the SMTP app password${status}. The server accepted the username but not the password.`;
+  if (error.stage === "auth-username") return `Mailplug rejected the SMTP username${status}. Expected account: ${smtpUser}.`;
+  if (error.stage === "auth-password") return `Mailplug rejected the SMTP app password${status} for ${smtpUser}.`;
   if (error.stage === "connection" || error.stage === "greeting" || error.stage === "ehlo") {
     return `Mailplug SMTP connection failed${status}. Please try again shortly.`;
   }
@@ -299,9 +300,9 @@ export async function POST(req: Request) {
       return Response.json({ ok: false, error: "A valid email, message, and privacy agreement are required." }, { status: 400 });
     }
 
-    const smtpUser = oneLine(process.env.MAILPLUG_SMTP_USER || DEFAULT_MAILBOX, 254).toLowerCase();
+    const smtpUser = oneLine(process.env.MAILPLUG_SMTP_USER || DEFAULT_SMTP_USER, 254).toLowerCase();
     const smtpPassword = String(process.env.MAILPLUG_SMTP_PASSWORD || "").replace(/\s+/g, "");
-    const toEmail = oneLine(process.env.QUOTE_TO_EMAIL || DEFAULT_MAILBOX, 254).toLowerCase();
+    const toEmail = oneLine(process.env.QUOTE_TO_EMAIL || DEFAULT_TO_EMAIL, 254).toLowerCase();
 
     if (!validEmail(smtpUser) || !smtpPassword || !validEmail(toEmail)) {
       console.error("Quote email is not configured: Mailplug SMTP credentials are incomplete.");
@@ -334,7 +335,7 @@ ${message}
       if (await sendResendFallback({ to: toEmail, replyTo: email, subject, text })) {
         return Response.json({ ok: true, provider: "resend-fallback" });
       }
-      return Response.json({ ok: false, error: publicMailError(mailplugError) }, { status: 502 });
+      return Response.json({ ok: false, error: publicMailError(mailplugError, smtpUser) }, { status: 502 });
     }
   } catch (error) {
     console.error("Quote request failed:", error);
