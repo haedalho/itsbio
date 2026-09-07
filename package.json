@@ -31,6 +31,7 @@
     "abm:cell:details:audit": "node scripts/audit-abm-cell-details.mjs",
     "abm:staged-links:audit": "node scripts/audit-abm-staged-links.mjs",
     "abm:staged-duplicates:dry": "node scripts/cleanup-abm-staged-smoke-duplicates.mjs",
+    "abm:rabbit-service:repair:dry": "node scripts/repair-abm-rabbit-service-landing.mjs",
     "kent:product:census": "node scripts/kent-product-census-v2.mjs",
     "kent:product:census:refresh": "node -e \"console.error('Disabled: Kent live refresh is blocked by security checks and is not an approved source.'); process.exit(1)\"",
     "kent:product:census:fast": "node scripts/kent-product-census-v2.mjs --skip-product-pages",

@@ -156,7 +156,7 @@ export default async function AbmStagedDetailPage({
               <div className="mt-8 border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">
                 This item is in the authoritative ABM inventory. Its reviewed detail is being migrated and will appear here after the complete staging corpus passes validation.
               </div>
-            ) : !overviewHtml && !record.specificationsHtml && !record.serviceDetailsHtml ? (
+            ) : !record.sourceUnavailable && !overviewHtml && !record.specificationsHtml && !record.serviceDetailsHtml ? (
               <div className="mt-8 border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">
                 The reviewed record is available, but the official source does not provide additional detail sections for this item.
               </div>

@@ -33,6 +33,7 @@ export type AbmStagedLanding = {
 };
 
 export type AbmStagedDetail = AbmStagedRecord & {
+  sourceUnavailable?: boolean;
   category?: string;
   listingPaths?: string[][];
   introHtml?: string;
@@ -355,7 +356,8 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
     return {
       ...record,
       sourceUrl: String(record.url || "").trim(),
-      hasDetail: false,
+      hasDetail: true,
+      sourceUnavailable: true,
       images,
     } as AbmStagedDetail;
   }
