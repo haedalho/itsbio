@@ -1,6 +1,12 @@
 name: Cleanup ABM staged smoke duplicates
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/cleanup-abm-staged-smoke-duplicates.yml
+      - scripts/cleanup-abm-staged-smoke-duplicates.mjs
   workflow_dispatch:
 
 permissions:
