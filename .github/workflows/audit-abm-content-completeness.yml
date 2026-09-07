@@ -1,0 +1,78 @@
+name: Audit ABM content completeness
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - scripts/audit-abm-content-completeness.mjs
+      - .github/workflows/audit-abm-content-completeness.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Verify 1-to-1 inventory and detail coverage
+        id: coverage
+        continue-on-error: true
+        run: npm run abm:staged-links:audit
+
+      - name: Strictly audit stored content and production rendering
+        id: completeness
+        continue-on-error: true
+        run: node scripts/audit-abm-content-completeness.mjs
+
+      - name: Audit cell detail corpus
+        id: cells
+        continue-on-error: true
+        run: npm run abm:cell:details:audit
+
+      - name: Audit products without visible managed media
+        id: media
+        continue-on-error: true
+        run: node scripts/backfill-abm-staged-missing-media-all.mjs
+
+      - name: Upload completeness reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: abm-content-completeness-${{ github.run_id }}
+          path: |
+            .cache/abm-content-completeness/
+            .cache/abm-staged-link-audit/
+            .cache/abm-missing-media-all/
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Enforce audit result
+        if: always()
+        shell: bash
+        run: |
+          echo "coverage=${{ steps.coverage.outcome }}"
+          echo "completeness=${{ steps.completeness.outcome }}"
+          echo "cells=${{ steps.cells.outcome }}"
+          echo "media=${{ steps.media.outcome }}"
+          test "${{ steps.coverage.outcome }}" = success
+          test "${{ steps.completeness.outcome }}" = success
+          test "${{ steps.cells.outcome }}" = success
+          test "${{ steps.media.outcome }}" = success
