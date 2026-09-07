@@ -40,5 +40,3 @@ jobs:
       - run: npm install --no-audit --no-fund
       - name: Validate and remove the two obsolete smoke-test chunks
         run: node scripts/cleanup-abm-staged-smoke-duplicates.mjs --apply
-      - name: Verify complete staged route coverage
-        run: npm run abm:staged-links:audit

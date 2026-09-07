@@ -34,12 +34,14 @@ const targets = [
 const sorted = (values) => [...values].map(String).sort();
 const sameValues = (left, right) => JSON.stringify(sorted(left)) === JSON.stringify(sorted(right));
 
+const targetDocuments = [];
 for (const target of targets) {
   const document = await client.fetch(
     `*[_id == $id][0]{_id,_rev,_type,kind,version,"keys":records[].key}`,
     { id: target.id },
   );
-  if (!document) throw new Error(`Cleanup target is missing: ${target.id}`);
+  targetDocuments.push(document);
+  if (!document) continue;
   if (document._type !== "abmRebuildDetailChunk" || document.kind !== target.kind || document.version !== VERSION) {
     throw new Error(`Cleanup target identity changed: ${target.id}`);
   }
@@ -64,9 +66,14 @@ for (const target of targets) {
   if (unsafe.length) throw new Error(`Expected exactly one replacement for every key in ${target.id}: ${JSON.stringify(unsafe)}`);
 }
 
-if (APPLY) {
+const presentTargets = targets.filter((_, index) => targetDocuments[index]);
+if (presentTargets.length > 0 && presentTargets.length !== targets.length) {
+  throw new Error("Only part of the obsolete smoke-test chunks remain; refusing partial cleanup");
+}
+
+if (APPLY && presentTargets.length) {
   const transaction = client.transaction();
-  for (const target of targets) transaction.delete(target.id);
+  for (const target of presentTargets) transaction.delete(target.id);
   await transaction.commit({ visibility: "sync" });
 }
 
@@ -80,15 +87,24 @@ const remainingKeys = await client.fetch(
   { version: VERSION },
 );
 const duplicateKeys = [...new Set((remainingKeys || []).filter((key, index, values) => values.indexOf(key) !== index))];
+const detailCounts = await client.fetch(
+  `{
+    "product": count(*[_type == "abmRebuildDetailChunk" && version == $version && kind == "product"].records[]),
+    "service": count(*[_type == "abmRebuildDetailChunk" && version == $version && kind == "service"].records[])
+  }`,
+  { version: VERSION },
+);
 
 const report = {
   mode: APPLY ? "apply" : "dry-run",
   targets: targets.map((target) => target.id),
+  alreadyClean: presentTargets.length === 0,
   remainingTargets,
   duplicateKeys: duplicateKeys || [],
+  detailCounts,
 };
 console.log(JSON.stringify(report, null, 2));
 
-if (APPLY && (remainingTargets !== 0 || report.duplicateKeys.length)) {
+if (remainingTargets !== 0 || report.duplicateKeys.length || detailCounts?.product !== 5144 || detailCounts?.service !== 251) {
   throw new Error("ABM staged detail cleanup verification failed");
 }
