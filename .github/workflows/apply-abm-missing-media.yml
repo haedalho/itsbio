@@ -3,7 +3,7 @@ name: Apply ABM missing staged media
 on:
   push:
     branches:
-      - agent/homepage-brand-redesign
+      - agent/abm-stable-lines-completeness
     paths:
       - .github/workflows/apply-abm-missing-media.yml
   workflow_dispatch:
