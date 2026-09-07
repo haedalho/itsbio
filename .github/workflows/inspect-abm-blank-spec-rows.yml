@@ -1,0 +1,29 @@
+name: Inspect ABM blank specification rows
+
+on:
+  push:
+    branches:
+      - agent/abm-completeness-repair
+    paths:
+      - scripts/inspect-abm-blank-spec-rows.mjs
+      - .github/workflows/inspect-abm-blank-spec-rows.yml
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - run: node scripts/inspect-abm-blank-spec-rows.mjs
