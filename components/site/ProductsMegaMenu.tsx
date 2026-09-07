@@ -247,6 +247,30 @@ const ABM_GROUPS: CategoryGroup[] = [
   },
 ];
 
+const CLEAVER_GROUPS: CategoryGroup[] = [
+  {
+    label: "Main Products",
+    href: "/products/cleaver/main-products",
+    items: [
+      { label: "Electrophoresis Systems", href: "/products/cleaver/main-products/electrophoresis-systems" },
+      { label: "Gel Documentation & Imaging", href: "/products/cleaver/main-products/gel-documentation-imaging" },
+      { label: "General Laboratory Equipment", href: "/products/cleaver/main-products/general-laboratory-equipment" },
+      { label: "Electrophoresis Reagents", href: "/products/cleaver/main-products/electrophoresis-reagents" },
+      { label: "Teaching & Education", href: "/products/cleaver/main-products/teaching-education" },
+    ],
+  },
+  {
+    label: "Accessories",
+    href: "/products/cleaver/accessories",
+    items: [
+      { label: "Electrophoresis Accessories", href: "/products/cleaver/accessories/electrophoresis-accessories" },
+      { label: "Gel Documentation Accessories", href: "/products/cleaver/accessories/gel-documentation-accessories" },
+      { label: "General Laboratory Accessories", href: "/products/cleaver/accessories/general-laboratory-accessories" },
+      { label: "Replacement Parts & Spares", href: "/products/cleaver/accessories/replacement-parts-spares" },
+    ],
+  },
+];
+
 const BRANDS: Brand[] = [
   {
     key: "abm",
@@ -316,7 +340,8 @@ const BRANDS: Brand[] = [
     description: "Practical equipment for electrophoresis, gel documentation, blotting, power supply, and clinical laboratory workflows.",
     href: "/products/cleaver",
     searchKey: "cleaverscientific",
-    categories: ["Electrophoresis Equipment", "Gel Documentation", "Electrophoresis Reagents", "General Laboratory Products", "Teaching and Education"],
+    categories: [],
+    groups: CLEAVER_GROUPS,
     theme: THEMES.cleaver,
   },
   {
@@ -378,6 +403,25 @@ export default function ProductsMegaMenu() {
 
   const activeBrand = useMemo(() => BRANDS.find((brand) => brand.key === activeKey) ?? BRANDS[0], [activeKey]);
   const theme = activeBrand.theme;
+  const groupedAccent = activeBrand.key === "cleaver"
+    ? {
+        border: "border-purple-500",
+        hoverText: "hover:text-purple-700",
+        itemBorder: "hover:border-purple-100",
+        dot: "bg-purple-400",
+        arrow: "text-purple-500",
+        sideBorder: "border-purple-100",
+        sideArrow: "text-purple-400",
+      }
+    : {
+        border: "border-orange-500",
+        hoverText: "hover:text-orange-700",
+        itemBorder: "hover:border-orange-100",
+        dot: "bg-orange-400",
+        arrow: "text-orange-500",
+        sideBorder: "border-orange-100",
+        sideArrow: "text-orange-400",
+      };
 
   const cancelClose = () => {
     if (!closeTimer.current) return;
@@ -512,20 +556,20 @@ export default function ProductsMegaMenu() {
                 {activeBrand.groups ? (
                   <div className="mt-5">
                     <div className="mb-4">
-                      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">ABM product families</div>
+                      <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{activeBrand.name} product families</div>
                       <div className="mt-1 text-sm text-slate-500">Start with a major family, then choose a product area.</div>
                     </div>
 
                     <div className="grid gap-x-8 gap-y-8 xl:grid-cols-2">
                       {activeBrand.groups.map((group) => (
-                        <section key={group.label} className="min-w-0 border-t-[3px] border-orange-500 pt-3">
+                        <section key={group.label} className={`min-w-0 border-t-[3px] pt-3 ${groupedAccent.border}`}>
                           <Link
                             href={group.href}
                             onClick={closeMenu}
-                            className="group/family mt-1.5 inline-flex items-center gap-3 text-[20px] font-semibold leading-tight tracking-[-0.03em] text-[#071d43] transition hover:text-orange-700"
+                            className={`group/family mt-1.5 inline-flex items-center gap-3 text-[20px] font-semibold leading-tight tracking-[-0.03em] text-[#071d43] transition ${groupedAccent.hoverText}`}
                           >
                             {group.label}
-                            <ArrowIcon className="h-4 w-4 text-orange-500 transition group-hover/family:translate-x-1" />
+                            <ArrowIcon className={`h-4 w-4 transition group-hover/family:translate-x-1 ${groupedAccent.arrow}`} />
                           </Link>
 
                           <div className="mt-3 grid grid-cols-2 gap-x-5">
@@ -534,9 +578,9 @@ export default function ProductsMegaMenu() {
                                 key={item.href}
                                 href={item.href}
                                 onClick={closeMenu}
-                                className="group/item flex min-h-8 items-start gap-2 border-b border-slate-100 py-1.5 text-[11.5px] leading-4 text-slate-600 transition hover:border-orange-100 hover:text-orange-700"
+                                className={`group/item flex min-h-8 items-start gap-2 border-b border-slate-100 py-1.5 text-[11.5px] leading-4 text-slate-600 transition ${groupedAccent.itemBorder} ${groupedAccent.hoverText}`}
                               >
-                                <span className="mt-[6px] h-1 w-1 shrink-0 rounded-full bg-orange-400" />
+                                <span className={`mt-[6px] h-1 w-1 shrink-0 rounded-full ${groupedAccent.dot}`} />
                                 <span>{item.label}</span>
                               </Link>
                             ))}
@@ -592,10 +636,10 @@ export default function ProductsMegaMenu() {
                             key={group.label}
                             href={group.href}
                             onClick={closeMenu}
-                            className="group/family-side flex items-center justify-between border-b border-orange-100 pb-2 text-[12px] font-semibold text-slate-700 transition hover:text-orange-700"
+                            className={`group/family-side flex items-center justify-between border-b pb-2 text-[12px] font-semibold text-slate-700 transition ${groupedAccent.sideBorder} ${groupedAccent.hoverText}`}
                           >
                             <span>{group.label}</span>
-                            <ArrowIcon className="h-3.5 w-3.5 text-orange-400 transition group-hover/family-side:translate-x-0.5" />
+                            <ArrowIcon className={`h-3.5 w-3.5 transition group-hover/family-side:translate-x-0.5 ${groupedAccent.sideArrow}`} />
                           </Link>
                         ))}
                       </div>
