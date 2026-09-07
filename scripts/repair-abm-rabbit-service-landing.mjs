@@ -9,6 +9,10 @@ import { createAbmImageRehoster, isManagedAbmImageUrl } from "./lib/abm-sanity-i
 const VERSION = "2026-08-09-search-v5";
 const PATH_KEY = "cell-and-antibody-services/custom-antibody-engineering/rabbit-monoclonal-antibody-production";
 const SOURCE_URL = "https://www.abmgood.com/Rabbit-Monoclonal-Antibody-Production.html";
+const SOURCE_URLS = [
+  SOURCE_URL,
+  "https://alpha.abmgood.com/Rabbit-Monoclonal-Antibody-Production.html",
+];
 const APPLY = process.argv.includes("--apply");
 const projectId = String(process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || "9b5twpc8").trim();
 const dataset = String(process.env.NEXT_PUBLIC_SANITY_DATASET || "production").trim();
@@ -27,35 +31,43 @@ const clean = (value) => String(value || "").replace(/\u00a0/g, " ").replace(/\s
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 async function fetchOfficialPage() {
-  for (let attempt = 1; attempt <= 6; attempt += 1) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 45_000);
-    try {
-      const response = await fetch(SOURCE_URL, {
-        cache: "no-store",
-        redirect: "follow",
-        signal: controller.signal,
-        headers: {
-          accept: "text/html,application/xhtml+xml",
-          "user-agent": "Mozilla/5.0 (compatible; ITSBIO-ABM-Repair/1.0; +https://itsbio.vercel.app)",
-        },
-      });
-      clearTimeout(timeout);
-      const html = await response.text();
-      const finalUrl = response.url || SOURCE_URL;
-      if (
-        response.ok
-        && !new URL(finalUrl).pathname.toLowerCase().includes("pagenotfound")
-        && /Rabbit Monoclonal Antibody Production/i.test(html)
-        && !/page you are looking for can(?:not|'t) be found/i.test(html)
-      ) return { html, finalUrl };
-    } catch (error) {
-      clearTimeout(timeout);
-      if (attempt === 6) throw error;
+  const errors = [];
+
+  for (const sourceUrl of SOURCE_URLS) {
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30_000);
+      try {
+        const response = await fetch(sourceUrl, {
+          cache: "no-store",
+          redirect: "follow",
+          signal: controller.signal,
+          headers: {
+            accept: "text/html,application/xhtml+xml",
+            "user-agent": "Mozilla/5.0 (compatible; ITSBIO-ABM-Repair/1.0; +https://itsbio.vercel.app)",
+          },
+        });
+        const html = await response.text();
+        const finalUrl = response.url || sourceUrl;
+        if (
+          response.ok
+          && !new URL(finalUrl).pathname.toLowerCase().includes("pagenotfound")
+          && /Rabbit Monoclonal Antibody Production/i.test(html)
+          && !/page you are looking for can(?:not|'t) be found/i.test(html)
+        ) return { html, finalUrl };
+
+        errors.push(`${sourceUrl} attempt ${attempt}: HTTP ${response.status} or invalid Rabbit service content`);
+      } catch (error) {
+        errors.push(`${sourceUrl} attempt ${attempt}: ${error instanceof Error ? error.message : String(error)}`);
+      } finally {
+        clearTimeout(timeout);
+      }
+
+      await sleep(1_000 * attempt);
     }
-    await sleep(1_500 * attempt);
   }
-  throw new Error("Official Rabbit Monoclonal Antibody Production page did not return valid content");
+
+  throw new Error(`Official Rabbit Monoclonal Antibody Production page did not return valid content from any official host: ${errors.slice(-6).join(" | ")}`);
 }
 
 function extractLanding(sourceHtml, sourceUrl) {
@@ -140,6 +152,7 @@ console.log(JSON.stringify({
   mode: APPLY ? "apply" : "dry-run",
   documentId: target._id,
   pathKey: PATH_KEY,
+  fetchedFrom: fetched.finalUrl,
   sourceUrl: verified.sourceUrl,
   textLength: verifiedText.length,
   images: verified.images?.length || 0,
