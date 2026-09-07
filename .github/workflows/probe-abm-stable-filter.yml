@@ -1,0 +1,23 @@
+name: Probe ABM stable cell filter
+
+on:
+  push:
+    branches:
+      - agent/abm-stable-lines-completeness
+    paths:
+      - .github/workflows/probe-abm-stable-filter.yml
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Probe ABM searchApi filters
+        run: node scripts/probe-abm-stable-filter.mjs
