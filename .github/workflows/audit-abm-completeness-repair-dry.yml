@@ -1,0 +1,36 @@
+name: Dry-run ABM completeness repair
+
+on:
+  push:
+    branches:
+      - agent/abm-completeness-repair
+    paths:
+      - scripts/repair-abm-completeness-defects.mjs
+      - .github/workflows/audit-abm-completeness-repair-dry.yml
+
+permissions:
+  contents: read
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Dry-run targeted repairs
+        run: node scripts/repair-abm-completeness-defects.mjs
+      - name: Upload repair plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: abm-completeness-repair-dry-${{ github.run_id }}
+          path: .cache/abm-completeness-repair/
+          retention-days: 30
