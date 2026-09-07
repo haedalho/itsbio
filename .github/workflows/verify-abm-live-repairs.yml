@@ -1,0 +1,73 @@
+name: Verify ABM live repairs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/verify-abm-live-repairs.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Verify repaired ABM pages on production
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          G265='https://itsbio.vercel.app/products/abm/staged/product/G265'
+          TM205='https://itsbio.vercel.app/products/abm/staged/product/TM205'
+          RABBIT='https://itsbio.vercel.app/products/abm/services/cell-and-antibody-services/custom-antibody-engineering/rabbit-monoclonal-antibody-production'
+          PLACEHOLDER='This item is in the authoritative ABM inventory'
+
+          fetch_page() {
+            local url="$1"
+            curl -fsSL --max-time 30 -H 'Cache-Control: no-cache' "${url}?qa=$(date +%s%N)"
+          }
+
+          verify_once() {
+            local g265 tm205 rabbit
+            g265="$(fetch_page "$G265")" || return 1
+            tm205="$(fetch_page "$TM205")" || return 1
+            rabbit="$(fetch_page "$RABBIT")" || return 1
+
+            if grep -Fq "$PLACEHOLDER" <<<"$g265"; then
+              echo 'G265 still shows the migration placeholder.' >&2
+              return 1
+            fi
+            if grep -Fq "$PLACEHOLDER" <<<"$tm205"; then
+              echo 'TM205 still shows the migration placeholder.' >&2
+              return 1
+            fi
+            if ! grep -Fq 'PHASE V Service: Stable Cell Line Development' <<<"$rabbit"; then
+              echo 'Rabbit service is missing Phase V content.' >&2
+              return 1
+            fi
+            if ! grep -Fq 'Comparison of Rabbit Monoclonal Antibody Generation Methods' <<<"$rabbit"; then
+              echo 'Rabbit service is missing the comparison section.' >&2
+              return 1
+            fi
+            if grep -Fq 'Starting from $' <<<"$rabbit"; then
+              echo 'Rabbit service still exposes price data.' >&2
+              return 1
+            fi
+
+            echo 'ABM live repair smoke checks passed.'
+          }
+
+          for attempt in $(seq 1 18); do
+            echo "Production verification attempt ${attempt}/18"
+            if verify_once; then
+              exit 0
+            fi
+            sleep 15
+          done
+
+          echo 'Production did not converge to the repaired state within the verification window.' >&2
+          exit 1
