@@ -6,6 +6,7 @@ on:
       - agent/abm-stable-lines-completeness
     paths:
       - .github/workflows/probe-abm-stable-search-products.yml
+      - scripts/probe-abm-stable-search-products.mjs
 
 permissions:
   contents: read
