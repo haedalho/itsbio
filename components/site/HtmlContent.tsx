@@ -27,6 +27,35 @@ function collapseWs(s: string) {
   return (s || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
 }
 
+/**
+ * Match only actual commerce column labels. A loose word search here is
+ * destructive: specification values commonly contain prose such as
+ * "in order to select..." or "the amount of...", and treating those words as
+ * headers removes the complete value column from every row in the table.
+ */
+function isCommerceColumnLabel(value: string) {
+  const label = collapseWs(value).replace(/[:：]+$/, "").trim();
+  if (!label || label.length > 48) return false;
+  return /^(?:price|unit price|list price|sale price|cost|amount|currency|qty|quantity|cart|add to cart|order|order now|msrp|retail(?: price)?|wholesale(?: price)?|price \((?:usd|cad)\)|(?:usd|cad) price|usd|cad)$/i.test(label);
+}
+
+function removeEmptyPrimarySpecificationRows(doc: Document) {
+  doc.querySelectorAll<HTMLTableRowElement>(
+    ".abm-products-specification > table > tbody > tr, .abm-products-specification > table > tr"
+  ).forEach((row) => {
+    const cells = Array.from(row.children);
+    if (cells.length < 2 || cells.some((cell) => cell.tagName !== "TD")) return;
+    if (!collapseWs(cells[0].textContent || "")) return;
+
+    const values = cells.slice(1);
+    const hasValue = values.some((cell) =>
+      Boolean(collapseWs(cell.textContent || ""))
+      || Boolean(cell.querySelector("img, svg, a, button, input, select, video, audio"))
+    );
+    if (!hasValue) removeNode(row);
+  });
+}
+
 function extractLegacyAbmTarget(href: string) {
   try {
     const url = new URL(href, "https://www.itsbio.co.kr");
@@ -639,15 +668,19 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"]
     });
   }
 
+  // Empty source fields should not render as label-only specification rows.
+  // Limit this to the primary product specification table so section headers
+  // and intentionally sparse layout tables elsewhere remain intact.
+  removeEmptyPrimarySpecificationRows(doc);
+
   // 6) 판매 컬럼 제거 + ABM 정보 표를 동일한 구조와 디자인으로 정규화
   doc.querySelectorAll("table").forEach((table) => {
     const rows = Array.from(table.querySelectorAll(":scope > thead > tr, :scope > tbody > tr, :scope > tr"));
     const candidateRows = rows.slice(0, 4);
     const commerceIndices = new Set<number>();
-    const commerceHeader = /(?:^|\b)(?:price|cost|amount|currency|qty|quantity|cart|order|msrp|retail|wholesale|usd|cad)(?:\b|$)/i;
     candidateRows.forEach((row) => {
       Array.from(row.children).forEach((cell, index) => {
-        if (commerceHeader.test(collapseWs(cell.textContent || ""))) commerceIndices.add(index);
+        if (isCommerceColumnLabel(cell.textContent || "")) commerceIndices.add(index);
       });
     });
 

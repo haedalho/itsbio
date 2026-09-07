@@ -112,6 +112,20 @@ const STAGED_QUERY = `{
   )
 }`;
 
+function isNonProductCatalogTool(record: Pick<AbmStagedRecord, "sku" | "url">) {
+  if (String(record.sku || "").trim().toLowerCase() === "coa") return true;
+  try {
+    return new URL(String(record.url || ""), "https://www.abmgood.com").pathname.toLowerCase().endsWith("/coa-library.html");
+  } catch {
+    return false;
+  }
+}
+
+function isNonProductCatalogToolKey(key: string) {
+  const normalized = String(key || "").trim().toLowerCase();
+  return normalized === "coa" || normalized.endsWith("/coa-library.html") || normalized === "coa-library.html";
+}
+
 export async function getAbmStagedRecords(kind: AbmStagedRecord["kind"]): Promise<AbmStagedRecord[]> {
   const result = await sanityCdnClient.fetch<{
     records?: AbmStagedRecord[];
@@ -125,7 +139,9 @@ export async function getAbmStagedRecords(kind: AbmStagedRecord["kind"]): Promis
     kind,
   }, PUBLIC_CATALOG_CACHE);
   const details = new Map((result?.details || []).map((detail) => [String(detail.key || "").toLowerCase(), detail]));
-  return (Array.isArray(result?.records) ? result.records : []).map((record) => {
+  return (Array.isArray(result?.records) ? result.records : []).filter((record) =>
+    kind !== "product" || !isNonProductCatalogTool(record)
+  ).map((record) => {
     const key = `${kind}:${String(record.sku || record.url).trim().toLowerCase()}`;
     const detail = details.get(key);
     return {
@@ -136,11 +152,18 @@ export async function getAbmStagedRecords(kind: AbmStagedRecord["kind"]): Promis
   });
 }
 
-const STAGED_COUNT_QUERY = `count(*[
-  _type == "abmRebuildChunk"
-  && version == $version
-  && kind == $kind
-].records[])`;
+const STAGED_COUNT_QUERY = `select(
+  $kind == "product" => count(*[
+    _type == "abmRebuildChunk"
+    && version == $version
+    && kind == $kind
+  ].records[lower(sku) != "coa"]),
+  count(*[
+    _type == "abmRebuildChunk"
+    && version == $version
+    && kind == $kind
+  ].records[])
+)`;
 
 /** Lightweight inventory count for landing pages; avoids transferring the full catalog. */
 export async function getAbmStagedRecordCount(kind: AbmStagedRecord["kind"]): Promise<number> {
@@ -209,6 +232,7 @@ function officialCellRecord(key: string): AbmStagedRecord | undefined {
 export async function getAbmStagedRecord(kind: AbmStagedRecord["kind"], key: string) {
   const decodedKey = decodeURIComponent(key);
   if (kind === "product") {
+    if (isNonProductCatalogToolKey(decodedKey)) return null;
     const cellRecord = officialCellRecord(decodedKey);
     if (cellRecord) return cellRecord;
   }
@@ -217,6 +241,7 @@ export async function getAbmStagedRecord(kind: AbmStagedRecord["kind"], key: str
     kind,
     key: decodedKey,
   }, PUBLIC_CATALOG_CACHE);
+  if (kind === "product" && staged && isNonProductCatalogTool(staged)) return null;
   return staged;
 }
 
@@ -228,12 +253,12 @@ export function stagedRecordPath(kind: AbmStagedRecord["kind"], row: AbmStagedRe
   return `/products/abm/staged/${kind}/${encodeURIComponent(stagedRecordKey(row))}`;
 }
 
-const STAGED_DETAIL_QUERY = `*[
+const STAGED_DETAIL_QUERY = `(*[
   _type == "abmRebuildDetailChunk"
   && version == $version
   && kind == $kind
   && $key in records[].key
-][0].records[key == $key][0]`;
+] | order(_id asc))[0].records[key == $key][0]`;
 
 // A small number of rebuild records have reviewed content but no copied image array.
 // Reuse only already-managed Sanity media from the matching legacy ABM product;
@@ -277,6 +302,18 @@ function mergeNonEmpty<T extends Record<string, unknown>>(base: T, extra: Record
   return out;
 }
 
+function isInvalidCollectedDetail(staged: Record<string, unknown>) {
+  const sourceUrl = String(staged.sourceUrl || "").trim();
+  const title = String(staged.title || "").trim();
+  let missingPageUrl = false;
+  try {
+    missingPageUrl = new URL(sourceUrl, "https://www.abmgood.com").pathname.toLowerCase().includes("/pagenotfound");
+  } catch {
+    missingPageUrl = false;
+  }
+  return missingPageUrl || /(?:\b404\b|page\s+you\s+are\s+looking\s+for\s+can(?:not|'t)\s+be\s+found|page\s+not\s+found)/i.test(title);
+}
+
 /** Resolve reviewed staging content. Existing Product may contribute managed Sanity images only. */
 export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: string): Promise<AbmStagedDetail | undefined> {
   const decodedKey = decodeURIComponent(key);
@@ -311,6 +348,17 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
     kind,
     key: detailKey,
   }, PUBLIC_CATALOG_CACHE);
+
+  if (staged && isInvalidCollectedDetail(staged)) {
+    let images = normalizedDetailImages(record.previewImage);
+    if (!images.length) images = await getExistingManagedProductImages(record);
+    return {
+      ...record,
+      sourceUrl: String(record.url || "").trim(),
+      hasDetail: false,
+      images,
+    } as AbmStagedDetail;
+  }
 
   if (!staged) {
     const officialCellDetail = kind === "product" ? findOfficialAbmCellDetail(record.sku || decodedKey) : undefined;
