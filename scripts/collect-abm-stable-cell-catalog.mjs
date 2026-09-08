@@ -13,6 +13,21 @@ function clean(value) {
   return String(value || "").replace(/<[^>]+>/g, " ").replace(/&nbsp;/gi, " ").replace(/\s+/g, " ").trim();
 }
 
+function frontendCategoryIds(product) {
+  const ids = new Set();
+  const primary = Number(product?.frontend_category_id || 0);
+  if (primary) ids.add(primary);
+  for (const raw of String(product?.frontend_category_ids || "").split(",")) {
+    const id = Number.parseInt(raw.trim(), 10);
+    if (Number.isFinite(id) && id > 0) ids.add(id);
+  }
+  return ids;
+}
+
+function isOfficialStableMember(product) {
+  return frontendCategoryIds(product).has(25);
+}
+
 async function getHtml(url) {
   const response = await fetch(url, {
     redirect: "follow",
@@ -100,7 +115,7 @@ console.log(`Official Stable Cell Lines count: ${session.expectedCount}`);
 const first = await fetchPage(session, 1);
 const lastPage = Number(first.lastPage || 0);
 if (!lastPage) throw new Error("ABM Stable API did not return lastPage");
-console.log(`Scanning ${lastPage} API pages; Stable rows are selected only by frontend_category_id=25 + category_name=Stable Cell Lines`);
+console.log(`Scanning ${lastPage} API pages; Stable membership is selected by official frontend category id 25, including multi-category memberships.`);
 
 const pages = new Array(lastPage);
 pages[0] = first;
@@ -118,11 +133,20 @@ await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
 
 const bySku = new Map();
 let stableRowsSeen = 0;
+let primaryStableRows = 0;
+let secondaryStableRows = 0;
+const secondaryBreakdown = new Map();
 for (const data of pages) {
   for (const product of data?.products || []) {
-    if (Number(product?.frontend_category_id) !== 25) continue;
-    if (clean(product?.category_name).toLowerCase() !== "stable cell lines") continue;
+    if (!isOfficialStableMember(product)) continue;
     stableRowsSeen += 1;
+    if (Number(product?.frontend_category_id) === 25) {
+      primaryStableRows += 1;
+    } else {
+      secondaryStableRows += 1;
+      const key = `${clean(product?.category_name) || "(blank)"} | ${clean(product?.cell_type) || "(blank)"} | ${clean(product?.product_type) || "(blank)"}`;
+      secondaryBreakdown.set(key, (secondaryBreakdown.get(key) || 0) + 1);
+    }
     const record = toRecord(product);
     if (!record.sku || !record.title) continue;
     bySku.set(record.sku.toLowerCase(), record);
@@ -130,8 +154,21 @@ for (const data of pages) {
 }
 
 const products = Array.from(bySku.values()).sort((a, b) => a.title.localeCompare(b.title, "en", { numeric: true, sensitivity: "base" }));
+const secondaryMembershipBreakdown = Array.from(secondaryBreakdown.entries())
+  .map(([key, count]) => ({ key, count }))
+  .sort((a, b) => b.count - a.count || a.key.localeCompare(b.key));
+
+console.log(JSON.stringify({
+  expected: session.expectedCount,
+  uniqueCollected: products.length,
+  rawStableRows: stableRowsSeen,
+  primaryStableRows,
+  secondaryStableRows,
+  secondaryMembershipBreakdown: secondaryMembershipBreakdown.slice(0, 20),
+}, null, 2));
+
 if (products.length !== session.expectedCount) {
-  throw new Error(`Stable catalog mismatch: official count=${session.expectedCount}, unique collected=${products.length}, raw stable rows=${stableRowsSeen}`);
+  throw new Error(`Stable catalog mismatch: official count=${session.expectedCount}, unique collected=${products.length}, raw stable rows=${stableRowsSeen}, primary=${primaryStableRows}, secondary=${secondaryStableRows}`);
 }
 
 const payload = {
@@ -142,6 +179,11 @@ const payload = {
   collectedAt: new Date().toISOString(),
   expectedCount: session.expectedCount,
   collectedCount: products.length,
+  classification: {
+    primaryStableRows,
+    secondaryStableRows,
+    secondaryMembershipBreakdown,
+  },
   products,
 };
 fs.mkdirSync(path.dirname(OUT), { recursive: true });
