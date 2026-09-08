@@ -36,15 +36,14 @@ jobs:
             code=${result%% *}
             time=${result#* }
             echo "attempt=${attempt} status=${code} time=${time}s"
-            if [[ "$code" == "200" ]] && grep -q '1,102' /tmp/stable.html && grep -q 'T6352_Morphology.jpg' /tmp/stable.html; then
+            if [[ "$code" == "200" ]] && grep -q '1,102' /tmp/stable.html; then
               break
             fi
             sleep 10
           done
           grep -q '1,102' /tmp/stable.html
-          grep -q 'T6352_Morphology.jpg' /tmp/stable.html
 
-      - name: Verify browser-rendered numeric pagination
+      - name: Verify browser-rendered numeric pagination and thumbnail
         shell: bash
         run: |
           set -euo pipefail
@@ -54,11 +53,12 @@ jobs:
             echo 'No Chrome/Chromium binary found on runner' >&2
             exit 1
           fi
-          "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom "$url" > /tmp/stable-dom.html
+          "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=7000 --dump-dom "$url" > /tmp/stable-dom.html
           grep -q 'aria-current="page"' /tmp/stable-dom.html
           for number in 1 2 3 4 5; do
             grep -Eq ">${number}</button>" /tmp/stable-dom.html
           done
+          grep -q 'T6352_Morphology.jpg' /tmp/stable-dom.html
           if grep -q 'Page 1 of 92' /tmp/stable-dom.html; then
             echo 'Old pagination copy is still present' >&2
             exit 1
