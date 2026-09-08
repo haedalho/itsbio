@@ -5,7 +5,7 @@ import {
   type OfficialAbmCellModelProduct,
 } from "@/lib/abm/cell-model-data";
 import { getOfficialAbmStableCellCatalog } from "@/lib/abm/stable-cell-data";
-import { ABM_REBUILD_VERSION, isManagedAbmImageUrl } from "@/lib/abm/rebuild-staging";
+import { isManagedAbmImageUrl } from "@/lib/abm/rebuild-staging";
 import { abmResourceImagePath } from "@/lib/abm/resource-links";
 import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 
@@ -41,19 +41,6 @@ type ExistingCellProduct = {
   assetUrls?: string[];
   imageUrls?: string[];
 };
-
-type StablePreview = {
-  key?: string;
-  previewImage?: string;
-};
-
-const STABLE_DETAIL_ID_PREFIX = "abm-rebuild-detail-product-batch-stable-cell-lines-chunk-";
-const STABLE_PREVIEW_QUERY = `*[
-  _type == "abmRebuildDetailChunk"
-  && version == $version
-  && kind == "product"
-  && string::startsWith(_id, $prefix)
-].records[]{key,"previewImage":images[0]}`;
 
 const EXISTING_CELL_PRODUCTS_QUERY = `*[
   _type == "product"
@@ -138,10 +125,10 @@ function officialProductRow(product: OfficialAbmCellModelProduct, existing?: Exi
   };
 }
 
-function stableOfficialRows(previewBySku: Map<string, string>): AbmSpecialCellProduct[] {
+function stableOfficialRows(): AbmSpecialCellProduct[] {
   return getOfficialAbmStableCellCatalog().map((product) => {
     const sku = clean(product.sku);
-    const previewImage = previewBySku.get(normalize(sku));
+    const previewImage = abmResourceImagePath(clean(product.previewImage));
     return {
       title: clean(product.title),
       sku,
@@ -160,7 +147,7 @@ function stableOfficialRows(previewBySku: Map<string, string>): AbmSpecialCellPr
       growthProperties: clean(product.growthProperties),
       donorHistory: clean(product.donorHistory),
       stableMembership: product.stableMembership !== false,
-      previewImage: previewImage && isManagedAbmImageUrl(previewImage) ? previewImage : undefined,
+      previewImage: previewImage || undefined,
     };
   }).sort((left, right) => left.title.localeCompare(right.title, "en", { numeric: true, sensitivity: "base" }));
 }
@@ -228,18 +215,7 @@ function parseOfficialCas9Rows(html: string, existingBySku: Map<string, Existing
 }
 
 export async function getSpecialAbmCellCatalog(collection: AbmSpecialCellCollection) {
-  if (collection === "stable") {
-    const previews = await sanityCdnClient.fetch<StablePreview[]>(STABLE_PREVIEW_QUERY, {
-      version: ABM_REBUILD_VERSION,
-      prefix: STABLE_DETAIL_ID_PREFIX,
-    }, PUBLIC_CATALOG_CACHE);
-    const previewBySku = new Map((previews || []).map((row) => {
-      const key = normalize(row.key);
-      const sku = key.startsWith("product:") ? key.slice("product:".length) : key;
-      return [sku, clean(row.previewImage)] as const;
-    }).filter(([sku, url]) => Boolean(sku && url)));
-    return stableOfficialRows(previewBySku);
-  }
+  if (collection === "stable") return stableOfficialRows();
 
   const [existing, officialTable] = await Promise.all([
     sanityCdnClient.fetch<ExistingCellProduct[]>(
