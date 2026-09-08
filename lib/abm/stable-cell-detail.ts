@@ -2,10 +2,12 @@ import { findOfficialAbmStableCellProduct } from "@/lib/abm/stable-cell-data";
 import { ABM_REBUILD_VERSION, isManagedAbmImageUrl, type AbmStagedDetail } from "@/lib/abm/rebuild-staging";
 import { PUBLIC_CATALOG_CACHE, sanityClient } from "@/lib/sanity/sanity.client";
 
+const STABLE_DETAIL_ID_PREFIX = "abm-rebuild-detail-product-batch-stable-cell-lines-chunk-";
 const STABLE_DETAIL_QUERY = `(*[
   _type == "abmRebuildDetailChunk"
   && version == $version
   && kind == "product"
+  && string::startsWith(_id, $prefix)
   && $key in records[].key
 ] | order(_id asc))[0].records[key == $key][0]`;
 
@@ -21,6 +23,7 @@ export async function getStableAbmCellDetail(key: string): Promise<AbmStagedDeta
   const detailKey = `product:${sku.toLowerCase()}`;
   const staged = await sanityClient.fetch<Record<string, unknown> | null>(STABLE_DETAIL_QUERY, {
     version: ABM_REBUILD_VERSION,
+    prefix: STABLE_DETAIL_ID_PREFIX,
     key: detailKey,
   }, PUBLIC_CATALOG_CACHE);
 
