@@ -128,10 +128,11 @@ function officialProductRow(product: OfficialAbmCellModelProduct, existing?: Exi
 function stableOfficialRows(): AbmSpecialCellProduct[] {
   return getOfficialAbmStableCellCatalog().map((product) => {
     const sku = clean(product.sku);
-    const rawPreviewImage = clean(product.previewImage);
-    const previewImage = isManagedAbmImageUrl(rawPreviewImage)
-      ? rawPreviewImage
-      : abmResourceImagePath(rawPreviewImage);
+    const managedImage = clean(product.managedPreviewImage);
+    const officialImage = clean(product.previewImage);
+    const previewImage = isManagedAbmImageUrl(managedImage)
+      ? managedImage
+      : abmResourceImagePath(officialImage);
     return {
       title: clean(product.title),
       sku,
