@@ -36,14 +36,14 @@ jobs:
             code=${result%% *}
             time=${result#* }
             echo "attempt=${attempt} status=${code} time=${time}s"
-            if [[ "$code" == "200" ]] && grep -q '1,102' /tmp/stable.html; then
+            if [[ "$code" == "200" ]]; then
               break
             fi
             sleep 10
           done
-          grep -q '1,102' /tmp/stable.html
+          [[ "$code" == "200" ]]
 
-      - name: Verify browser-rendered numeric pagination and thumbnail
+      - name: Verify browser-rendered Stable catalog UI
         shell: bash
         run: |
           set -euo pipefail
@@ -58,11 +58,18 @@ jobs:
           for number in 1 2 3 4 5; do
             grep -Eq ">${number}</button>" /tmp/stable-dom.html
           done
+          grep -q 'T6352' /tmp/stable-dom.html
           grep -q 'T6352_Morphology.jpg' /tmp/stable-dom.html
-          if grep -q 'Page 1 of 92' /tmp/stable-dom.html; then
-            echo 'Old pagination copy is still present' >&2
-            exit 1
-          fi
+          text=$(python3 - <<'PY'
+from html.parser import HTMLParser
+class P(HTMLParser):
+    def __init__(self): super().__init__(); self.parts=[]
+    def handle_data(self, data): self.parts.append(data)
+p=P(); p.feed(open('/tmp/stable-dom.html', encoding='utf-8').read()); print(' '.join(' '.join(p.parts).split()))
+PY
+          )
+          [[ "$text" == *"1,102 products"* ]]
+          [[ "$text" != *"Page 1 of 92"* ]]
 
       - name: Verify representative image proxy
         shell: bash
