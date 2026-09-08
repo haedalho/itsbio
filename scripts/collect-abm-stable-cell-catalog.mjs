@@ -5,7 +5,7 @@ import path from "node:path";
 const STABLE_PAGE = "https://www.abmgood.com/Stable-Cell-Lines.html";
 const SEARCH_PAGE = "https://www.abmgood.com/search";
 const FRONTEND_CATEGORY_ID = 25;
-const USER_AGENT = "Mozilla/5.0 (compatible; ITSBIO-ABM-StableCollector/2.0)";
+const USER_AGENT = "Mozilla/5.0 (compatible; ITSBIO-ABM-StableCollector/2.1)";
 const OUT = path.resolve("data/abm-stable-cell-catalog.json");
 const CONCURRENCY = Math.max(1, Math.min(8, Number.parseInt(process.env.ABM_STABLE_CONCURRENCY || "5", 10) || 5));
 const PAGE_SIZE = 10;
@@ -84,12 +84,13 @@ function parseProducts(html, page) {
     const sku = clean(fields["cat.no."] || fields["cat.no"] || fields["cat no."] || fields["cat no"] || "");
     if (!sku || !title) continue;
 
-    const category = clean(chunk.match(/abm-search-results-item-product_category[^>]*>\s*<a[^>]*>([\s\S]*?)<\/a>/i)?.[1]);
+    const primaryCategory = clean(chunk.match(/abm-search-results-item-product_category[^>]*>\s*<a[^>]*>([\s\S]*?)<\/a>/i)?.[1]);
     products.push({
       sku,
       title,
       sourceUrl,
-      category,
+      stableMembership: true,
+      primaryCategory,
       unit: clean(fields.unit),
       species: clean(fields.species),
       tissue: clean(fields.tissue),
@@ -144,10 +145,16 @@ const products = Array.from(bySku.values()).sort((a, b) => a.title.localeCompare
 
 if (duplicates.length) throw new Error(`Duplicate Stable SKUs across official search pages: ${[...new Set(duplicates)].join(", ")}`);
 if (products.length !== expectedCount) throw new Error(`Stable catalog mismatch: official count=${expectedCount}, unique collected=${products.length}`);
-if (products.some((product) => product.category && product.category.toLowerCase() !== "stable cell lines")) {
-  const bad = products.filter((product) => product.category && product.category.toLowerCase() !== "stable cell lines").slice(0, 20);
-  throw new Error(`Non-Stable categories appeared in fc_ids[]=25 results: ${JSON.stringify(bad)}`);
+
+const primaryCategoryCounts = new Map();
+for (const product of products) {
+  const category = product.primaryCategory || "(blank)";
+  primaryCategoryCounts.set(category, (primaryCategoryCounts.get(category) || 0) + 1);
 }
+const categoryBreakdown = Array.from(primaryCategoryCounts, ([category, count]) => ({ category, count }))
+  .sort((a, b) => b.count - a.count || a.category.localeCompare(b.category));
+const directStableCount = primaryCategoryCounts.get("Stable Cell Lines") || 0;
+const crossListedCount = products.length - directStableCount;
 
 const payload = {
   source: STABLE_PAGE,
@@ -158,6 +165,11 @@ const payload = {
   collectedCount: products.length,
   pageSize: PAGE_SIZE,
   totalPages,
+  classification: {
+    directStableCount,
+    crossListedCount,
+    primaryCategoryBreakdown: categoryBreakdown,
+  },
   products: products.map(({ page: _page, ...product }) => product),
 };
 
@@ -167,7 +179,9 @@ console.log(JSON.stringify({
   output: OUT,
   expected: expectedCount,
   collected: products.length,
-  totalPages,
+  directStableCount,
+  crossListedCount,
+  categoryBreakdown,
   first: products.slice(0, 3),
   last: products.slice(-3),
 }, null, 2));
