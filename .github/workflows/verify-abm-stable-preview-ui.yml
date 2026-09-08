@@ -6,6 +6,13 @@ on:
       - agent/abm-stable-lines-completeness
     paths:
       - .github/workflows/verify-abm-stable-preview-ui.yml
+      - app/products/abm/cellular-materials/cell-library-collections/stable-cell-lines/**
+      - components/products/AbmSpecialCellCatalogClient.tsx
+      - data/abm-stable-cell-catalog.json
+      - lib/abm/special-cell-catalog.ts
+      - lib/abm/stable-cell-data.ts
+      - lib/abm/resource-links.ts
+      - app/products/abm/resource-image/**
   workflow_dispatch:
 
 permissions:
@@ -29,23 +36,30 @@ jobs:
             code=${result%% *}
             time=${result#* }
             echo "attempt=${attempt} status=${code} time=${time}s"
-            if [[ "$code" == "200" ]] && grep -q '1,102' /tmp/stable.html && grep -q 'aria-current="page"' /tmp/stable.html; then
+            if [[ "$code" == "200" ]] && grep -q '1,102' /tmp/stable.html && grep -q 'T6352_Morphology.jpg' /tmp/stable.html; then
               break
             fi
             sleep 10
           done
           grep -q '1,102' /tmp/stable.html
-          grep -q 'aria-current="page"' /tmp/stable.html
+          grep -q 'T6352_Morphology.jpg' /tmp/stable.html
 
-      - name: Verify numeric pagination and official thumbnail
+      - name: Verify browser-rendered numeric pagination
         shell: bash
         run: |
           set -euo pipefail
+          url="${BASE_URL}${STABLE_PATH}"
+          chrome=$(command -v google-chrome || command -v chromium-browser || command -v chromium || true)
+          if [[ -z "$chrome" ]]; then
+            echo 'No Chrome/Chromium binary found on runner' >&2
+            exit 1
+          fi
+          "$chrome" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom "$url" > /tmp/stable-dom.html
+          grep -q 'aria-current="page"' /tmp/stable-dom.html
           for number in 1 2 3 4 5; do
-            grep -Eq ">${number}</button>" /tmp/stable.html
+            grep -Eq ">${number}</button>" /tmp/stable-dom.html
           done
-          grep -q 'T6352_Morphology.jpg' /tmp/stable.html
-          if grep -q 'Page 1 of 92' /tmp/stable.html; then
+          if grep -q 'Page 1 of 92' /tmp/stable-dom.html; then
             echo 'Old pagination copy is still present' >&2
             exit 1
           fi
