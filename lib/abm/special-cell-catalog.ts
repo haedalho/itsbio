@@ -4,6 +4,7 @@ import {
   getOfficialAbmCellModelCatalog,
   type OfficialAbmCellModelProduct,
 } from "@/lib/abm/cell-model-data";
+import { getOfficialAbmStableCellCatalog } from "@/lib/abm/stable-cell-data";
 import { isManagedAbmImageUrl } from "@/lib/abm/rebuild-staging";
 import { abmResourceImagePath } from "@/lib/abm/resource-links";
 import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
@@ -19,6 +20,15 @@ export type AbmSpecialCellProduct = {
   species: string;
   bioSystem: string;
   cellType: string;
+  tissue?: string;
+  primaryCategory?: string;
+  productType?: string;
+  geneName?: string;
+  geneFullName?: string;
+  accessionNumber?: string;
+  growthProperties?: string;
+  donorHistory?: string;
+  stableMembership?: boolean;
   previewImage?: string;
 };
 
@@ -41,7 +51,6 @@ const EXISTING_CELL_PRODUCTS_QUERY = `*[
   && select(
     $collection == "cas9" => title match "*Cas9*" && (title match "*Cell*" || title match "*Line*"),
     $collection == "crispr" => (title match "*Knockout*" || title match "*CRISPR*") && (title match "*Cell*" || title match "*Line*"),
-    $collection == "stable" => (title match "*Stable*" || title match "*Reporter*" || title match "*Luciferase*" || title match "*Transduced*"),
     $collection == "stem" => title match "*Stem*" || title match "*iPSC*" || title match "*Cardiomyocyte*" || title match "*Neuron*" || title match "*Astrocyte*",
     false
   )
@@ -62,9 +71,8 @@ const CAS9_OFFICIAL_TABLE_QUERY = `*[
   "html": contentBlocks[_type == "contentBlockHtml"][0].html
 }`;
 
-const SPECIAL_PATTERNS: Record<Exclude<AbmSpecialCellCollection, "cas9">, RegExp> = {
+const SPECIAL_PATTERNS: Record<Exclude<AbmSpecialCellCollection, "cas9" | "stable">, RegExp> = {
   crispr: /crispr|knock[\s-]?out|\bko\b/i,
-  stable: /stable|stably|reporter|luciferase|transduced|\bgfp\b|\brfp\b/i,
   stem: /stem cell|\bips\b|ipsc|embryonic stem|neural stem|cardiomyocyte|astrocyte|neuron/i,
 };
 
@@ -115,6 +123,28 @@ function officialProductRow(product: OfficialAbmCellModelProduct, existing?: Exi
     cellType: clean(product.cellTypes?.[0]),
     previewImage: managedPreview(existing),
   };
+}
+
+function stableOfficialRows(): AbmSpecialCellProduct[] {
+  return getOfficialAbmStableCellCatalog().map((product) => ({
+    title: clean(product.title),
+    sku: clean(product.sku),
+    href: `/products/abm/stable/${encodeURIComponent(clean(product.sku))}`,
+    sourceUrl: clean(product.sourceUrl),
+    unit: clean(product.unit),
+    species: clean(product.species),
+    bioSystem: clean(product.tissueSystem),
+    cellType: clean(product.cellType),
+    tissue: clean(product.tissue),
+    primaryCategory: clean(product.primaryCategory),
+    productType: clean(product.productType),
+    geneName: clean(product.geneName),
+    geneFullName: clean(product.geneFullName),
+    accessionNumber: clean(product.accessionNumber),
+    growthProperties: clean(product.growthProperties),
+    donorHistory: clean(product.donorHistory),
+    stableMembership: product.stableMembership !== false,
+  })).sort((left, right) => left.title.localeCompare(right.title, "en", { numeric: true, sensitivity: "base" }));
 }
 
 function existingProductRow(product: ExistingCellProduct, official?: OfficialAbmCellModelProduct): AbmSpecialCellProduct | null {
@@ -180,6 +210,8 @@ function parseOfficialCas9Rows(html: string, existingBySku: Map<string, Existing
 }
 
 export async function getSpecialAbmCellCatalog(collection: AbmSpecialCellCollection) {
+  if (collection === "stable") return stableOfficialRows();
+
   const [existing, officialTable] = await Promise.all([
     sanityCdnClient.fetch<ExistingCellProduct[]>(
       EXISTING_CELL_PRODUCTS_QUERY,
