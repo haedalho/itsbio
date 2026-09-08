@@ -21,6 +21,9 @@ export async function getStableAbmCellDetail(key: string): Promise<AbmStagedDeta
 
   const sku = clean(official.sku);
   const detailKey = `product:${sku.toLowerCase()}`;
+  const managedOfficialImage = isManagedAbmImageUrl(clean(official.managedPreviewImage))
+    ? clean(official.managedPreviewImage)
+    : "";
   const staged = await sanityClient.fetch<Record<string, unknown> | null>(STABLE_DETAIL_QUERY, {
     version: ABM_REBUILD_VERSION,
     prefix: STABLE_DETAIL_ID_PREFIX,
@@ -45,13 +48,17 @@ export async function getStableAbmCellDetail(key: string): Promise<AbmStagedDeta
     listingPaths: [["Cellular Materials", "Cell Library Collections", "Stable Cell Lines"]],
     breadcrumbs: ["Home", "Cellular Materials", "Cell Library Collections", "Stable Cell Lines", clean(official.title)],
     hasDetail: Boolean(staged),
+    images: managedOfficialImage ? [managedOfficialImage] : [],
   };
 
   if (!staged) return base;
 
-  const images = Array.isArray(staged.images)
+  const stagedImages = Array.isArray(staged.images)
     ? staged.images.map(String).filter((url) => isManagedAbmImageUrl(url))
     : [];
+  const images = stagedImages.length
+    ? stagedImages
+    : (managedOfficialImage ? [managedOfficialImage] : []);
 
   return {
     ...base,
