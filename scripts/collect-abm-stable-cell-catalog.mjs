@@ -4,188 +4,170 @@ import path from "node:path";
 
 const STABLE_PAGE = "https://www.abmgood.com/Stable-Cell-Lines.html";
 const SEARCH_PAGE = "https://www.abmgood.com/search";
-const ENDPOINT = "https://www.abmgood.com/product/searchProducts";
-const USER_AGENT = "Mozilla/5.0 (compatible; ITSBIO-ABM-StableCollector/1.0)";
+const FRONTEND_CATEGORY_ID = 25;
+const USER_AGENT = "Mozilla/5.0 (compatible; ITSBIO-ABM-StableCollector/2.0)";
 const OUT = path.resolve("data/abm-stable-cell-catalog.json");
 const CONCURRENCY = Math.max(1, Math.min(8, Number.parseInt(process.env.ABM_STABLE_CONCURRENCY || "5", 10) || 5));
+const PAGE_SIZE = 10;
+
+function decodeHtml(value) {
+  return String(value || "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#0*39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">");
+}
 
 function clean(value) {
-  return String(value || "").replace(/<[^>]+>/g, " ").replace(/&nbsp;/gi, " ").replace(/\s+/g, " ").trim();
+  return decodeHtml(String(value || ""))
+    .replace(/<sup>(.*?)<\/sup>/gi, "^$1")
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-function frontendCategoryIds(product) {
-  const ids = new Set();
-  const primary = Number(product?.frontend_category_id || 0);
-  if (primary) ids.add(primary);
-  for (const raw of String(product?.frontend_category_ids || "").split(",")) {
-    const id = Number.parseInt(raw.trim(), 10);
-    if (Number.isFinite(id) && id > 0) ids.add(id);
-  }
-  return ids;
-}
-
-function isOfficialStableMember(product) {
-  return frontendCategoryIds(product).has(25);
-}
-
-async function getHtml(url) {
+async function getHtml(url, attempt = 1) {
   const response = await fetch(url, {
     redirect: "follow",
     headers: { "user-agent": USER_AGENT, accept: "text/html,application/xhtml+xml" },
   });
-  if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
-  return { response, html: await response.text() };
+  if (response.ok) return await response.text();
+  if (attempt < 4) {
+    await new Promise((resolve) => setTimeout(resolve, 700 * attempt));
+    return getHtml(url, attempt + 1);
+  }
+  throw new Error(`${url}: HTTP ${response.status}`);
 }
 
 function parseExpectedCount(html) {
-  const stable = String(html || "");
-  const direct = stable.match(/title=["']Stable Cell Lines["'][\s\S]{0,450}?abm-search-filter-item-count[^>]*>\s*([\d,]+)/i)?.[1];
-  if (direct) return Number(direct.replace(/,/g, ""));
-  const fallback = stable.match(/Stable Cell Lines\s*\([^<()]*<[^>]*>\s*([\d,]+)/i)?.[1];
-  return fallback ? Number(fallback.replace(/,/g, "")) : 0;
+  const direct = String(html || "").match(/title=["']Stable Cell Lines["'][\s\S]{0,500}?abm-search-filter-item-count[^>]*>\s*([\d,]+)/i)?.[1];
+  return direct ? Number(direct.replace(/,/g, "")) : 0;
 }
 
-async function createSession() {
-  const [{ html: searchHtml }, stablePage] = await Promise.all([getHtml(SEARCH_PAGE), getHtml(STABLE_PAGE)]);
-  const expectedCount = parseExpectedCount(searchHtml);
-  if (!expectedCount) throw new Error("Unable to determine live Stable Cell Lines count from ABM search page");
-
-  const token = stablePage.html.match(/<meta[^>]+name=["']X-CSRF-TOKEN["'][^>]+content=["']([^"']+)["']/i)?.[1]
-    || stablePage.html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']X-CSRF-TOKEN["']/i)?.[1]
-    || "";
-  const cookies = typeof stablePage.response.headers.getSetCookie === "function"
-    ? stablePage.response.headers.getSetCookie().map((value) => value.split(";", 1)[0]).join("; ")
-    : String(stablePage.response.headers.get("set-cookie") || "").split(/,(?=[^;]+?=)/).map((value) => value.trim().split(";", 1)[0]).filter(Boolean).join("; ");
-  if (!token || !cookies) throw new Error("Unable to establish ABM Stable Cell Lines session");
-  return { token, cookies, expectedCount };
+function stableSearchUrl(page) {
+  const params = new URLSearchParams();
+  params.append("fc_ids[]", String(FRONTEND_CATEGORY_ID));
+  if (page > 1) params.set("page", String(page));
+  return `${SEARCH_PAGE}?${params.toString()}`;
 }
 
-async function fetchPage(session, page, attempt = 1) {
-  const response = await fetch(ENDPOINT, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      accept: "application/json",
-      "user-agent": USER_AGENT,
-      "x-csrf-token": session.token,
-      "x-requested-with": "XMLHttpRequest",
-      origin: "https://www.abmgood.com",
-      referer: STABLE_PAGE,
-      cookie: session.cookies,
-    },
-    body: JSON.stringify({ _token: session.token, query: "", filter_id: "63", page }),
-  });
-  if (response.ok) {
-    const payload = await response.json();
-    if (payload?.code === 0 && payload?.data) return payload.data;
+function normalizeLabel(value) {
+  return clean(value).replace(/\s*:\s*$/, "").toLowerCase();
+}
+
+function parseInfoFields(chunk) {
+  const fields = {};
+  const rowRe = /abm-search-results-item-product_info-label[^>]*>([\s\S]*?)<\/div>\s*<div\s+class=["']abm-search-results-item-product_info-value["'][^>]*>([\s\S]*?)<\/div>/gi;
+  for (const match of chunk.matchAll(rowRe)) {
+    const label = normalizeLabel(match[1]);
+    const value = clean(match[2]);
+    if (!label || !value || label === "price") continue;
+    fields[label] = value;
   }
-  if (attempt < 4) {
-    await new Promise((resolve) => setTimeout(resolve, 750 * attempt));
-    return fetchPage(session, page, attempt + 1);
+  return fields;
+}
+
+function parseProducts(html, page) {
+  const marker = '<div class="abm-search-results-item">';
+  const chunks = String(html || "").split(marker).slice(1);
+  const products = [];
+
+  for (const chunk of chunks) {
+    const nameMatch = chunk.match(/abm-search-results-item-product_name[^>]*>\s*<a[^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/i);
+    if (!nameMatch) continue;
+    const sourceUrl = new URL(decodeHtml(nameMatch[1]), SEARCH_PAGE).toString();
+    const title = clean(nameMatch[2]);
+    const fields = parseInfoFields(chunk);
+    const sku = clean(fields["cat.no."] || fields["cat.no"] || fields["cat no."] || fields["cat no"] || "");
+    if (!sku || !title) continue;
+
+    const category = clean(chunk.match(/abm-search-results-item-product_category[^>]*>\s*<a[^>]*>([\s\S]*?)<\/a>/i)?.[1]);
+    products.push({
+      sku,
+      title,
+      sourceUrl,
+      category,
+      unit: clean(fields.unit),
+      species: clean(fields.species),
+      tissue: clean(fields.tissue),
+      tissueSystem: clean(fields["tissue system"]),
+      cellType: clean(fields["cell type"]),
+      productType: clean(fields["product type"]),
+      geneName: clean(fields["gene name"] || fields.gene || fields["gene symbol"]),
+      geneFullName: clean(fields["gene full name"]),
+      accessionNumber: clean(fields["accession number"] || fields.accession),
+      growthProperties: clean(fields["growth properties"] || fields["growth property"]),
+      donorHistory: clean(fields["donor history"]),
+      page,
+    });
   }
-  throw new Error(`Stable API page ${page} failed after ${attempt} attempts (HTTP ${response.status})`);
+
+  return products;
 }
 
-function toRecord(product) {
-  const sku = clean(product?.cat_no);
-  const title = clean(product?.name);
-  const seoKey = clean(product?.seo?.url_key).replace(/^\/+/, "");
-  const media = Array.isArray(product?.media) ? product.media : [];
-  const imagePath = clean(media.find((item) => item?.file_type === "image" && item?.status !== 0)?.file_path);
-  return {
-    sku,
-    title,
-    sourceUrl: seoKey ? `https://www.abmgood.com/${seoKey}` : "",
-    species: clean(product?.species),
-    tissue: clean(product?.tissue),
-    tissueSystem: clean(product?.tissue_system),
-    cellType: clean(product?.cell_type),
-    productType: clean(product?.product_type),
-    geneName: clean(product?.gene_name || product?.info?.gene_symbol),
-    geneFullName: clean(product?.gene_full_name),
-    accessionNumber: clean(product?.accession_number),
-    growthProperties: clean(product?.info?.growth_properties),
-    officialImage: imagePath ? new URL(imagePath, "https://www.abmgood.com").toString() : "",
-    updatedAt: clean(product?.updated_at),
-  };
-}
+const rootHtml = await getHtml(SEARCH_PAGE);
+const expectedCount = parseExpectedCount(rootHtml);
+if (!expectedCount) throw new Error("Unable to determine live Stable Cell Lines count from ABM search page");
+const totalPages = Math.ceil(expectedCount / PAGE_SIZE);
+console.log(`Official Stable Cell Lines search count: ${expectedCount}; collecting ${totalPages} pages from fc_ids[]=${FRONTEND_CATEGORY_ID}`);
 
-const session = await createSession();
-console.log(`Official Stable Cell Lines count: ${session.expectedCount}`);
-const first = await fetchPage(session, 1);
-const lastPage = Number(first.lastPage || 0);
-if (!lastPage) throw new Error("ABM Stable API did not return lastPage");
-console.log(`Scanning ${lastPage} API pages; Stable membership is selected by official frontend category id 25, including multi-category memberships.`);
-
-const pages = new Array(lastPage);
-pages[0] = first;
-let nextPage = 2;
+const pageProducts = new Array(totalPages);
+let nextPage = 1;
 async function worker() {
   while (true) {
     const page = nextPage++;
-    if (page > lastPage) return;
-    pages[page - 1] = await fetchPage(session, page);
-    if (page % 100 === 0) console.log(`Fetched page ${page}/${lastPage}`);
-    await new Promise((resolve) => setTimeout(resolve, 80));
+    if (page > totalPages) return;
+    const html = await getHtml(stableSearchUrl(page));
+    const products = parseProducts(html, page);
+    const expectedOnPage = page < totalPages ? PAGE_SIZE : (expectedCount - PAGE_SIZE * (totalPages - 1));
+    if (products.length !== expectedOnPage) {
+      throw new Error(`Stable search page ${page}: expected ${expectedOnPage} products, parsed ${products.length}`);
+    }
+    pageProducts[page - 1] = products;
+    if (page === 1 || page % 20 === 0 || page === totalPages) console.log(`Collected page ${page}/${totalPages} (${products.length} products)`);
+    await new Promise((resolve) => setTimeout(resolve, 60));
   }
 }
 await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
 
 const bySku = new Map();
-let stableRowsSeen = 0;
-let primaryStableRows = 0;
-let secondaryStableRows = 0;
-const secondaryBreakdown = new Map();
-for (const data of pages) {
-  for (const product of data?.products || []) {
-    if (!isOfficialStableMember(product)) continue;
-    stableRowsSeen += 1;
-    if (Number(product?.frontend_category_id) === 25) {
-      primaryStableRows += 1;
-    } else {
-      secondaryStableRows += 1;
-      const key = `${clean(product?.category_name) || "(blank)"} | ${clean(product?.cell_type) || "(blank)"} | ${clean(product?.product_type) || "(blank)"}`;
-      secondaryBreakdown.set(key, (secondaryBreakdown.get(key) || 0) + 1);
-    }
-    const record = toRecord(product);
-    if (!record.sku || !record.title) continue;
-    bySku.set(record.sku.toLowerCase(), record);
-  }
+const duplicates = [];
+for (const product of pageProducts.flat()) {
+  const key = product.sku.toLowerCase();
+  if (bySku.has(key)) duplicates.push(product.sku);
+  bySku.set(key, product);
 }
-
 const products = Array.from(bySku.values()).sort((a, b) => a.title.localeCompare(b.title, "en", { numeric: true, sensitivity: "base" }));
-const secondaryMembershipBreakdown = Array.from(secondaryBreakdown.entries())
-  .map(([key, count]) => ({ key, count }))
-  .sort((a, b) => b.count - a.count || a.key.localeCompare(b.key));
 
-console.log(JSON.stringify({
-  expected: session.expectedCount,
-  uniqueCollected: products.length,
-  rawStableRows: stableRowsSeen,
-  primaryStableRows,
-  secondaryStableRows,
-  secondaryMembershipBreakdown: secondaryMembershipBreakdown.slice(0, 20),
-}, null, 2));
-
-if (products.length !== session.expectedCount) {
-  throw new Error(`Stable catalog mismatch: official count=${session.expectedCount}, unique collected=${products.length}, raw stable rows=${stableRowsSeen}, primary=${primaryStableRows}, secondary=${secondaryStableRows}`);
+if (duplicates.length) throw new Error(`Duplicate Stable SKUs across official search pages: ${[...new Set(duplicates)].join(", ")}`);
+if (products.length !== expectedCount) throw new Error(`Stable catalog mismatch: official count=${expectedCount}, unique collected=${products.length}`);
+if (products.some((product) => product.category && product.category.toLowerCase() !== "stable cell lines")) {
+  const bad = products.filter((product) => product.category && product.category.toLowerCase() !== "stable cell lines").slice(0, 20);
+  throw new Error(`Non-Stable categories appeared in fc_ids[]=25 results: ${JSON.stringify(bad)}`);
 }
 
 const payload = {
   source: STABLE_PAGE,
-  searchSource: SEARCH_PAGE,
-  filterId: 63,
-  frontendCategoryId: 25,
+  searchSource: `${SEARCH_PAGE}?fc_ids%5B%5D=${FRONTEND_CATEGORY_ID}`,
+  frontendCategoryId: FRONTEND_CATEGORY_ID,
   collectedAt: new Date().toISOString(),
-  expectedCount: session.expectedCount,
+  expectedCount,
   collectedCount: products.length,
-  classification: {
-    primaryStableRows,
-    secondaryStableRows,
-    secondaryMembershipBreakdown,
-  },
-  products,
+  pageSize: PAGE_SIZE,
+  totalPages,
+  products: products.map(({ page: _page, ...product }) => product),
 };
+
 fs.mkdirSync(path.dirname(OUT), { recursive: true });
 fs.writeFileSync(OUT, JSON.stringify(payload, null, 2) + "\n");
-console.log(JSON.stringify({ expected: session.expectedCount, collected: products.length, rawStableRows: stableRowsSeen, output: OUT, first: products.slice(0, 3), last: products.slice(-3) }, null, 2));
+console.log(JSON.stringify({
+  output: OUT,
+  expected: expectedCount,
+  collected: products.length,
+  totalPages,
+  first: products.slice(0, 3),
+  last: products.slice(-3),
+}, null, 2));
