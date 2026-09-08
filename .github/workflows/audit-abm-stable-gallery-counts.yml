@@ -1,0 +1,38 @@
+name: Audit ABM Stable gallery counts
+
+on:
+  push:
+    branches:
+      - agent/abm-stable-lines-completeness
+    paths:
+      - scripts/audit-abm-stable-gallery-counts.mjs
+      - .github/workflows/audit-abm-stable-gallery-counts.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Audit all 1,102 official Stable galleries
+        env:
+          STABLE_GALLERY_AUDIT_WORKERS: 4
+          STABLE_GALLERY_AUDIT_GAP_MS: 250
+        run: node scripts/audit-abm-stable-gallery-counts.mjs
+      - name: Upload Stable gallery census
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: abm-stable-gallery-audit-${{ github.run_id }}
+          path: .cache/abm-stable-gallery-audit/
+          retention-days: 30
+          if-no-files-found: warn
