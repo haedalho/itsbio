@@ -1,0 +1,47 @@
+name: Test ABM stable detail pipeline
+
+on:
+  push:
+    branches:
+      - agent/abm-stable-lines-completeness
+    paths:
+      - scripts/build-abm-stable-detail-inventory.mjs
+      - .github/workflows/test-abm-stable-detail-pipeline.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Build authoritative Stable detail inventory
+        run: node scripts/build-abm-stable-detail-inventory.mjs
+      - name: Collect 12 representative Stable details
+        env:
+          ABM_INVENTORY_FILE: .cache/abm-stable-detail/inventory.json
+        run: node scripts/abm-full-detail-collect.mjs --limit-products 12 --workers 2 --gap-ms 250
+      - name: Validate Stable detail staging payload without writes
+        run: node scripts/stage-abm-rebuild-details.mjs --products .cache/abm-full-detail-collect/products.json --services .cache/abm-full-detail-collect/services.json --allow-partial --batch-key stable-cell-lines-test --dry
+      - name: Upload Stable detail test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: abm-stable-detail-test-${{ github.run_id }}
+          path: |
+            .cache/abm-full-detail-collect/
+            .cache/abm-rebuild-detail-staging/
+          retention-days: 30
+          if-no-files-found: warn
