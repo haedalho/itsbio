@@ -37,5 +37,6 @@ jobs:
             echo "Stable catalog is unchanged"
           else
             git commit -m "data(abm): refresh stable cell catalog"
+            git pull --rebase origin agent/abm-stable-lines-completeness
             git push origin HEAD:agent/abm-stable-lines-completeness
           fi
