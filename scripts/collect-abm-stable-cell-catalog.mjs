@@ -5,7 +5,7 @@ import path from "node:path";
 const STABLE_PAGE = "https://www.abmgood.com/Stable-Cell-Lines.html";
 const SEARCH_PAGE = "https://www.abmgood.com/search";
 const FRONTEND_CATEGORY_ID = 25;
-const USER_AGENT = "Mozilla/5.0 (compatible; ITSBIO-ABM-StableCollector/2.1)";
+const USER_AGENT = "Mozilla/5.0 (compatible; ITSBIO-ABM-StableCollector/2.2)";
 const OUT = path.resolve("data/abm-stable-cell-catalog.json");
 const CONCURRENCY = Math.max(1, Math.min(8, Number.parseInt(process.env.ABM_STABLE_CONCURRENCY || "5", 10) || 5));
 const PAGE_SIZE = 10;
@@ -70,6 +70,37 @@ function parseInfoFields(chunk) {
   return fields;
 }
 
+function normalizeOfficialImageUrl(rawValue) {
+  const value = decodeHtml(String(rawValue || "")).trim();
+  if (!value || value.startsWith("data:")) return "";
+  try {
+    const url = new URL(value, SEARCH_PAGE);
+    const host = url.hostname.toLowerCase();
+    if (host !== "abmgood.com" && host !== "www.abmgood.com") return "";
+    if (!/\/(?:assets\/product\/(?:upload|images)|assets\/(?:images|img)|uploads\/images)\//i.test(url.pathname)) return "";
+    if (!/\.(?:avif|gif|jpe?g|png|webp)$/i.test(url.pathname)) return "";
+    url.protocol = "https:";
+    url.hash = "";
+    return url.toString();
+  } catch {
+    return "";
+  }
+}
+
+function parsePreviewImage(chunk) {
+  const candidates = [];
+  const imageTagRe = /<img\b[^>]*>/gi;
+  for (const tagMatch of String(chunk || "").matchAll(imageTagRe)) {
+    const tag = tagMatch[0];
+    const attrRe = /(?:src|data-src|data-original|data-lazy-src)\s*=\s*["']([^"']+)["']/gi;
+    for (const attrMatch of tag.matchAll(attrRe)) {
+      const url = normalizeOfficialImageUrl(attrMatch[1]);
+      if (url) candidates.push(url);
+    }
+  }
+  return candidates.find((url) => /\/assets\/product\//i.test(new URL(url).pathname)) || candidates[0] || "";
+}
+
 function parseProducts(html, page) {
   const marker = '<div class="abm-search-results-item">';
   const chunks = String(html || "").split(marker).slice(1);
@@ -89,6 +120,7 @@ function parseProducts(html, page) {
       sku,
       title,
       sourceUrl,
+      previewImage: parsePreviewImage(chunk),
       stableMembership: true,
       primaryCategory,
       unit: clean(fields.unit),
@@ -155,6 +187,7 @@ const categoryBreakdown = Array.from(primaryCategoryCounts, ([category, count]) 
   .sort((a, b) => b.count - a.count || a.category.localeCompare(b.category));
 const directStableCount = primaryCategoryCounts.get("Stable Cell Lines") || 0;
 const crossListedCount = products.length - directStableCount;
+const withPreviewImage = products.filter((product) => product.previewImage).length;
 
 const payload = {
   source: STABLE_PAGE,
@@ -170,6 +203,10 @@ const payload = {
     crossListedCount,
     primaryCategoryBreakdown: categoryBreakdown,
   },
+  media: {
+    withPreviewImage,
+    withoutPreviewImage: products.length - withPreviewImage,
+  },
   products: products.map(({ page: _page, ...product }) => product),
 };
 
@@ -181,6 +218,8 @@ console.log(JSON.stringify({
   collected: products.length,
   directStableCount,
   crossListedCount,
+  withPreviewImage,
+  withoutPreviewImage: products.length - withPreviewImage,
   categoryBreakdown,
   first: products.slice(0, 3),
   last: products.slice(-3),
