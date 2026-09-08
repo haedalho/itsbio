@@ -6,6 +6,11 @@ on:
       - agent/abm-stable-lines-completeness
     paths:
       - .github/workflows/migrate-abm-stable-cell-details.yml
+      - scripts/lib/abm-sanity-image-assets.mjs
+      - scripts/build-abm-stable-detail-inventory.mjs
+      - scripts/abm-full-detail-collect.mjs
+      - scripts/stage-abm-rebuild-details.mjs
+      - data/abm-stable-cell-catalog.json
   workflow_dispatch:
 
 permissions:
