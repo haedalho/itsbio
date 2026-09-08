@@ -1,0 +1,77 @@
+name: Verify ABM Stable preview UI
+
+on:
+  push:
+    branches:
+      - agent/abm-stable-lines-completeness
+    paths:
+      - .github/workflows/verify-abm-stable-preview-ui.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BASE_URL: https://itsbio-git-agent-abm-stable-lines-com-d5de40-hadel-hos-projects.vercel.app
+      STABLE_PATH: /products/abm/cellular-materials/cell-library-collections/stable-cell-lines
+    steps:
+      - name: Wait for latest Stable preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="${BASE_URL}${STABLE_PATH}"
+          for attempt in $(seq 1 24); do
+            result=$(curl -L -sS --max-time 30 -o /tmp/stable.html -w '%{http_code} %{time_total}' "$url" || true)
+            code=${result%% *}
+            time=${result#* }
+            echo "attempt=${attempt} status=${code} time=${time}s"
+            if [[ "$code" == "200" ]] && grep -q '1,102' /tmp/stable.html && grep -q 'aria-current="page"' /tmp/stable.html; then
+              break
+            fi
+            sleep 10
+          done
+          grep -q '1,102' /tmp/stable.html
+          grep -q 'aria-current="page"' /tmp/stable.html
+
+      - name: Verify numeric pagination and official thumbnail
+        shell: bash
+        run: |
+          set -euo pipefail
+          for number in 1 2 3 4 5; do
+            grep -Eq ">${number}</button>" /tmp/stable.html
+          done
+          grep -q 'T6352_Morphology.jpg' /tmp/stable.html
+          if grep -q 'Page 1 of 92' /tmp/stable.html; then
+            echo 'Old pagination copy is still present' >&2
+            exit 1
+          fi
+
+      - name: Verify representative image proxy
+        shell: bash
+        run: |
+          set -euo pipefail
+          source='https://www.abmgood.com/assets/product/images/cells/T6352_Morphology.jpg'
+          encoded=$(node -e 'process.stdout.write(encodeURIComponent(process.argv[1]))' "$source")
+          result=$(curl -L -sS --max-time 30 -o /tmp/t6352-image -w '%{http_code} %{content_type} %{size_download}' "${BASE_URL}/products/abm/resource-image?u=${encoded}")
+          echo "image=${result}"
+          code=${result%% *}
+          [[ "$code" == "200" ]]
+          content_type=$(echo "$result" | awk '{print $2}')
+          [[ "$content_type" == image/* ]]
+          size=$(echo "$result" | awk '{print $3}')
+          [[ "$size" -gt 1000 ]]
+
+      - name: Measure warm Stable page response
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="${BASE_URL}${STABLE_PATH}"
+          curl -L -sS --max-time 30 -o /dev/null "$url"
+          result=$(curl -L -sS --max-time 30 -o /dev/null -w '%{http_code} %{time_total} %{size_download}' "$url")
+          echo "warm-page=${result}"
+          code=${result%% *}
+          [[ "$code" == "200" ]]
