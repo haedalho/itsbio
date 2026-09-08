@@ -4,49 +4,49 @@ const SEARCH = `${BASE}/search`;
 const UA = "Mozilla/5.0 (compatible; ITSBIO-ABM-StableGlobalProbe/1.0)";
 
 function clean(v) { return String(v || "").replace(/\s+/g, " ").trim(); }
-function abs(v, base = SEARCH) { try { return new URL(v, base).toString(); } catch { return ""; } }
-
-async function get(url, headers = {}) {
-  const response = await fetch(url, { redirect: "follow", headers: { "user-agent": UA, accept: "text/html,*/*", ...headers } });
-  const text = await response.text();
-  console.log(`GET ${url} -> ${response.status} bytes=${text.length}`);
-  return { response, text };
+function textOnly(html) {
+  return clean(String(html || "")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&#0*39;|&apos;/gi, "'")
+    .replace(/&quot;/gi, '"'));
 }
 
-const first = await get(SEARCH);
-const html = first.text;
-const count = html.match(/title=["']Stable Cell Lines["'][\s\S]{0,500}?abm-search-filter-item-count[^>]*>\s*([\d,]+)/i)?.[1] || "";
-const input = html.match(/title=["']Stable Cell Lines["'][\s\S]{0,900}?name=["']fc_ids\[\]["'][^>]+value=["']([^"']+)/i)?.[1] || "";
-console.log(`STABLE_FILTER_META=${JSON.stringify({ count, fcId: input })}`);
-
-const scriptSrcs = [...html.matchAll(/<script[^>]+src=["']([^"']+)["'][^>]*>/gi)].map((m) => abs(m[1])).filter(Boolean);
-console.log(`SCRIPT_SRCS=${scriptSrcs.length}`);
-for (const src of scriptSrcs) {
-  if (!/abm|search|pub|app|main|catalog/i.test(src)) continue;
-  try {
-    const { text } = await get(src, { accept: "application/javascript,text/javascript,*/*" });
-    const lower = text.toLowerCase();
-    const needles = ["searchapi", "searchproducts", "fc_ids", "fetch(", "/product/", "loadmore", "load more"];
-    for (const needle of needles) {
-      let at = 0; let shown = 0;
-      while ((at = lower.indexOf(needle.toLowerCase(), at)) >= 0 && shown < 5) {
-        console.log(`JS_HIT src=${src} needle=${needle} at=${at}`);
-        console.log(clean(text.slice(Math.max(0, at - 900), Math.min(text.length, at + 1800))));
-        at += needle.length; shown += 1;
-      }
-    }
-  } catch (error) {
-    console.log(`JS_ERROR ${src}: ${error?.message || error}`);
-  }
+async function get(url) {
+  const response = await fetch(url, { redirect: "follow", headers: { "user-agent": UA, accept: "text/html,application/xhtml+xml" } });
+  const html = await response.text();
+  console.log(`GET ${url} -> ${response.status} bytes=${html.length}`);
+  if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
+  return html;
 }
 
-for (const url of [
-  `${SEARCH}?fc_ids%5B%5D=25`,
-  `${SEARCH}?fc_ids[]=25`,
-  `${SEARCH}?filter_id=63`,
-]) {
-  const { text } = await get(url);
-  const stableCount = text.match(/title=["']Stable Cell Lines["'][\s\S]{0,500}?abm-search-filter-item-count[^>]*>\s*([\d,]+)/i)?.[1] || "";
-  const productCards = (text.match(/abm-search-result-item|search-result-item|View Product/gi) || []).length;
-  console.log(`FILTERED_PAGE_META=${JSON.stringify({ url, stableCount, productCards, title: clean(text.match(/<title>([\s\S]*?)<\/title>/i)?.[1]) })}`);
+function stableCount(html) {
+  return html.match(/title=["']Stable Cell Lines["'][\s\S]{0,500}?abm-search-filter-item-count[^>]*>\s*([\d,]+)/i)?.[1] || "";
+}
+
+function skusFromHtml(html) {
+  const text = textOnly(html);
+  return [...text.matchAll(/Cat\.\s*No\.\s*:\s*([A-Za-z0-9][A-Za-z0-9._-]*)/gi)].map((m) => m[1]);
+}
+
+const root = await get(SEARCH);
+const count = stableCount(root);
+const fcId = root.match(/title=["']Stable Cell Lines["'][\s\S]{0,900}?name=["']fc_ids\[\]["'][^>]+value=["']([^"']+)/i)?.[1] || "";
+console.log(`STABLE_FILTER_META=${JSON.stringify({ count, fcId })}`);
+
+for (const page of [1, 2, 3, 50, 100, 110, 111, 112]) {
+  const params = new URLSearchParams();
+  params.append("fc_ids[]", "25");
+  if (page > 1) params.set("page", String(page));
+  const url = `${SEARCH}?${params.toString()}`;
+  const html = await get(url);
+  const skus = skusFromHtml(html);
+  const loadMoreHits = (html.match(/Load more/gi) || []).length;
+  const pageMatches = [...html.matchAll(/(?:data-page|page)[=\"': ]+([0-9]+)/gi)].slice(-15).map((m) => m[1]);
+  console.log(`PAGE_META=${JSON.stringify({ page, stableCount: stableCount(html), skuCount: skus.length, skus, loadMoreHits, pageMatches })}`);
+  const marker = html.search(/Cat\.\s*No\.?/i);
+  if (marker >= 0 && page <= 2) console.log(`CATNO_SNIPPET_${page}=${clean(html.slice(Math.max(0, marker - 1200), marker + 2200))}`);
 }
