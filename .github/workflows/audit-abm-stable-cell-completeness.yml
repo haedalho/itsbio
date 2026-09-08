@@ -6,6 +6,8 @@ on:
       - agent/abm-stable-lines-completeness
     paths:
       - data/abm-stable-cell-catalog.json
+      - scripts/audit-abm-stable-cell-completeness.mjs
+      - .github/workflows/audit-abm-stable-cell-completeness.yml
   workflow_dispatch:
 
 permissions:
