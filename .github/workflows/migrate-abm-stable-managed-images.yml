@@ -1,0 +1,60 @@
+name: Migrate ABM Stable managed images
+
+on:
+  push:
+    branches:
+      - agent/abm-stable-lines-completeness
+    paths:
+      - .github/workflows/migrate-abm-stable-managed-images.yml
+      - scripts/migrate-abm-stable-managed-images.mjs
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: migrate-abm-stable-managed-images
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 180
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+      STABLE_IMAGE_CONCURRENCY: "5"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/abm-stable-lines-completeness
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Install image optimizer without changing lockfile
+        run: npm install --no-save --package-lock=false sharp
+      - name: Migrate all official Stable images to Sanity and patch detail records
+        run: node scripts/migrate-abm-stable-managed-images.mjs
+      - name: Commit authoritative managed image mappings
+        run: |
+          git checkout -- package.json package-lock.json 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/abm-stable-cell-catalog.json
+          if git diff --cached --quiet; then
+            echo "Stable managed image mappings are unchanged"
+          else
+            git commit -m "data(abm): attach managed Stable cell images"
+            git pull --rebase origin agent/abm-stable-lines-completeness
+            git push origin HEAD:agent/abm-stable-lines-completeness
+          fi
