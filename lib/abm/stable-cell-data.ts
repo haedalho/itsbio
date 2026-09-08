@@ -6,6 +6,8 @@ export type OfficialAbmStableCellProduct = {
   sourceUrl: string;
   previewImage?: string;
   managedPreviewImage?: string;
+  officialGalleryImages?: string[];
+  managedGalleryImages?: string[];
   stableMembership?: boolean;
   primaryCategory?: string;
   unit?: string;
