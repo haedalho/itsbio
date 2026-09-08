@@ -5,7 +5,7 @@ import {
   type OfficialAbmCellModelProduct,
 } from "@/lib/abm/cell-model-data";
 import { getOfficialAbmStableCellCatalog } from "@/lib/abm/stable-cell-data";
-import { isManagedAbmImageUrl } from "@/lib/abm/rebuild-staging";
+import { ABM_REBUILD_VERSION, isManagedAbmImageUrl } from "@/lib/abm/rebuild-staging";
 import { abmResourceImagePath } from "@/lib/abm/resource-links";
 import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 
@@ -41,6 +41,19 @@ type ExistingCellProduct = {
   assetUrls?: string[];
   imageUrls?: string[];
 };
+
+type StablePreview = {
+  key?: string;
+  previewImage?: string;
+};
+
+const STABLE_DETAIL_ID_PREFIX = "abm-rebuild-detail-product-batch-stable-cell-lines-chunk-";
+const STABLE_PREVIEW_QUERY = `*[
+  _type == "abmRebuildDetailChunk"
+  && version == $version
+  && kind == "product"
+  && string::startsWith(_id, $prefix)
+].records[]{key,"previewImage":images[0]}`;
 
 const EXISTING_CELL_PRODUCTS_QUERY = `*[
   _type == "product"
@@ -125,26 +138,31 @@ function officialProductRow(product: OfficialAbmCellModelProduct, existing?: Exi
   };
 }
 
-function stableOfficialRows(): AbmSpecialCellProduct[] {
-  return getOfficialAbmStableCellCatalog().map((product) => ({
-    title: clean(product.title),
-    sku: clean(product.sku),
-    href: `/products/abm/stable/${encodeURIComponent(clean(product.sku))}`,
-    sourceUrl: clean(product.sourceUrl),
-    unit: clean(product.unit),
-    species: clean(product.species),
-    bioSystem: clean(product.tissueSystem),
-    cellType: clean(product.cellType),
-    tissue: clean(product.tissue),
-    primaryCategory: clean(product.primaryCategory),
-    productType: clean(product.productType),
-    geneName: clean(product.geneName),
-    geneFullName: clean(product.geneFullName),
-    accessionNumber: clean(product.accessionNumber),
-    growthProperties: clean(product.growthProperties),
-    donorHistory: clean(product.donorHistory),
-    stableMembership: product.stableMembership !== false,
-  })).sort((left, right) => left.title.localeCompare(right.title, "en", { numeric: true, sensitivity: "base" }));
+function stableOfficialRows(previewBySku: Map<string, string>): AbmSpecialCellProduct[] {
+  return getOfficialAbmStableCellCatalog().map((product) => {
+    const sku = clean(product.sku);
+    const previewImage = previewBySku.get(normalize(sku));
+    return {
+      title: clean(product.title),
+      sku,
+      href: `/products/abm/stable/${encodeURIComponent(sku)}`,
+      sourceUrl: clean(product.sourceUrl),
+      unit: clean(product.unit),
+      species: clean(product.species),
+      bioSystem: clean(product.tissueSystem),
+      cellType: clean(product.cellType),
+      tissue: clean(product.tissue),
+      primaryCategory: clean(product.primaryCategory),
+      productType: clean(product.productType),
+      geneName: clean(product.geneName),
+      geneFullName: clean(product.geneFullName),
+      accessionNumber: clean(product.accessionNumber),
+      growthProperties: clean(product.growthProperties),
+      donorHistory: clean(product.donorHistory),
+      stableMembership: product.stableMembership !== false,
+      previewImage: previewImage && isManagedAbmImageUrl(previewImage) ? previewImage : undefined,
+    };
+  }).sort((left, right) => left.title.localeCompare(right.title, "en", { numeric: true, sensitivity: "base" }));
 }
 
 function existingProductRow(product: ExistingCellProduct, official?: OfficialAbmCellModelProduct): AbmSpecialCellProduct | null {
@@ -210,7 +228,18 @@ function parseOfficialCas9Rows(html: string, existingBySku: Map<string, Existing
 }
 
 export async function getSpecialAbmCellCatalog(collection: AbmSpecialCellCollection) {
-  if (collection === "stable") return stableOfficialRows();
+  if (collection === "stable") {
+    const previews = await sanityCdnClient.fetch<StablePreview[]>(STABLE_PREVIEW_QUERY, {
+      version: ABM_REBUILD_VERSION,
+      prefix: STABLE_DETAIL_ID_PREFIX,
+    }, PUBLIC_CATALOG_CACHE);
+    const previewBySku = new Map((previews || []).map((row) => {
+      const key = normalize(row.key);
+      const sku = key.startsWith("product:") ? key.slice("product:".length) : key;
+      return [sku, clean(row.previewImage)] as const;
+    }).filter(([sku, url]) => Boolean(sku && url)));
+    return stableOfficialRows(previewBySku);
+  }
 
   const [existing, officialTable] = await Promise.all([
     sanityCdnClient.fetch<ExistingCellProduct[]>(
