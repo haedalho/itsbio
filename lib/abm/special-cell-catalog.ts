@@ -159,7 +159,7 @@ function existingProductRow(product: ExistingCellProduct, official?: OfficialAbm
   const sku = clean(product.sku);
   const title = clean(product.title);
   if (!sku || !title) return null;
-  if (official) return officialProductRow(official, existing);
+  if (official) return officialProductRow(official, product);
 
   return {
     title,
