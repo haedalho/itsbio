@@ -7,13 +7,14 @@ import { useMemo, useState } from "react";
 import type { AbmSpecialCellProduct } from "@/lib/abm/special-cell-catalog";
 
 const PAGE_SIZE = 12;
+type FilterField = "species" | "bioSystem" | "cellType" | "tissue" | "primaryCategory" | "growthProperties";
 
 function normalized(value: string) {
   return value.normalize("NFKC").trim().toLocaleLowerCase();
 }
 
-function uniqueOptions(products: AbmSpecialCellProduct[], field: "species" | "bioSystem" | "cellType") {
-  return Array.from(new Set(products.map((product) => product[field]).filter(Boolean)))
+function uniqueOptions(products: AbmSpecialCellProduct[], field: FilterField) {
+  return Array.from(new Set(products.map((product) => String(product[field] || "").trim()).filter(Boolean)))
     .sort((left, right) => left.localeCompare(right, "en", { numeric: true, sensitivity: "base" }));
 }
 
@@ -51,47 +52,102 @@ export default function AbmSpecialCellCatalogClient({
   products: AbmSpecialCellProduct[];
   initialQuery?: string;
 }) {
+  const isStableCatalog = useMemo(() => products.some((product) => product.stableMembership), [products]);
   const [draftQuery, setDraftQuery] = useState(initialQuery);
   const [query, setQuery] = useState(initialQuery);
   const [species, setSpecies] = useState("");
   const [bioSystem, setBioSystem] = useState("");
   const [cellType, setCellType] = useState("");
+  const [tissue, setTissue] = useState("");
+  const [growthProperties, setGrowthProperties] = useState("");
+  const [primaryCategory, setPrimaryCategory] = useState("");
   const [page, setPage] = useState(1);
 
   const filtered = useMemo(() => products.filter((product) => {
     if (species && product.species !== species) return false;
-    if (bioSystem && product.bioSystem !== bioSystem) return false;
-    if (cellType && product.cellType !== cellType) return false;
+    if (isStableCatalog) {
+      if (tissue && product.tissue !== tissue) return false;
+      if (growthProperties && product.growthProperties !== growthProperties) return false;
+      if (primaryCategory && product.primaryCategory !== primaryCategory) return false;
+    } else {
+      if (bioSystem && product.bioSystem !== bioSystem) return false;
+      if (cellType && product.cellType !== cellType) return false;
+    }
     return !query || normalized([
       product.title,
       product.sku,
       product.species,
       product.bioSystem,
       product.cellType,
+      product.tissue,
+      product.primaryCategory,
+      product.productType,
+      product.geneName,
+      product.geneFullName,
+      product.accessionNumber,
+      product.growthProperties,
+      product.donorHistory,
     ].join(" ")).includes(normalized(query));
-  }), [products, query, species, bioSystem, cellType]);
+  }), [products, query, species, bioSystem, cellType, tissue, growthProperties, primaryCategory, isStableCatalog]);
 
   const speciesOptions = useMemo(() => uniqueOptions(products.filter((product) => (
-    (!bioSystem || product.bioSystem === bioSystem) && (!cellType || product.cellType === cellType)
-  )), "species"), [products, bioSystem, cellType]);
+    isStableCatalog
+      ? (!tissue || product.tissue === tissue) && (!growthProperties || product.growthProperties === growthProperties) && (!primaryCategory || product.primaryCategory === primaryCategory)
+      : (!bioSystem || product.bioSystem === bioSystem) && (!cellType || product.cellType === cellType)
+  )), "species"), [products, isStableCatalog, tissue, growthProperties, primaryCategory, bioSystem, cellType]);
+
   const bioSystemOptions = useMemo(() => uniqueOptions(products.filter((product) => (
     (!species || product.species === species) && (!cellType || product.cellType === cellType)
   )), "bioSystem"), [products, species, cellType]);
   const cellTypeOptions = useMemo(() => uniqueOptions(products.filter((product) => (
     (!species || product.species === species) && (!bioSystem || product.bioSystem === bioSystem)
   )), "cellType"), [products, species, bioSystem]);
+  const tissueOptions = useMemo(() => uniqueOptions(products.filter((product) => (
+    (!species || product.species === species) && (!growthProperties || product.growthProperties === growthProperties) && (!primaryCategory || product.primaryCategory === primaryCategory)
+  )), "tissue"), [products, species, growthProperties, primaryCategory]);
+  const growthOptions = useMemo(() => uniqueOptions(products.filter((product) => (
+    (!species || product.species === species) && (!tissue || product.tissue === tissue) && (!primaryCategory || product.primaryCategory === primaryCategory)
+  )), "growthProperties"), [products, species, tissue, primaryCategory]);
+  const primaryCategoryOptions = useMemo(() => uniqueOptions(products.filter((product) => (
+    (!species || product.species === species) && (!tissue || product.tissue === tissue) && (!growthProperties || product.growthProperties === growthProperties)
+  )), "primaryCategory"), [products, species, tissue, growthProperties]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
   const visible = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const hasFilters = isStableCatalog
+    ? Boolean(species || tissue || growthProperties || primaryCategory || query)
+    : Boolean(species || bioSystem || cellType || query);
+
+  const clearFilters = () => {
+    setSpecies("");
+    setBioSystem("");
+    setCellType("");
+    setTissue("");
+    setGrowthProperties("");
+    setPrimaryCategory("");
+    setDraftQuery("");
+    setQuery("");
+    setPage(1);
+  };
 
   return (
     <section id="catalog" className="mt-8" aria-labelledby="abm-special-cell-catalog-title">
       <div className="rounded-[18px] border border-[#ebe1dc] bg-[#fffaf7] p-5 md:p-6">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className={`grid gap-3 sm:grid-cols-2 ${isStableCatalog ? "xl:grid-cols-4" : "xl:grid-cols-3"}`}>
           <SelectField label="Species" value={species} options={speciesOptions} onChange={(value) => { setSpecies(value); setPage(1); }} />
-          <SelectField label="Bio System" value={bioSystem} options={bioSystemOptions} onChange={(value) => { setBioSystem(value); setPage(1); }} />
-          <SelectField label="Cell Type" value={cellType} options={cellTypeOptions} onChange={(value) => { setCellType(value); setPage(1); }} />
+          {isStableCatalog ? (
+            <>
+              <SelectField label="Tissue" value={tissue} options={tissueOptions} onChange={(value) => { setTissue(value); setPage(1); }} />
+              {growthOptions.length ? <SelectField label="Growth Properties" value={growthProperties} options={growthOptions} onChange={(value) => { setGrowthProperties(value); setPage(1); }} /> : null}
+              <SelectField label="Primary Category" value={primaryCategory} options={primaryCategoryOptions} onChange={(value) => { setPrimaryCategory(value); setPage(1); }} />
+            </>
+          ) : (
+            <>
+              <SelectField label="Bio System" value={bioSystem} options={bioSystemOptions} onChange={(value) => { setBioSystem(value); setPage(1); }} />
+              <SelectField label="Cell Type" value={cellType} options={cellTypeOptions} onChange={(value) => { setCellType(value); setPage(1); }} />
+            </>
+          )}
         </div>
 
         <form
@@ -106,7 +162,7 @@ export default function AbmSpecialCellCatalogClient({
             aria-label="Search cell products"
             value={draftQuery}
             onChange={(event) => setDraftQuery(event.target.value)}
-            placeholder="Product name, Cat. No., species, or tissue…"
+            placeholder={isStableCatalog ? "Gene, accession, tissue, product name, or Cat. No.…" : "Product name, Cat. No., species, or tissue…"}
             className="h-11 min-w-0 flex-1 rounded-md border border-neutral-300 bg-white px-4 text-sm outline-none focus:border-[#f15a29]"
           />
           <button type="submit" className="h-11 rounded-md bg-[#f15a29] px-5 text-sm font-semibold text-white hover:bg-[#d95124]">
@@ -123,12 +179,8 @@ export default function AbmSpecialCellCatalogClient({
             {query ? ` matching “${query}”` : ""}
           </p>
         </div>
-        {species || bioSystem || cellType || query ? (
-          <button
-            type="button"
-            onClick={() => { setSpecies(""); setBioSystem(""); setCellType(""); setDraftQuery(""); setQuery(""); setPage(1); }}
-            className="text-xs font-semibold text-[#e15b2e] hover:underline"
-          >
+        {hasFilters ? (
+          <button type="button" onClick={clearFilters} className="text-xs font-semibold text-[#e15b2e] hover:underline">
             Clear filters
           </button>
         ) : null}
@@ -142,7 +194,8 @@ export default function AbmSpecialCellCatalogClient({
                 <th scope="col">Product Name</th>
                 <th scope="col">Cat. No.</th>
                 <th scope="col">Species</th>
-                <th scope="col">Cell Type</th>
+                <th scope="col">{isStableCatalog ? "Tissue" : "Cell Type"}</th>
+                {isStableCatalog ? <th scope="col">Growth Properties</th> : null}
               </tr>
             </thead>
             <tbody>
@@ -155,12 +208,18 @@ export default function AbmSpecialCellCatalogClient({
                           <Image src={product.previewImage} alt="" fill sizes="48px" className="object-contain" />
                         </span>
                       ) : null}
-                      <span>{product.title}</span>
+                      <span>
+                        <span className="block">{product.title}</span>
+                        {isStableCatalog && product.primaryCategory && product.primaryCategory !== "Stable Cell Lines" ? (
+                          <span className="mt-1 block text-[11px] text-neutral-500">Cross-listed from {product.primaryCategory}</span>
+                        ) : null}
+                      </span>
                     </Link>
                   </td>
                   <td><Link href={product.href} prefetch={false}>{product.sku}</Link></td>
                   <td>{product.species || "—"}</td>
-                  <td>{product.cellType || "—"}</td>
+                  <td>{isStableCatalog ? (product.tissue || "—") : (product.cellType || "—")}</td>
+                  {isStableCatalog ? <td>{product.growthProperties || "—"}</td> : null}
                 </tr>
               ))}
             </tbody>
