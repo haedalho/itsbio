@@ -147,11 +147,13 @@ const docs = makeChunks(records);
 const expectedIds = new Set(docs.map((doc) => doc._id));
 const client = createClient({ projectId, dataset, apiVersion, token, useCdn: false });
 
-for (let index = 0; index < docs.length; index += 25) {
-  let tx = client.transaction();
-  for (const doc of docs.slice(index, index + 25)) tx = tx.createOrReplace(doc);
-  await tx.commit({ autoGenerateArrayKeys: true });
-  console.log(`[stable text stage] ${Math.min(index + 25, docs.length)}/${docs.length} chunks`);
+// Each detail chunk can be hundreds of KB. Sanity caps a mutation request at 4 MB,
+// so commit one chunk per request instead of combining many chunks in one transaction.
+for (let index = 0; index < docs.length; index += 1) {
+  await client.createOrReplace(docs[index], { autoGenerateArrayKeys: true });
+  if (index % 10 === 0 || index === docs.length - 1) {
+    console.log(`[stable text stage] ${index + 1}/${docs.length} chunks`);
+  }
 }
 
 const existingIds = await client.fetch(`*[
@@ -161,9 +163,9 @@ const existingIds = await client.fetch(`*[
   && string::startsWith(_id, $prefix)
 ]._id`, { version: VERSION, prefix: PREFIX });
 const stale = existingIds.filter((id) => !expectedIds.has(id));
-for (let index = 0; index < stale.length; index += 100) {
+for (let index = 0; index < stale.length; index += 50) {
   let tx = client.transaction();
-  for (const id of stale.slice(index, index + 100)) tx = tx.delete(id);
+  for (const id of stale.slice(index, index + 50)) tx = tx.delete(id);
   await tx.commit();
 }
 
