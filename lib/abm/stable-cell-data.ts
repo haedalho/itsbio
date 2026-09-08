@@ -5,6 +5,7 @@ export type OfficialAbmStableCellProduct = {
   title: string;
   sourceUrl: string;
   previewImage?: string;
+  managedPreviewImage?: string;
   stableMembership?: boolean;
   primaryCategory?: string;
   unit?: string;
