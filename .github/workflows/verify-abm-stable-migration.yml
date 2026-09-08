@@ -1,0 +1,45 @@
+name: Verify ABM Stable Cell Lines migration
+
+on:
+  push:
+    branches:
+      - agent/abm-stable-lines-completeness
+    paths:
+      - scripts/verify-abm-stable-migration.mjs
+      - .github/workflows/verify-abm-stable-migration.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-abm-stable-cell-migration
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+      STABLE_VERIFY_ATTEMPTS: 30
+      STABLE_VERIFY_WAIT_MS: 15000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Verify exact 1,102-record Stable batch
+        run: node scripts/verify-abm-stable-migration.mjs --wait
+      - name: Upload Stable verification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: abm-stable-verification-${{ github.run_id }}
+          path: .cache/abm-stable-migration-verification/
+          retention-days: 30
+          if-no-files-found: warn
