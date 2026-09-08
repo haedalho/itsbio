@@ -16,6 +16,15 @@ const IMAGE_FIELDS = [
   "serviceDetailsHtml",
 ];
 
+class OversizedOfficialImageError extends Error {
+  constructor(sourceUrl, size) {
+    super(`${sourceUrl}: official image is ${size} bytes, above the ${MAX_IMAGE_BYTES}-byte migration limit`);
+    this.name = "OversizedOfficialImageError";
+    this.sourceUrl = sourceUrl;
+    this.size = size;
+  }
+}
+
 export function isManagedAbmImageUrl(value) {
   try {
     const url = new URL(String(value || ""));
@@ -30,7 +39,7 @@ function officialImageUrl(value, baseUrl) {
     const url = new URL(String(value || ""), baseUrl || "https://www.abmgood.com");
     const hostname = url.hostname.toLowerCase();
     if (hostname !== "abmgood.com" && !hostname.endsWith(".abmgood.com")) return "";
-    if (!['http:', 'https:'].includes(url.protocol)) return "";
+    if (!["http:", "https:"].includes(url.protocol)) return "";
     url.protocol = "https:";
     url.hostname = hostname;
     url.hash = "";
@@ -75,9 +84,10 @@ async function downloadOfficialImage(sourceUrl) {
     const mimeType = String(response.headers.get("content-type") || "").split(";", 1)[0].trim().toLowerCase();
     if (!mimeType.startsWith("image/")) throw new Error(`unexpected content-type ${mimeType || "missing"}`);
     const declared = Number(response.headers.get("content-length") || 0);
-    if (declared > MAX_IMAGE_BYTES) throw new Error(`image exceeds ${MAX_IMAGE_BYTES} bytes`);
+    if (declared > MAX_IMAGE_BYTES) throw new OversizedOfficialImageError(sourceUrl, declared);
     const bytes = Buffer.from(await response.arrayBuffer());
-    if (!bytes.length || bytes.length > MAX_IMAGE_BYTES) throw new Error(`invalid image size ${bytes.length}`);
+    if (!bytes.length) throw new Error("empty image response");
+    if (bytes.length > MAX_IMAGE_BYTES) throw new OversizedOfficialImageError(sourceUrl, bytes.length);
     return { bytes, mimeType };
   } finally {
     clearTimeout(timeout);
@@ -94,6 +104,8 @@ export function createAbmImageRehoster({ client, dryRun = false, logEvery = 50 }
     reusedManagedAssets: 0,
     rewrittenHtmlImages: 0,
     missingOfficialImages: 0,
+    oversizedOfficialImages: 0,
+    oversizedOfficialImageUrls: [],
     failures: 0,
   };
 
@@ -131,6 +143,12 @@ export function createAbmImageRehoster({ client, dryRun = false, logEvery = 50 }
         if (stats.uploadedAssets % logEvery === 0) console.log(`[ABM assets] uploaded ${stats.uploadedAssets}`);
         return asset.url;
       } catch (error) {
+        if (error instanceof OversizedOfficialImageError) {
+          stats.oversizedOfficialImages += 1;
+          if (!stats.oversizedOfficialImageUrls.includes(sourceUrl)) stats.oversizedOfficialImageUrls.push(sourceUrl);
+          console.warn(`[ABM assets] skipped oversized official image: ${sourceUrl} (${error.size} bytes)`);
+          return "";
+        }
         stats.failures += 1;
         throw new Error(`${sourceUrl}: ${error?.message || error}`);
       }
