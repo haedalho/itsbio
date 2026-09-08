@@ -1,0 +1,27 @@
+name: Probe ABM Stable galleries
+
+on:
+  push:
+    branches:
+      - agent/abm-stable-lines-completeness
+    paths:
+      - scripts/probe-abm-stable-galleries.mjs
+      - .github/workflows/probe-abm-stable-galleries.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Probe official Stable gallery selectors
+        run: node scripts/probe-abm-stable-galleries.mjs
