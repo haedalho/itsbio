@@ -131,10 +131,10 @@ const docs = await client.fetch(`*[
 const candidates = [];
 for (const doc of docs || []) {
   for (const record of doc.records || []) {
-    const haystack = [record.pathKey, record.title, record.sourceUrl, textFromHtml(record.html)]
+    const identity = [record.pathKey, record.title, record.sourceUrl]
       .map((value) => clean(value).toLowerCase())
       .join(" ");
-    if (!/(3dcelmatrix|3d[ -]?and[ -]?organoid|3d[ -]?organoid|organoid)/i.test(haystack)) continue;
+    if (!/(3dcelmatrix|3d[ -]?and[ -]?organoid|3d[ -]?organoid)/i.test(identity)) continue;
     candidates.push({
       docId: doc._id,
       kind: doc.kind,
@@ -159,7 +159,7 @@ console.log(JSON.stringify(candidates.map((row) => ({
   storedTextLength: row.storedText.length,
   markers: markerMap(row.storedText),
   textStart: row.storedText.slice(0, 2500),
-}), null, 2));
+})), null, 2));
 
 console.log("===== CURRENT OFFICIAL =====");
 const official = [];
