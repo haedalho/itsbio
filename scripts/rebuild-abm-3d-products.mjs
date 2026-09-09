@@ -124,11 +124,13 @@ function normalizeSourceImageHosts(root, $, finalUrl) {
 }
 
 function removeCommerce(root, $) {
-  const commerce = /(?:^|\b)(?:price|pricing|wholesale|add to cart|buy now|apply now|early adopter|limited early access)(?:\b|$)|(?:\$\s*\d)|(?:\b(?:USD|CAD)\s*\d)/i;
+  const priceColumn = /(?:^|\b)(?:price|pricing|wholesale)(?:\b|$)|(?:\$\s*\d)|(?:\b(?:USD|CAD)\s*\d)/i;
+  const commerceAction = /(?:^|\b)(?:add to cart|buy now|apply now|early adopter|limited early access|request a quote)(?:\b|$)|(?:\$\s*\d)|(?:\b(?:USD|CAD)\s*\d)/i;
+  root.find(".early-adopter-top,.early-adopter-section,.hubspot-form-embed").remove();
   root.find("table").each((_, table) => {
     const node = $(table);
     const heads = node.find("th").toArray().map((th) => clean($(th).text()));
-    const removeIndexes = heads.map((h, i) => commerce.test(h) ? i : -1).filter((i) => i >= 0);
+    const removeIndexes = heads.map((h, i) => priceColumn.test(h) ? i : -1).filter((i) => i >= 0);
     if (!removeIndexes.length) return;
     node.find("tr").each((__, row) => {
       const cells = $(row).children("th,td");
@@ -138,7 +140,7 @@ function removeCommerce(root, $) {
   root.find("h1,h2,h3,h4,h5,h6,p,div,section,article,aside,a,span,li").toArray().forEach((el) => {
     const node = $(el);
     const text = clean(node.text());
-    if (!text || !commerce.test(text)) return;
+    if (!text || !commerceAction.test(text)) return;
     if (text.length <= 180) {
       const section = node.closest("section,article").first();
       if (section.length && clean(section.text()).length <= 1000) section.remove();
@@ -171,13 +173,50 @@ function rewriteKnown3dLinks(html) {
   return $("#__root").html() || "";
 }
 
+function assertLandingStructure(page, html) {
+  if (page.key === "parent") return {};
+  const $ = cheerio.load(`<div id="__landing">${html}</div>`, { decodeEntities: false });
+  const count = (selector) => $("#__landing").find(selector).length;
+  const metrics = page.key === "platforms"
+    ? {
+        hero: count(".hero-banner"),
+        stats: count(".stats-strip .stat-box"),
+        benefits: count(".feature-grid .feature-card"),
+        formats: count(".format-grid .format-card"),
+        applications: count(".application-grid .application-card"),
+        validatedFilters: count(".validated-filter-button[data-filter-group]"),
+        validatedRows: count(".validated-lines-table tbody tr[data-href]"),
+        validationGallery: count(".gallery-grid .gallery-card"),
+        pillars: count(".pillar-grid .pillar-card"),
+      }
+    : {
+        hero: count(".hero-banner"),
+        highlights: count(".feature-grid .feature-card"),
+        workflows: count(".workflow-grid .workflow-card"),
+        applications: count(".application-grid .application-card"),
+        specificationTables: count(".spec-layout .spec-table"),
+        proofImages: count(".proof-grid .proof-trigger img"),
+        relatedRows: count(".related-products-section tbody tr[data-link]"),
+        faqs: count(".faq-grid .faq-card"),
+        pillars: count(".pillar-grid .pillar-card"),
+      };
+  const minimums = page.key === "platforms"
+    ? { hero: 1, stats: 5, benefits: 4, formats: 4, applications: 4, validatedFilters: 9, validatedRows: 60, validationGallery: 4, pillars: 4 }
+    : { hero: 1, highlights: 4, workflows: 5, applications: 5, specificationTables: 1, proofImages: 5, relatedRows: 6, faqs: 6, pillars: 4 };
+  const missing = Object.entries(minimums).filter(([key, minimum]) => (metrics[key] || 0) < minimum);
+  if (missing.length) {
+    throw new Error(`${page.title}: source structure incomplete (${missing.map(([key, minimum]) => `${key}=${metrics[key] || 0}/${minimum}`).join(", ")})`);
+  }
+  return metrics;
+}
+
 function extractContent(page, sourceHtml, finalUrl) {
   const $ = cheerio.load(sourceHtml, { decodeEntities: false });
   const sourceRoot = pickContentRoot($);
   if (!sourceRoot.length) throw new Error(`${page.title}: content root not found`);
   const root = sourceRoot.clone();
   root.find([
-    "header", "footer", "nav", "script", "style", "noscript", "form", "input", "select", "textarea", "button",
+    "header", "footer", "nav", "script", "style", "noscript", "form", "input", "select", "textarea",
     ".breadcrumb", ".breadcrumbs", ".abm-top-nav", ".abm-nav", ".abm-category-container", "ul.abm-page-category-nav-list",
     "#footer", ".footer", ".footer-top", ".footer-bottom",
   ].join(",")).remove();
@@ -186,7 +225,7 @@ function extractContent(page, sourceHtml, finalUrl) {
 
   // ITS BIO already renders the category title and side navigation.
   root.find("h1,h2.abm-categories-title-h2").first().remove();
-  let html = sanitizeAbmStoredHtml(root.html() || "", finalUrl);
+  let html = sanitizeAbmStoredHtml(root.html() || "", finalUrl, { preserveLandingInteractions: true });
   html = rewriteKnown3dLinks(html);
   const text = pageText(html);
   if (text.length < 900) throw new Error(`${page.title}: extracted content too short (${text.length})`);
@@ -217,8 +256,9 @@ for (const page of PAGES) {
   const html = await imageRehoster.rewriteHtml(extracted.html, fetched.finalUrl);
   const text = pageText(html);
   const images = [...new Set(cheerio.load(html)("img[src]").toArray().map((img) => clean(cheerio.load(html)(img).attr("src"))).filter(Boolean))];
+  const structure = assertLandingStructure(page, html);
   if (APPLY && images.some((url) => !isManagedAbmImageUrl(url))) throw new Error(`${page.title}: unmanaged image remains`);
-  prepared.push({ ...page, fetchedFrom: fetched.finalUrl, html, text, images });
+  prepared.push({ ...page, fetchedFrom: fetched.finalUrl, html, text, images, structure });
 }
 
 const brandFields = {
@@ -293,6 +333,6 @@ console.log(JSON.stringify({
     parent: PARENT.join("/"),
     directChildren: directChildren.map((c) => ({ title: c.title, path: c.path.join("/"), sourceUrl: c.sourceUrl })),
   },
-  pages: prepared.map((p) => ({ title: p.title, path: p.path.join("/"), fetchedFrom: p.fetchedFrom, sourceUrl: p.canonical, textLength: p.text.length, images: p.images.length })),
+  pages: prepared.map((p) => ({ title: p.title, path: p.path.join("/"), fetchedFrom: p.fetchedFrom, sourceUrl: p.canonical, textLength: p.text.length, images: p.images.length, structure: p.structure })),
   assets: imageRehoster.stats,
 }, null, 2));

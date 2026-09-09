@@ -32,6 +32,7 @@ import {
   abmResourcePagePath,
   isOfficialAbmResourceImageUrl,
 } from "@/lib/abm/resource-links";
+import "../abm-3d-landing.css";
 
 export const revalidate = 300;
 
@@ -833,12 +834,17 @@ function BulletsSection({ items }: { items: string[] }) {
   );
 }
 
-function HtmlBlock({ html, brandKey }: { html: string; brandKey: string }) {
+function HtmlBlock({ html, brandKey, landingVariant = "" }: { html: string; brandKey: string; landingVariant?: "" | "platforms" | "matrix" }) {
   const cleaned = safeHtmlForRender(html, brandKey);
   if (!cleaned) return null;
+  const landingFidelity = Boolean(landingVariant);
   return (
-    <section className="mt-8">
-      <HtmlContent html={cleaned} mode={brandKey === "abm" ? "abm-detail" : "default"} />
+    <section className={landingFidelity ? "mt-0" : "mt-8"}>
+      <HtmlContent
+        html={cleaned}
+        mode={landingFidelity ? "abm-landing" : brandKey === "abm" ? "abm-detail" : "default"}
+        className={landingFidelity ? `abm-3d-landing abm-3d-${landingVariant}` : undefined}
+      />
     </section>
   );
 }
@@ -917,7 +923,7 @@ function TopPublicationsSection({
   );
 }
 
-function renderContentBlocks(blocks: any[], brandKey: string, theme: Theme) {
+function renderContentBlocks(blocks: any[], brandKey: string, theme: Theme, landingVariant: "" | "platforms" | "matrix" = "") {
   if (!Array.isArray(blocks) || blocks.length === 0) return null;
 
   let renderedHtml = false;
@@ -934,7 +940,7 @@ function renderContentBlocks(blocks: any[], brandKey: string, theme: Theme) {
           if (renderedHtml) return null;
           renderedHtml = true;
           const html = typeof b?.html === "string" ? b.html : "";
-          return <HtmlBlock key={b._key || "html"} html={html} brandKey={brandKey} />;
+          return <HtmlBlock key={b._key || "html"} html={html} brandKey={brandKey} landingVariant={landingVariant} />;
         }
 
         if (type === "contentBlockBullets") {
@@ -1272,6 +1278,13 @@ export default async function AbmProductsPathPage({
   ];
 
   const pageTitle = stripBrandSuffix(category?.title || humanizeSegment(path[path.length - 1] || ""));
+  const is3dLandingFidelity = brandKey === "abm" && [
+    "cellular-materials/3d-and-organoid/3d-culture-platforms",
+    "cellular-materials/3d-and-organoid/3dcelmatrix",
+  ].includes(path.join("/"));
+  const landingVariant: "" | "platforms" | "matrix" = is3dLandingFidelity
+    ? path.at(-1) === "3dcelmatrix" ? "matrix" : "platforms"
+    : "";
 
   const blocks = Array.isArray(category?.contentBlocks)
     ? category.contentBlocks
@@ -1313,8 +1326,8 @@ export default async function AbmProductsPathPage({
           </aside>
 
           <main className="min-w-0">
-            <h1 className="text-3xl font-bold tracking-tight text-neutral-900">{pageTitle}</h1>
-            <CategoryLinkRail brandKey={brandKey} nodes={childCategoryNodes} />
+            {!is3dLandingFidelity ? <h1 className="text-3xl font-bold tracking-tight text-neutral-900">{pageTitle}</h1> : null}
+            {!is3dLandingFidelity ? <CategoryLinkRail brandKey={brandKey} nodes={childCategoryNodes} /> : null}
 
             {isKent && productsInCategory.length ? (
               <div className="mt-6">
@@ -1360,7 +1373,7 @@ export default async function AbmProductsPathPage({
             ) : null}
 
             {blocks.length ? (
-              renderContentBlocks(blocks, brandKey, theme)
+              renderContentBlocks(blocks, brandKey, theme, landingVariant)
             ) : fallbackHtml ? (
               <section className="mt-8">
                 <HtmlContent html={fallbackHtml} mode={brandKey === "abm" ? "abm-detail" : "default"} />
