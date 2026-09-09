@@ -1,3 +1,4 @@
+# Applies the recursive ABM desktop hover-flyout behavior while preserving active-path inline navigation.
 from pathlib import Path
 
 PAGE = Path("app/products/abm/[[...path]]/page.tsx")
