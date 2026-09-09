@@ -1,0 +1,201 @@
+name: Patch ABM Sidebar Hover Flyouts
+
+on:
+  push:
+    branches:
+      - agent/abm-3d-organoid-rebuild
+    paths:
+      - .github/workflows/patch-abm-sidebar-flyout.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/abm-3d-organoid-rebuild
+
+      - name: Apply recursive desktop flyouts and mobile fallback
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('app/products/abm/[[...path]]/page.tsx')
+          text = path.read_text()
+
+          start_marker = '  function Children({ nodes }: { nodes: TreeNode[] }) {'
+          end_marker = '  return (\n    <div className="overflow-hidden rounded-sm border border-neutral-200 bg-white shadow-sm">'
+          start = text.index(start_marker)
+          end = text.index(end_marker, start)
+
+          replacement = r'''  function FlyoutMenu({ nodes }: { nodes: TreeNode[] }) {
+    if (!nodes?.length) return null;
+
+    return (
+      <div className="w-[260px] rounded-lg border border-neutral-200 bg-white p-2 shadow-[0_14px_35px_rgba(0,0,0,0.14)]">
+        <div className="space-y-1">
+          {nodes.map((n) => {
+            const p = n.path.join("/");
+            const isActive = activePathStr === p;
+            const isOnTrail = isPrefix(activePathStr, p) && !isActive;
+            const hasChildren = !!n.children?.length;
+
+            return (
+              <div key={n.key} className="group/fly relative">
+                <Link
+                  href={nodeHref(n)}
+                  prefetch={false}
+                  className={[
+                    "flex min-h-9 items-center justify-between gap-3 rounded-md px-3 py-2 text-sm leading-5 transition",
+                    isActive
+                      ? `${theme.accentActiveBg} ${theme.accentActiveText} font-semibold`
+                      : isOnTrail
+                        ? `${theme.accentSoftBg} ${theme.accentText} font-semibold`
+                        : "text-neutral-700 hover:bg-neutral-50 hover:text-neutral-950",
+                  ].join(" ")}
+                >
+                  <span className="min-w-0 whitespace-normal">{stripBrandSuffix(n.title)}</span>
+                  {hasChildren ? <span className={theme.accentText} aria-hidden>›</span> : null}
+                </Link>
+
+                {hasChildren ? (
+                  <div className="absolute left-full top-0 z-[80] hidden pl-2 lg:group-hover/fly:block">
+                    <FlyoutMenu nodes={n.children} />
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  function InlineChildren({ nodes }: { nodes: TreeNode[] }) {
+    if (!nodes?.length) return null;
+
+    return (
+      <div className="mt-1 space-y-1 border-l border-neutral-200 pl-2">
+        {nodes.map((n) => {
+          const p = n.path.join("/");
+          const isActive = activePathStr === p;
+          const isOnTrail = isPrefix(activePathStr, p) && !isActive;
+          const hasChildren = !!n.children?.length;
+          const isOpen = hasChildren && (isActive || isOnTrail);
+
+          return (
+            <div key={n.key} className="group/sub relative">
+              <Link
+                href={nodeHref(n)}
+                prefetch={false}
+                className={[
+                  "flex items-center justify-between gap-2 rounded-md px-3 py-1.5 text-sm leading-5 transition",
+                  isActive
+                    ? `${theme.accentActiveBg} ${theme.accentActiveText} font-semibold`
+                    : isOnTrail
+                      ? `${theme.accentSoftBg} ${theme.accentText} font-semibold`
+                      : "text-neutral-700 hover:bg-neutral-50",
+                ].join(" ")}
+              >
+                <span className="min-w-0 whitespace-normal">{stripBrandSuffix(n.title)}</span>
+                {hasChildren ? <span className={theme.accentText} aria-hidden>›</span> : null}
+              </Link>
+
+              {hasChildren ? (
+                <>
+                  <div className="absolute left-full top-0 z-[70] hidden pl-2 lg:group-hover/sub:block">
+                    <FlyoutMenu nodes={n.children} />
+                  </div>
+                  <div className={isOpen ? "block lg:hidden" : "hidden"}>
+                    <InlineChildren nodes={n.children} />
+                  </div>
+                </>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  function NodeRow({ node }: { node: TreeNode }) {
+    const p = node.path.join("/");
+    const isActive = activePathStr === p;
+    const isOnTrail = isPrefix(activePathStr, p) && !isActive;
+    const hasChildren = !!node.children?.length;
+    const isOpen = hasChildren && (isActive || isOnTrail);
+
+    if (hasChildren) {
+      return (
+        <div className="group/section relative">
+          <Link
+            href={nodeHref(node)}
+            prefetch={false}
+            className={[
+              "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition",
+              isOpen
+                ? `${theme.accentSoftBg} ${theme.accentText} font-semibold`
+                : "text-neutral-800 hover:bg-neutral-50 hover:text-neutral-950",
+            ].join(" ")}
+          >
+            <span className="min-w-0 whitespace-normal">{stripBrandSuffix(node.title)}</span>
+            <span className={isOpen ? theme.accentText : "text-neutral-400"} aria-hidden>⌄</span>
+          </Link>
+
+          <div className="absolute left-full top-0 z-[60] hidden pl-2 lg:group-hover/section:block">
+            <FlyoutMenu nodes={node.children} />
+          </div>
+
+          {isOpen ? <InlineChildren nodes={node.children} /> : null}
+        </div>
+      );
+    }
+
+    return (
+      <Link
+        href={nodeHref(node)}
+        prefetch={false}
+        className={[
+          "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm transition",
+          isActive
+            ? `${theme.accentActiveBg} ${theme.accentActiveText} font-semibold`
+            : "text-neutral-800 hover:bg-neutral-50 hover:text-neutral-950",
+        ].join(" ")}
+      >
+        <span className="min-w-0 whitespace-normal">{stripBrandSuffix(node.title)}</span>
+        <span className="text-neutral-300" aria-hidden>›</span>
+      </Link>
+    );
+  }
+
+'''
+
+          updated = text[:start] + replacement + text[end:]
+          updated = updated.replace(
+              '<div className="overflow-hidden rounded-sm border border-neutral-200 bg-white shadow-sm">',
+              '<div className="overflow-visible rounded-lg border border-neutral-200 bg-white shadow-sm">',
+              1,
+          )
+
+          if updated == text:
+              raise SystemExit('No sidebar changes were applied')
+
+          path.write_text(updated)
+          PY
+
+      - name: Commit sidebar flyout behavior
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.name "haedalho"
+          git config user.email "limroq2@gmail.com"
+          git add 'app/products/abm/[[...path]]/page.tsx'
+          git commit -m "feat(abm): add recursive sidebar hover flyouts"
+          git push origin HEAD:agent/abm-3d-organoid-rebuild
