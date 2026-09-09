@@ -35,6 +35,7 @@ import {
   isOfficialAbmResourceImageUrl,
 } from "@/lib/abm/resource-links";
 import "../abm-3d-landing.css";
+import "../abm-cellular-category.css";
 
 export const revalidate = 300;
 
@@ -853,16 +854,50 @@ function BulletsSection({ items }: { items: string[] }) {
   );
 }
 
-function HtmlBlock({ html, brandKey, landingVariant = "" }: { html: string; brandKey: string; landingVariant?: "" | "platforms" | "matrix" }) {
+type CellularPresentation = "" | "collections" | "rich" | "catalog" | "editorial" | "article";
+
+function getCellularPresentation(pathStr: string, html: string): CellularPresentation {
+  if (!pathStr.startsWith("cellular-materials")) return "";
+  if (pathStr.startsWith("cellular-materials/3d-and-organoid/3d-culture-platforms")) return "";
+  if (pathStr.startsWith("cellular-materials/3d-and-organoid/3dcelmatrix")) return "";
+
+  // Cell Library pages already have their own bespoke renderer and styling.
+  if (pathStr.startsWith("cellular-materials/cell-library-collections")) return "";
+
+  if (/\bcollections-page\b/i.test(html)) return "collections";
+  if (/\b(?:lp-wrap|coating-page|stem-page)\b/i.test(html)) return "rich";
+  if (/<table\b/i.test(html)) return "catalog";
+  if (/\babm-categories-text\b/i.test(html)) return "editorial";
+  return "article";
+}
+
+function HtmlBlock({
+  html,
+  brandKey,
+  landingVariant = "",
+  cellularPresentation = "",
+}: {
+  html: string;
+  brandKey: string;
+  landingVariant?: "" | "platforms" | "matrix";
+  cellularPresentation?: CellularPresentation;
+}) {
   const cleaned = safeHtmlForRender(html, brandKey);
   if (!cleaned) return null;
   const landingFidelity = Boolean(landingVariant);
+  const embeddedCellularLanding = cellularPresentation === "collections" || cellularPresentation === "rich";
+  const className = landingFidelity
+    ? `abm-3d-landing abm-3d-${landingVariant}`
+    : cellularPresentation
+      ? `abm-cellular-category abm-cellular-${cellularPresentation}`
+      : undefined;
+
   return (
-    <section className={landingFidelity ? "mt-0" : "mt-8"}>
+    <section className={landingFidelity || embeddedCellularLanding ? "mt-0" : cellularPresentation ? "mt-6" : "mt-8"}>
       <HtmlContent
         html={cleaned}
-        mode={landingFidelity ? "abm-landing" : brandKey === "abm" ? "abm-detail" : "default"}
-        className={landingFidelity ? `abm-3d-landing abm-3d-${landingVariant}` : undefined}
+        mode={landingFidelity || embeddedCellularLanding ? "abm-landing" : brandKey === "abm" ? "abm-detail" : "default"}
+        className={className}
       />
     </section>
   );
@@ -942,7 +977,13 @@ function TopPublicationsSection({
   );
 }
 
-function renderContentBlocks(blocks: any[], brandKey: string, theme: Theme, landingVariant: "" | "platforms" | "matrix" = "") {
+function renderContentBlocks(
+  blocks: any[],
+  brandKey: string,
+  theme: Theme,
+  landingVariant: "" | "platforms" | "matrix" = "",
+  cellularPresentation: CellularPresentation = "",
+) {
   if (!Array.isArray(blocks) || blocks.length === 0) return null;
 
   let renderedHtml = false;
@@ -959,7 +1000,15 @@ function renderContentBlocks(blocks: any[], brandKey: string, theme: Theme, land
           if (renderedHtml) return null;
           renderedHtml = true;
           const html = typeof b?.html === "string" ? b.html : "";
-          return <HtmlBlock key={b._key || "html"} html={html} brandKey={brandKey} landingVariant={landingVariant} />;
+          return (
+            <HtmlBlock
+              key={b._key || "html"}
+              html={html}
+              brandKey={brandKey}
+              landingVariant={landingVariant}
+              cellularPresentation={cellularPresentation}
+            />
+          );
         }
 
         if (type === "contentBlockBullets") {
@@ -1313,6 +1362,9 @@ export default async function AbmProductsPathPage({
     : Array.isArray(category?.blocks)
       ? category.blocks
       : [];
+  const primaryHtml = blocks.find((block: any) => block?._type === "contentBlockHtml")?.html || "";
+  const cellularPresentation = getCellularPresentation(pathStr, typeof primaryHtml === "string" ? primaryHtml : "");
+  const hasEmbeddedCategoryHero = cellularPresentation === "collections" || cellularPresentation === "rich";
   const hasEmbeddedProductTable = blocks.some((block: any) => {
     const html = typeof block?.html === "string" ? block.html : "";
     return /<table\b/i.test(html) && /Product\s+(?:List|Name)|Cat\.?\s*No\.?/i.test(html);
@@ -1352,8 +1404,8 @@ export default async function AbmProductsPathPage({
           </aside>
 
           <main className="min-w-0">
-            {!is3dLandingFidelity ? <h1 className="text-3xl font-bold tracking-tight text-neutral-900">{pageTitle}</h1> : null}
-            {!is3dLandingFidelity ? <CategoryLinkRail brandKey={brandKey} nodes={childCategoryNodes} /> : null}
+            {!is3dLandingFidelity && !hasEmbeddedCategoryHero ? <h1 className="text-3xl font-bold tracking-tight text-neutral-900">{pageTitle}</h1> : null}
+            {!is3dLandingFidelity && !hasEmbeddedCategoryHero ? <CategoryLinkRail brandKey={brandKey} nodes={childCategoryNodes} /> : null}
 
             {isKent && productsInCategory.length ? (
               <div className="mt-6">
@@ -1399,7 +1451,7 @@ export default async function AbmProductsPathPage({
             ) : null}
 
             {blocks.length ? (
-              renderContentBlocks(blocks, brandKey, theme, landingVariant)
+              renderContentBlocks(blocks, brandKey, theme, landingVariant, cellularPresentation)
             ) : fallbackHtml ? (
               <section className="mt-8">
                 <HtmlContent html={fallbackHtml} mode={brandKey === "abm" ? "abm-detail" : "default"} />

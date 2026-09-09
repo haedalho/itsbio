@@ -56,6 +56,18 @@ function removeEmptyPrimarySpecificationRows(doc: Document) {
   });
 }
 
+/** Restore the official collection-card action that was reduced to an empty
+ * anchor during migration. Keeping this narrowly scoped avoids manufacturing
+ * labels for unrelated legacy links. */
+function restoreCollectionCardActions(doc: Document) {
+  doc.querySelectorAll<HTMLAnchorElement>(".collections-page .collection-card .card-actions a[href]").forEach((anchor) => {
+    if (collapseWs(anchor.textContent || "")) return;
+    const collectionName = collapseWs(anchor.closest(".collection-card")?.querySelector(".collection-name")?.textContent || "");
+    anchor.textContent = "View Collection";
+    if (collectionName) anchor.setAttribute("aria-label", `View ${collectionName}`);
+  });
+}
+
 function extractLegacyAbmTarget(href: string) {
   try {
     const url = new URL(href, "https://www.itsbio.co.kr");
@@ -758,6 +770,8 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"]
 
   // ✅ 7) 가독성 개선(문단 래핑)
   if (!isAbmLanding) improveReadability(doc);
+
+  if (isAbmLanding) restoreCollectionCardActions(doc);
 
   // 8) 빈 요소 정리
   doc.querySelectorAll("p, div, section, span, li").forEach((el) => {
