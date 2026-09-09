@@ -1,0 +1,75 @@
+name: Verify ABM 3D and Organoid Live
+
+on:
+  push:
+    branches:
+      - agent/abm-3d-organoid-rebuild
+    paths:
+      - .github/workflows/verify-abm-3d-organoid-live.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Verify current production after catalog cache window
+        shell: bash
+        run: |
+          set -euo pipefail
+          MATRIX="https://itsbio.vercel.app/products/abm/cellular-materials/3d-and-organoid"
+          SERVICE="https://itsbio.vercel.app/products/abm/services/cell-and-antibody-services/3d-and-organoid-services"
+
+          matrix_markers=(
+            "3DCelMatrix™ ECM Solution Product Highlights"
+            "Simple 5-Step 3D Cell Culture Workflow"
+            "3DCelMatrix™ Technical Specifications"
+            "Related Products for 3D Cell Culture Workflows"
+            "Frequently Asked Questions About 3DCelMatrix™"
+          )
+          service_markers=(
+            "Your research, in 3D. Custom organoid models built around your science."
+            "A project-based process built around you"
+            "Comprehensive support from start to finish"
+            "Purpose-built for every stage of drug discovery and disease research"
+            "Frequently asked questions"
+          )
+
+          for attempt in $(seq 1 12); do
+            echo "Production verification attempt ${attempt}/12"
+            matrix_html="$(curl -fsSL --retry 2 --retry-delay 2 "$MATRIX" || true)"
+            service_html="$(curl -fsSL --retry 2 --retry-delay 2 "$SERVICE" || true)"
+            matrix_ok=1
+            service_ok=1
+
+            for marker in "${matrix_markers[@]}"; do
+              if ! grep -Fq "$marker" <<<"$matrix_html"; then
+                matrix_ok=0
+                echo "matrix missing: $marker"
+              fi
+            done
+            if grep -Eiq 'Early Adopter Pricing|Limited Early Access Opportunity|\$[[:space:]]*[0-9]' <<<"$matrix_html"; then
+              matrix_ok=0
+              echo "matrix contains excluded commerce content"
+            fi
+
+            for marker in "${service_markers[@]}"; do
+              if ! grep -Fq "$marker" <<<"$service_html"; then
+                service_ok=0
+                echo "service missing: $marker"
+              fi
+            done
+
+            echo "matrix bytes=${#matrix_html} ok=${matrix_ok}; service bytes=${#service_html} ok=${service_ok}"
+            if [[ "$matrix_ok" == 1 && "$service_ok" == 1 ]]; then
+              echo "ABM 3D and Organoid live smoke checks passed."
+              exit 0
+            fi
+            sleep 20
+          done
+
+          echo "Live verification failed after the cache window." >&2
+          exit 1
