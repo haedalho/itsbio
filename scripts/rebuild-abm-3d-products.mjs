@@ -180,6 +180,7 @@ function assertLandingStructure(page, html) {
   const metrics = page.key === "platforms"
     ? {
         hero: count(".hero-banner"),
+        protocolIcon: count(".protocol-section .protocol-icon svg"),
         stats: count(".stats-strip .stat-box"),
         benefits: count(".feature-grid .feature-card"),
         formats: count(".format-grid .format-card"),
@@ -201,7 +202,7 @@ function assertLandingStructure(page, html) {
         pillars: count(".pillar-grid .pillar-card"),
       };
   const minimums = page.key === "platforms"
-    ? { hero: 1, stats: 5, benefits: 4, formats: 4, applications: 4, validatedFilters: 9, validatedRows: 60, validationGallery: 4, pillars: 4 }
+    ? { hero: 1, protocolIcon: 1, stats: 5, benefits: 4, formats: 4, applications: 4, validatedFilters: 9, validatedRows: 60, validationGallery: 4, pillars: 4 }
     : { hero: 1, highlights: 4, workflows: 5, applications: 5, specificationTables: 1, proofImages: 5, relatedRows: 6, faqs: 6, pillars: 4 };
   const missing = Object.entries(minimums).filter(([key, minimum]) => (metrics[key] || 0) < minimum);
   if (missing.length) {

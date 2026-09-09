@@ -60,14 +60,14 @@
 .abm-3d-landing .cta-row a { flex: 1 1 220px; max-width: 320px; text-decoration: none; }
 
 .abm-3d-landing .protocol-section { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 20px; align-items: center; margin: 28px auto 36px; padding: 22px 24px; border: 1px solid #f2d8ca; border-radius: 16px; background: #fff7f2; }
-.abm-3d-landing .protocol-icon { display: flex; width: 58px; height: 58px; align-items: center; justify-content: center; border: 1px solid #f2d8ca; border-radius: 14px; background: #fff; }
+.abm-3d-landing .protocol-icon { display: flex; grid-column: 1; grid-row: 1; width: 58px; height: 58px; align-items: center; justify-content: center; border: 1px solid #f2d8ca; border-radius: 14px; background: #fff; }
 .abm-3d-landing .protocol-icon svg,
 .abm-3d-landing .pillar-icon svg { fill: none; stroke: var(--abm-orange); stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
 .abm-3d-landing .protocol-icon svg { width: 30px; height: 30px; }
-.abm-3d-landing .protocol-copy { min-width: 0; }
+.abm-3d-landing .protocol-copy { grid-column: 2; grid-row: 1; min-width: 0; }
 .abm-3d-landing .protocol-copy h4 { margin: 0 0 6px; color: #222; font-size: 1.2em; line-height: 1.4; }
 .abm-3d-landing .protocol-copy p { margin: 0; line-height: 1.55; }
-.abm-3d-landing .protocol-button { min-width: 190px; line-height: 1.2; }
+.abm-3d-landing .protocol-button { grid-column: 3; grid-row: 1; width: auto; min-width: 190px; line-height: 1.2; }
 .abm-3d-landing .protocol-button:hover { background: #fff; color: var(--abm-orange) !important; box-shadow: 0 6px 16px rgb(233 98 37 / 18%); }
 
 .abm-3d-landing .section-block { margin-top: 46px; }
@@ -268,7 +268,7 @@
   .abm-3d-landing .cta-row a { flex-basis: 100%; max-width: 100%; }
   .abm-3d-landing .protocol-section { grid-template-columns: 52px 1fr; gap: 14px; padding: 20px; }
   .abm-3d-landing .protocol-icon { width: 50px; height: 50px; }
-  .abm-3d-landing .protocol-button { grid-column: 1 / -1; width: 100%; }
+  .abm-3d-landing .protocol-button { grid-column: 1 / -1; grid-row: auto; width: 100%; }
   .abm-3d-landing .validated-lines-header-row { display: block; }
   .abm-3d-landing .validated-lines-toggle { width: 100%; margin-top: 14px; }
   .abm-3d-landing .format-card-inner { grid-template-columns: 72px 1fr; gap: 12px; }
