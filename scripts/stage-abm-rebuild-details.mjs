@@ -310,12 +310,33 @@ const report = {
   imageMigration: imageRehoster.stats,
 };
 
+function transactionBatches(documents, maxDocuments = 20, maxBytes = 3_200_000) {
+  const batches = [];
+  let current = [];
+  let currentBytes = 0;
+  for (const document of documents) {
+    const documentBytes = Buffer.byteLength(JSON.stringify(document)) + 512;
+    if (current.length && (current.length >= maxDocuments || currentBytes + documentBytes > maxBytes)) {
+      batches.push(current);
+      current = [];
+      currentBytes = 0;
+    }
+    current.push(document);
+    currentBytes += documentBytes;
+  }
+  if (current.length) batches.push(current);
+  return batches;
+}
+
 if (!DRY) {
-  for (let index = 0; index < docs.length; index += 25) {
+  const batches = transactionBatches(docs);
+  let committed = 0;
+  for (const batch of batches) {
     let transaction = client.transaction();
-    for (const doc of docs.slice(index, index + 25)) transaction = transaction.createOrReplace(doc);
+    for (const doc of batch) transaction = transaction.createOrReplace(doc);
     await transaction.commit({ autoGenerateArrayKeys: true });
-    console.log(`[stage detail] ${Math.min(index + 25, docs.length)}/${docs.length}`);
+    committed += batch.length;
+    console.log(`[stage detail] ${committed}/${docs.length}`);
   }
   if (BATCH_KEY) {
     const batchIds = await client.fetch(`*[_type == "abmRebuildDetailChunk" && version == $version]._id`, { version: VERSION });
