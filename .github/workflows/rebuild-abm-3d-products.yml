@@ -1,0 +1,39 @@
+name: Rebuild ABM 3D Product Hierarchy
+
+on:
+  push:
+    branches:
+      - agent/abm-3d-organoid-rebuild
+    paths:
+      - scripts/rebuild-abm-3d-products.mjs
+      - .github/workflows/rebuild-abm-3d-products.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: Validate official product pages and requested side-tab structure
+        run: node scripts/rebuild-abm-3d-products.mjs
+      - name: Apply 3D product hierarchy to Sanity Production
+        run: node scripts/rebuild-abm-3d-products.mjs --apply
