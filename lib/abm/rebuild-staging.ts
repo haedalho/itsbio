@@ -336,9 +336,7 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
   }
 
   const record = await getAbmStagedRecord(kind, key);
-  if (!record) return undefined;
-
-  const detailKey = `${kind}:${String(record.sku || record.url).trim().toLowerCase()}`;
+  const detailKey = `${kind}:${String(record?.sku || record?.url || decodedKey).trim().toLowerCase()}`;
 
   // Read staged detail from the origin API rather than Sanity's CDN. Detail records
   // are occasionally backfilled after review (for example managed product media),
@@ -349,6 +347,24 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
     kind,
     key: detailKey,
   }, PUBLIC_CATALOG_CACHE);
+
+  // New products can appear first on an official collection landing page and
+  // receive a reviewed detail batch before the next full inventory census.
+  // A verified detail record is sufficient to render the canonical internal
+  // product page; it must not be forced through a temporary query fallback.
+  if (!record && staged && !isInvalidCollectedDetail(staged)) {
+    const direct = { ...staged } as AbmStagedDetail;
+    direct.kind = kind;
+    direct.sku = String(direct.sku || decodedKey).trim();
+    direct.title = String(direct.title || direct.sku || "ABM item").trim();
+    direct.url = String(direct.url || direct.sourceUrl || "").trim();
+    direct.sourceUrl = String(direct.sourceUrl || direct.url || "").trim();
+    direct.hasDetail = true;
+    direct.images = normalizedDetailImages(direct.previewImage, direct.images);
+    return direct;
+  }
+
+  if (!record) return undefined;
 
   if (staged && isInvalidCollectedDetail(staged)) {
     let images = normalizedDetailImages(record.previewImage);
