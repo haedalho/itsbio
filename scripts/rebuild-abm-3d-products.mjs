@@ -193,6 +193,7 @@ function assertLandingStructure(page, html) {
       }
     : {
         hero: count(".hero-banner"),
+        heroHeadline: count(".hero-banner h1"),
         highlights: count(".feature-grid .feature-card"),
         workflows: count(".workflow-grid .workflow-card"),
         applications: count(".application-grid .application-card"),
@@ -204,7 +205,7 @@ function assertLandingStructure(page, html) {
       };
   const minimums = page.key === "platforms"
     ? { hero: 1, heroHeadline: 1, protocolIcon: 1, stats: 5, benefits: 4, formats: 4, applications: 4, validatedFilters: 9, validatedRows: 60, validationGallery: 4, pillars: 4 }
-    : { hero: 1, highlights: 4, workflows: 5, applications: 5, specificationTables: 1, proofImages: 5, relatedRows: 6, faqs: 6, pillars: 4 };
+    : { hero: 1, heroHeadline: 1, highlights: 4, workflows: 5, applications: 5, specificationTables: 1, proofImages: 5, relatedRows: 6, faqs: 6, pillars: 4 };
   const missing = Object.entries(minimums).filter(([key, minimum]) => (metrics[key] || 0) < minimum);
   if (missing.length) {
     throw new Error(`${page.title}: source structure incomplete (${missing.map(([key, minimum]) => `${key}=${metrics[key] || 0}/${minimum}`).join(", ")})`);

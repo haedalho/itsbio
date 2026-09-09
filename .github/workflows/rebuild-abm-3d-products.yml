@@ -5,6 +5,8 @@ on:
     branches:
       - agent/abm-3d-organoid-rebuild
     paths:
+      - data/abm-cellular-taxonomy.json
+      - scripts/rebuild-abm-cellular-taxonomy.mjs
       - scripts/rebuild-abm-3d-products.mjs
       - .github/workflows/rebuild-abm-3d-products.yml
   workflow_dispatch:
@@ -37,3 +39,5 @@ jobs:
         run: node scripts/rebuild-abm-3d-products.mjs
       - name: Apply 3D product hierarchy to Sanity Production
         run: node scripts/rebuild-abm-3d-products.mjs --apply
+      - name: Import missing Cellular Materials pages and align the full hierarchy
+        run: node scripts/rebuild-abm-cellular-taxonomy.mjs --apply

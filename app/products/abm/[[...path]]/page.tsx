@@ -10,6 +10,7 @@ import AbmStagedCatalog from "@/components/products/AbmStagedCatalog";
 import AbmHeroBanner from "@/components/products/AbmHeroBanner";
 import AbmCatalogSideNav from "@/components/products/AbmCatalogSideNav";
 import AbmServiceLanding from "@/components/products/AbmServiceLanding";
+import abmCellularTaxonomy from "@/data/abm-cellular-taxonomy.json";
 import {
   ABM_PRODUCT_GROUPS,
   ABM_SERVICE_GROUPS,
@@ -420,43 +421,41 @@ function buildTreeFromAllCategories(roots: CatLite[], descendants: CatLite[]) {
   return rootNodes;
 }
 
-const ABM_CELLULAR_SIDEBAR_ITEMS = [
-  ["cell-library-collections", "Cell Library Collections"],
-  ["special-cell-line-collection", "Special Cell Line Collections"],
-  ["3d-and-organoid", "3D & Organoid"],
-  ["microbial-contamination", "Microbial Contamination"],
-  ["cell-immortalization-reagents", "Cell Immortalization Reagents"],
-  ["media-and-supplements", "Media & Supplements"],
-  ["growth-factors-and-cytokines", "Growth Factors and Cytokines"],
-  ["culture-consumables", "Culture Consumables"],
-  ["cell-assay-products", "Cell Assay Products"],
-  ["cell-culture-equipment", "Cell Culture Equipment"],
-] as const;
+type AbmCellularTaxonomyNode = {
+  slug: string;
+  title: string;
+  sourceUrl: string;
+  children?: AbmCellularTaxonomyNode[];
+};
 
 function normalizeAbmCellularSidebar(nodes: TreeNode[]) {
-  const flattened: TreeNode[] = [];
+  const existingByPath = new Map<string, TreeNode>();
   const visit = (items: TreeNode[]) => items.forEach((node) => {
-    flattened.push(node);
+    existingByPath.set(node.path.join("/"), node);
     visit(node.children || []);
   });
   visit(nodes);
 
-  const specialKey = "special-cell-line-collection";
-  return ABM_CELLULAR_SIDEBAR_ITEMS.flatMap(([key, title], order) => {
-    const node = flattened.find((candidate) =>
-      String(candidate.path.at(-1) || "").toLowerCase() === key
-    );
-    if (!node) return [];
-
-    return [{
-      ...node,
-      title,
+  const build = (
+    items: AbmCellularTaxonomyNode[],
+    parentPath: string[],
+  ): TreeNode[] => items.map((item, order) => {
+    const path = [...parentPath, item.slug];
+    const key = path.join("/");
+    const existing = existingByPath.get(key);
+    return {
+      key,
+      _id: existing?._id || `virtual-${key}`,
+      title: item.title,
+      path,
       order,
-      children: key === "cell-library-collections"
-        ? node.children.filter((child) => String(child.path.at(-1) || "").toLowerCase() !== specialKey)
-        : node.children,
-    }];
+      sourceUrl: item.sourceUrl,
+      isVirtual: !existing?._id,
+      children: build(item.children || [], path),
+    };
   });
+
+  return build(abmCellularTaxonomy as AbmCellularTaxonomyNode[], ["cellular-materials"]);
 }
 
 function findTreeNodeByPath(nodes: TreeNode[], path: string[]): TreeNode | undefined {
@@ -614,157 +613,70 @@ function SideNavTree({
 
   const isPrefix = (full: string, prefix: string) => full === prefix || full.startsWith(prefix + "/");
 
-  const LINE_LEFT = "hidden";
-  const DOT_LEFT = "hidden";
-  const ARROW_LEFT = "hidden";
-  const TEXT_OFFSET = "ml-3";
-
   function nodeHref(n: { path: string[] }) {
     return buildHref(brandKey, n.path);
   }
 
-  function Children({ nodes }: { nodes: TreeNode[] }) {
-    if (!nodes?.length) return null;
-
+  function TreeRows({ nodes, depth = 0 }: { nodes: TreeNode[]; depth?: number }) {
+    if (!nodes.length) return null;
     return (
-      <div className="relative">
-        <div className={`pointer-events-none absolute ${LINE_LEFT} top-0 h-full border-l border-dashed border-neutral-400`} />
-        <div className="space-y-1">
-          {nodes.map((n) => {
-            const p = n.path.join("/");
-            const isActive = activePathStr === p;
-
-            return (
-              <Link key={n.key} href={nodeHref(n)} prefetch={false} className="group/item relative block">
-                <span
-                  aria-hidden
-                  className={[
-                    "pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2",
-                    DOT_LEFT,
-                    "h-1.5 w-1.5 rounded-full transition",
-                    theme.accentDotBg,
-                    isActive ? "opacity-100 scale-125" : "opacity-0",
-                    "group-hover/item:opacity-100 group-hover/item:scale-110",
-                  ].join(" ")}
-                />
-                <span
-                  aria-hidden
-                  className={[
-                    "pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2",
-                    DOT_LEFT,
-                    "h-2.5 w-2.5 rounded-full border transition",
-                    theme.accentDotBorder,
-                    isActive ? "opacity-100" : "opacity-0",
-                    "group-hover/item:opacity-100",
-                  ].join(" ")}
-                />
-                <span
-                  aria-hidden
-                  className={[
-                    "pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2",
-                    ARROW_LEFT,
-                    "text-xs transition opacity-0 group-hover/item:opacity-100",
-                    theme.accentText,
-                    isActive ? "opacity-0" : "",
-                  ].join(" ")}
-                >
-                  ›
-                </span>
-
-                <span
-                  className={[
-                    "relative block px-2 py-1.5 text-sm leading-5 transition",
-                    TEXT_OFFSET,
-                    isActive
-                      ? `${theme.accentActiveBg} ${theme.accentActiveText} font-semibold`
-                      : "text-neutral-700 group-hover/item:bg-neutral-50",
-                  ].join(" ")}
-                >
-                  <span className="block min-w-0 truncate">{stripBrandSuffix(n.title)}</span>
-                </span>
+      <div className={depth ? "ml-4 space-y-0.5 border-l border-dashed border-orange-200 pl-3" : "space-y-1"}>
+        {nodes.map((node) => {
+          const nodePath = node.path.join("/");
+          const isActive = activePathStr === nodePath;
+          const isOnTrail = isPrefix(activePathStr, nodePath) && !isActive;
+          const hasChildren = node.children.length > 0;
+          const isOpen = hasChildren && (isActive || isOnTrail);
+          return (
+            <div key={node.key}>
+              <Link
+                href={nodeHref(node)}
+                prefetch={false}
+                className={[
+                  "group flex min-h-10 items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-[13px] leading-5 transition",
+                  isActive
+                    ? `${theme.accentActiveBg} ${theme.accentActiveText} font-semibold`
+                    : isOnTrail
+                      ? `${theme.accentSoftBg} ${theme.accentText} font-semibold`
+                      : "text-neutral-700 hover:bg-neutral-50 hover:text-neutral-950",
+                ].join(" ")}
+              >
+                <span className="min-w-0">{stripBrandSuffix(node.title)}</span>
+                {hasChildren ? (
+                  <span className={isOpen ? theme.accentText : "text-neutral-300 group-hover:text-neutral-500"} aria-hidden>
+                    {isOpen ? "⌃" : "⌄"}
+                  </span>
+                ) : (
+                  <span className="text-neutral-300 opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" aria-hidden>›</span>
+                )}
               </Link>
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
-
-  function NodeRow({ node }: { node: TreeNode }) {
-    const p = node.path.join("/");
-    const isActive = activePathStr === p;
-    const isOnTrail = isPrefix(activePathStr, p) && !isActive;
-    const hasChildren = !!node.children?.length;
-    const isOpen = hasChildren && (isActive || isOnTrail);
-
-    if (hasChildren) {
-      return (
-        <div className="group/section">
-          <Link
-            href={nodeHref(node)}
-            prefetch={false}
-            className={[
-              "flex items-center justify-between px-2 py-1.5 text-sm transition",
-              isOpen ? `${theme.accentText} font-semibold` : "text-neutral-800 hover:bg-neutral-50",
-            ].join(" ")}
-          >
-            <div className="min-w-0 flex items-center gap-2">
-              <span className={isOpen ? theme.accentText : "text-neutral-300"} aria-hidden>
-                ⌄
-              </span>
-              <span className="truncate">{stripBrandSuffix(node.title)}</span>
+              {isOpen ? <TreeRows nodes={node.children} depth={depth + 1} /> : null}
             </div>
-
-            <span className={isOpen ? `${theme.accentText} text-xs` : "text-neutral-300"} aria-hidden>
-              {isOpen ? "^" : "›"}
-            </span>
-          </Link>
-
-          <div className={isOpen ? "block" : "hidden group-hover/section:block"}>
-            <Children nodes={node.children} />
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <Link
-        href={nodeHref(node)}
-        prefetch={false}
-        className={[
-          "flex items-center justify-between px-2 py-1.5 text-sm transition",
-          isActive ? `${theme.accentActiveBg} ${theme.accentActiveText} font-semibold` : "text-neutral-800 hover:bg-neutral-50",
-        ].join(" ")}
-      >
-        <span className="min-w-0 truncate">{stripBrandSuffix(node.title)}</span>
-        <span className="text-neutral-300" aria-hidden>
-          ›
-        </span>
-      </Link>
+          );
+        })}
+      </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-sm border border-neutral-200 bg-white shadow-sm">
-      <div className="border-b border-neutral-200 bg-neutral-100 px-5 py-3">
-        <div className={`text-xl font-bold ${theme.accentText}`}>{isKentMode ? stripBrandSuffix(activeRootTitle) : "All Products"}</div>
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className={`border-b border-orange-100 ${isKentMode ? "bg-blue-50" : "bg-orange-50"} px-5 py-4`}>
+        <div className={`text-base font-semibold ${theme.accentText}`}>{isKentMode ? stripBrandSuffix(activeRootTitle) : "All Products"}</div>
       </div>
 
-      <div className="p-3">
+      <nav className="max-h-[calc(100vh-170px)] overflow-y-auto p-2" aria-label="Product categories">
         {!isKentMode && activeRoot ? (
-          <>
-            <Link href={buildHref(brandKey, [activeRoot])} prefetch={false} className="flex items-center justify-between px-2 py-2 text-sm font-semibold text-[#dc5a2b]">
-              <span>{stripBrandSuffix(activeRootTitle)}</span><span aria-hidden>⌃</span>
-            </Link>
-          </>
+          <Link href={buildHref(brandKey, [activeRoot])} prefetch={false} className="mb-1 flex min-h-10 items-center justify-between rounded-xl bg-orange-50 px-3 py-2.5 text-[13px] font-semibold text-[#dc5a2b]">
+            <span>{stripBrandSuffix(activeRootTitle)}</span><span aria-hidden>⌃</span>
+          </Link>
         ) : null}
 
-        <div className="space-y-1">
+        <div>
           {activeRootTree?.length ? (
-            activeRootTree.map((n) => <NodeRow key={n.key} node={n} />)
+            <TreeRows nodes={activeRootTree} />
           ) : (
             !activeRoot ? roots.map((root) => (
-              <Link key={root._id} href={buildHref(brandKey, root.path)} prefetch={true} className="flex items-center justify-between px-2 py-2 text-sm font-semibold text-neutral-800 hover:text-[#dc5a2b]">
+              <Link key={root._id} href={buildHref(brandKey, root.path)} prefetch={true} className="flex min-h-10 items-center justify-between rounded-xl px-3 py-2.5 text-[13px] font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-[#dc5a2b]">
                 <span>{stripBrandSuffix(root.title)}</span><span aria-hidden>⌄</span>
               </Link>
             )) : null
@@ -772,13 +684,13 @@ function SideNavTree({
         </div>
 
         {!isKentMode && activeRoot ? (
-          <div className="mt-2 border-t border-neutral-200 pt-2">
+          <div className="mt-2 border-t border-slate-200 pt-2">
             {roots.filter((root) => root.path?.[0] !== activeRoot).map((root) => (
                 <Link
                   key={root._id}
                   href={buildHref(brandKey, root.path)}
                   prefetch={true}
-                  className="flex items-center justify-between px-2 py-2 text-sm font-semibold text-neutral-800 hover:text-[#dc5a2b]"
+                  className="flex min-h-10 items-center justify-between rounded-xl px-3 py-2.5 text-[13px] font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-[#dc5a2b]"
                 >
                   <span className="min-w-0 truncate">{stripBrandSuffix(root.title)}</span>
                   <span aria-hidden>⌄</span>
@@ -788,14 +700,14 @@ function SideNavTree({
         ) : null}
 
         {!isKentMode ? (
-          <div className="mt-3 border-t border-neutral-200 pt-3">
-            <div className="px-2 pb-2 text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">Services</div>
+          <div className="mt-3 border-t border-slate-200 pt-3">
+            <div className="px-3 pb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-neutral-500">Services</div>
             {ABM_SERVICE_GROUPS.map((group) => (
               <Link
                 key={group.slug}
                 href={group.href}
                 prefetch={true}
-                className="flex items-center justify-between px-2 py-2 text-sm font-semibold text-neutral-800 hover:text-[#dc5a2b]"
+                className="flex min-h-10 items-center justify-between rounded-xl px-3 py-2.5 text-[13px] font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-[#dc5a2b]"
               >
                 <span>{group.title}</span>
                 <span className="text-neutral-300" aria-hidden>›</span>
@@ -803,7 +715,7 @@ function SideNavTree({
             ))}
           </div>
         ) : null}
-      </div>
+      </nav>
     </div>
   );
 }
