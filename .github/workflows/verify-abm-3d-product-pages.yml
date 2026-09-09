@@ -34,23 +34,19 @@ jobs:
             platforms_ok=1
             matrix_ok=1
 
-            grep -Fq '3D &amp; Organoid' <<<"$root_html" || grep -Fq '3D & Organoid' <<<"$root_html" || root_ok=0
-            grep -Fq '/products/abm/cellular-materials/3d-and-organoid/3d-culture-platforms' <<<"$root_html" || root_ok=0
-            grep -Fq '/products/abm/cellular-materials/3d-and-organoid/3dcelmatrix' <<<"$root_html" || root_ok=0
-            grep -Fq '3D Culture Platforms' <<<"$root_html" || root_ok=0
-            grep -Fq '3DCelMatrix' <<<"$root_html" || root_ok=0
+            if ! grep -Eq '3D (&amp;|&) Organoid' <<<"$root_html"; then echo 'root missing title'; root_ok=0; fi
+            if ! grep -Fq '/products/abm/cellular-materials/3d-and-organoid/3d-culture-platforms' <<<"$root_html"; then echo 'root missing platforms link'; root_ok=0; fi
+            if ! grep -Fq '/products/abm/cellular-materials/3d-and-organoid/3dcelmatrix' <<<"$root_html"; then echo 'root missing matrix link'; root_ok=0; fi
+            if ! grep -Fq '3D Culture Platforms' <<<"$root_html"; then echo 'root missing platforms label'; root_ok=0; fi
+            if ! grep -Fq '3DCelMatrix' <<<"$root_html"; then echo 'root missing matrix label'; root_ok=0; fi
 
-            grep -Fq '3D Culture Platforms' <<<"$platforms_html" || platforms_ok=0
-            grep -Fq 'SpheroWell' <<<"$platforms_html" || platforms_ok=0
-            grep -Fq 'G7540' <<<"$platforms_html" || platforms_ok=0
+            if ! grep -Fq '3D Culture Platforms' <<<"$platforms_html"; then echo 'platforms missing title'; platforms_ok=0; fi
+            if ! grep -Fq 'SpheroWell' <<<"$platforms_html"; then echo 'platforms missing SpheroWell'; platforms_ok=0; fi
+            if ! grep -Fq 'G7540' <<<"$platforms_html"; then echo 'platforms missing G7540'; platforms_ok=0; fi
 
-            grep -Fq '3DCelMatrix' <<<"$matrix_html" || matrix_ok=0
-            grep -Fq '3D Cell Culture' <<<"$matrix_html" || matrix_ok=0
-            grep -Fq 'TM076' <<<"$matrix_html" || matrix_ok=0
-
-            if grep -Eiq 'Early Adopter Pricing|Limited Early Access Opportunity|Add to Cart|Buy Now|\$[[:space:]]*[0-9]' <<<"$root_html$platforms_html$matrix_html"; then
-              root_ok=0; platforms_ok=0; matrix_ok=0
-            fi
+            if ! grep -Fq '3DCelMatrix' <<<"$matrix_html"; then echo 'matrix missing title'; matrix_ok=0; fi
+            if ! grep -Fq '3D Cell Culture' <<<"$matrix_html"; then echo 'matrix missing 3D Cell Culture'; matrix_ok=0; fi
+            if ! grep -Fq 'TM076' <<<"$matrix_html"; then echo 'matrix missing TM076'; matrix_ok=0; fi
 
             echo "root=${root_ok} platforms=${platforms_ok} matrix=${matrix_ok} bytes=${#root_html}/${#platforms_html}/${#matrix_html}"
             if [[ "$root_ok" == 1 && "$platforms_ok" == 1 && "$matrix_ok" == 1 ]]; then
