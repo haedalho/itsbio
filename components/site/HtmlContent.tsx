@@ -94,6 +94,110 @@ function restoreCollectionCardActions(doc: Document) {
   });
 }
 
+function normalizedTableHeader(value: string) {
+  return collapseWs(value)
+    .toLowerCase()
+    .replace(/[.:#()]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isCatalogNumberHeader(value: string) {
+  const header = normalizedTableHeader(value);
+  return /^(?:cat(?:alog)?\s*(?:no|number)?|catalog\s*(?:no|number)|sku|item\s*(?:no|number))$/.test(header);
+}
+
+function isProductNameHeader(value: string) {
+  const header = normalizedTableHeader(value);
+  return /^(?:product(?:\s+(?:name|description))?(?:\s*\/\s*(?:name|description))?|name|description|cell(?:\s+line)?(?:\s+name)?|model(?:\s+name)?)$/.test(header);
+}
+
+function validCatalogNumber(value: string) {
+  const sku = collapseWs(value).replace(/\s+/g, "");
+  return sku.length >= 2
+    && sku.length <= 64
+    && /\d/.test(sku)
+    && /^[a-z0-9][a-z0-9._+\/-]*$/i.test(sku);
+}
+
+/**
+ * Migrated collection pages contain authoritative product rows, but the
+ * source HTML often renders Cat. No. and Product Name as plain text. Turn
+ * those rows into native internal product links and preserve enough row
+ * context for newly published products that are not in the staged corpus yet.
+ */
+function linkAbmProductTableRows(doc: Document) {
+  doc.querySelectorAll<HTMLTableElement>("table").forEach((table) => {
+    const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>("tr"));
+    let headerRow: HTMLTableRowElement | undefined;
+    let headers: string[] = [];
+    let skuIndex = -1;
+    let nameIndex = -1;
+
+    for (const row of rows.slice(0, 6)) {
+      const candidateHeaders = Array.from(row.children).map((cell) => collapseWs(cell.textContent || ""));
+      const candidateSkuIndex = candidateHeaders.findIndex(isCatalogNumberHeader);
+      const candidateNameIndex = candidateHeaders.findIndex(isProductNameHeader);
+      if (candidateSkuIndex >= 0 && candidateNameIndex >= 0 && candidateSkuIndex !== candidateNameIndex) {
+        headerRow = row;
+        headers = candidateHeaders;
+        skuIndex = candidateSkuIndex;
+        nameIndex = candidateNameIndex;
+        break;
+      }
+    }
+
+    if (!headerRow) return;
+
+    const categoryIndex = headers.findIndex((header) => /^(?:category|model type|cell type|bio system)$/.test(normalizedTableHeader(header)));
+    const unitIndex = headers.findIndex((header) => /^(?:unit|size|format|pack size)$/.test(normalizedTableHeader(header)));
+
+    rows.forEach((row) => {
+      if (row === headerRow || row.classList.contains("abm-table-section-row")) return;
+      const cells = Array.from(row.children) as HTMLElement[];
+      if (cells.length <= Math.max(skuIndex, nameIndex)) return;
+
+      const sku = collapseWs(cells[skuIndex]?.textContent || "").replace(/\s+/g, "");
+      const name = collapseWs(cells[nameIndex]?.textContent || "");
+      if (!validCatalogNumber(sku) || !name) return;
+
+      const query = new URLSearchParams({ name });
+      const category = categoryIndex >= 0 ? collapseWs(cells[categoryIndex]?.textContent || "") : "";
+      const unit = unitIndex >= 0 ? collapseWs(cells[unitIndex]?.textContent || "") : "";
+      if (category) query.set("category", category);
+      if (unit) query.set("unit", unit);
+      const href = `/products/abm/staged/product/${encodeURIComponent(sku)}?${query.toString()}`;
+
+      row.dataset.href = href;
+      row.classList.add("abm-product-row");
+      row.setAttribute("role", "link");
+      row.setAttribute("tabindex", "0");
+      row.setAttribute("aria-label", `View ${name} (${sku})`);
+
+      [cells[nameIndex], cells[skuIndex]].forEach((cell) => {
+        if (!cell) return;
+        const existingAnchors = Array.from(cell.querySelectorAll<HTMLAnchorElement>("a"));
+        if (existingAnchors.length) {
+          existingAnchors.forEach((anchor) => {
+            anchor.classList.add("abm-product-table-link");
+            anchor.setAttribute("href", href);
+            anchor.setAttribute("aria-label", `View ${name} (${sku})`);
+            anchor.removeAttribute("target");
+            anchor.removeAttribute("rel");
+          });
+          return;
+        }
+        const anchor = doc.createElement("a");
+        anchor.className = "abm-product-table-link";
+        anchor.setAttribute("href", href);
+        anchor.setAttribute("aria-label", `View ${name} (${sku})`);
+        while (cell.firstChild) anchor.appendChild(cell.firstChild);
+        cell.appendChild(anchor);
+      });
+    });
+  });
+}
+
 function extractLegacyAbmTarget(href: string) {
   try {
     const url = new URL(href, "https://www.itsbio.co.kr");
@@ -609,7 +713,7 @@ function isManagedAbmImage(src: string) {
   }
 }
 
-function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"] = "default") {
+export function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"] = "default") {
   if (!rawHtml) return "";
 
   // ✅ 0) 문자열 레벨 전처리
@@ -794,6 +898,8 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"]
     }
   });
 
+  if (isAbmMode) linkAbmProductTableRows(doc);
+
   // ✅ 7) 가독성 개선(문단 래핑)
   if (!isAbmLanding) improveReadability(doc);
 
@@ -827,7 +933,7 @@ export default function HtmlContent({ html, className, baseUrl, mode = "default"
   }, [input, base, mode]);
 
   useEffect(() => {
-    if (mode !== "abm-landing" || !renderHtml) return;
+    if (!mode.startsWith("abm-") || !renderHtml) return;
     const root = contentRef.current;
     if (!root) return;
 
@@ -897,7 +1003,10 @@ export default function HtmlContent({ html, className, baseUrl, mode = "default"
       }
 
       const row = target.closest<HTMLElement>("tr[data-href], tr[data-link]");
-      if (row) activateRow(row);
+      if (row && !target.closest("a")) {
+        activateRow(row);
+        return;
+      }
 
       const collectionCard = target.closest<HTMLElement>(".collections-page .collection-card[data-collection-href]");
       if (collectionCard && !target.closest("a")) {
@@ -912,8 +1021,9 @@ export default function HtmlContent({ html, className, baseUrl, mode = "default"
         return;
       }
       if (event.key !== "Enter" && event.key !== " ") return;
-      const row = (event.target as HTMLElement).closest<HTMLElement>("tr[data-href], tr[data-link]");
-      if (row) {
+      const target = event.target as HTMLElement;
+      const row = target.closest<HTMLElement>("tr[data-href], tr[data-link]");
+      if (row && !target.closest("a")) {
         event.preventDefault();
         activateRow(row);
         return;

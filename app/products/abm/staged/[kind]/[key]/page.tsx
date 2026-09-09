@@ -31,12 +31,30 @@ function usableIntroHtml(introHtml?: string, description?: string) {
 
 export default async function AbmStagedDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ kind: string; key: string }>;
+  searchParams?: Promise<{ name?: string; category?: string; unit?: string }>;
 }) {
-  const { kind, key } = await params;
+  const [{ kind, key }, fallback] = await Promise.all([params, searchParams]);
   if (kind !== "product" && kind !== "service") notFound();
-  const record = await getAbmStagedDetail(kind, decodeURIComponent(key));
+  const decodedKey = decodeURIComponent(key);
+  const stagedRecord = await getAbmStagedDetail(kind, decodedKey);
+  const fallbackName = String(fallback?.name || "").replace(/\s+/g, " ").trim().slice(0, 240);
+  const fallbackCategory = String(fallback?.category || "").replace(/\s+/g, " ").trim().slice(0, 120);
+  const fallbackUnit = String(fallback?.unit || "").replace(/\s+/g, " ").trim().slice(0, 120);
+  const record = stagedRecord || (kind === "product" && fallbackName ? {
+    kind: "product" as const,
+    sku: decodedKey,
+    title: fallbackName,
+    url: "",
+    unit: fallbackUnit || undefined,
+    category: fallbackCategory || undefined,
+    searchCategory: fallbackCategory || undefined,
+    hasDetail: false,
+    sourceUrl: "",
+    images: [],
+  } : undefined);
   if (!record) notFound();
 
   const title = record.title || record.sku || "ABM item";

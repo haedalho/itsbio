@@ -482,6 +482,22 @@
 .abm-cellular-catalog .abm-data-table th:first-child { width: auto; }
 .abm-cellular-catalog .abm-data-table tbody tr:nth-child(even):not(.abm-table-section-row) { background: #fcfcfc; }
 .abm-cellular-catalog .abm-data-table tbody tr:hover { background: #fff7f2; }
+.abm-cellular-category .abm-product-row { cursor: pointer; }
+.abm-cellular-category .abm-product-row:focus-visible {
+  position: relative;
+  outline: 3px solid rgb(233 98 37 / 28%);
+  outline-offset: -3px;
+}
+.abm-cellular-category .abm-product-table-link {
+  color: var(--cellular-orange-dark);
+  font-weight: 700;
+  text-decoration: none;
+}
+.abm-cellular-category .abm-product-table-link:hover {
+  color: var(--cellular-orange);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 
 @media (max-width: 1100px) {
   .abm-cellular-collections .hero-grid,
