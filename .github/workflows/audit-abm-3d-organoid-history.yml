@@ -1,0 +1,34 @@
+name: Audit ABM 3D Organoid git history
+
+on:
+  push:
+    branches:
+      - agent/audit-abm-3d-organoid-drift
+    paths:
+      - .github/workflows/audit-abm-3d-organoid-history.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  history:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Trace 3DCelMatrix and 3D Organoid changes
+        run: |
+          echo '===== commits touching 3DCelMatrix text ====='
+          git log --all --date=iso --pretty='format:%H %ad %s' -S'3DCelMatrix' -- . || true
+          echo
+          echo '===== commits matching 3D/organoid diffs ====='
+          git log --all --date=iso --pretty='format:%H %ad %s' -G'3D.?(&|and)?.?Organoid|3d.?organoid|organoid' -- . | head -120 || true
+          echo
+          echo '===== files in historical commits with 3DCelMatrix ====='
+          for sha in $(git log --all --format='%H' -S'3DCelMatrix' -- . | head -40); do
+            echo "--- $sha ---"
+            git show --name-status --format='%H %ad %s' --date=iso "$sha" | head -100
+          done
