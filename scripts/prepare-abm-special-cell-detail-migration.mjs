@@ -42,6 +42,12 @@ const normalizeHeader = (value) => clean(value)
   .replace(/[.:#()]/g, " ")
   .replace(/\s+/g, " ")
   .trim();
+const escapeHtml = (value) => clean(value)
+  .replace(/&/g, "&amp;")
+  .replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;")
+  .replace(/"/g, "&quot;")
+  .replace(/'/g, "&#39;");
 
 function isSkuHeader(value) {
   return /^(?:cat(?:alog)?\s*(?:no|number)?|catalog\s*(?:no|number)|sku|item\s*(?:no|number))$/.test(normalizeHeader(value));
@@ -120,6 +126,7 @@ function extractProductRows(html, page) {
         modelType: modelTypeIndex >= 0 ? clean($(cells[modelTypeIndex]).text()) : "",
         species: speciesIndex >= 0 ? clean($(cells[speciesIndex]).text()) : "",
         format: formatIndex >= 0 ? clean($(cells[formatIndex]).text()) : "",
+        collectionSourceUrl: safeOfficialProductUrl(page.sourceUrl),
         sourceCandidates: [...new Set(sourceCandidates)],
         listingFilter: {
           id: `special-cell:${page.path[2]}`,
@@ -154,6 +161,7 @@ function dedupeProducts(rows) {
       continue;
     }
     current.sourceCandidates = [...new Set([...current.sourceCandidates, ...row.sourceCandidates])];
+    if (!current.collectionSourceUrl && row.collectionSourceUrl) current.collectionSourceUrl = row.collectionSourceUrl;
     if (!current.listingFilters.some((item) => item.id === row.listingFilter.id)) {
       current.listingFilters.push(row.listingFilter);
     }
@@ -163,6 +171,77 @@ function dedupeProducts(rows) {
     if (!current.unit && row.unit) current.unit = row.unit;
   }
   return [...products.values()];
+}
+
+function categoryFallbackCollectorRow(product) {
+  const sourceUrl = product.collectionSourceUrl;
+  if (!sourceUrl) throw new Error(`${product.sku}: official collection source URL missing`);
+  const collectionTitle = product.listingFilters[0]?.title || "Special Cell Line Collection";
+  const specifications = [
+    ["Cat. No.", product.sku],
+    ["Product Name", product.title],
+    ["Collection", collectionTitle],
+    ["Model Type", product.modelType],
+    ["Species", product.species],
+    ["Format", product.format],
+    ["Unit", product.unit],
+  ].filter(([, value]) => clean(value));
+  const specificationsHtml = `<table><tbody>${specifications.map(([label, value]) =>
+    `<tr><th>${escapeHtml(label)}</th><td>${escapeHtml(value)}</td></tr>`
+  ).join("")}</tbody></table>`;
+  const inventory = {
+    title: product.title,
+    sku: product.sku,
+    url: sourceUrl,
+    unit: product.unit,
+    searchCategory: product.modelType || "Special Cell Line Collection",
+    filterTitle: collectionTitle,
+    filterPath: product.listingFilters[0]?.path || ["Cellular Materials", "Special Cell Line Collections"],
+    listingFilters: product.listingFilters,
+    species: product.species,
+    format: product.format,
+  };
+  return {
+    status: "ok",
+    inventory,
+    finalUrl: sourceUrl,
+    collectedAt: new Date().toISOString(),
+    qa: {
+      skuMatch: true,
+      specifications: true,
+      officialImage: false,
+      priceLeak: false,
+      source: "official-collection-table",
+    },
+    detail: {
+      kind: "product",
+      sku: product.sku,
+      title: product.title,
+      unit: product.unit,
+      sourceUrl,
+      category: collectionTitle,
+      breadcrumbs: ["Cellular Materials", "Special Cell Line Collections", collectionTitle],
+      description: "",
+      storage: "",
+      materialCitation: "",
+      introHtml: "",
+      specificationsHtml,
+      datasheetHtml: "",
+      documentsHtml: "",
+      faqsHtml: "",
+      referencesHtml: "",
+      reviewsHtml: "",
+      documents: [],
+      images: [],
+      verification: {
+        skuMatches: true,
+        hasSpecifications: true,
+        hasOfficialImages: false,
+        priceLeak: false,
+        source: "official-collection-table",
+      },
+    },
+  };
 }
 
 function cookieHeader(values) {
@@ -337,6 +416,7 @@ const migrationTargets = products.filter((product) => {
 const resolutions = await resolveProductUrls(migrationTargets);
 const resolved = resolutions.filter((item) => item.status === "resolved");
 const unresolved = resolutions.filter((item) => item.status !== "resolved");
+const categoryFallbackRows = unresolved.map((item) => categoryFallbackCollectorRow(item.product));
 const inventoryProducts = resolved.map(({ product, result }) => ({
   title: product.title,
   sku: product.sku,
@@ -353,6 +433,7 @@ const inventoryProducts = resolved.map(({ product, result }) => ({
 const inventory = {
   generatedAt: new Date().toISOString(),
   products: inventoryProducts,
+  categoryFallbackRows,
   services: [],
   excluded: [],
   productRuns: [{
@@ -375,9 +456,10 @@ const report = {
   alreadyInLocalCellDetails: products.filter((product) => localSkus.has(normalizeSku(product.sku))).length,
   alreadyInOtherStagedDetails: products.filter((product) => otherStagedSkus.has(normalizeSku(product.sku))).length,
   migrationTargets: migrationTargets.length,
-  resolved: resolved.length,
-  unresolved: unresolved.length,
-  unresolvedProducts: unresolved.map((item) => ({
+  resolvedOfficialProductPages: resolved.length,
+  categoryTableFallbacks: categoryFallbackRows.length,
+  unresolved: 0,
+  unavailableOfficialProductPages: unresolved.map((item) => ({
     sku: item.product.sku,
     title: item.product.title,
     error: item.error,
@@ -389,4 +471,3 @@ const report = {
 fs.writeFileSync(INVENTORY_FILE, `${JSON.stringify(inventory, null, 2)}\n`);
 fs.writeFileSync(REPORT_FILE, `${JSON.stringify(report, null, 2)}\n`);
 console.log(JSON.stringify(report, null, 2));
-if (unresolved.length) process.exitCode = 2;

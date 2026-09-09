@@ -40,7 +40,10 @@ const documents = await client.fetch(`*[
   && _id match $prefix
 ]{_id,records}`, { version: VERSION, prefix: `${prefix}*` });
 const records = documents.flatMap((document) => document.records || []);
-const expectedSkus = new Set((inventory.products || []).map((product) => normalizedSku(product.sku)));
+const expectedSkus = new Set([
+  ...(inventory.products || []).map((product) => normalizedSku(product.sku)),
+  ...(inventory.categoryFallbackRows || []).map((row) => normalizedSku(row?.inventory?.sku)),
+]);
 const actualSkus = records.map((record) => normalizedSku(record.sku));
 const actualSet = new Set(actualSkus);
 const duplicates = actualSkus.filter((sku, index) => actualSkus.indexOf(sku) !== index);
@@ -64,6 +67,8 @@ const report = {
   batchKey: BATCH_KEY,
   preparedTargets: prepare.migrationTargets,
   unresolvedDuringPreparation: prepare.unresolved,
+  officialProductPages: prepare.resolvedOfficialProductPages,
+  officialCollectionTableFallbacks: prepare.categoryTableFallbacks,
   expected: expectedSkus.size,
   staged: records.length,
   uniqueStaged: actualSet.size,

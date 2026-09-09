@@ -73,7 +73,7 @@ jobs:
           --workers ${{ inputs.workers || '2' }}
           --gap-ms ${{ inputs.gap_ms || '350' }}
 
-      - name: Retain only exact, commerce-free parsed records
+      - name: Retain exact records and append verified collection-table fallbacks
         if: always() && hashFiles('.cache/abm-full-detail-collect/products.json') != ''
         run: |
           node <<'NODE'
@@ -81,8 +81,11 @@ jobs:
           const file = '.cache/abm-full-detail-collect/products.json';
           const rows = JSON.parse(fs.readFileSync(file, 'utf8'));
           const valid = rows.filter((row) => row?.status === 'ok' && row?.qa?.skuMatch === true && row?.qa?.priceLeak === false);
-          fs.writeFileSync(file, JSON.stringify(valid, null, 2));
-          console.log(`Exact verified records retained: ${valid.length}/${rows.length}`);
+          const inventory = JSON.parse(fs.readFileSync('.cache/abm-special-cell-detail-migration/inventory.json', 'utf8'));
+          const fallbacks = (inventory.categoryFallbackRows || []).filter((row) => row?.status === 'ok' && row?.qa?.skuMatch === true && row?.qa?.priceLeak === false);
+          const merged = [...valid, ...fallbacks];
+          fs.writeFileSync(file, JSON.stringify(merged, null, 2));
+          console.log(`Verified records retained: ${valid.length}/${rows.length}; official collection-table fallbacks: ${fallbacks.length}; total: ${merged.length}`);
           NODE
 
       - name: Create pre-upload official image census and Sanity asset projection

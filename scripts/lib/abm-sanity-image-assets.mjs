@@ -4,7 +4,9 @@ import path from "node:path";
 import * as cheerio from "cheerio";
 
 const PROJECT_ID = "9b5twpc8";
-const MAX_IMAGE_BYTES = 25 * 1024 * 1024;
+// ABM publishes a small number of lossless product PNGs larger than 25 MB.
+// Keep the official bytes intact while retaining a bounded download limit.
+const MAX_IMAGE_BYTES = 50 * 1024 * 1024;
 const IMAGE_FIELDS = [
   "introHtml",
   "specificationsHtml",
