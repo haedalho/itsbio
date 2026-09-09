@@ -2,39 +2,8 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 
 import AbmHeroBanner from "@/components/products/AbmHeroBanner";
+import AbmCellularSidebar from "@/components/products/AbmCellularSidebar";
 import Breadcrumb from "@/components/site/Breadcrumb";
-
-const MENU = [
-  ["Immortalized Cell Lines", "immortalized-cell-lines"],
-  ["CRISPR KO Cell Lines", "crispr-ko-cell-lines"],
-  ["Cas9 Expressing Cell Lines", "cas9-expressing-cell-lines"],
-  ["Hematopoietic Cells", "hematopoietic-cells"],
-  ["Stem Cell-Derived Cells", "stem-cell-derived-cells"],
-  ["Stable Cell Lines", "stable-cell-lines"],
-  ["Tumor Cell Lines", "tumor-cell-lines"],
-  ["Primary Cells", "primary-cells"],
-] as const;
-
-const STEM_CHILDREN = [["Cardiovascular", "cardiovascular"], ["Neurological", "neurological"]] as const;
-const HEMA_CHILDREN = [
-  ["Hematopoietic Stem Cell (HSC)", "hematopoietic-stem-cell-hsc"],
-  ["T Cells (CD4⁺, CD8⁺, Treg, γδ)", "t-cells-cd4-cd8-treg"],
-  ["NK Cells", "nk-cells"],
-  ["Dendritic Cells", "dendritic-cells"],
-  ["Granulocytes", "granulocytes"],
-] as const;
-
-const CELLULAR_SECTIONS = [
-  ["Special Cell Line Collections", "/products/abm/cellular-materials/cell-library-collections/special-cell-line-collection"],
-  ["3D and Organoid", "/products/abm/cellular-materials/3d-and-organoid"],
-  ["Microbial Contamination", "/products/abm/cellular-materials/microbial-contamination"],
-  ["Cell Immortalization Reagents", "/products/abm/cellular-materials/cell-immortalization-reagents"],
-  ["Media & Supplements", "/products/abm/cellular-materials/media-and-supplements"],
-  ["Growth Factors and Cytokines", "/products/abm/cellular-materials/growth-factors-and-cytokines"],
-  ["Culture Consumables", "/products/abm/cellular-materials/culture-consumables"],
-  ["Cell Assay Products", "/products/abm/cellular-materials/cell-assay-products"],
-  ["Cell Culture Equipment", "/products/abm/cellular-materials/cell-culture-equipment"],
-] as const;
 
 export function CellLibraryShell({ title, active, subActive, children }: { title: string; active: string; subActive?: string; children: ReactNode }) {
   const parentCrumb = active === "stem-cell-derived-cells" && subActive
@@ -48,47 +17,12 @@ export function CellLibraryShell({ title, active, subActive, children }: { title
       <div className="mx-auto max-w-[1320px] px-6">
         <div className="mt-4"><Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Cellular Materials", href: "/products/abm/cellular-materials" }, { label: "Cell Library Collections", href: "/products/abm/cellular-materials/cell-library-collections" }, ...(parentCrumb ? [parentCrumb] : []), { label: title }]} /></div>
         <div className="mt-5 grid gap-8 pb-20 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[296px_minmax(0,1fr)]">
-          <aside className="self-start lg:sticky lg:top-24"><CellLibrarySideNav active={active} subActive={subActive} /></aside>
+          <aside className="self-start lg:sticky lg:top-24">
+            <AbmCellularSidebar activePath={["cellular-materials", "cell-library-collections", active, ...(subActive ? [subActive] : [])]} />
+          </aside>
           <main className="min-w-0">{children}</main>
         </div>
       </div>
-    </div>
-  );
-}
-
-function CellLibrarySideNav({ active, subActive }: { active: string; subActive?: string }) {
-  return (
-    <div className="overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm">
-      <div className="border-b border-neutral-200 bg-[#f2f2f2] px-5 py-3.5"><div className="text-[20px] font-bold text-[#f15a29]">All Products</div></div>
-      <nav className="px-3 py-3 text-[13px] leading-5 text-neutral-900" aria-label="ABM cell library categories">
-        <Link href="/products/abm/general-materials" className="flex items-center justify-between px-2 py-2 font-semibold hover:text-[#f15a29]"><span>General Materials</span><span>⌄</span></Link>
-        <Link href="/products/abm/cellular-materials" className="flex items-center justify-between px-2 py-2 font-semibold"><span>Cellular Materials</span><span className="text-[#0d9bd7]">⌃</span></Link>
-        <div className="pl-2">
-          <Link href="/products/abm/cellular-materials/cell-library-collections" className="flex items-center justify-between px-2 py-1.5 font-medium text-[#f15a29]"><span>Cell Library Collections</span><span>⌃</span></Link>
-          <div className="pl-3">
-            {MENU.map(([label, slug]) => {
-              const selected = active === slug;
-              const stem = slug === "stem-cell-derived-cells";
-              const hema = slug === "hematopoietic-cells";
-              const children = stem ? STEM_CHILDREN : hema ? HEMA_CHILDREN : [];
-              return <div key={slug}>
-                <Link href={`/products/abm/cellular-materials/cell-library-collections/${slug}`} className={`flex items-center justify-between px-2 py-1.5 ${selected ? "font-semibold text-[#f15a29]" : "hover:text-[#f15a29]"}`}><span>{label}</span>{(stem || hema) ? <span className="text-[#0d9bd7]">{selected ? "⌃" : "⌄"}</span> : null}</Link>
-                {children.length && selected ? <div className="pl-3 text-[12px]">{children.map(([child, childSlug]) => <Link key={childSlug} href={`/products/abm/cellular-materials/cell-library-collections/${slug}/${childSlug}`} className={`block px-2 py-1.5 ${subActive === childSlug ? "font-semibold text-[#f15a29]" : "text-neutral-700 hover:text-[#f15a29]"}`}>{child}</Link>)}</div> : null}
-              </div>;
-            })}
-          </div>
-          {CELLULAR_SECTIONS.map(([label, href]) => (
-            <Link
-              key={href}
-              href={href}
-              className="block px-2 py-1.5 text-neutral-800 hover:text-[#f15a29] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f15a29]/40"
-            >
-              {label}
-            </Link>
-          ))}
-        </div>
-        <Link href="/products/abm/genetic-materials" className="mt-1 flex items-center justify-between border-t border-neutral-100 px-2 py-2 font-semibold hover:text-[#f15a29]"><span>Genetic Materials</span><span>⌄</span></Link>
-      </nav>
     </div>
   );
 }

@@ -9,7 +9,9 @@ import HtmlContent from "@/components/site/HtmlContent";
 import AbmStagedCatalog from "@/components/products/AbmStagedCatalog";
 import AbmHeroBanner from "@/components/products/AbmHeroBanner";
 import AbmCatalogSideNav from "@/components/products/AbmCatalogSideNav";
+import AbmCellularSidebar from "@/components/products/AbmCellularSidebar";
 import AbmServiceLanding from "@/components/products/AbmServiceLanding";
+import abmCellularTaxonomy from "@/data/abm-cellular-taxonomy.json";
 import {
   ABM_PRODUCT_GROUPS,
   ABM_SERVICE_GROUPS,
@@ -32,6 +34,7 @@ import {
   abmResourcePagePath,
   isOfficialAbmResourceImageUrl,
 } from "@/lib/abm/resource-links";
+import "../abm-3d-landing.css";
 
 export const revalidate = 300;
 
@@ -419,6 +422,43 @@ function buildTreeFromAllCategories(roots: CatLite[], descendants: CatLite[]) {
   return rootNodes;
 }
 
+type AbmCellularTaxonomyNode = {
+  slug: string;
+  title: string;
+  sourceUrl: string;
+  children?: AbmCellularTaxonomyNode[];
+};
+
+function normalizeAbmCellularSidebar(nodes: TreeNode[]) {
+  const existingByPath = new Map<string, TreeNode>();
+  const visit = (items: TreeNode[]) => items.forEach((node) => {
+    existingByPath.set(node.path.join("/"), node);
+    visit(node.children || []);
+  });
+  visit(nodes);
+
+  const build = (
+    items: AbmCellularTaxonomyNode[],
+    parentPath: string[],
+  ): TreeNode[] => items.map((item, order) => {
+    const path = [...parentPath, item.slug];
+    const key = path.join("/");
+    const existing = existingByPath.get(key);
+    return {
+      key,
+      _id: existing?._id || `virtual-${key}`,
+      title: item.title,
+      path,
+      order,
+      sourceUrl: item.sourceUrl,
+      isVirtual: !existing?._id,
+      children: build(item.children || [], path),
+    };
+  });
+
+  return build(abmCellularTaxonomy as AbmCellularTaxonomyNode[], ["cellular-materials"]);
+}
+
 function findTreeNodeByPath(nodes: TreeNode[], path: string[]): TreeNode | undefined {
   const wanted = path.join("/");
   for (const node of nodes) {
@@ -574,75 +614,53 @@ function SideNavTree({
 
   const isPrefix = (full: string, prefix: string) => full === prefix || full.startsWith(prefix + "/");
 
-  const LINE_LEFT = "hidden";
-  const DOT_LEFT = "hidden";
-  const ARROW_LEFT = "hidden";
-  const TEXT_OFFSET = "ml-3";
-
   function nodeHref(n: { path: string[] }) {
     return buildHref(brandKey, n.path);
   }
 
-  function Children({ nodes }: { nodes: TreeNode[] }) {
-    if (!nodes?.length) return null;
+  function FlyoutRows({ nodes, parentTitle }: { nodes: TreeNode[]; parentTitle?: string }) {
+    if (!nodes.length) return null;
 
     return (
-      <div className="relative">
-        <div className={`pointer-events-none absolute ${LINE_LEFT} top-0 h-full border-l border-dashed border-neutral-400`} />
-        <div className="space-y-1">
-          {nodes.map((n) => {
-            const p = n.path.join("/");
-            const isActive = activePathStr === p;
+      <div className="w-[264px] overflow-visible rounded-xl border border-orange-200 bg-white p-1.5 shadow-[0_18px_44px_rgba(15,23,42,0.22)]">
+        {parentTitle ? (
+          <div className="-mx-1.5 -mt-1.5 mb-1.5 rounded-t-xl bg-orange-500 px-4 py-2.5 text-[12px] font-bold tracking-[0.04em] text-white">
+            {stripBrandSuffix(parentTitle)}
+          </div>
+        ) : null}
+        <div className="space-y-0.5">
+          {nodes.map((node) => {
+            const nodePath = node.path.join("/");
+            const isActive = activePathStr === nodePath;
+            const isOnTrail = isPrefix(activePathStr, nodePath) && !isActive;
+            const hasChildren = node.children.length > 0;
 
             return (
-              <Link key={n.key} href={nodeHref(n)} prefetch={false} className="group/item relative block">
-                <span
-                  aria-hidden
+              <div key={node.key} className="group/flyout relative">
+                <Link
+                  href={nodeHref(node)}
+                  prefetch={false}
                   className={[
-                    "pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2",
-                    DOT_LEFT,
-                    "h-1.5 w-1.5 rounded-full transition",
-                    theme.accentDotBg,
-                    isActive ? "opacity-100 scale-125" : "opacity-0",
-                    "group-hover/item:opacity-100 group-hover/item:scale-110",
-                  ].join(" ")}
-                />
-                <span
-                  aria-hidden
-                  className={[
-                    "pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2",
-                    DOT_LEFT,
-                    "h-2.5 w-2.5 rounded-full border transition",
-                    theme.accentDotBorder,
-                    isActive ? "opacity-100" : "opacity-0",
-                    "group-hover/item:opacity-100",
-                  ].join(" ")}
-                />
-                <span
-                  aria-hidden
-                  className={[
-                    "pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2",
-                    ARROW_LEFT,
-                    "text-xs transition opacity-0 group-hover/item:opacity-100",
-                    theme.accentText,
-                    isActive ? "opacity-0" : "",
-                  ].join(" ")}
-                >
-                  ›
-                </span>
-
-                <span
-                  className={[
-                    "relative block px-2 py-1.5 text-sm leading-5 transition",
-                    TEXT_OFFSET,
+                    "flex min-h-9 items-center justify-between gap-3 rounded-lg px-3 py-2 text-[13px] leading-5 transition",
                     isActive
                       ? `${theme.accentActiveBg} ${theme.accentActiveText} font-semibold`
-                      : "text-neutral-700 group-hover/item:bg-neutral-50",
+                      : isOnTrail
+                        ? `${theme.accentSoftBg} ${theme.accentText} font-semibold`
+                        : "text-neutral-700 hover:bg-neutral-50 hover:text-neutral-950",
                   ].join(" ")}
                 >
-                  <span className="block min-w-0 truncate">{stripBrandSuffix(n.title)}</span>
-                </span>
-              </Link>
+                  <span className="min-w-0 whitespace-normal">{stripBrandSuffix(node.title)}</span>
+                  {hasChildren ? (
+                    <span className={`${theme.accentText} shrink-0`} aria-hidden>›</span>
+                  ) : null}
+                </Link>
+
+                {hasChildren ? (
+                  <div className="absolute left-full top-0 z-[140] hidden pl-2 lg:group-hover/flyout:block">
+                    <FlyoutRows nodes={node.children} parentTitle={node.title} />
+                  </div>
+                ) : null}
+              </div>
             );
           })}
         </div>
@@ -650,81 +668,83 @@ function SideNavTree({
     );
   }
 
-  function NodeRow({ node }: { node: TreeNode }) {
-    const p = node.path.join("/");
-    const isActive = activePathStr === p;
-    const isOnTrail = isPrefix(activePathStr, p) && !isActive;
-    const hasChildren = !!node.children?.length;
-    const isOpen = hasChildren && (isActive || isOnTrail);
-
-    if (hasChildren) {
-      return (
-        <div className="group/section">
-          <Link
-            href={nodeHref(node)}
-            prefetch={false}
-            className={[
-              "flex items-center justify-between px-2 py-1.5 text-sm transition",
-              isOpen ? `${theme.accentText} font-semibold` : "text-neutral-800 hover:bg-neutral-50",
-            ].join(" ")}
-          >
-            <div className="min-w-0 flex items-center gap-2">
-              <span className={isOpen ? theme.accentText : "text-neutral-300"} aria-hidden>
-                ⌄
-              </span>
-              <span className="truncate">{stripBrandSuffix(node.title)}</span>
-            </div>
-
-            <span className={isOpen ? `${theme.accentText} text-xs` : "text-neutral-300"} aria-hidden>
-              {isOpen ? "^" : "›"}
-            </span>
-          </Link>
-
-          <div className={isOpen ? "block" : "hidden group-hover/section:block"}>
-            <Children nodes={node.children} />
-          </div>
-        </div>
-      );
-    }
+  function TreeRows({ nodes, depth = 0 }: { nodes: TreeNode[]; depth?: number }) {
+    if (!nodes.length) return null;
 
     return (
-      <Link
-        href={nodeHref(node)}
-        prefetch={false}
-        className={[
-          "flex items-center justify-between px-2 py-1.5 text-sm transition",
-          isActive ? `${theme.accentActiveBg} ${theme.accentActiveText} font-semibold` : "text-neutral-800 hover:bg-neutral-50",
-        ].join(" ")}
-      >
-        <span className="min-w-0 truncate">{stripBrandSuffix(node.title)}</span>
-        <span className="text-neutral-300" aria-hidden>
-          ›
-        </span>
-      </Link>
+      <div className={depth ? "ml-4 space-y-0.5 border-l border-dashed border-orange-200 pl-3" : "space-y-1"}>
+        {nodes.map((node) => {
+          const nodePath = node.path.join("/");
+          const isActive = activePathStr === nodePath;
+          const isOnTrail = isPrefix(activePathStr, nodePath) && !isActive;
+          const hasChildren = node.children.length > 0;
+          const isOpen = hasChildren && (isActive || isOnTrail);
+
+          return (
+            <div key={node.key} className="group/tree-row relative">
+              <Link
+                href={nodeHref(node)}
+                prefetch={false}
+                className={[
+                  "group flex min-h-10 items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-[13px] leading-5 transition",
+                  isActive
+                    ? `${theme.accentActiveBg} ${theme.accentActiveText} font-semibold`
+                    : isOnTrail
+                      ? `${theme.accentSoftBg} ${theme.accentText} font-semibold`
+                      : "text-neutral-700 hover:bg-neutral-50 hover:text-neutral-950",
+                ].join(" ")}
+              >
+                <span className="min-w-0 whitespace-normal">{stripBrandSuffix(node.title)}</span>
+                {hasChildren ? (
+                  <span className={`${isOpen ? theme.accentText : "text-neutral-300 group-hover:text-neutral-500"} shrink-0`} aria-hidden>
+                    {isOpen ? "⌃" : <span className="hidden lg:inline">›</span>}
+                    {!isOpen ? <span className="lg:hidden">⌄</span> : null}
+                  </span>
+                ) : (
+                  <span className="shrink-0 text-neutral-300 opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" aria-hidden>›</span>
+                )}
+              </Link>
+
+              {isOpen ? <TreeRows nodes={node.children} depth={depth + 1} /> : null}
+
+              {hasChildren ? (
+                <div className="absolute left-full top-0 z-[130] hidden pl-2 lg:group-hover/tree-row:block">
+                  <FlyoutRows nodes={node.children} parentTitle={node.title} />
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-sm border border-neutral-200 bg-white shadow-sm">
-      <div className="border-b border-neutral-200 bg-neutral-100 px-5 py-3">
-        <div className={`text-xl font-bold ${theme.accentText}`}>{isKentMode ? stripBrandSuffix(activeRootTitle) : "All Products"}</div>
+    <div className="overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className={`border-b border-orange-100 ${isKentMode ? "bg-blue-50" : "bg-orange-50"} px-5 py-4`}>
+        <div className={`text-base font-semibold ${theme.accentText}`}>{isKentMode ? stripBrandSuffix(activeRootTitle) : "All Products"}</div>
       </div>
 
-      <div className="p-3">
+      <nav className="max-h-[calc(100vh-170px)] overflow-y-auto p-2 lg:max-h-none lg:overflow-visible" aria-label="Product categories">
         {!isKentMode && activeRoot ? (
-          <>
-            <Link href={buildHref(brandKey, [activeRoot])} prefetch={false} className="flex items-center justify-between px-2 py-2 text-sm font-semibold text-[#dc5a2b]">
-              <span>{stripBrandSuffix(activeRootTitle)}</span><span aria-hidden>⌃</span>
+          <div className="group/root relative mb-1">
+            <Link href={buildHref(brandKey, [activeRoot])} prefetch={false} className="flex min-h-10 items-center justify-between rounded-xl bg-orange-50 px-3 py-2.5 text-[13px] font-semibold text-[#dc5a2b]">
+              <span>{stripBrandSuffix(activeRootTitle)}</span><span className="hidden lg:inline" aria-hidden>›</span><span className="lg:hidden" aria-hidden>⌃</span>
             </Link>
-          </>
+            {activeRootTree?.length ? (
+              <div className="absolute left-full top-0 z-[150] hidden pl-2 lg:group-hover/root:block">
+                <FlyoutRows nodes={activeRootTree} parentTitle={activeRootTitle} />
+              </div>
+            ) : null}
+          </div>
         ) : null}
 
-        <div className="space-y-1">
+        <div>
           {activeRootTree?.length ? (
-            activeRootTree.map((n) => <NodeRow key={n.key} node={n} />)
+            <TreeRows nodes={activeRootTree} />
           ) : (
             !activeRoot ? roots.map((root) => (
-              <Link key={root._id} href={buildHref(brandKey, root.path)} prefetch={true} className="flex items-center justify-between px-2 py-2 text-sm font-semibold text-neutral-800 hover:text-[#dc5a2b]">
+              <Link key={root._id} href={buildHref(brandKey, root.path)} prefetch={true} className="flex min-h-10 items-center justify-between rounded-xl px-3 py-2.5 text-[13px] font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-[#dc5a2b]">
                 <span>{stripBrandSuffix(root.title)}</span><span aria-hidden>⌄</span>
               </Link>
             )) : null
@@ -732,13 +752,13 @@ function SideNavTree({
         </div>
 
         {!isKentMode && activeRoot ? (
-          <div className="mt-2 border-t border-neutral-200 pt-2">
+          <div className="mt-2 border-t border-slate-200 pt-2">
             {roots.filter((root) => root.path?.[0] !== activeRoot).map((root) => (
                 <Link
                   key={root._id}
                   href={buildHref(brandKey, root.path)}
                   prefetch={true}
-                  className="flex items-center justify-between px-2 py-2 text-sm font-semibold text-neutral-800 hover:text-[#dc5a2b]"
+                  className="flex min-h-10 items-center justify-between rounded-xl px-3 py-2.5 text-[13px] font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-[#dc5a2b]"
                 >
                   <span className="min-w-0 truncate">{stripBrandSuffix(root.title)}</span>
                   <span aria-hidden>⌄</span>
@@ -748,14 +768,14 @@ function SideNavTree({
         ) : null}
 
         {!isKentMode ? (
-          <div className="mt-3 border-t border-neutral-200 pt-3">
-            <div className="px-2 pb-2 text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">Services</div>
+          <div className="mt-3 border-t border-slate-200 pt-3">
+            <div className="px-3 pb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-neutral-500">Services</div>
             {ABM_SERVICE_GROUPS.map((group) => (
               <Link
                 key={group.slug}
                 href={group.href}
                 prefetch={true}
-                className="flex items-center justify-between px-2 py-2 text-sm font-semibold text-neutral-800 hover:text-[#dc5a2b]"
+                className="flex min-h-10 items-center justify-between rounded-xl px-3 py-2.5 text-[13px] font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-[#dc5a2b]"
               >
                 <span>{group.title}</span>
                 <span className="text-neutral-300" aria-hidden>›</span>
@@ -763,7 +783,7 @@ function SideNavTree({
             ))}
           </div>
         ) : null}
-      </div>
+      </nav>
     </div>
   );
 }
@@ -833,12 +853,17 @@ function BulletsSection({ items }: { items: string[] }) {
   );
 }
 
-function HtmlBlock({ html, brandKey }: { html: string; brandKey: string }) {
+function HtmlBlock({ html, brandKey, landingVariant = "" }: { html: string; brandKey: string; landingVariant?: "" | "platforms" | "matrix" }) {
   const cleaned = safeHtmlForRender(html, brandKey);
   if (!cleaned) return null;
+  const landingFidelity = Boolean(landingVariant);
   return (
-    <section className="mt-8">
-      <HtmlContent html={cleaned} mode={brandKey === "abm" ? "abm-detail" : "default"} />
+    <section className={landingFidelity ? "mt-0" : "mt-8"}>
+      <HtmlContent
+        html={cleaned}
+        mode={landingFidelity ? "abm-landing" : brandKey === "abm" ? "abm-detail" : "default"}
+        className={landingFidelity ? `abm-3d-landing abm-3d-${landingVariant}` : undefined}
+      />
     </section>
   );
 }
@@ -917,7 +942,7 @@ function TopPublicationsSection({
   );
 }
 
-function renderContentBlocks(blocks: any[], brandKey: string, theme: Theme) {
+function renderContentBlocks(blocks: any[], brandKey: string, theme: Theme, landingVariant: "" | "platforms" | "matrix" = "") {
   if (!Array.isArray(blocks) || blocks.length === 0) return null;
 
   let renderedHtml = false;
@@ -934,7 +959,7 @@ function renderContentBlocks(blocks: any[], brandKey: string, theme: Theme) {
           if (renderedHtml) return null;
           renderedHtml = true;
           const html = typeof b?.html === "string" ? b.html : "";
-          return <HtmlBlock key={b._key || "html"} html={html} brandKey={brandKey} />;
+          return <HtmlBlock key={b._key || "html"} html={html} brandKey={brandKey} landingVariant={landingVariant} />;
         }
 
         if (type === "contentBlockBullets") {
@@ -1032,6 +1057,9 @@ export default async function AbmProductsPathPage({
     activeRootTree = buildTreeFromAllCategories(roots, descendants);
   } else if (activeRoot) {
     activeRootTree = buildTreeFromDescendants([activeRoot], descendants);
+    if (activeRoot === "cellular-materials") {
+      activeRootTree = normalizeAbmCellularSidebar(activeRootTree);
+    }
   }
 
   const activePageNode = path.length > 1 ? findTreeNodeByPath(activeRootTree, path) : undefined;
@@ -1101,7 +1129,7 @@ export default async function AbmProductsPathPage({
         <div className={PAGE_SHELL}>
           <div className="mt-4"><Breadcrumb items={breadcrumbItems} /></div>
           <div className={`mt-5 pb-14 ${CONTENT_LAYOUT}`}>
-            <aside className="self-start lg:sticky lg:top-24">
+            <aside className="relative z-[70] self-start lg:sticky lg:top-24">
               <AbmCatalogSideNav
                 mode={stagedKind}
                 activeProductRoot={stagedKind === "product" ? selectedGroup?.slug : ""}
@@ -1209,7 +1237,7 @@ export default async function AbmProductsPathPage({
           </div>
 
           <div className={`mt-5 ${CONTENT_LAYOUT}`}>
-            <aside className="self-start lg:sticky lg:top-24">
+            <aside className="relative z-[70] self-start lg:sticky lg:top-24">
               <SideNavTree
                 brandKey={brandKey}
                 roots={roots}
@@ -1272,6 +1300,13 @@ export default async function AbmProductsPathPage({
   ];
 
   const pageTitle = stripBrandSuffix(category?.title || humanizeSegment(path[path.length - 1] || ""));
+  const is3dLandingFidelity = brandKey === "abm" && [
+    "cellular-materials/3d-and-organoid/3d-culture-platforms",
+    "cellular-materials/3d-and-organoid/3dcelmatrix",
+  ].includes(path.join("/"));
+  const landingVariant: "" | "platforms" | "matrix" = is3dLandingFidelity
+    ? path.at(-1) === "3dcelmatrix" ? "matrix" : "platforms"
+    : "";
 
   const blocks = Array.isArray(category?.contentBlocks)
     ? category.contentBlocks
@@ -1301,20 +1336,24 @@ export default async function AbmProductsPathPage({
         </div>
 
         <div className={`mt-5 ${CONTENT_LAYOUT}`}>
-          <aside className="self-start lg:sticky lg:top-24">
-            <SideNavTree
-              brandKey={brandKey}
-              roots={roots}
-              activePath={path}
-              activeRootTree={activeRootTree}
-              theme={theme}
-              isKentMode={isKent}
-            />
+          <aside className="relative z-[70] self-start lg:sticky lg:top-24">
+            {activeRoot === "cellular-materials" ? (
+              <AbmCellularSidebar activePath={path} />
+            ) : (
+              <SideNavTree
+                brandKey={brandKey}
+                roots={roots}
+                activePath={path}
+                activeRootTree={activeRootTree}
+                theme={theme}
+                isKentMode={isKent}
+              />
+            )}
           </aside>
 
           <main className="min-w-0">
-            <h1 className="text-3xl font-bold tracking-tight text-neutral-900">{pageTitle}</h1>
-            <CategoryLinkRail brandKey={brandKey} nodes={childCategoryNodes} />
+            {!is3dLandingFidelity ? <h1 className="text-3xl font-bold tracking-tight text-neutral-900">{pageTitle}</h1> : null}
+            {!is3dLandingFidelity ? <CategoryLinkRail brandKey={brandKey} nodes={childCategoryNodes} /> : null}
 
             {isKent && productsInCategory.length ? (
               <div className="mt-6">
@@ -1360,7 +1399,7 @@ export default async function AbmProductsPathPage({
             ) : null}
 
             {blocks.length ? (
-              renderContentBlocks(blocks, brandKey, theme)
+              renderContentBlocks(blocks, brandKey, theme, landingVariant)
             ) : fallbackHtml ? (
               <section className="mt-8">
                 <HtmlContent html={fallbackHtml} mode={brandKey === "abm" ? "abm-detail" : "default"} />

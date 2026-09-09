@@ -1,32 +1,11 @@
 import Link from "next/link";
 
 import AbmHeroBanner from "@/components/products/AbmHeroBanner";
+import AbmCellularSidebar from "@/components/products/AbmCellularSidebar";
 import Breadcrumb from "@/components/site/Breadcrumb";
 import { abmResourceImagePath } from "@/lib/abm/resource-links";
 
 const PAGE_SHELL = "mx-auto max-w-[1320px] px-6";
-
-const cellLibraryChildren = [
-  ["Immortalized Cell Lines", "immortalized-cell-lines"],
-  ["CRISPR KO Cell Lines", "crispr-ko-cell-lines"],
-  ["Cas9 Expressing Cell Lines", "cas9-expressing-cell-lines"],
-  ["Stem Cell-Derived Cells", "stem-cell-derived-cells"],
-  ["Stable Cell Lines", "stable-cell-lines"],
-  ["Tumor Cell Lines", "tumor-cell-lines"],
-  ["Primary Cells", "primary-cells"],
-] as const;
-
-const cellularSections = [
-  ["Special Cell Line Collections", "special-cell-line-collections"],
-  ["3D and Organoid", "3d-and-organoid"],
-  ["Microbial Contamination", "microbial-contamination"],
-  ["Cell Immortalization Reagents", "cell-immortalization-reagents"],
-  ["Media & Supplements", "media-and-supplements"],
-  ["Growth Factors and Cytokines", "growth-factors-and-cytokines"],
-  ["Culture Consumables", "culture-consumables"],
-  ["Cell Assay Products", "cell-assay-products"],
-  ["Cell Culture Equipment", "cell-culture-equipment"],
-] as const;
 
 const categories = [
   {
@@ -74,85 +53,10 @@ const categories = [
   {
     eyebrow: "Specialty",
     title: "Special Cell Line Collections",
-    href: "/products/abm/cellular-materials/cell-library-collections/special-cell-line-collection",
+    href: "/products/abm/cellular-materials/special-cell-line-collections",
     image: "https://www.abmgood.com/assets/images/tinymce/VJNQNC82ZB6xVfHDvAll5qJtOhackLfeA3qeXdiS.png",
   },
 ] as const;
-
-function SideNav() {
-  return (
-    <div className="overflow-hidden rounded-md border border-neutral-200 bg-white shadow-sm">
-      <div className="border-b border-neutral-200 bg-[#f2f2f2] px-5 py-3.5">
-        <div className="text-[20px] font-bold text-[#f15a29]">All Products</div>
-      </div>
-
-      <nav className="px-3 py-3 text-[13px] leading-5 text-neutral-900" aria-label="ABM product categories">
-        <Link
-          href="/products/abm/general-materials"
-          className="flex items-center justify-between px-2 py-2 font-semibold hover:text-[#f15a29]"
-        >
-          <span>General Materials</span><span className="text-[#111827]">⌄</span>
-        </Link>
-
-        <div>
-          <Link
-            href="/products/abm/cellular-materials"
-            className="flex items-center justify-between px-2 py-2 font-semibold"
-          >
-            <span>Cellular Materials</span><span className="text-[#0d9bd7]">⌃</span>
-          </Link>
-
-          <div className="pl-2">
-            <Link
-              href="/products/abm/cellular-materials/cell-library-collections"
-              className="flex items-center justify-between px-2 py-1.5 font-medium text-[#f15a29]"
-            >
-              <span>Cell Library Collections</span><span className="text-[#f15a29]">⌃</span>
-            </Link>
-
-            <div className="pl-3">
-              {cellLibraryChildren.map(([label, slug]) => (
-                <Link
-                  key={slug}
-                  href={`/products/abm/cellular-materials/cell-library-collections/${slug}`}
-                  className="block px-2 py-1.5 text-neutral-900 hover:text-[#f15a29]"
-                >
-                  {label}
-                </Link>
-              ))}
-            </div>
-
-            {cellularSections.map(([label, slug]) => (
-              <Link
-                key={slug}
-                href={slug === "special-cell-line-collections"
-                  ? "/products/abm/cellular-materials/cell-library-collections/special-cell-line-collection"
-                  : `/products/abm/cellular-materials/${slug}`}
-                className="flex items-center justify-between px-2 py-1.5 text-neutral-900 hover:text-[#f15a29]"
-              >
-                <span>{label}</span>
-                {[
-                  "special-cell-line-collections",
-                  "3d-and-organoid",
-                  "microbial-contamination",
-                  "media-and-supplements",
-                  "culture-consumables",
-                ].includes(slug) ? <span className="text-[#0d9bd7]">⌄</span> : null}
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        <Link
-          href="/products/abm/genetic-materials"
-          className="mt-1 flex items-center justify-between border-t border-neutral-100 px-2 py-2 font-semibold hover:text-[#f15a29]"
-        >
-          <span>Genetic Materials</span><span className="text-[#111827]">⌄</span>
-        </Link>
-      </nav>
-    </div>
-  );
-}
 
 function Pill({ children }: { children: React.ReactNode }) {
   return (
@@ -205,7 +109,7 @@ export default function CellLibraryCollectionsPage() {
 
         <div className="mt-5 grid gap-8 pb-20 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[296px_minmax(0,1fr)]">
           <aside className="self-start lg:sticky lg:top-24">
-            <SideNav />
+            <AbmCellularSidebar activePath={["cellular-materials", "cell-library-collections"]} />
           </aside>
 
           <main className="min-w-0">

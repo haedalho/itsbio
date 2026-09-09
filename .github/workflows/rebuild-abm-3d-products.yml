@@ -1,0 +1,59 @@
+name: Rebuild ABM 3D Product Hierarchy
+
+on:
+  push:
+    branches:
+      - agent/abm-3d-organoid-rebuild
+    paths:
+      - data/abm-cellular-taxonomy.json
+      - scripts/rebuild-abm-cellular-taxonomy.mjs
+      - scripts/rebuild-abm-3d-products.mjs
+      - scripts/patch-abm-sidebar-flyout.py
+      - .github/workflows/rebuild-abm-3d-products.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/abm-3d-organoid-rebuild
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Apply recursive desktop flyouts and mobile fallback
+        run: python scripts/patch-abm-sidebar-flyout.py
+      - name: Commit sidebar flyout behavior
+        run: |
+          if git diff --quiet; then
+            echo "Sidebar flyout behavior is already committed"
+          else
+            git config user.name "haedalho"
+            git config user.email "limroq2@gmail.com"
+            git add 'app/products/abm/[[...path]]/page.tsx'
+            git commit -m "feat(abm): add recursive sidebar hover flyouts"
+            git push origin HEAD:agent/abm-3d-organoid-rebuild
+          fi
+      - run: npm install --no-audit --no-fund
+      - name: Validate official product pages and requested side-tab structure
+        run: node scripts/rebuild-abm-3d-products.mjs
+      - name: Apply 3D product hierarchy to Sanity Production
+        run: node scripts/rebuild-abm-3d-products.mjs --apply
+      - name: Import missing Cellular Materials pages and align the full hierarchy
+        run: node scripts/rebuild-abm-cellular-taxonomy.mjs --apply

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { internalizeAbmHref, isOfficialAbmUrl } from "@/lib/abm/internal-links";
 import { abmResourceImagePath } from "@/lib/abm/resource-links";
 
@@ -9,7 +9,7 @@ type Props = {
   className?: string;
   /** legacy 등에서 상대경로(href="/", src="/")를 절대경로로 바꾸기 위한 base */
   baseUrl?: string;
-  mode?: "default" | "abm-detail" | "abm-service";
+  mode?: "default" | "abm-detail" | "abm-service" | "abm-landing";
 };
 
 const TABLE_WRAP_CLASS = "abm-table-scroll";
@@ -576,7 +576,8 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"]
 
   // ✅ 0) 문자열 레벨 전처리
   let html = normalizeMailto(rawHtml);
-  const isAbmMode = mode === "abm-detail" || mode === "abm-service";
+  const isAbmMode = mode === "abm-detail" || mode === "abm-service" || mode === "abm-landing";
+  const isAbmLanding = mode === "abm-landing";
 
   // baseUrl 없으면 추정
   const effectiveBase =
@@ -598,7 +599,7 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"]
 
   // 2) script/style/iframe/form 제거
   doc
-    .querySelectorAll("script, style, iframe, form, input, textarea, button, select")
+    .querySelectorAll(`script, style, iframe, form, input, textarea, select${isAbmLanding ? "" : ", button"}`)
     .forEach((el) => removeNode(el));
 
   // 3) nav/header/footer 제거 + ABM footer 제거. Service editorial content의
@@ -700,7 +701,7 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"]
       ["style", "width", "height", "bgcolor", "border", "cellpadding", "cellspacing", "align", "valign"].forEach((attribute) => cell.removeAttribute(attribute));
     });
 
-    if (isAbmMode) {
+    if (isAbmMode && !isAbmLanding) {
       table.setAttribute("class", TABLE_CLASS);
       ["style", "width", "height", "bgcolor", "border", "cellpadding", "cellspacing", "align"].forEach((attribute) => table.removeAttribute(attribute));
       table.querySelectorAll("th").forEach((th) => th.setAttribute("scope", "col"));
@@ -756,7 +757,7 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"]
   });
 
   // ✅ 7) 가독성 개선(문단 래핑)
-  improveReadability(doc);
+  if (!isAbmLanding) improveReadability(doc);
 
   // 8) 빈 요소 정리
   doc.querySelectorAll("p, div, section, span, li").forEach((el) => {
@@ -770,6 +771,7 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"]
 
 export default function HtmlContent({ html, className, baseUrl, mode = "default" }: Props) {
   const [renderHtml, setRenderHtml] = useState<string>("");
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const input = useMemo(() => (html || "").trim(), [html]);
   const base = useMemo(() => (baseUrl || "").trim(), [baseUrl]);
@@ -784,12 +786,108 @@ export default function HtmlContent({ html, className, baseUrl, mode = "default"
     }
   }, [input, base, mode]);
 
+  useEffect(() => {
+    if (mode !== "abm-landing" || !renderHtml) return;
+    const root = contentRef.current;
+    if (!root) return;
+
+    const setModal = (open: boolean, trigger?: HTMLElement) => {
+      const modal = root.querySelector<HTMLElement>("#image-modal");
+      if (!modal) return;
+      const image = modal.querySelector<HTMLImageElement>("#image-modal-img");
+      const title = modal.querySelector<HTMLElement>("#image-modal-title");
+      const description = modal.querySelector<HTMLElement>("#image-modal-description");
+      if (open && trigger) {
+        const source = trigger.querySelector<HTMLImageElement>("img");
+        if (image && source?.src) {
+          image.src = source.src;
+          image.alt = source.alt || "";
+        }
+        if (title) title.textContent = trigger.dataset.modalTitle || source?.alt || "";
+        if (description) description.textContent = trigger.dataset.modalDescription || "";
+      }
+      modal.classList.toggle("open", open);
+      modal.setAttribute("aria-hidden", open ? "false" : "true");
+      document.body.style.overflow = open ? "hidden" : "";
+    };
+
+    const activateRow = (row: HTMLElement) => {
+      const raw = row.dataset.href || row.dataset.link || "";
+      const href = internalizeAbmHref(raw, "https://www.abmgood.com");
+      if (href) window.location.assign(href);
+    };
+
+    const onClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      const toggle = target.closest<HTMLButtonElement>(".validated-lines-toggle");
+      if (toggle) {
+        const panel = root.querySelector<HTMLElement>("#validated-lines-panel");
+        if (!panel) return;
+        const opening = panel.hasAttribute("hidden");
+        panel.toggleAttribute("hidden", !opening);
+        toggle.setAttribute("aria-expanded", opening ? "true" : "false");
+        toggle.textContent = opening ? "Hide Validated Cell Lines" : "Show Validated Cell Lines";
+        return;
+      }
+
+      const filter = target.closest<HTMLButtonElement>(".validated-filter-button");
+      if (filter) {
+        const group = filter.dataset.filterGroup || "";
+        root.querySelectorAll<HTMLButtonElement>(".validated-filter-button").forEach((button) => {
+          const active = button === filter;
+          button.classList.toggle("is-active", active);
+          button.setAttribute("aria-pressed", active ? "true" : "false");
+        });
+        root.querySelectorAll<HTMLTableRowElement>(".validated-lines-table tbody tr").forEach((row) => {
+          row.classList.toggle("is-hidden", Boolean(group) && row.dataset.filterGroup !== group);
+        });
+        return;
+      }
+
+      const proof = target.closest<HTMLElement>(".proof-trigger, .gallery-trigger");
+      if (proof) {
+        event.preventDefault();
+        setModal(true, proof);
+        return;
+      }
+
+      if (target.closest(".image-modal-close") || target.id === "image-modal") {
+        setModal(false);
+        return;
+      }
+
+      const row = target.closest<HTMLElement>("tr[data-href], tr[data-link]");
+      if (row) activateRow(row);
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setModal(false);
+        return;
+      }
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const row = (event.target as HTMLElement).closest<HTMLElement>("tr[data-href], tr[data-link]");
+      if (!row) return;
+      event.preventDefault();
+      activateRow(row);
+    };
+
+    root.addEventListener("click", onClick);
+    root.addEventListener("keydown", onKeyDown);
+    return () => {
+      root.removeEventListener("click", onClick);
+      root.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [mode, renderHtml]);
+
   if (!renderHtml) return null;
 
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: MINI_BOOTSTRAP_CSS }} />
       <div
+        ref={contentRef}
         className={[
           "itsbio-html",
           mode === "default" ? "prose prose-neutral max-w-none" : "abm-rich max-w-none",
