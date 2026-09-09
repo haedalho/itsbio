@@ -8,6 +8,8 @@ on:
       - .github/workflows/migrate-abm-special-cell-details.yml
       - scripts/prepare-abm-special-cell-detail-migration.mjs
       - scripts/audit-abm-special-cell-detail-migration.mjs
+      - scripts/stage-abm-rebuild-details.mjs
+      - scripts/lib/abm-sanity-image-assets.mjs
   workflow_dispatch:
     inputs:
       workers:
