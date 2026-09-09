@@ -618,11 +618,16 @@ function SideNavTree({
     return buildHref(brandKey, n.path);
   }
 
-  function FlyoutRows({ nodes }: { nodes: TreeNode[] }) {
+  function FlyoutRows({ nodes, parentTitle }: { nodes: TreeNode[]; parentTitle?: string }) {
     if (!nodes.length) return null;
 
     return (
-      <div className="w-[250px] rounded-xl border border-slate-200 bg-white p-1.5 shadow-[0_16px_38px_rgba(15,23,42,0.16)]">
+      <div className="w-[264px] overflow-visible rounded-xl border border-orange-200 bg-white p-1.5 shadow-[0_18px_44px_rgba(15,23,42,0.22)]">
+        {parentTitle ? (
+          <div className="-mx-1.5 -mt-1.5 mb-1.5 rounded-t-xl bg-orange-500 px-4 py-2.5 text-[12px] font-bold tracking-[0.04em] text-white">
+            {stripBrandSuffix(parentTitle)}
+          </div>
+        ) : null}
         <div className="space-y-0.5">
           {nodes.map((node) => {
             const nodePath = node.path.join("/");
@@ -651,8 +656,8 @@ function SideNavTree({
                 </Link>
 
                 {hasChildren ? (
-                  <div className="absolute left-full top-0 z-[90] hidden pl-2 lg:group-hover/flyout:block">
-                    <FlyoutRows nodes={node.children} />
+                  <div className="absolute left-full top-0 z-[140] hidden pl-2 lg:group-hover/flyout:block">
+                    <FlyoutRows nodes={node.children} parentTitle={node.title} />
                   </div>
                 ) : null}
               </div>
@@ -702,9 +707,9 @@ function SideNavTree({
 
               {isOpen ? <TreeRows nodes={node.children} depth={depth + 1} /> : null}
 
-              {hasChildren && !isOpen ? (
-                <div className="absolute left-full top-0 z-[80] hidden pl-2 lg:group-hover/tree-row:block">
-                  <FlyoutRows nodes={node.children} />
+              {hasChildren ? (
+                <div className="absolute left-full top-0 z-[130] hidden pl-2 lg:group-hover/tree-row:block">
+                  <FlyoutRows nodes={node.children} parentTitle={node.title} />
                 </div>
               ) : null}
             </div>
@@ -722,9 +727,16 @@ function SideNavTree({
 
       <nav className="max-h-[calc(100vh-170px)] overflow-y-auto p-2 lg:max-h-none lg:overflow-visible" aria-label="Product categories">
         {!isKentMode && activeRoot ? (
-          <Link href={buildHref(brandKey, [activeRoot])} prefetch={false} className="mb-1 flex min-h-10 items-center justify-between rounded-xl bg-orange-50 px-3 py-2.5 text-[13px] font-semibold text-[#dc5a2b]">
-            <span>{stripBrandSuffix(activeRootTitle)}</span><span aria-hidden>⌃</span>
-          </Link>
+          <div className="group/root relative mb-1">
+            <Link href={buildHref(brandKey, [activeRoot])} prefetch={false} className="flex min-h-10 items-center justify-between rounded-xl bg-orange-50 px-3 py-2.5 text-[13px] font-semibold text-[#dc5a2b]">
+              <span>{stripBrandSuffix(activeRootTitle)}</span><span className="hidden lg:inline" aria-hidden>›</span><span className="lg:hidden" aria-hidden>⌃</span>
+            </Link>
+            {activeRootTree?.length ? (
+              <div className="absolute left-full top-0 z-[150] hidden pl-2 lg:group-hover/root:block">
+                <FlyoutRows nodes={activeRootTree} parentTitle={activeRootTitle} />
+              </div>
+            ) : null}
+          </div>
         ) : null}
 
         <div>
@@ -1117,7 +1129,7 @@ export default async function AbmProductsPathPage({
         <div className={PAGE_SHELL}>
           <div className="mt-4"><Breadcrumb items={breadcrumbItems} /></div>
           <div className={`mt-5 pb-14 ${CONTENT_LAYOUT}`}>
-            <aside className="self-start lg:sticky lg:top-24">
+            <aside className="relative z-[70] self-start lg:sticky lg:top-24">
               <AbmCatalogSideNav
                 mode={stagedKind}
                 activeProductRoot={stagedKind === "product" ? selectedGroup?.slug : ""}
@@ -1225,7 +1237,7 @@ export default async function AbmProductsPathPage({
           </div>
 
           <div className={`mt-5 ${CONTENT_LAYOUT}`}>
-            <aside className="self-start lg:sticky lg:top-24">
+            <aside className="relative z-[70] self-start lg:sticky lg:top-24">
               <SideNavTree
                 brandKey={brandKey}
                 roots={roots}
@@ -1324,7 +1336,7 @@ export default async function AbmProductsPathPage({
         </div>
 
         <div className={`mt-5 ${CONTENT_LAYOUT}`}>
-          <aside className="self-start lg:sticky lg:top-24">
+          <aside className="relative z-[70] self-start lg:sticky lg:top-24">
             {activeRoot === "cellular-materials" ? (
               <AbmCellularSidebar activePath={path} />
             ) : (
