@@ -420,6 +420,45 @@ function buildTreeFromAllCategories(roots: CatLite[], descendants: CatLite[]) {
   return rootNodes;
 }
 
+const ABM_CELLULAR_SIDEBAR_ITEMS = [
+  ["cell-library-collections", "Cell Library Collections"],
+  ["special-cell-line-collection", "Special Cell Line Collections"],
+  ["3d-and-organoid", "3D & Organoid"],
+  ["microbial-contamination", "Microbial Contamination"],
+  ["cell-immortalization-reagents", "Cell Immortalization Reagents"],
+  ["media-and-supplements", "Media & Supplements"],
+  ["growth-factors-and-cytokines", "Growth Factors and Cytokines"],
+  ["culture-consumables", "Culture Consumables"],
+  ["cell-assay-products", "Cell Assay Products"],
+  ["cell-culture-equipment", "Cell Culture Equipment"],
+] as const;
+
+function normalizeAbmCellularSidebar(nodes: TreeNode[]) {
+  const flattened: TreeNode[] = [];
+  const visit = (items: TreeNode[]) => items.forEach((node) => {
+    flattened.push(node);
+    visit(node.children || []);
+  });
+  visit(nodes);
+
+  const specialKey = "special-cell-line-collection";
+  return ABM_CELLULAR_SIDEBAR_ITEMS.flatMap(([key, title], order) => {
+    const node = flattened.find((candidate) =>
+      String(candidate.path.at(-1) || "").toLowerCase() === key
+    );
+    if (!node) return [];
+
+    return [{
+      ...node,
+      title,
+      order,
+      children: key === "cell-library-collections"
+        ? node.children.filter((child) => String(child.path.at(-1) || "").toLowerCase() !== specialKey)
+        : node.children,
+    }];
+  });
+}
+
 function findTreeNodeByPath(nodes: TreeNode[], path: string[]): TreeNode | undefined {
   const wanted = path.join("/");
   for (const node of nodes) {
@@ -1038,6 +1077,9 @@ export default async function AbmProductsPathPage({
     activeRootTree = buildTreeFromAllCategories(roots, descendants);
   } else if (activeRoot) {
     activeRootTree = buildTreeFromDescendants([activeRoot], descendants);
+    if (activeRoot === "cellular-materials") {
+      activeRootTree = normalizeAbmCellularSidebar(activeRootTree);
+    }
   }
 
   const activePageNode = path.length > 1 ? findTreeNodeByPath(activeRootTree, path) : undefined;
