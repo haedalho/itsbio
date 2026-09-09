@@ -56,15 +56,41 @@ function removeEmptyPrimarySpecificationRows(doc: Document) {
   });
 }
 
+const SPECIAL_COLLECTION_SLUGS = new Map<string, string>([
+  ["sloan kettering tumor collection", "sloan-kettering-tumor-cell-lines"],
+  ["hair follicle cell collection", "hair-follicle-cell-collection"],
+  ["liver cell collection", "liver-cell-collection"],
+  ["blood cell collection", "blood-cell-collection"],
+  ["lung health cell collection", "lung-health-cell-collection"],
+  ["oral cancer cell collection", "oral-cancer-cell-collection"],
+  ["breast cancer cell collection", "breast-cancer-cell-lines"],
+  ["colon cancer cell collection", "colon-cancer-cell-lines"],
+  ["neuronal cell collections", "neuronal-cell-lines"],
+  ["mast cell lines", "mast-cell-lines"],
+  ["dermal papilla cells", "dermal-papilla-cells"],
+  ["pre-adipocytes & dermal fibroblasts", "pre-adipocytes-and-fibroblasts"],
+]);
+
 /** Restore the official collection-card action that was reduced to an empty
- * anchor during migration. Keeping this narrowly scoped avoids manufacturing
- * labels for unrelated legacy links. */
+ * anchor during migration. Card names are mapped to the canonical sidebar
+ * routes so stale migrated search URLs cannot leak back into the UI. */
 function restoreCollectionCardActions(doc: Document) {
-  doc.querySelectorAll<HTMLAnchorElement>(".collections-page .collection-card .card-actions a[href]").forEach((anchor) => {
-    if (collapseWs(anchor.textContent || "")) return;
-    const collectionName = collapseWs(anchor.closest(".collection-card")?.querySelector(".collection-name")?.textContent || "");
+  doc.querySelectorAll<HTMLElement>(".collections-page .collection-card").forEach((card) => {
+    const collectionName = collapseWs(card.querySelector(".collection-name")?.textContent || "");
+    const slug = SPECIAL_COLLECTION_SLUGS.get(collectionName.toLowerCase());
+    const anchor = card.querySelector<HTMLAnchorElement>(".card-actions a");
+    if (!slug || !anchor) return;
+
+    const href = `/products/abm/cellular-materials/special-cell-line-collections/${slug}`;
+    anchor.setAttribute("href", href);
+    anchor.removeAttribute("target");
+    anchor.removeAttribute("rel");
     anchor.textContent = "View Collection";
-    if (collectionName) anchor.setAttribute("aria-label", `View ${collectionName}`);
+    anchor.setAttribute("aria-label", `View ${collectionName}`);
+    card.setAttribute("data-collection-href", href);
+    card.setAttribute("role", "link");
+    card.setAttribute("tabindex", "0");
+    card.setAttribute("aria-label", `View ${collectionName}`);
   });
 }
 
@@ -872,6 +898,12 @@ export default function HtmlContent({ html, className, baseUrl, mode = "default"
 
       const row = target.closest<HTMLElement>("tr[data-href], tr[data-link]");
       if (row) activateRow(row);
+
+      const collectionCard = target.closest<HTMLElement>(".collections-page .collection-card[data-collection-href]");
+      if (collectionCard && !target.closest("a")) {
+        const href = collectionCard.dataset.collectionHref || "";
+        if (href) window.location.assign(href);
+      }
     };
 
     const onKeyDown = (event: KeyboardEvent) => {
@@ -881,9 +913,18 @@ export default function HtmlContent({ html, className, baseUrl, mode = "default"
       }
       if (event.key !== "Enter" && event.key !== " ") return;
       const row = (event.target as HTMLElement).closest<HTMLElement>("tr[data-href], tr[data-link]");
-      if (!row) return;
-      event.preventDefault();
-      activateRow(row);
+      if (row) {
+        event.preventDefault();
+        activateRow(row);
+        return;
+      }
+
+      const collectionCard = (event.target as HTMLElement).closest<HTMLElement>(".collections-page .collection-card[data-collection-href]");
+      if (collectionCard) {
+        event.preventDefault();
+        const href = collectionCard.dataset.collectionHref || "";
+        if (href) window.location.assign(href);
+      }
     };
 
     root.addEventListener("click", onClick);

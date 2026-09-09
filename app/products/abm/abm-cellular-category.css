@@ -201,6 +201,7 @@
   border-radius: 17px;
   background: #fff;
   box-shadow: 0 5px 18px rgb(0 0 0 / 3%);
+  cursor: pointer;
   transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
 }
 
@@ -208,6 +209,11 @@
   border-color: #f2bea5;
   box-shadow: var(--cellular-shadow);
   transform: translateY(-2px);
+}
+
+.abm-cellular-collections .collection-card:focus-visible {
+  outline: 3px solid rgb(233 98 37 / 28%);
+  outline-offset: 3px;
 }
 
 .abm-cellular-collections .collection-card.featured {
