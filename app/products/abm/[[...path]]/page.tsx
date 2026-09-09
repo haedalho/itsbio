@@ -9,6 +9,7 @@ import HtmlContent from "@/components/site/HtmlContent";
 import AbmStagedCatalog from "@/components/products/AbmStagedCatalog";
 import AbmHeroBanner from "@/components/products/AbmHeroBanner";
 import AbmCatalogSideNav from "@/components/products/AbmCatalogSideNav";
+import AbmCellularSidebar from "@/components/products/AbmCellularSidebar";
 import AbmServiceLanding from "@/components/products/AbmServiceLanding";
 import abmCellularTaxonomy from "@/data/abm-cellular-taxonomy.json";
 import {
@@ -1269,14 +1270,18 @@ export default async function AbmProductsPathPage({
 
         <div className={`mt-5 ${CONTENT_LAYOUT}`}>
           <aside className="self-start lg:sticky lg:top-24">
-            <SideNavTree
-              brandKey={brandKey}
-              roots={roots}
-              activePath={path}
-              activeRootTree={activeRootTree}
-              theme={theme}
-              isKentMode={isKent}
-            />
+            {activeRoot === "cellular-materials" ? (
+              <AbmCellularSidebar activePath={path} />
+            ) : (
+              <SideNavTree
+                brandKey={brandKey}
+                roots={roots}
+                activePath={path}
+                activeRootTree={activeRootTree}
+                theme={theme}
+                isKentMode={isKent}
+              />
+            )}
           </aside>
 
           <main className="min-w-0">
