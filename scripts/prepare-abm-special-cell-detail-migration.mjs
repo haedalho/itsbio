@@ -13,6 +13,7 @@ import fs from "node:fs";
 import path from "node:path";
 import * as cheerio from "cheerio";
 import { createClient } from "next-sanity";
+import { parseAbmRebuildDetail } from "../lib/abm/rebuild-parser.mjs";
 
 const OUT = path.resolve(".cache/abm-special-cell-detail-migration");
 const INVENTORY_FILE = path.join(OUT, "inventory.json");
@@ -78,6 +79,68 @@ function safeOfficialProductUrl(value) {
   } catch {
     return "";
   }
+}
+
+function titleSlugCandidates(title) {
+  const normalized = clean(title)
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[™®©]/g, "")
+    .replace(/&/g, " and ")
+    .replace(/['’]/g, "")
+    .toLowerCase();
+  const variants = [
+    normalized,
+    normalized.replace(/\s*\([^)]*\)\s*/g, " "),
+  ];
+  return [...new Set(variants.map((value) => value
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+  ).filter(Boolean))].map((slug) => `${BASE}/${slug}.html`);
+}
+
+function hasExactSpecificationSku(detail, expectedSku) {
+  return (detail?.specificationTables || []).some((table) => table.some((row) =>
+    row.length >= 2
+    && isSkuHeader(row[0])
+    && normalizeSku(row.slice(1).join(" | ")) === normalizeSku(expectedSku)
+  ));
+}
+
+async function probeTitleSlug(product) {
+  for (const candidate of titleSlugCandidates(product.title)) {
+    try {
+      const response = await fetch(candidate, {
+        cache: "no-store",
+        redirect: "follow",
+        headers: {
+          accept: "text/html",
+          "user-agent": USER_AGENT,
+        },
+      });
+      if (!response.ok) continue;
+      const finalUrl = safeOfficialProductUrl(response.url || candidate);
+      if (!finalUrl || /pagenotfound/i.test(finalUrl)) continue;
+      const html = await response.text();
+      const detail = parseAbmRebuildDetail(html, finalUrl, {
+        kind: "product",
+        sku: product.sku,
+        title: product.title,
+        unit: product.unit,
+      });
+      if (!hasExactSpecificationSku(detail, product.sku)) continue;
+      return {
+        title: detail.title || product.title,
+        sku: product.sku,
+        unit: detail.unit || product.unit,
+        searchCategory: detail.category || product.modelType,
+        url: finalUrl,
+      };
+    } catch {
+      // A guessed title slug is only a fallback after exact official search.
+    }
+  }
+  return null;
 }
 
 function extractProductRows(html, page) {
@@ -364,7 +427,11 @@ async function resolveProductUrls(products) {
         results = await searchOfficial(session, product.title);
         match = results.find((row) => normalizeSku(row.sku) === normalizeSku(product.sku));
       }
-      if (!match) return { status: "unresolved", product, error: "No exact Cat. No. result" };
+      if (!match) {
+        const titleSlugMatch = await probeTitleSlug(product);
+        if (titleSlugMatch) return { status: "resolved", method: "verified-title-slug", product, result: titleSlugMatch };
+        return { status: "unresolved", product, error: "No exact Cat. No. result or verified title-slug page" };
+      }
       if ((index + 1) % 20 === 0 || index + 1 === products.length) {
         console.log(`[special-cell URLs] ${index + 1}/${products.length}`);
       }
