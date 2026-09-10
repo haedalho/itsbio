@@ -29,6 +29,13 @@ function usableIntroHtml(introHtml?: string, description?: string) {
   return description ? `<p>${escapeHtml(description)}</p>` : "";
 }
 
+function collectionListingOverview(title: string, sku?: string, category?: string) {
+  const safeTitle = escapeHtml(title);
+  const safeSku = escapeHtml(String(sku || ""));
+  const safeCategory = escapeHtml(String(category || "Special Cell Line Collection"));
+  return `<p><strong>${safeTitle}</strong> is listed in ABM's ${safeCategory}${safeSku ? ` under Cat. No. ${safeSku}` : ""}. The specifications below reproduce the product information available in the official ABM collection.</p>`;
+}
+
 export default async function AbmStagedDetailPage({
   params,
   searchParams,
@@ -74,7 +81,17 @@ export default async function AbmStagedDetailPage({
   const activeServicePath = kind === "service"
     ? findAbmServicePathForLabels([...paths.flat(), ...(record.breadcrumbs || [])])
     : [];
-  const overviewHtml = usableIntroHtml(record.introHtml, record.description || record.overview);
+  const belongsToSpecialCellCollection = paths.some((path) => path.includes("Special Cell Line Collections"));
+  const isCollectionTableRecord = record.verification?.source === "official-collection-table"
+    || (kind === "product"
+      && belongsToSpecialCellCollection
+      && !record.introHtml
+      && Boolean(record.specificationsHtml)
+      && !hasGallery);
+  const overviewHtml = usableIntroHtml(record.introHtml, record.description || record.overview)
+    || (kind === "product" && isCollectionTableRecord
+      ? collectionListingOverview(title, record.sku, record.category || record.searchCategory || record.filterTitle)
+      : "");
   const documents = (record.documents || []).map((item) => ({
     url: item.url || item.href || "",
     label: item.title || "Document",
@@ -87,9 +104,7 @@ export default async function AbmStagedDetailPage({
     return value && !/price|cost|amount|currency|cart|quantity|^cat\.?\s*no\.?$|^unit$|^service(?:\s+name)?$/.test(normalized);
   });
 
-  const infoRowClass = hasGallery
-    ? "grid grid-cols-[100px_1fr] gap-3 py-4 text-sm"
-    : "grid grid-cols-[120px_1fr] gap-3 border-b border-orange-50 py-4 text-sm last:border-b-0";
+  const infoRowClass = "grid grid-cols-[100px_1fr] gap-3 py-4 text-sm";
 
   return (
     <div className="bg-white">
@@ -118,23 +133,31 @@ export default async function AbmStagedDetailPage({
           >
             <h1 className="max-w-4xl text-3xl font-bold leading-tight tracking-tight text-neutral-950">{title}</h1>
 
-            <div className={[
-              "mt-6 grid gap-8 border-t border-neutral-200 pt-7",
-              hasGallery ? "md:grid-cols-[minmax(0,1fr)_400px]" : "grid-cols-1",
-            ].join(" ")}>
+            <div className="mt-6 grid gap-8 border-t border-neutral-200 pt-7 md:grid-cols-[minmax(0,1fr)_400px]">
               {hasGallery ? (
                 <div className="min-h-[320px]">
                   <ProductGalleryClient images={gallery} title={title} />
                 </div>
-              ) : null}
+              ) : (
+                <div className="flex min-h-[320px] items-center justify-center rounded-xl border border-neutral-200 bg-neutral-50 px-8 text-center">
+                  <div>
+                    <svg aria-hidden="true" viewBox="0 0 48 48" className="mx-auto h-12 w-12 text-neutral-300" fill="none">
+                      <rect x="5" y="7" width="38" height="34" rx="4" stroke="currentColor" strokeWidth="2" />
+                      <path d="m11 34 9-10 7 7 4-5 6 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <circle cx="33" cy="17" r="3" stroke="currentColor" strokeWidth="2" />
+                    </svg>
+                    <p className="mt-4 text-sm font-medium text-neutral-500">Product image not provided by manufacturer</p>
+                  </div>
+                </div>
+              )}
 
-              <aside className={`self-start overflow-hidden rounded-xl border-2 border-[#f2632f] bg-white ${hasGallery ? "" : "w-full"}`}>
+              <aside className="self-start overflow-hidden rounded-xl border-2 border-[#f2632f] bg-white">
                 <div className="border-b border-orange-100 px-6 py-4">
                   <h2 className="text-lg font-semibold text-[#dc5a2b]">{kind === "product" ? "Product Information" : "Service Information"}</h2>
                 </div>
 
                 <div>
-                  <dl className={hasGallery ? "px-6 py-2" : "px-6 py-3 md:px-7"}>
+                  <dl className="px-6 py-2">
                     {record.sku ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Cat. No.</dt><dd className="font-medium text-slate-700">{record.sku}</dd></div> : null}
                     {record.unit ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Unit</dt><dd className="text-slate-700">{record.unit}</dd></div> : null}
                     {(record.category || record.searchCategory || record.filterTitle) ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Category</dt><dd className="text-slate-700">{record.category || record.searchCategory || record.filterTitle}</dd></div> : null}
