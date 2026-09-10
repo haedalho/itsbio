@@ -139,7 +139,7 @@ export default async function AbmStagedDetailPage({
                   <ProductGalleryClient images={gallery} title={title} />
                 </div>
               ) : (
-                <div className="flex min-h-[320px] items-center justify-center rounded-xl border border-neutral-200 bg-neutral-50 px-8 text-center">
+                <div className="relative mx-auto flex aspect-square w-full max-w-[560px] items-center justify-center overflow-hidden bg-neutral-50 px-8 text-center">
                   <div>
                     <svg aria-hidden="true" viewBox="0 0 48 48" className="mx-auto h-12 w-12 text-neutral-300" fill="none">
                       <rect x="5" y="7" width="38" height="34" rx="4" stroke="currentColor" strokeWidth="2" />
@@ -158,10 +158,18 @@ export default async function AbmStagedDetailPage({
 
                 <div>
                   <dl className="px-6 py-2">
-                    {record.sku ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Cat. No.</dt><dd className="font-medium text-slate-700">{record.sku}</dd></div> : null}
-                    {record.unit ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Unit</dt><dd className="text-slate-700">{record.unit}</dd></div> : null}
-                    {(record.category || record.searchCategory || record.filterTitle) ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Category</dt><dd className="text-slate-700">{record.category || record.searchCategory || record.filterTitle}</dd></div> : null}
-                    {record.storage ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Storage</dt><dd className="text-slate-700">{record.storage}</dd></div> : null}
+                    {kind === "product" ? (
+                      <>
+                        <div className={infoRowClass}><dt className="font-semibold text-slate-900">Cat. No.</dt><dd className="font-medium text-slate-700">{record.sku || "—"}</dd></div>
+                        <div className={infoRowClass}><dt className="font-semibold text-slate-900">Unit</dt><dd className="text-slate-700">{record.unit || "—"}</dd></div>
+                        <div className={infoRowClass}><dt className="font-semibold text-slate-900">Category</dt><dd className="text-slate-700">{record.category || record.searchCategory || record.filterTitle || "—"}</dd></div>
+                        <div className={infoRowClass}><dt className="font-semibold text-slate-900">Storage</dt><dd className="text-slate-700">{record.storage || "—"}</dd></div>
+                      </>
+                    ) : null}
+                    {kind === "service" && record.sku ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Cat. No.</dt><dd className="font-medium text-slate-700">{record.sku}</dd></div> : null}
+                    {kind === "service" && record.unit ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Unit</dt><dd className="text-slate-700">{record.unit}</dd></div> : null}
+                    {kind === "service" && (record.category || record.searchCategory || record.filterTitle) ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Category</dt><dd className="text-slate-700">{record.category || record.searchCategory || record.filterTitle}</dd></div> : null}
+                    {kind === "service" && record.storage ? <div className={infoRowClass}><dt className="font-semibold text-slate-900">Storage</dt><dd className="text-slate-700">{record.storage}</dd></div> : null}
                     {kind === "service" && serviceFields.map(([label, value]) => (
                       <div key={label} className={infoRowClass}><dt className="font-semibold text-slate-900">{label}</dt><dd className="text-slate-700">{value}</dd></div>
                     ))}
