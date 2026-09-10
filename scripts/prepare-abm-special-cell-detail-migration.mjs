@@ -81,7 +81,7 @@ function safeOfficialProductUrl(value) {
   }
 }
 
-function titleSlugCandidates(title) {
+function titleSlugCandidates(title, sku) {
   const normalized = clean(title)
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -93,10 +93,15 @@ function titleSlugCandidates(title) {
     normalized,
     normalized.replace(/\s*\([^)]*\)\s*/g, " "),
   ];
-  return [...new Set(variants.map((value) => value
+  const slugs = [...new Set(variants.map((value) => value
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
-  ).filter(Boolean))].map((slug) => `${BASE}/${slug}.html`);
+  ).filter(Boolean))];
+  const normalizedSku = clean(sku).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return [...new Set(slugs.flatMap((slug) => [
+    normalizedSku ? `${BASE}/${slug}-${normalizedSku}.html` : "",
+    `${BASE}/${slug}.html`,
+  ]).filter(Boolean))];
 }
 
 function hasExactSpecificationSku(detail, expectedSku) {
@@ -107,38 +112,43 @@ function hasExactSpecificationSku(detail, expectedSku) {
   ));
 }
 
+async function probeOfficialProductUrl(candidate, product) {
+  try {
+    const response = await fetch(candidate, {
+      cache: "no-store",
+      redirect: "follow",
+      headers: {
+        accept: "text/html",
+        "user-agent": USER_AGENT,
+      },
+    });
+    if (!response.ok) return null;
+    const finalUrl = safeOfficialProductUrl(response.url || candidate);
+    if (!finalUrl || /pagenotfound/i.test(finalUrl)) return null;
+    const html = await response.text();
+    const detail = parseAbmRebuildDetail(html, finalUrl, {
+      kind: "product",
+      sku: product.sku,
+      title: product.title,
+      unit: product.unit,
+    });
+    if (!hasExactSpecificationSku(detail, product.sku)) return null;
+    return {
+      title: detail.title || product.title,
+      sku: product.sku,
+      unit: detail.unit || product.unit,
+      searchCategory: detail.category || product.modelType,
+      url: finalUrl,
+    };
+  } catch {
+    return null;
+  }
+}
+
 async function probeTitleSlug(product) {
-  for (const candidate of titleSlugCandidates(product.title)) {
-    try {
-      const response = await fetch(candidate, {
-        cache: "no-store",
-        redirect: "follow",
-        headers: {
-          accept: "text/html",
-          "user-agent": USER_AGENT,
-        },
-      });
-      if (!response.ok) continue;
-      const finalUrl = safeOfficialProductUrl(response.url || candidate);
-      if (!finalUrl || /pagenotfound/i.test(finalUrl)) continue;
-      const html = await response.text();
-      const detail = parseAbmRebuildDetail(html, finalUrl, {
-        kind: "product",
-        sku: product.sku,
-        title: product.title,
-        unit: product.unit,
-      });
-      if (!hasExactSpecificationSku(detail, product.sku)) continue;
-      return {
-        title: detail.title || product.title,
-        sku: product.sku,
-        unit: detail.unit || product.unit,
-        searchCategory: detail.category || product.modelType,
-        url: finalUrl,
-      };
-    } catch {
-      // A guessed title slug is only a fallback after exact official search.
-    }
+  for (const candidate of titleSlugCandidates(product.title, product.sku)) {
+    const match = await probeOfficialProductUrl(candidate, product);
+    if (match) return match;
   }
   return null;
 }
@@ -170,6 +180,7 @@ function extractProductRows(html, page) {
     const speciesIndex = indexFor(headers, /^species$/);
     const unitIndex = indexFor(headers, /^(?:unit|size|pack size)$/);
     const formatIndex = indexFor(headers, /^format$/);
+    const tissueIndex = indexFor(headers, /^(?:tissue|source tissue)$/);
 
     for (const row of rows) {
       const cells = $(row).children("td").toArray();
@@ -178,9 +189,11 @@ function extractProductRows(html, page) {
       const title = clean($(cells[nameIndex]).text());
       if (!validSku(sku) || !title) continue;
 
-      const sourceCandidates = $(row).find("a[href]").toArray()
-        .map((anchor) => safeOfficialProductUrl($(anchor).attr("href")))
-        .filter(Boolean);
+      const sourceCandidates = [
+        safeOfficialProductUrl($(row).attr("data-href")),
+        ...$(row).find("a[href]").toArray()
+          .map((anchor) => safeOfficialProductUrl($(anchor).attr("href"))),
+      ].filter(Boolean);
       const collectionTitle = clean(page.title).replace(/\s*\|.*$/, "");
       products.push({
         sku,
@@ -189,6 +202,7 @@ function extractProductRows(html, page) {
         modelType: modelTypeIndex >= 0 ? clean($(cells[modelTypeIndex]).text()) : "",
         species: speciesIndex >= 0 ? clean($(cells[speciesIndex]).text()) : "",
         format: formatIndex >= 0 ? clean($(cells[formatIndex]).text()) : "",
+        tissue: tissueIndex >= 0 ? clean($(cells[tissueIndex]).text()) : "",
         collectionSourceUrl: safeOfficialProductUrl(page.sourceUrl),
         sourceCandidates: [...new Set(sourceCandidates)],
         listingFilter: {
@@ -205,6 +219,7 @@ function extractProductRows(html, page) {
 
 function bestPageRows(page) {
   const candidates = [
+    page.liveHtml,
     page.legacyHtml,
     ...(page.contentBlocks || []).map((block) => block?.html),
     ...(page.blocks || []).map((block) => block?.html),
@@ -231,6 +246,7 @@ function dedupeProducts(rows) {
     if (!current.modelType && row.modelType) current.modelType = row.modelType;
     if (!current.species && row.species) current.species = row.species;
     if (!current.format && row.format) current.format = row.format;
+    if (!current.tissue && row.tissue) current.tissue = row.tissue;
     if (!current.unit && row.unit) current.unit = row.unit;
   }
   return [...products.values()];
@@ -246,6 +262,7 @@ function categoryFallbackCollectorRow(product) {
     ["Collection", collectionTitle],
     ["Model Type", product.modelType],
     ["Species", product.species],
+    ["Tissue", product.tissue],
     ["Format", product.format],
     ["Unit", product.unit],
   ].filter(([, value]) => clean(value));
@@ -262,6 +279,7 @@ function categoryFallbackCollectorRow(product) {
     filterPath: product.listingFilters[0]?.path || ["Cellular Materials", "Special Cell Line Collections"],
     listingFilters: product.listingFilters,
     species: product.species,
+    tissue: product.tissue,
     format: product.format,
   };
   return {
@@ -414,12 +432,39 @@ async function pool(items, workers, mapper) {
   return output;
 }
 
+async function fetchLiveCategoryHtml(page) {
+  const sourceUrl = safeOfficialProductUrl(page.sourceUrl);
+  if (!sourceUrl) return { ...page, liveHtml: "", liveSourceStatus: "invalid-source-url" };
+  try {
+    const response = await fetch(sourceUrl, {
+      cache: "no-store",
+      redirect: "follow",
+      headers: {
+        accept: "text/html",
+        "user-agent": USER_AGENT,
+      },
+    });
+    const finalUrl = safeOfficialProductUrl(response.url || sourceUrl);
+    if (!response.ok || !finalUrl || /pagenotfound/i.test(finalUrl)) {
+      return { ...page, liveHtml: "", liveSourceStatus: `http-${response.status}` };
+    }
+    const liveHtml = await response.text();
+    if (liveHtml.length < 500) return { ...page, liveHtml: "", liveSourceStatus: "empty-response" };
+    return { ...page, liveHtml, liveSourceStatus: "ok" };
+  } catch (error) {
+    return { ...page, liveHtml: "", liveSourceStatus: `fetch-error:${String(error?.message || error)}` };
+  }
+}
+
 async function resolveProductUrls(products) {
   if (!products.length) return [];
   const session = await openSearchSession();
   return await pool(products, SEARCH_WORKERS, async (product, index) => {
     const directUrl = product.sourceCandidates[0] || "";
-    if (directUrl) return { status: "resolved", method: "category-link", product, result: { url: directUrl } };
+    if (directUrl) {
+      const directMatch = await probeOfficialProductUrl(directUrl, product);
+      if (directMatch) return { status: "resolved", method: "verified-category-link", product, result: directMatch };
+    }
     try {
       let results = await searchOfficial(session, product.sku);
       let match = results.find((row) => normalizeSku(row.sku) === normalizeSku(product.sku));
@@ -427,10 +472,15 @@ async function resolveProductUrls(products) {
         results = await searchOfficial(session, product.title);
         match = results.find((row) => normalizeSku(row.sku) === normalizeSku(product.sku));
       }
+      if (match) {
+        const verifiedSearchMatch = await probeOfficialProductUrl(match.url, product);
+        if (verifiedSearchMatch) match = { ...match, ...verifiedSearchMatch };
+        else match = null;
+      }
       if (!match) {
         const titleSlugMatch = await probeTitleSlug(product);
         if (titleSlugMatch) return { status: "resolved", method: "verified-title-slug", product, result: titleSlugMatch };
-        return { status: "unresolved", product, error: "No exact Cat. No. result or verified title-slug page" };
+        return { status: "unresolved", product, error: "No live official detail page with an exact Cat. No. match" };
       }
       if ((index + 1) % 20 === 0 || index + 1 === products.length) {
         console.log(`[special-cell URLs] ${index + 1}/${products.length}`);
@@ -465,8 +515,13 @@ const [pages, stagedDocuments] = await Promise.all([
 ]);
 
 if (pages.length !== 12) throw new Error(`Expected 12 Special Cell Line Collection pages, found ${pages.length}`);
-const pageCoverage = pages.map((page) => ({ path: page.path.join("/"), rows: bestPageRows(page).length }));
-const tableRows = pages.flatMap((page) => bestPageRows(page));
+const sourcePages = await pool(pages, 4, fetchLiveCategoryHtml);
+const pageCoverage = sourcePages.map((page) => ({
+  path: page.path.join("/"),
+  rows: bestPageRows(page).length,
+  liveSourceStatus: page.liveSourceStatus,
+}));
+const tableRows = sourcePages.flatMap((page) => bestPageRows(page));
 const products = dedupeProducts(tableRows);
 const localCatalog = JSON.parse(fs.readFileSync(CELL_CATALOG_FILE, "utf8"));
 const localSkus = new Set((localCatalog.products || []).map((product) => normalizeSku(product.sku)));
@@ -494,6 +549,7 @@ const inventoryProducts = resolved.map(({ product, result }) => ({
   filterPath: product.listingFilters[0]?.path || ["Cellular Materials", "Special Cell Line Collections"],
   listingFilters: product.listingFilters,
   species: product.species,
+  tissue: product.tissue,
   format: product.format,
 }));
 
@@ -515,7 +571,7 @@ const report = {
   generatedAt: inventory.generatedAt,
   version: VERSION,
   batchKey: BATCH_KEY,
-  pages: pages.length,
+  pages: sourcePages.length,
   pageCoverage,
   tableRows: tableRows.length,
   duplicateTableRows: tableRows.length - products.length,

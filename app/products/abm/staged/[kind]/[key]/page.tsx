@@ -88,6 +88,16 @@ export default async function AbmStagedDetailPage({
       && !record.introHtml
       && Boolean(record.specificationsHtml)
       && !hasGallery);
+  const referenceCard = record.referenceCard || (kind === "product" && isCollectionTableRecord ? {
+    eyebrow: "ABM PRODUCT PROFILE",
+    title: record.sku || "ABM",
+    subtitle: title,
+    facts: [
+      { label: "Collection", value: record.category || record.filterTitle || "Special Cell Line Collection" },
+      { label: "Category", value: record.searchCategory || "Cell Line" },
+    ],
+    notice: "Manufacturer product image is not currently published.",
+  } : undefined);
   const overviewHtml = usableIntroHtml(record.introHtml, record.description || record.overview)
     || (kind === "product" && isCollectionTableRecord
       ? collectionListingOverview(title, record.sku, record.category || record.searchCategory || record.filterTitle)
@@ -137,6 +147,36 @@ export default async function AbmStagedDetailPage({
               {hasGallery ? (
                 <div className="min-h-[320px]">
                   <ProductGalleryClient images={gallery} title={title} />
+                </div>
+              ) : referenceCard ? (
+                <div
+                  className="relative mx-auto aspect-square w-full max-w-[560px] overflow-hidden rounded-2xl border border-orange-100 bg-[#fff8f3]"
+                  aria-label={`${title} product profile`}
+                >
+                  <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-[#f2632f]/10" />
+                  <div className="absolute -bottom-24 -left-20 h-72 w-72 rounded-full border-[36px] border-[#f2632f]/[0.07]" />
+                  <div className="relative flex h-full flex-col justify-between p-8 sm:p-10">
+                    <div>
+                      <p className="text-xs font-bold tracking-[0.18em] text-[#dc5a2b]">{referenceCard.eyebrow}</p>
+                      <p className="mt-4 text-5xl font-black tracking-tight text-slate-950 sm:text-6xl">{referenceCard.title}</p>
+                      {referenceCard.subtitle ? (
+                        <p className="mt-2 text-xl font-semibold text-slate-800 sm:text-2xl">{referenceCard.subtitle}</p>
+                      ) : null}
+                    </div>
+
+                    <dl className="space-y-3 border-y border-orange-200/80 py-5">
+                      {referenceCard.facts.map((fact) => (
+                        <div key={fact.label} className="grid grid-cols-[92px_1fr] gap-3 text-sm">
+                          <dt className="font-semibold text-[#dc5a2b]">{fact.label}</dt>
+                          <dd className="font-medium text-slate-800">{fact.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+
+                    {referenceCard.notice ? (
+                      <p className="text-xs leading-5 text-slate-500">{referenceCard.notice}</p>
+                    ) : null}
+                  </div>
                 </div>
               ) : (
                 <div className="relative mx-auto flex aspect-square w-full max-w-[560px] items-center justify-center overflow-hidden bg-neutral-50 px-8 text-center">

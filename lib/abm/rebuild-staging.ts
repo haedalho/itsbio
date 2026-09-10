@@ -60,7 +60,56 @@ export type AbmStagedDetail = AbmStagedRecord & {
   sourceUrl?: string;
   collectedAt?: string;
   verification?: Record<string, unknown>;
+  referenceCard?: {
+    eyebrow: string;
+    title: string;
+    subtitle?: string;
+    facts: Array<{ label: string; value: string }>;
+    notice?: string;
+  };
 };
+
+const T9997_ABM_COLLECTION_URL = "https://www.abmgood.com/blood-cell-collection.html";
+
+function applyVerifiedCollectionDetail(detail: AbmStagedDetail): AbmStagedDetail {
+  const isT9997 = detail.kind === "product" && String(detail.sku || "").trim().toLowerCase() === "t9997";
+  const isCollectionFallback = detail.verification?.source === "official-collection-table"
+    || String(detail.sourceUrl || "").trim() === T9997_ABM_COLLECTION_URL
+    || detail.sourceUnavailable === true;
+  if (!isT9997 || !isCollectionFallback || (detail.images || []).length > 0) return detail;
+
+  return {
+    ...detail,
+    title: "Kasumi-1 Cells",
+    category: "Blood Cell Collection",
+    searchCategory: "Tumor Cells",
+    unit: detail.unit || "Not published on the current ABM listing",
+    storage: detail.storage || "Not published on the current ABM listing",
+    sourceUrl: T9997_ABM_COLLECTION_URL,
+    hasDetail: true,
+    sourceUnavailable: false,
+    introHtml: `<p><strong>Kasumi-1 Cells (T9997)</strong> are listed by ABM in the Blood Cell Collection as a human tumor-cell product associated with blood tissue.</p><p>The former ABM product-detail page is no longer published. This page preserves the product information that remains available in ABM's current collection listing; no substitute product image or unverified technical attributes have been added.</p>`,
+    specificationsHtml: `<table><tbody><tr><th>Cat. No.</th><td>T9997</td></tr><tr><th>Product Name</th><td>Kasumi-1 Cells</td></tr><tr><th>Collection</th><td>Blood Cell Collection</td></tr><tr><th>Model Type</th><td>Tumor Cells</td></tr><tr><th>Species</th><td>Human (H. sapiens)</td></tr><tr><th>Tissue</th><td>Blood</td></tr></tbody></table>`,
+    referencesHtml: `<p><a href="${T9997_ABM_COLLECTION_URL}">ABM Blood Cell Collection</a> — current manufacturer listing for Cat. No. T9997.</p>`,
+    referenceCard: {
+      eyebrow: "ABM CELL LINE",
+      title: "T9997",
+      subtitle: "Kasumi-1 Cells",
+      facts: [
+        { label: "Model Type", value: "Tumor Cells" },
+        { label: "Species", value: "Human (H. sapiens)" },
+        { label: "Tissue", value: "Blood" },
+      ],
+      notice: "Manufacturer product image is not currently published.",
+    },
+    verification: {
+      ...(detail.verification || {}),
+      source: "official-collection-table",
+      sourceDetailAvailable: false,
+      hasOfficialImages: false,
+    },
+  };
+}
 
 export function isManagedAbmImageUrl(value?: string) {
   if (!value) return false;
@@ -324,14 +373,14 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
     if (cellRecord && cellDetail) {
       let images = normalizedDetailImages(cellDetail.previewImage, cellDetail.images);
       if (!images.length) images = await getExistingManagedProductImages(cellRecord);
-      return {
+      return applyVerifiedCollectionDetail({
         ...cellRecord,
         ...cellDetail,
         kind,
         sourceUrl: String(cellDetail.sourceUrl || cellRecord.url || "").trim(),
         hasDetail: true,
         images,
-      } as AbmStagedDetail;
+      } as AbmStagedDetail);
     }
   }
 
@@ -361,7 +410,7 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
     direct.sourceUrl = String(direct.sourceUrl || direct.url || "").trim();
     direct.hasDetail = true;
     direct.images = normalizedDetailImages(direct.previewImage, direct.images);
-    return direct;
+    return applyVerifiedCollectionDetail(direct);
   }
 
   if (!record) return undefined;
@@ -369,13 +418,13 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
   if (staged && isInvalidCollectedDetail(staged)) {
     let images = normalizedDetailImages(record.previewImage);
     if (!images.length) images = await getExistingManagedProductImages(record);
-    return {
+    return applyVerifiedCollectionDetail({
       ...record,
       sourceUrl: String(record.url || "").trim(),
       hasDetail: true,
       sourceUnavailable: true,
       images,
-    } as AbmStagedDetail;
+    } as AbmStagedDetail);
   }
 
   if (!staged) {
@@ -383,23 +432,23 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
     if (officialCellDetail) {
       let images = normalizedDetailImages(officialCellDetail.previewImage, officialCellDetail.images);
       if (!images.length) images = await getExistingManagedProductImages(record);
-      return {
+      return applyVerifiedCollectionDetail({
         ...record,
         ...officialCellDetail,
         kind,
         sourceUrl: String(officialCellDetail.sourceUrl || record.url || "").trim(),
         hasDetail: true,
         images,
-      } as AbmStagedDetail;
+      } as AbmStagedDetail);
     }
     let images = normalizedDetailImages(record.previewImage);
     if (!images.length) images = await getExistingManagedProductImages(record);
-    return {
+    return applyVerifiedCollectionDetail({
       ...record,
       sourceUrl: String(record.url || "").trim(),
       hasDetail: false,
       images,
-    } as AbmStagedDetail;
+    } as AbmStagedDetail);
   }
 
   const sourceUrl = String(staged.sourceUrl || record.url || "").trim();
@@ -408,5 +457,5 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
   detail.hasDetail = true;
   detail.images = normalizedDetailImages(detail.previewImage, detail.images);
   if (!detail.images.length) detail.images = await getExistingManagedProductImages(record);
-  return detail;
+  return applyVerifiedCollectionDetail(detail);
 }
