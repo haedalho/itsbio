@@ -56,6 +56,7 @@ export type AbmStagedDetail = AbmStagedRecord & {
   };
   breadcrumbs?: string[];
   images?: string[];
+  referenceImages?: Array<{ url: string; alt?: string; caption?: string; creditUrl?: string }>;
   documents?: Array<{ title?: string; url?: string; href?: string; section?: string }>;
   sourceUrl?: string;
   collectedAt?: string;
@@ -66,6 +67,7 @@ const T9997_ABM_COLLECTION_URL = "https://www.abmgood.com/blood-cell-collection.
 const T9997_DISTRIBUTOR_URL = "https://www.caltagmedsystems.co.uk/products/product_detail.php?CI_ID=2585623";
 const T9997_CELL_BANK_URL = "https://cellbank.nibn.go.jp/~cellbank/en/search_res_det.cgi?ID=2072";
 const T9997_ESTABLISHMENT_PAPER_URL = "https://pubmed.ncbi.nlm.nih.gov/2018839/";
+const T9997_REFERENCE_IMAGE_URL = "https://cellbank.nibn.go.jp/~cellbank/images/pictures/clp04057.jpg";
 
 function applyVerifiedCollectionDetail(detail: AbmStagedDetail): AbmStagedDetail {
   const isT9997 = detail.kind === "product" && String(detail.sku || "").trim().toLowerCase() === "t9997";
@@ -86,7 +88,13 @@ function applyVerifiedCollectionDetail(detail: AbmStagedDetail): AbmStagedDetail
     sourceUnavailable: false,
     description: "Kasumi-1 is a human acute myeloid leukemia cell line established from peripheral blood and characterized by the t(8;21) translocation and AML-ETO fusion gene.",
     introHtml: `<p><strong>Kasumi-1 Cells (T9997)</strong> are listed by ABM in the Blood Cell Collection as a human tumor cell product derived from blood.</p><p>The ABM product-detail URL is no longer published. The product fields below preserve ABM's current catalog record, verified ABM-T9997 storage and shipping data from an ABM distributor, and clearly separated reference characteristics for the same Kasumi-1 cell line from JCRB Cell Bank.</p>`,
-    specificationsHtml: `<div class="abm-products-specification"><h3>ABM Product Record</h3><table><tbody><tr><th>Cat. No.</th><td>T9997</td></tr><tr><th>Name</th><td>Kasumi-1 Cells</td></tr><tr><th>Collection</th><td>Blood Cell Collection</td></tr><tr><th>Model Type</th><td>Tumor Cells</td></tr><tr><th>Organism</th><td>Human (H. sapiens)</td></tr><tr><th>Tissue</th><td>Blood</td></tr><tr><th>Regulatory Status</th><td>Research Use Only (RUO)</td></tr><tr><th>Shipping</th><td>Dry Ice</td></tr><tr><th>Storage Condition</th><td>Vapor phase of liquid nitrogen, or below -130°C.</td></tr></tbody></table><h3>Reference Cell-Line Characteristics (JCRB1003)</h3><table><tbody><tr><th>Profile</th><td>Human acute myeloid leukemia cell line with t(8;21) chromosome translocation</td></tr><tr><th>Primary Site</th><td>Peripheral blood</td></tr><tr><th>Morphology</th><td>Myeloblast</td></tr><tr><th>Growth Properties</th><td>Suspension culture</td></tr><tr><th>Genetics</th><td>t(8;21), AML-ETO fusion gene</td></tr><tr><th>Growth Medium</th><td>RPMI 1640 with 10% heat-inactivated fetal bovine serum</td></tr><tr><th>Culture Conditions</th><td>37°C, 5% CO₂; simple dilution twice weekly</td></tr><tr><th>Classification</th><td>Tumor cell line</td></tr></tbody></table></div>`,
+    specificationsHtml: `<div class="abm-products-specification"><table><tbody><tr><td>Cat. No.</td><td>T9997</td></tr><tr><td>Name</td><td>Kasumi-1 Cells</td></tr><tr><td>Description</td><td>Human acute myeloid leukemia cell line with t(8;21) chromosome translocation</td></tr><tr><td>Collection</td><td>Blood Cell Collection</td></tr><tr><td>Model Type</td><td>Tumor Cells</td></tr><tr><td>Organism</td><td>Human (H. sapiens)</td></tr><tr><td>Tissue</td><td>Blood</td></tr><tr><td>Regulatory Status</td><td>Research Use Only (RUO)</td></tr><tr><td>Shipping</td><td>Dry Ice</td></tr><tr><td>Storage Condition</td><td>Vapor phase of liquid nitrogen, or below -130°C.</td></tr><tr><td>Cell Line Reference</td><td>JCRB1003 Kasumi-1</td></tr><tr><td>Primary Site</td><td>Peripheral blood</td></tr><tr><td>Morphology</td><td>Myeloblast</td></tr><tr><td>Growth Properties</td><td>Suspension culture</td></tr><tr><td>Genetics</td><td>t(8;21), AML-ETO fusion gene</td></tr><tr><td>Growth Medium</td><td>RPMI 1640 with 10% heat-inactivated fetal bovine serum</td></tr><tr><td>Culture Conditions</td><td>37°C, 5% CO₂; simple dilution twice weekly</td></tr><tr><td>Classification</td><td>Tumor cell line</td></tr><tr><td>Material Citation</td><td>Applied Biological Materials Inc., Cat. No. T9997.</td></tr></tbody></table></div>`,
+    referenceImages: [{
+      url: T9997_REFERENCE_IMAGE_URL,
+      alt: "Kasumi-1 cell line reference micrograph",
+      caption: "Reference cell-line image: Kasumi-1 (JCRB1003)",
+      creditUrl: T9997_CELL_BANK_URL,
+    }],
     documentsHtml: `<div class="abm-doc-div"><div class="abm-doc-title">ABM Cell Handling Resources</div><ul class="abm-document-list"><li><a href="https://www.abmgood.com/uploads/document/IMPORTANT-CONSIDERATIONS-Cell-Culture-150623.pdf" target="_blank" rel="noopener noreferrer">Important Considerations for Cell Culture</a></li><li><a href="https://www.abmgood.com/uploads/document/Cell_Handling_Instructions_Upon_Arrival_150623.pdf" target="_blank" rel="noopener noreferrer">Cell Handling Instructions Upon Arrival</a></li></ul></div>`,
     referencesHtml: `<div class="abm-doc-div"><ul><li><a href="${T9997_ABM_COLLECTION_URL}" target="_blank" rel="noopener noreferrer">ABM Blood Cell Collection</a> — current manufacturer catalog entry for T9997.</li><li><a href="${T9997_DISTRIBUTOR_URL}" target="_blank" rel="noopener noreferrer">Caltag Medsystems ABM-T9997 record</a> — ABM supplier, shipping, storage, and RUO fields.</li><li><a href="${T9997_CELL_BANK_URL}" target="_blank" rel="noopener noreferrer">JCRB1003 Kasumi-1</a> — reference identity and culture characteristics for the same cell line.</li><li><a href="${T9997_ESTABLISHMENT_PAPER_URL}" target="_blank" rel="noopener noreferrer">Establishment of a human acute myeloid leukemia cell line (Kasumi-1) with 8;21 chromosome translocation</a>.</li></ul></div>`,
     documents: [

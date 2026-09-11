@@ -35,6 +35,10 @@ function collectionListingOverview(title: string, sku?: string, category?: strin
   return `<p><strong>${safeTitle}</strong> is listed in ABM's ${safeCategory}${safeSku ? ` under Cat. No. ${safeSku}` : ""}. The specifications below reproduce the product information available in the official ABM collection.</p>`;
 }
 
+function isTrustedReferenceImage(value?: string) {
+  return value === "https://cellbank.nibn.go.jp/~cellbank/images/pictures/clp04057.jpg";
+}
+
 export default async function AbmStagedDetailPage({
   params,
   searchParams,
@@ -68,7 +72,17 @@ export default async function AbmStagedDetailPage({
     String(record.previewImage || "").trim(),
     ...(record.images || []),
   ].filter((url): url is string => isManagedAbmImageUrl(url))));
-  const gallery = galleryUrls.map((url) => ({ url, alt: title }));
+  const gallery = [
+    ...galleryUrls.map((url) => ({ url, alt: title })),
+    ...(record.referenceImages || [])
+      .filter((image) => isTrustedReferenceImage(image.url))
+      .map((image) => ({
+        url: image.url,
+        alt: image.alt || title,
+        caption: image.caption,
+        creditUrl: image.creditUrl,
+      })),
+  ];
   const hasGallery = gallery.length > 0;
   const paths = Array.isArray(record.listingPaths) && record.listingPaths.length
     ? record.listingPaths

@@ -5,6 +5,8 @@ import * as React from "react";
 type Img = {
   url: string;
   alt?: string;
+  caption?: string;
+  creditUrl?: string;
 };
 
 export default function ProductGalleryClient({
@@ -35,8 +37,24 @@ export default function ProductGalleryClient({
           alt={active.alt || title || "Product image"}
           className="absolute inset-0 h-full w-full object-contain"
           loading="eager"
+          referrerPolicy="no-referrer"
         />
       </div>
+
+      {active.caption ? (
+        <p className="mx-auto mt-3 max-w-[560px] text-center text-xs leading-5 text-neutral-500">
+          {active.creditUrl ? (
+            <a
+              href={active.creditUrl}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="font-medium text-neutral-600 underline decoration-neutral-300 underline-offset-4 hover:text-[#dc5a2b]"
+            >
+              {active.caption}
+            </a>
+          ) : active.caption}
+        </p>
+      ) : null}
 
       {/* Thumbnails */}
       {safe.length > 1 ? (
@@ -63,6 +81,7 @@ export default function ProductGalleryClient({
                     alt={img.alt || title || "Product thumbnail"}
                     className="h-full w-full object-contain"
                     loading="lazy"
+                    referrerPolicy="no-referrer"
                   />
                 </button>
               );
