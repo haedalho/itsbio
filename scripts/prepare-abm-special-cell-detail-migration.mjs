@@ -282,7 +282,7 @@ function categoryFallbackCollectorRow(product) {
     tissue: product.tissue,
     format: product.format,
   };
-  return {
+  const row = {
     status: "ok",
     inventory,
     finalUrl: sourceUrl,
@@ -323,6 +323,25 @@ function categoryFallbackCollectorRow(product) {
       },
     },
   };
+  if (normalizeSku(product.sku) !== "t9997") return row;
+
+  row.detail.description = "Kasumi-1 is a human acute myeloid leukemia cell line established from peripheral blood and characterized by the t(8;21) translocation and AML-ETO fusion gene.";
+  row.detail.storage = "Vapor phase of liquid nitrogen, or below -130°C.";
+  row.detail.materialCitation = "Applied Biological Materials Inc., Cat. No. T9997.";
+  row.detail.introHtml = `<p><strong>Kasumi-1 Cells (T9997)</strong> are listed by ABM in the Blood Cell Collection as a human tumor cell product derived from blood.</p><p>The ABM product-detail URL is no longer published. The product fields below preserve ABM's current catalog record, verified ABM-T9997 storage and shipping data from an ABM distributor, and clearly separated reference characteristics for the same Kasumi-1 cell line from JCRB Cell Bank.</p>`;
+  row.detail.specificationsHtml = `<div class="abm-products-specification"><h3>ABM Product Record</h3><table><tbody><tr><th>Cat. No.</th><td>T9997</td></tr><tr><th>Name</th><td>Kasumi-1 Cells</td></tr><tr><th>Collection</th><td>Blood Cell Collection</td></tr><tr><th>Model Type</th><td>Tumor Cells</td></tr><tr><th>Organism</th><td>Human (H. sapiens)</td></tr><tr><th>Tissue</th><td>Blood</td></tr><tr><th>Regulatory Status</th><td>Research Use Only (RUO)</td></tr><tr><th>Shipping</th><td>Dry Ice</td></tr><tr><th>Storage Condition</th><td>Vapor phase of liquid nitrogen, or below -130°C.</td></tr></tbody></table><h3>Reference Cell-Line Characteristics (JCRB1003)</h3><table><tbody><tr><th>Profile</th><td>Human acute myeloid leukemia cell line with t(8;21) chromosome translocation</td></tr><tr><th>Primary Site</th><td>Peripheral blood</td></tr><tr><th>Morphology</th><td>Myeloblast</td></tr><tr><th>Growth Properties</th><td>Suspension culture</td></tr><tr><th>Genetics</th><td>t(8;21), AML-ETO fusion gene</td></tr><tr><th>Growth Medium</th><td>RPMI 1640 with 10% heat-inactivated fetal bovine serum</td></tr><tr><th>Culture Conditions</th><td>37°C, 5% CO₂; simple dilution twice weekly</td></tr><tr><th>Classification</th><td>Tumor cell line</td></tr></tbody></table></div>`;
+  row.detail.documentsHtml = `<div class="abm-doc-div"><div class="abm-doc-title">ABM Cell Handling Resources</div><ul class="abm-document-list"><li><a href="https://www.abmgood.com/uploads/document/IMPORTANT-CONSIDERATIONS-Cell-Culture-150623.pdf" target="_blank" rel="noopener noreferrer">Important Considerations for Cell Culture</a></li><li><a href="https://www.abmgood.com/uploads/document/Cell_Handling_Instructions_Upon_Arrival_150623.pdf" target="_blank" rel="noopener noreferrer">Cell Handling Instructions Upon Arrival</a></li></ul></div>`;
+  row.detail.referencesHtml = `<div class="abm-doc-div"><ul><li><a href="https://www.abmgood.com/blood-cell-collection.html" target="_blank" rel="noopener noreferrer">ABM Blood Cell Collection</a> — current manufacturer catalog entry for T9997.</li><li><a href="https://www.caltagmedsystems.co.uk/products/product_detail.php?CI_ID=2585623" target="_blank" rel="noopener noreferrer">Caltag Medsystems ABM-T9997 record</a> — ABM supplier, shipping, storage, and RUO fields.</li><li><a href="https://cellbank.nibn.go.jp/~cellbank/en/search_res_det.cgi?ID=2072" target="_blank" rel="noopener noreferrer">JCRB1003 Kasumi-1</a> — reference identity and culture characteristics for the same cell line.</li><li><a href="https://pubmed.ncbi.nlm.nih.gov/2018839/" target="_blank" rel="noopener noreferrer">Establishment of a human acute myeloid leukemia cell line (Kasumi-1) with 8;21 chromosome translocation</a>.</li></ul></div>`;
+  row.detail.documents = [
+    { title: "Important Considerations for Cell Culture", url: "https://www.abmgood.com/uploads/document/IMPORTANT-CONSIDERATIONS-Cell-Culture-150623.pdf", section: "documents" },
+    { title: "Cell Handling Instructions Upon Arrival", url: "https://www.abmgood.com/uploads/document/Cell_Handling_Instructions_Upon_Arrival_150623.pdf", section: "documents" },
+  ];
+  row.detail.verification = {
+    ...row.detail.verification,
+    source: "official-collection-plus-verified-references",
+    sourceDetailAvailable: false,
+  };
+  return row;
 }
 
 function cookieHeader(values) {
