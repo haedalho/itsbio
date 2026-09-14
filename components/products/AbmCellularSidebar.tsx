@@ -20,69 +20,6 @@ function isPathPrefix(activePath: string[], candidatePath: string[]) {
   return candidatePath.every((segment, index) => activePath[index] === segment);
 }
 
-function FlyoutRows({
-  nodes,
-  activePath,
-  parentPath,
-  parentTitle,
-}: {
-  nodes: TaxonomyNode[];
-  activePath: string[];
-  parentPath: string[];
-  parentTitle: string;
-}) {
-  if (!nodes.length) return null;
-
-  return (
-    <div className="relative z-[9999] w-[272px] overflow-visible rounded-xl border border-orange-200 bg-white p-1.5 shadow-[0_20px_50px_rgba(15,23,42,0.24)]">
-      <div className="-mx-1.5 -mt-1.5 mb-1.5 rounded-t-xl bg-gradient-to-r from-orange-500 to-orange-400 px-4 py-2.5 text-[12px] font-bold tracking-[0.03em] text-white shadow-sm">
-        {parentTitle}
-      </div>
-
-      <div className="space-y-0.5">
-        {nodes.map((node) => {
-          const nodePath = [...parentPath, node.slug];
-          const isActive = activePath.join("/") === nodePath.join("/");
-          const isOnTrail = !isActive && isPathPrefix(activePath, nodePath);
-          const children = node.children || [];
-          const hasChildren = children.length > 0;
-
-          return (
-            <div key={nodePath.join("/")} className="group/cellular-flyout relative">
-              <Link
-                href={categoryHref(nodePath)}
-                prefetch={false}
-                className={[
-                  "flex min-h-9 items-center justify-between gap-3 rounded-lg px-3 py-2 text-[13px] leading-5 transition",
-                  isActive
-                    ? "bg-orange-100 font-semibold text-orange-700"
-                    : isOnTrail
-                      ? "bg-orange-50 font-semibold text-orange-600"
-                      : "text-neutral-700 hover:bg-orange-50 hover:text-orange-700",
-                ].join(" ")}
-              >
-                <span className="min-w-0 whitespace-normal">{node.title}</span>
-                {hasChildren ? <span className="shrink-0 text-orange-500" aria-hidden>›</span> : null}
-              </Link>
-
-              {hasChildren ? (
-                <div className="absolute left-full top-0 z-[10000] hidden pl-2 lg:group-hover/cellular-flyout:block">
-                  <FlyoutRows
-                    nodes={children}
-                    activePath={activePath}
-                    parentPath={nodePath}
-                    parentTitle={node.title}
-                  />
-                </div>
-              ) : null}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 function TaxonomyRows({
   nodes,
   activePath,
@@ -140,16 +77,6 @@ function TaxonomyRows({
               </div>
             ) : null}
 
-            {hasChildren && !isOpen ? (
-              <div className="absolute left-full top-0 z-[9998] hidden pl-2 lg:group-hover/cellular-row:block">
-                <FlyoutRows
-                  nodes={children}
-                  activePath={activePath}
-                  parentPath={nodePath}
-                  parentTitle={node.title}
-                />
-              </div>
-            ) : null}
           </div>
         );
       })}
