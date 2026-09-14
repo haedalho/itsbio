@@ -261,7 +261,7 @@ export default async function AbmStagedDetailPage({
 
       <main className="mx-auto max-w-[1320px] px-6 py-10">
         <div className="grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[296px_minmax(0,1fr)]">
-          <aside className="self-start lg:sticky lg:top-24">
+          <aside className="relative z-[70] self-start lg:sticky lg:top-24">
             {kind === "product" && activeCellularPath[0] === "cellular-materials" ? (
               <AbmCellularSidebar activePath={activeCellularPath} />
             ) : (
@@ -270,7 +270,7 @@ export default async function AbmStagedDetailPage({
           </aside>
 
           <section
-            className="min-w-0"
+            className="relative z-0 min-w-0"
             data-product-name={title}
             data-cat-no={record.sku || undefined}
           >
