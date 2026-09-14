@@ -167,37 +167,24 @@ export default function AbmCellularSidebar({ activePath }: { activePath: string[
       </div>
 
       <nav className="max-h-[calc(100vh-170px)] overflow-y-auto p-2 lg:max-h-none lg:overflow-visible" aria-label="ABM product categories">
-        <div className="group/cellular-root relative mb-1">
+        <div className="mb-1">
           <Link
             href={categoryHref(CELLULAR_ROOT)}
             prefetch={false}
-            className="flex min-h-10 items-center justify-between rounded-xl bg-orange-50 px-3 py-2.5 text-[13px] font-semibold text-[#dc5a2b] transition hover:bg-orange-100"
+            className="flex min-h-10 items-center rounded-xl bg-orange-50 px-3 py-2.5 text-[13px] font-semibold text-[#dc5a2b] transition hover:bg-orange-100"
           >
             <span>Cellular Materials</span>
-            <span className="text-orange-500" aria-hidden>
-              <span className="hidden lg:inline">›</span>
-              <span className="lg:hidden">⌃</span>
-            </span>
           </Link>
-
-          <div className="absolute left-full top-0 z-[9997] hidden pl-2 lg:group-hover/cellular-root:block">
-            <FlyoutRows
-              nodes={taxonomy}
-              activePath={activePath}
-              parentPath={CELLULAR_ROOT}
-              parentTitle="Cellular Materials"
-            />
-          </div>
         </div>
 
         <TaxonomyRows nodes={taxonomy} activePath={activePath} />
 
         <div className="mt-2 border-t border-slate-200 pt-2">
           <Link href="/products/abm/general-materials" prefetch={true} className="flex min-h-10 items-center justify-between rounded-xl px-3 py-2.5 text-[13px] font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-[#dc5a2b]">
-            <span>General Materials</span><span aria-hidden>⌄</span>
+            <span>General Materials</span><span aria-hidden>›</span>
           </Link>
           <Link href="/products/abm/genetic-materials" prefetch={true} className="flex min-h-10 items-center justify-between rounded-xl px-3 py-2.5 text-[13px] font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-[#dc5a2b]">
-            <span>Genetic Materials</span><span aria-hidden>⌄</span>
+            <span>Genetic Materials</span><span aria-hidden>›</span>
           </Link>
         </div>
 

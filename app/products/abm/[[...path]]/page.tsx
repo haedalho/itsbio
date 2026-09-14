@@ -728,15 +728,10 @@ function SideNavTree({
 
       <nav className="max-h-[calc(100vh-170px)] overflow-y-auto p-2 lg:max-h-none lg:overflow-visible" aria-label="Product categories">
         {!isKentMode && activeRoot ? (
-          <div className="group/root relative mb-1">
-            <Link href={buildHref(brandKey, [activeRoot])} prefetch={false} className="flex min-h-10 items-center justify-between rounded-xl bg-orange-50 px-3 py-2.5 text-[13px] font-semibold text-[#dc5a2b]">
-              <span>{stripBrandSuffix(activeRootTitle)}</span><span className="hidden lg:inline" aria-hidden>›</span><span className="lg:hidden" aria-hidden>⌃</span>
+          <div className="mb-1">
+            <Link href={buildHref(brandKey, [activeRoot])} prefetch={false} className="flex min-h-10 items-center rounded-xl bg-orange-50 px-3 py-2.5 text-[13px] font-semibold text-[#dc5a2b]">
+              <span>{stripBrandSuffix(activeRootTitle)}</span>
             </Link>
-            {activeRootTree?.length ? (
-              <div className="absolute left-full top-0 z-[150] hidden pl-2 lg:group-hover/root:block">
-                <FlyoutRows nodes={activeRootTree} parentTitle={activeRootTitle} />
-              </div>
-            ) : null}
           </div>
         ) : null}
 
@@ -746,7 +741,7 @@ function SideNavTree({
           ) : (
             !activeRoot ? roots.map((root) => (
               <Link key={root._id} href={buildHref(brandKey, root.path)} prefetch={true} className="flex min-h-10 items-center justify-between rounded-xl px-3 py-2.5 text-[13px] font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-[#dc5a2b]">
-                <span>{stripBrandSuffix(root.title)}</span><span aria-hidden>⌄</span>
+                <span>{stripBrandSuffix(root.title)}</span><span aria-hidden>{isKentMode ? "⌄" : "›"}</span>
               </Link>
             )) : null
           )}
@@ -762,7 +757,7 @@ function SideNavTree({
                   className="flex min-h-10 items-center justify-between rounded-xl px-3 py-2.5 text-[13px] font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-[#dc5a2b]"
                 >
                   <span className="min-w-0 truncate">{stripBrandSuffix(root.title)}</span>
-                  <span aria-hidden>⌄</span>
+                  <span aria-hidden>›</span>
                 </Link>
             ))}
           </div>
