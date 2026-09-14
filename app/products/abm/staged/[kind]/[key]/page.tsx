@@ -2,11 +2,16 @@ import { notFound } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
 import HtmlContent from "@/components/site/HtmlContent";
+import AbmHeroBanner from "@/components/products/AbmHeroBanner";
 import AbmCatalogSideNav from "@/components/products/AbmCatalogSideNav";
 import ProductGalleryClient from "@/components/products/ProductGalleryClient";
 import ProductTabsClient from "@/components/products/ProductTabs";
 import { ABM_PRODUCT_GROUPS, findAbmServicePathForLabels } from "@/lib/abm/catalog-taxonomy";
-import { getAbmStagedDetail, isManagedAbmImageUrl } from "@/lib/abm/rebuild-staging";
+import {
+  getAbmStagedDetail,
+  isManagedAbmImageUrl,
+  isTrustedSpecialCellReferenceImageUrl,
+} from "@/lib/abm/rebuild-staging";
 
 export const revalidate = 300;
 
@@ -33,10 +38,6 @@ function collectionListingOverview(title: string, sku?: string, category?: strin
   const safeSku = escapeHtml(String(sku || ""));
   const safeCategory = escapeHtml(String(category || "Special Cell Line Collection"));
   return `<p><strong>${safeTitle}</strong> is listed in ABM's ${safeCategory}${safeSku ? ` under Cat. No. ${safeSku}` : ""}. The specifications below reproduce the product information available in the official ABM collection.</p>`;
-}
-
-function isTrustedReferenceImage(value?: string) {
-  return value === "https://cellbank.nibn.go.jp/~cellbank/images/pictures/clp04057.jpg";
 }
 
 export default async function AbmStagedDetailPage({
@@ -71,18 +72,10 @@ export default async function AbmStagedDetailPage({
   const galleryUrls = Array.from(new Set([
     String(record.previewImage || "").trim(),
     ...(record.images || []),
-  ].filter((url): url is string => isManagedAbmImageUrl(url))));
-  const gallery = [
-    ...galleryUrls.map((url) => ({ url, alt: title })),
-    ...(record.referenceImages || [])
-      .filter((image) => isTrustedReferenceImage(image.url))
-      .map((image) => ({
-        url: image.url,
-        alt: image.alt || title,
-        caption: image.caption,
-        creditUrl: image.creditUrl,
-      })),
-  ];
+  ].filter((url): url is string =>
+    isManagedAbmImageUrl(url) || isTrustedSpecialCellReferenceImageUrl(url)
+  )));
+  const gallery = galleryUrls.map((url) => ({ url, alt: title }));
   const hasGallery = gallery.length > 0;
   const paths = Array.isArray(record.listingPaths) && record.listingPaths.length
     ? record.listingPaths
@@ -121,6 +114,7 @@ export default async function AbmStagedDetailPage({
 
   return (
     <div className="bg-white">
+      <AbmHeroBanner title={title} eyebrow={`ABM ${kind}`} />
       <div className="border-b border-neutral-200 bg-neutral-50">
         <div className="mx-auto max-w-[1320px] px-6 py-4">
           <Breadcrumb items={[
@@ -149,6 +143,21 @@ export default async function AbmStagedDetailPage({
               {hasGallery ? (
                 <div className="min-h-[320px]">
                   <ProductGalleryClient images={gallery} title={title} />
+                  {record.imageCaption ? (
+                    <p className="mx-auto mt-3 max-w-[560px] text-center text-xs leading-5 text-neutral-500">
+                      {record.imageCaption}{" "}
+                      {record.imageCreditUrl ? (
+                        <a
+                          href={record.imageCreditUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-semibold text-[#dc5a2b] underline underline-offset-2"
+                        >
+                          {record.imageCreditLabel || "Source"}
+                        </a>
+                      ) : null}
+                    </p>
+                  ) : null}
                 </div>
               ) : (
                 <div className="relative mx-auto flex aspect-square w-full max-w-[560px] items-center justify-center overflow-hidden bg-neutral-50 px-8 text-center">

@@ -266,9 +266,9 @@ function categoryFallbackCollectorRow(product) {
     ["Format", product.format],
     ["Unit", product.unit],
   ].filter(([, value]) => clean(value));
-  const specificationsHtml = `<table><tbody>${specifications.map(([label, value]) =>
-    `<tr><th>${escapeHtml(label)}</th><td>${escapeHtml(value)}</td></tr>`
-  ).join("")}</tbody></table>`;
+  const specificationsHtml = `<div class="abm-products-specification"><table><tbody>${specifications.map(([label, value]) =>
+    `<tr><td>${escapeHtml(label)}</td><td>${escapeHtml(value)}</td></tr>`
+  ).join("")}</tbody></table></div>`;
   const inventory = {
     title: product.title,
     sku: product.sku,

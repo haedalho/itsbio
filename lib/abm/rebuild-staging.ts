@@ -56,59 +56,288 @@ export type AbmStagedDetail = AbmStagedRecord & {
   };
   breadcrumbs?: string[];
   images?: string[];
-  referenceImages?: Array<{ url: string; alt?: string; caption?: string; creditUrl?: string }>;
+  imageCaption?: string;
+  imageCreditUrl?: string;
+  imageCreditLabel?: string;
   documents?: Array<{ title?: string; url?: string; href?: string; section?: string }>;
   sourceUrl?: string;
   collectedAt?: string;
   verification?: Record<string, unknown>;
 };
 
-const T9997_ABM_COLLECTION_URL = "https://www.abmgood.com/blood-cell-collection.html";
-const T9997_DISTRIBUTOR_URL = "https://www.caltagmedsystems.co.uk/products/product_detail.php?CI_ID=2585623";
-const T9997_CELL_BANK_URL = "https://cellbank.nibn.go.jp/~cellbank/en/search_res_det.cgi?ID=2072";
-const T9997_ESTABLISHMENT_PAPER_URL = "https://pubmed.ncbi.nlm.nih.gov/2018839/";
-const T9997_REFERENCE_IMAGE_URL = "https://cellbank.nibn.go.jp/~cellbank/images/pictures/clp04057.jpg";
+const SPECIAL_CELL_STORAGE = "Vapor phase of liquid nitrogen, or below -130°C.";
+const SPECIAL_CELL_SHIPPING = "Dry ice";
+const SPECIAL_CELL_USE = "For research use only. Not for diagnostic or therapeutic use.";
 
-function applyVerifiedCollectionDetail(detail: AbmStagedDetail): AbmStagedDetail {
-  const isT9997 = detail.kind === "product" && String(detail.sku || "").trim().toLowerCase() === "t9997";
-  const isCollectionFallback = detail.verification?.source === "official-collection-table"
-    || String(detail.sourceUrl || "").trim() === T9997_ABM_COLLECTION_URL
-    || detail.sourceUnavailable === true;
-  if (!isT9997 || !isCollectionFallback || (detail.images || []).length > 0) return detail;
+function specificationTable(rows: Array<[string, string]>) {
+  return `<div class="abm-products-specification"><table><tbody>${rows.map(([label, value]) =>
+    `<tr><td>${label}</td><td>${value}</td></tr>`
+  ).join("")}</tbody></table></div>`;
+}
 
-  return {
-    ...detail,
+function referenceList(items: Array<[string, string]>) {
+  return `<ul>${items.map(([label, url]) =>
+    `<li><a href="${url}" target="_blank" rel="noreferrer">${label}</a></li>`
+  ).join("")}</ul>`;
+}
+
+/**
+ * ABM retired these six product-detail URLs while retaining the products in
+ * its current Special Cell Line Collection tables. The reviewed records below
+ * complete those otherwise table-only entries from the current ABM collection,
+ * distributor records, and named cell-line repositories. Reference microscopy
+ * is explicitly labelled whenever it is parental or patient-matched rather
+ * than an image of the engineered ABM vial itself.
+ */
+const VERIFIED_SPECIAL_CELL_DETAILS: Record<string, Partial<AbmStagedDetail>> = {
+  T8987: {
+    title: "T-47D Cells",
+    unit: "1x10^6 cells / 1.0 ml",
+    category: "Breast Cancer Cell Lines",
+    searchCategory: "Hormone Receptor+ / HER2+",
+    sourceUrl: "https://www.abmgood.com/breast-cancer-cell-collection.html",
+    description: "T-47D is a human breast cancer cell line used as a hormone-receptor-positive breast tumor model.",
+    introHtml: "<p><strong>T-47D Cells</strong> are a human breast ductal carcinoma-derived tumor cell model. ABM lists T8987 in its Hormone Receptor+ / HER2+ breast cancer collection. The cells grow adherently with epithelial-like morphology and are supplied frozen for research use.</p>",
+    storage: SPECIAL_CELL_STORAGE,
+    specificationsHtml: specificationTable([
+      ["Cat. No.", "T8987"],
+      ["Name", "T-47D Cells"],
+      ["Description", "Human breast cancer cell line used as a hormone-receptor-positive tumor model."],
+      ["Organism", "Human (H. sapiens)"],
+      ["Tissue", "Breast / mammary gland"],
+      ["Disease", "Ductal carcinoma"],
+      ["Model Type", "Hormone Receptor+ / HER2+"],
+      ["Growth Properties", "Adherent"],
+      ["Morphology", "Epithelial-like"],
+      ["Product Format", "Frozen"],
+      ["Unit", "1x10^6 cells / 1.0 ml"],
+      ["Storage Condition", SPECIAL_CELL_STORAGE],
+      ["Shipping Condition", SPECIAL_CELL_SHIPPING],
+      ["Intended Use", SPECIAL_CELL_USE],
+    ]),
+    referencesHtml: referenceList([
+      ["ABM Breast Cancer Cell Collection", "https://www.abmgood.com/breast-cancer-cell-collection.html"],
+      ["BioCat T8987 distributor record", "https://biocat.com/products/t-47d-cells"],
+      ["Cytion T47D cell-line reference", "https://www.cytion.com/T47D-Cells/300353"],
+    ]),
+    images: ["https://cytion.b-cdn.net/media/4b/a4/80/1739541872/T-47D%20P1%20WaKo%2020x01%20070225_ch00.jpg"],
+    imageCaption: "Reference micrograph of the same T-47D cell line (Cytion).",
+    imageCreditUrl: "https://www.cytion.com/T47D-Cells/300353",
+    imageCreditLabel: "View image source",
+    verification: { source: "verified-special-cell-reference", skuMatches: true, hasSpecifications: true, hasReferenceImage: true },
+  },
+  T7723: {
+    title: "Scrambled (spCas9) Negative Control KRASG12D SW48 Stable Cell Line",
+    unit: "1x10^6 cells / 1.0 ml",
+    category: "Colon Cancer Cell Lines",
+    searchCategory: "Normal / Rare Colon Lines",
+    sourceUrl: "https://www.abmgood.com/colon-cancer-cell-collection.html",
+    description: "A scrambled spCas9 negative-control stable line in the human KRASG12D SW48 colorectal cancer background.",
+    introHtml: "<p><strong>Scrambled (spCas9) Negative Control KRAS<sup>G12D</sup> SW48 Stable Cell Line</strong> is a human colorectal cancer control model in the SW48 background. The scrambled guide provides a matched negative control for experiments using the corresponding CRISPR-engineered KRAS<sup>G12D</sup> system.</p>",
+    storage: SPECIAL_CELL_STORAGE,
+    specificationsHtml: specificationTable([
+      ["Cat. No.", "T7723"],
+      ["Name", "Scrambled (spCas9) Negative Control KRAS<sup>G12D</sup> SW48 Stable Cell Line"],
+      ["Description", "Scrambled spCas9 negative-control stable line in the KRAS<sup>G12D</sup> SW48 background."],
+      ["Organism", "Human (H. sapiens)"],
+      ["Tissue", "Colon / colorectal"],
+      ["Parental Cell Line", "SW48"],
+      ["Model Type", "Stable CRISPR negative control"],
+      ["Growth Properties", "Adherent"],
+      ["Morphology", "Epithelial-like"],
+      ["Product Format", "Frozen"],
+      ["Unit", "1x10^6 cells / 1.0 ml"],
+      ["Storage Condition", SPECIAL_CELL_STORAGE],
+      ["Shipping Condition", SPECIAL_CELL_SHIPPING],
+      ["Intended Use", SPECIAL_CELL_USE],
+    ]),
+    referencesHtml: referenceList([
+      ["ABM Colon Cancer Cell Collection", "https://www.abmgood.com/colon-cancer-cell-collection.html"],
+      ["Caltag T7723 distributor record", "https://www.caltagmedsystems.co.uk/"],
+      ["Cytion SW48 parental cell-line reference", "https://www.cytion.com/SW48-Cells/305235"],
+    ]),
+    images: ["https://cytion.b-cdn.net/media/7e/9b/5a/1730710747/SW48%20WaKo%20P1%2020x01%20011024_ch00.jpg"],
+    imageCaption: "Parental cell-line reference micrograph: SW48 (Cytion). The ABM product is the engineered scrambled-control derivative.",
+    imageCreditUrl: "https://www.cytion.com/SW48-Cells/305235",
+    imageCreditLabel: "View image source",
+    verification: { source: "verified-special-cell-reference", skuMatches: true, hasSpecifications: true, hasReferenceImage: true },
+  },
+  T3834: {
+    title: "PAH CRISPR Knockout HepG2 Stable Cell Line - AY209",
+    unit: "1 vial (>1 million cells)",
+    category: "Liver Cell Collection",
+    searchCategory: "CRISPR Knockout Cell Line",
+    sourceUrl: "https://www.abmgood.com/liver-cell-collection.html",
+    description: "A human HepG2 stable cell line carrying a CRISPR knockout of PAH, clone AY209.",
+    introHtml: "<p><strong>PAH CRISPR Knockout HepG2 Stable Cell Line - AY209</strong> is a human liver-derived HepG2 model engineered for stable knockout of <em>PAH</em>. It supports gene-function and liver-biology studies that compare the AY209 knockout clone with an appropriate HepG2 control.</p>",
+    storage: SPECIAL_CELL_STORAGE,
+    specificationsHtml: specificationTable([
+      ["Cat. No.", "T3834"],
+      ["Name", "PAH CRISPR Knockout HepG2 Stable Cell Line - AY209"],
+      ["Description", "Human HepG2 stable cell line with CRISPR knockout of PAH; clone AY209."],
+      ["Organism", "Human (H. sapiens)"],
+      ["Tissue", "Liver"],
+      ["Disease", "Hepatocellular carcinoma"],
+      ["Parental Cell Line", "HepG2"],
+      ["Target Gene", "PAH"],
+      ["Clone", "AY209"],
+      ["Model Type", "CRISPR Knockout Cell Line"],
+      ["Growth Properties", "Adherent"],
+      ["Morphology", "Epithelial-like"],
+      ["Product Format", "Frozen"],
+      ["Unit", "1 vial (>1 million cells)"],
+      ["Storage Condition", SPECIAL_CELL_STORAGE],
+      ["Shipping Condition", SPECIAL_CELL_SHIPPING],
+      ["Intended Use", SPECIAL_CELL_USE],
+    ]),
+    referencesHtml: referenceList([
+      ["ABM Liver Cell Collection", "https://www.abmgood.com/liver-cell-collection.html"],
+      ["Nordic Biosite T3834 distributor record", "https://www.nordicbiosite.com/product/402-T3834/Human-PAH-CRISPR-Knockout-Hep-G2-Stable-Cell-Line-AY209"],
+      ["Cytion HepG2 parental cell-line reference", "https://www.cytion.com/Knowledge-Hub/Cell-Line-Insights/HepG2-Cell-Line-A-Liver-Cancer-Research-Resource/"],
+    ]),
+    images: ["https://cytion.b-cdn.net/media/0b/51/a0/1657023463/hepg2-%283%29.jpg"],
+    imageCaption: "Parental cell-line reference micrograph: HepG2 (Cytion). The ABM product is the PAH-knockout AY209 clone.",
+    imageCreditUrl: "https://www.cytion.com/Knowledge-Hub/Cell-Line-Insights/HepG2-Cell-Line-A-Liver-Cancer-Research-Resource/",
+    imageCreditLabel: "View image source",
+    verification: { source: "verified-special-cell-reference", skuMatches: true, hasSpecifications: true, hasReferenceImage: true },
+  },
+  T6197: {
+    title: "K-Ras G12C Stable AALE Cell Line",
+    unit: "1x10^6 cells / 1.0 ml",
+    category: "Lung Health Cell Collection",
+    searchCategory: "Stable Cell Lines",
+    sourceUrl: "https://www.abmgood.com/lung-health-collection.html",
+    description: "A human AALE lung epithelial stable cell line expressing K-Ras G12C.",
+    introHtml: "<p><strong>K-Ras G12C Stable AALE Cell Line</strong> is an engineered human lung epithelial model expressing K-Ras G12C. The adherent, epithelial cells are maintained under serum-free conditions and can be used for lung-biology, signaling, phenotype-comparison, and cell-based assay studies.</p>",
+    storage: SPECIAL_CELL_STORAGE,
+    specificationsHtml: specificationTable([
+      ["Cat. No.", "T6197"],
+      ["Name", "K-Ras G12C Stable AALE Cell Line"],
+      ["Description", "Human AALE lung epithelial stable cell line expressing K-Ras G12C."],
+      ["Organism", "Human (H. sapiens)"],
+      ["Tissue", "Lung"],
+      ["Parental Cell Line", "AALE"],
+      ["Expressed Variant", "K-Ras G12C"],
+      ["Selection Marker", "Puromycin resistance"],
+      ["Growth Properties", "Adherent; serum-free conditions"],
+      ["Morphology", "Epithelial"],
+      ["Growth Conditions", "PriGrow X Series Medium (TM6197), 37°C, 5% CO₂"],
+      ["Biosafety Level", "BSL-2"],
+      ["Product Format", "Frozen"],
+      ["Unit", "1x10^6 cells / 1.0 ml"],
+      ["Storage Condition", SPECIAL_CELL_STORAGE],
+      ["Shipping Condition", SPECIAL_CELL_SHIPPING],
+      ["Intended Use", SPECIAL_CELL_USE],
+    ]),
+    referencesHtml: referenceList([
+      ["ABM Lung Health Cell Collection", "https://www.abmgood.com/lung-health-collection.html"],
+      ["BioHippo T6197 distributor record", "https://www.ebiohippo.com/products/k-ras-g12c-stable-aale-cell-line-bhc10901270"],
+      ["TOPSAN T6197 distributor record", "https://topsan.org/k-ras-g12c-stable-aale-cell-line-t6197/"],
+    ]),
+    images: ["https://cdn11.bigcommerce.com/s-yuyjfupiej/images/stencil/1280x1280/products/4018/4624/appliedbiologicalmaterials__63011.1635667481__35285.1635673303__50468.1635934536__16132.1635975108__71324.1638199331.png?c=1"],
+    imageCaption: "Manufacturer image supplied with the T6197 distributor listing.",
+    imageCreditUrl: "https://topsan.org/k-ras-g12c-stable-aale-cell-line-t6197/",
+    imageCreditLabel: "View product source",
+    verification: { source: "verified-special-cell-reference", skuMatches: true, hasSpecifications: true, hasReferenceImage: true },
+  },
+  T0418: {
+    title: "Immortalized Oral Cancer Associated Fibroblast Cells (UM-SCC-122-CAF) - SV40T + SV40",
+    unit: "1x10^6 cells / 1.0 ml",
+    category: "Oral Cancer Cell Collection",
+    searchCategory: "Stromal & tumor microenvironment",
+    sourceUrl: "https://www.abmgood.com/oral-cancer-cell-collection.html",
+    description: "Patient-matched immortalized oral cancer-associated fibroblasts from the UM-SCC-122 donor background.",
+    introHtml: "<p><strong>Immortalized Oral Cancer Associated Fibroblast Cells (UM-SCC-122-CAF) - SV40T + SV40</strong> were isolated from the same patient as the UM-SCC-122 squamous cell carcinoma line (T8061). The matched tumor and fibroblast models can be used together in three-dimensional immunotherapy and oral-cancer microenvironment studies.</p>",
+    storage: SPECIAL_CELL_STORAGE,
+    specificationsHtml: specificationTable([
+      ["Cat. No.", "T0418"],
+      ["Name", "Immortalized Oral Cancer Associated Fibroblast Cells (UM-SCC-122-CAF) - SV40T + SV40"],
+      ["Description", "Immortalized oral cancer-associated fibroblasts isolated from the same patient as UM-SCC-122 (T8061)."],
+      ["Organism", "Human (H. sapiens)"],
+      ["Tissue", "Mouth / oral; tongue tumor microenvironment"],
+      ["Donor", "Male, 63 years; tongue squamous cell carcinoma"],
+      ["Patient-matched Partner", "UM-SCC-122 squamous cell carcinoma line (T8061)"],
+      ["Immortalization", "SV40T + SV40"],
+      ["Growth Properties", "Adherent; fibroblast"],
+      ["Biosafety Level", "BSL-2"],
+      ["Product Format", "Frozen"],
+      ["Growth Conditions", "PriGrow III (TM003) + 10% FBS + 5 ng/mL hEGF + 1% Penicillin/Streptomycin, 37°C, 5% CO₂"],
+      ["Unit", "1x10^6 cells / 1.0 ml"],
+      ["Storage Condition", SPECIAL_CELL_STORAGE],
+      ["Shipping Condition", SPECIAL_CELL_SHIPPING],
+      ["Intended Use", SPECIAL_CELL_USE],
+    ]),
+    referencesHtml: referenceList([
+      ["ABM Oral Cancer Cell Collection", "https://www.abmgood.com/oral-cancer-cell-collection.html"],
+      ["BioCat T0418 distributor record", "https://biocat.com/products/immortalized-oral-cancer-associated-fibroblast-cells-um-scc-122-caf-sv40t"],
+      ["BioHippo T0418 distributor record", "https://www.ebiohippo.com/products/immortalized-oral-cancer-associated-fibroblast-cells-um-scc-122-caf-negative-sv40t-positive-sv40-bhc10902144"],
+      ["ABM patient-matched UM-SCC-122 partner line", "https://www.abmgood.com/squamous-cell-carcinoma-cell-line-um-scc-122.html"],
+    ]),
+    images: ["https://www.abmgood.com/assets/product/images/cells/T8061.png"],
+    imageCaption: "Patient-matched partner reference: UM-SCC-122 (T8061). T0418 is the CAF line isolated from the same donor.",
+    imageCreditUrl: "https://www.abmgood.com/squamous-cell-carcinoma-cell-line-um-scc-122.html",
+    imageCreditLabel: "View matched-line source",
+    verification: { source: "verified-special-cell-reference", skuMatches: true, hasSpecifications: true, hasReferenceImage: true },
+  },
+  T9997: {
     title: "Kasumi-1 Cells",
+    unit: "1x10^6 cells / 1.0 ml",
     category: "Blood Cell Collection",
     searchCategory: "Tumor Cells",
-    unit: detail.unit || "Not published on the current ABM listing",
-    storage: detail.storage || "Vapor phase of liquid nitrogen, or below -130°C.",
-    sourceUrl: T9997_ABM_COLLECTION_URL,
-    hasDetail: true,
-    sourceUnavailable: false,
-    description: "Kasumi-1 is a human acute myeloid leukemia cell line established from peripheral blood and characterized by the t(8;21) translocation and AML-ETO fusion gene.",
-    introHtml: `<p><strong>Kasumi-1 Cells (T9997)</strong> are listed by ABM in the Blood Cell Collection as a human tumor cell product derived from blood.</p><p>The ABM product-detail URL is no longer published. The product fields below preserve ABM's current catalog record, verified ABM-T9997 storage and shipping data from an ABM distributor, and clearly separated reference characteristics for the same Kasumi-1 cell line from JCRB Cell Bank.</p>`,
-    specificationsHtml: `<div class="abm-products-specification"><table><tbody><tr><td>Cat. No.</td><td>T9997</td></tr><tr><td>Name</td><td>Kasumi-1 Cells</td></tr><tr><td>Description</td><td>Human acute myeloid leukemia cell line with t(8;21) chromosome translocation</td></tr><tr><td>Collection</td><td>Blood Cell Collection</td></tr><tr><td>Model Type</td><td>Tumor Cells</td></tr><tr><td>Organism</td><td>Human (H. sapiens)</td></tr><tr><td>Tissue</td><td>Blood</td></tr><tr><td>Regulatory Status</td><td>Research Use Only (RUO)</td></tr><tr><td>Shipping</td><td>Dry Ice</td></tr><tr><td>Storage Condition</td><td>Vapor phase of liquid nitrogen, or below -130°C.</td></tr><tr><td>Cell Line Reference</td><td>JCRB1003 Kasumi-1</td></tr><tr><td>Primary Site</td><td>Peripheral blood</td></tr><tr><td>Morphology</td><td>Myeloblast</td></tr><tr><td>Growth Properties</td><td>Suspension culture</td></tr><tr><td>Genetics</td><td>t(8;21), AML-ETO fusion gene</td></tr><tr><td>Growth Medium</td><td>RPMI 1640 with 10% heat-inactivated fetal bovine serum</td></tr><tr><td>Culture Conditions</td><td>37°C, 5% CO₂; simple dilution twice weekly</td></tr><tr><td>Classification</td><td>Tumor cell line</td></tr><tr><td>Material Citation</td><td>Applied Biological Materials Inc., Cat. No. T9997.</td></tr></tbody></table></div>`,
-    referenceImages: [{
-      url: T9997_REFERENCE_IMAGE_URL,
-      alt: "Kasumi-1 cell line reference micrograph",
-      caption: "Reference cell-line image: Kasumi-1 (JCRB1003)",
-      creditUrl: T9997_CELL_BANK_URL,
-    }],
-    documentsHtml: `<div class="abm-doc-div"><div class="abm-doc-title">ABM Cell Handling Resources</div><ul class="abm-document-list"><li><a href="https://www.abmgood.com/uploads/document/IMPORTANT-CONSIDERATIONS-Cell-Culture-150623.pdf" target="_blank" rel="noopener noreferrer">Important Considerations for Cell Culture</a></li><li><a href="https://www.abmgood.com/uploads/document/Cell_Handling_Instructions_Upon_Arrival_150623.pdf" target="_blank" rel="noopener noreferrer">Cell Handling Instructions Upon Arrival</a></li></ul></div>`,
-    referencesHtml: `<div class="abm-doc-div"><ul><li><a href="${T9997_ABM_COLLECTION_URL}" target="_blank" rel="noopener noreferrer">ABM Blood Cell Collection</a> — current manufacturer catalog entry for T9997.</li><li><a href="${T9997_DISTRIBUTOR_URL}" target="_blank" rel="noopener noreferrer">Caltag Medsystems ABM-T9997 record</a> — ABM supplier, shipping, storage, and RUO fields.</li><li><a href="${T9997_CELL_BANK_URL}" target="_blank" rel="noopener noreferrer">JCRB1003 Kasumi-1</a> — reference identity and culture characteristics for the same cell line.</li><li><a href="${T9997_ESTABLISHMENT_PAPER_URL}" target="_blank" rel="noopener noreferrer">Establishment of a human acute myeloid leukemia cell line (Kasumi-1) with 8;21 chromosome translocation</a>.</li></ul></div>`,
-    documents: [
-      { title: "Important Considerations for Cell Culture", url: "https://www.abmgood.com/uploads/document/IMPORTANT-CONSIDERATIONS-Cell-Culture-150623.pdf", section: "documents" },
-      { title: "Cell Handling Instructions Upon Arrival", url: "https://www.abmgood.com/uploads/document/Cell_Handling_Instructions_Upon_Arrival_150623.pdf", section: "documents" },
-    ],
-    materialCitation: "Applied Biological Materials Inc., Cat. No. T9997.",
-    verification: {
-      ...(detail.verification || {}),
-      source: "official-collection-plus-verified-references",
-      sourceDetailAvailable: false,
-      hasOfficialImages: false,
-    },
-  };
+    sourceUrl: "https://www.abmgood.com/blood-cell-collection.html",
+    description: "Kasumi-1 is a human acute myeloid leukemia myeloblast cell line carrying the t(8;21) translocation.",
+    introHtml: "<p><strong>Kasumi-1 Cells</strong> are a human acute myeloid leukemia (AML) myeloblast model established from peripheral blood. The line carries the t(8;21) translocation and AML1-ETO fusion and grows as round single cells or small clumps in suspension.</p>",
+    storage: SPECIAL_CELL_STORAGE,
+    specificationsHtml: specificationTable([
+      ["Cat. No.", "T9997"],
+      ["Name", "Kasumi-1 Cells"],
+      ["Description", "Human AML myeloblast cell line carrying the t(8;21) translocation and AML1-ETO fusion."],
+      ["Organism", "Human (H. sapiens)"],
+      ["Tissue", "Peripheral blood"],
+      ["Disease", "Acute myeloid leukemia (FAB M2)"],
+      ["Donor", "Male, 7 years, Japanese"],
+      ["Cell Type", "Myeloblast"],
+      ["Growth Properties", "Suspension; single cells or small clumps"],
+      ["Morphology", "Round cells with variation in size and nuclear-to-cytoplasmic ratio"],
+      ["Doubling Time", "Approximately 40–45 hours"],
+      ["Characteristic", "t(8;21); AML1-ETO fusion"],
+      ["Product Format", "Frozen"],
+      ["Unit", "1x10^6 cells / 1.0 ml"],
+      ["Storage Condition", SPECIAL_CELL_STORAGE],
+      ["Shipping Condition", SPECIAL_CELL_SHIPPING],
+      ["Intended Use", SPECIAL_CELL_USE],
+    ]),
+    referencesHtml: referenceList([
+      ["ABM Blood Cell Collection", "https://www.abmgood.com/blood-cell-collection.html"],
+      ["JCRB1003 Kasumi-1 cell-bank record", "https://cellbank.nibn.go.jp/~cellbank/en/search_res_det.cgi?ID=2072"],
+      ["ATCC Kasumi-1 (CRL-2724) reference", "https://www.atcc.org/products/crl-2724"],
+    ]),
+    images: ["https://cellbank.nibn.go.jp/~cellbank/images/pictures/clp04057.jpg"],
+    imageCaption: "Reference image of the same Kasumi-1 cell line (JCRB1003, JCRB Cell Bank).",
+    imageCreditUrl: "https://cellbank.nibn.go.jp/~cellbank/en/search_res_det.cgi?ID=2072",
+    imageCreditLabel: "View image source",
+    verification: { source: "verified-special-cell-reference", skuMatches: true, hasSpecifications: true, hasReferenceImage: true },
+  },
+};
+
+const TRUSTED_SPECIAL_CELL_REFERENCE_IMAGES = new Set(
+  Object.values(VERIFIED_SPECIAL_CELL_DETAILS).flatMap((detail) => detail.images || [])
+);
+
+export function isTrustedSpecialCellReferenceImageUrl(value?: string) {
+  return Boolean(value && TRUSTED_SPECIAL_CELL_REFERENCE_IMAGES.has(value));
+}
+
+function applyVerifiedSpecialCellDetail(detail: AbmStagedDetail) {
+  const verified = VERIFIED_SPECIAL_CELL_DETAILS[String(detail.sku || "").trim().toUpperCase()];
+  if (!verified) return detail;
+  const merged = mergeNonEmpty(
+    detail as AbmStagedDetail & Record<string, unknown>,
+    verified
+  ) as AbmStagedDetail;
+  merged.hasDetail = true;
+  merged.sourceUnavailable = false;
+  return merged;
 }
 
 export function isManagedAbmImageUrl(value?: string) {
@@ -373,7 +602,7 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
     if (cellRecord && cellDetail) {
       let images = normalizedDetailImages(cellDetail.previewImage, cellDetail.images);
       if (!images.length) images = await getExistingManagedProductImages(cellRecord);
-      return applyVerifiedCollectionDetail({
+      return applyVerifiedSpecialCellDetail({
         ...cellRecord,
         ...cellDetail,
         kind,
@@ -410,7 +639,7 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
     direct.sourceUrl = String(direct.sourceUrl || direct.url || "").trim();
     direct.hasDetail = true;
     direct.images = normalizedDetailImages(direct.previewImage, direct.images);
-    return applyVerifiedCollectionDetail(direct);
+    return applyVerifiedSpecialCellDetail(direct);
   }
 
   if (!record) return undefined;
@@ -418,7 +647,7 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
   if (staged && isInvalidCollectedDetail(staged)) {
     let images = normalizedDetailImages(record.previewImage);
     if (!images.length) images = await getExistingManagedProductImages(record);
-    return applyVerifiedCollectionDetail({
+    return applyVerifiedSpecialCellDetail({
       ...record,
       sourceUrl: String(record.url || "").trim(),
       hasDetail: true,
@@ -432,7 +661,7 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
     if (officialCellDetail) {
       let images = normalizedDetailImages(officialCellDetail.previewImage, officialCellDetail.images);
       if (!images.length) images = await getExistingManagedProductImages(record);
-      return applyVerifiedCollectionDetail({
+      return applyVerifiedSpecialCellDetail({
         ...record,
         ...officialCellDetail,
         kind,
@@ -443,7 +672,7 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
     }
     let images = normalizedDetailImages(record.previewImage);
     if (!images.length) images = await getExistingManagedProductImages(record);
-    return applyVerifiedCollectionDetail({
+    return applyVerifiedSpecialCellDetail({
       ...record,
       sourceUrl: String(record.url || "").trim(),
       hasDetail: false,
@@ -457,5 +686,5 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
   detail.hasDetail = true;
   detail.images = normalizedDetailImages(detail.previewImage, detail.images);
   if (!detail.images.length) detail.images = await getExistingManagedProductImages(record);
-  return applyVerifiedCollectionDetail(detail);
+  return applyVerifiedSpecialCellDetail(detail);
 }
