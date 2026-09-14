@@ -140,7 +140,7 @@ function TaxonomyRows({
               </div>
             ) : null}
 
-            {hasChildren ? (
+            {hasChildren && !isOpen ? (
               <div className="absolute left-full top-0 z-[9998] hidden pl-2 lg:group-hover/cellular-row:block">
                 <FlyoutRows
                   nodes={children}
