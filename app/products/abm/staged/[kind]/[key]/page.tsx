@@ -6,6 +6,7 @@ import AbmHeroBanner from "@/components/products/AbmHeroBanner";
 import AbmCatalogSideNav from "@/components/products/AbmCatalogSideNav";
 import ProductGalleryClient from "@/components/products/ProductGalleryClient";
 import ProductTabsClient from "@/components/products/ProductTabs";
+import abmCellularTaxonomy from "@/data/abm-cellular-taxonomy.json";
 import { ABM_PRODUCT_GROUPS, findAbmServicePathForLabels } from "@/lib/abm/catalog-taxonomy";
 import { abmResourceImagePath } from "@/lib/abm/resource-links";
 import {
@@ -15,6 +16,74 @@ import {
 } from "@/lib/abm/rebuild-staging";
 
 export const revalidate = 300;
+
+type TaxonomyNode = {
+  slug: string;
+  title: string;
+  children?: TaxonomyNode[];
+};
+
+type BreadcrumbItem = { label: string; href?: string };
+
+function normalizedTaxonomyLabel(value: string) {
+  return String(value || "")
+    .normalize("NFKD")
+    .replace(/[™®]/g, "")
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/gi, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function cellularProductBreadcrumbs(paths: string[][], hints: string[]): BreadcrumbItem[] {
+  const cellularLabel = normalizedTaxonomyLabel("Cellular Materials");
+  const candidates = paths
+    .map((path) => {
+      const rootIndex = path.findIndex((label) => normalizedTaxonomyLabel(label) === cellularLabel);
+      return rootIndex >= 0 ? path.slice(rootIndex + 1) : [];
+    })
+    .filter((path) => path.length > 0);
+  if (!candidates.length) return [];
+
+  const hintLabels = new Set([...paths.flat(), ...hints].map(normalizedTaxonomyLabel).filter(Boolean));
+  const taxonomy = abmCellularTaxonomy as TaxonomyNode[];
+
+  const resolvedCandidates = candidates.map((candidate) => {
+    const crumbs: BreadcrumbItem[] = [
+      { label: "Cellular Materials", href: "/products/abm/cellular-materials" },
+    ];
+    const slugs = ["cellular-materials"];
+    let nodes = taxonomy;
+
+    for (const label of candidate) {
+      const wanted = normalizedTaxonomyLabel(label);
+      const node = nodes.find((item) => normalizedTaxonomyLabel(item.title) === wanted);
+      if (!node) continue;
+      slugs.push(node.slug);
+      crumbs.push({
+        label: node.title,
+        href: `/products/abm/${slugs.map(encodeURIComponent).join("/")}`,
+      });
+      nodes = node.children || [];
+    }
+
+    // Some staged records keep the collection name in `category` or in the
+    // source breadcrumb instead of `listingPaths`. Resolve one missing child
+    // from those labels so the product still links back to its actual group.
+    const hintedChild = nodes.find((node) => hintLabels.has(normalizedTaxonomyLabel(node.title)));
+    if (hintedChild) {
+      slugs.push(hintedChild.slug);
+      crumbs.push({
+        label: hintedChild.title,
+        href: `/products/abm/${slugs.map(encodeURIComponent).join("/")}`,
+      });
+    }
+
+    return crumbs;
+  });
+
+  return resolvedCandidates.sort((left, right) => right.length - left.length)[0] || [];
+}
 
 function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (character) => ({
@@ -91,6 +160,20 @@ export default async function AbmStagedDetailPage({
   const activeServicePath = kind === "service"
     ? findAbmServicePathForLabels([...paths.flat(), ...(record.breadcrumbs || [])])
     : [];
+  const productBreadcrumbs = kind === "product"
+    ? cellularProductBreadcrumbs(paths, [
+      ...(record.breadcrumbs || []),
+      record.category || "",
+      record.searchCategory || "",
+      record.filterTitle || "",
+    ])
+    : [];
+  const fallbackProductRootBreadcrumbs = kind === "product" && !productBreadcrumbs.length
+    ? ABM_PRODUCT_GROUPS.filter((group) => group.slug === activeProductRoot).map((group) => ({
+      label: group.title,
+      href: group.href,
+    }))
+    : [];
   const belongsToSpecialCellCollection = paths.some((path) => path.includes("Special Cell Line Collections"));
   const isCollectionTableRecord = record.verification?.source === "official-collection-table"
     || (kind === "product"
@@ -125,7 +208,9 @@ export default async function AbmStagedDetailPage({
             { label: "Home", href: "/" },
             { label: "Products", href: "/products" },
             { label: "ABM", href: "/products/abm" },
-            { label: title, href: `/products/abm/staged/${kind}/${encodeURIComponent(key)}` },
+            ...productBreadcrumbs,
+            ...fallbackProductRootBreadcrumbs,
+            { label: title },
           ]} />
         </div>
       </div>
