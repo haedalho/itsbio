@@ -4,6 +4,7 @@ import Breadcrumb from "@/components/site/Breadcrumb";
 import HtmlContent from "@/components/site/HtmlContent";
 import AbmHeroBanner from "@/components/products/AbmHeroBanner";
 import AbmCatalogSideNav from "@/components/products/AbmCatalogSideNav";
+import AbmCellularSidebar from "@/components/products/AbmCellularSidebar";
 import ProductGalleryClient from "@/components/products/ProductGalleryClient";
 import ProductTabsClient from "@/components/products/ProductTabs";
 import abmCellularTaxonomy from "@/data/abm-cellular-taxonomy.json";
@@ -212,6 +213,11 @@ export default async function AbmStagedDetailPage({
       href: group.href,
     }))
     : [];
+  const activeCellularPath = productBreadcrumbs.at(-1)?.href
+    ?.replace(/^\/products\/abm\//, "")
+    .split("/")
+    .filter(Boolean)
+    .map(decodeURIComponent) || [];
   const belongsToSpecialCellCollection = paths.some((path) => path.includes("Special Cell Line Collections"));
   const isCollectionTableRecord = record.verification?.source === "official-collection-table"
     || (kind === "product"
@@ -256,7 +262,11 @@ export default async function AbmStagedDetailPage({
       <main className="mx-auto max-w-[1320px] px-6 py-10">
         <div className="grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[296px_minmax(0,1fr)]">
           <aside className="self-start lg:sticky lg:top-24">
-            <AbmCatalogSideNav mode={kind} activeProductRoot={activeProductRoot} activeServicePath={activeServicePath} />
+            {kind === "product" && activeCellularPath[0] === "cellular-materials" ? (
+              <AbmCellularSidebar activePath={activeCellularPath} />
+            ) : (
+              <AbmCatalogSideNav mode={kind} activeProductRoot={activeProductRoot} activeServicePath={activeServicePath} />
+            )}
           </aside>
 
           <section
