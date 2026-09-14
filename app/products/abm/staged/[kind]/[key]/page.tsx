@@ -7,6 +7,7 @@ import AbmCatalogSideNav from "@/components/products/AbmCatalogSideNav";
 import ProductGalleryClient from "@/components/products/ProductGalleryClient";
 import ProductTabsClient from "@/components/products/ProductTabs";
 import { ABM_PRODUCT_GROUPS, findAbmServicePathForLabels } from "@/lib/abm/catalog-taxonomy";
+import { abmResourceImagePath } from "@/lib/abm/resource-links";
 import {
   getAbmStagedDetail,
   isManagedAbmImageUrl,
@@ -75,7 +76,10 @@ export default async function AbmStagedDetailPage({
   ].filter((url): url is string =>
     isManagedAbmImageUrl(url) || isTrustedSpecialCellReferenceImageUrl(url)
   )));
-  const gallery = galleryUrls.map((url) => ({ url, alt: title }));
+  const gallery = galleryUrls.map((url) => ({
+    url: abmResourceImagePath(url) || url,
+    alt: title,
+  }));
   const hasGallery = gallery.length > 0;
   const paths = Array.isArray(record.listingPaths) && record.listingPaths.length
     ? record.listingPaths
