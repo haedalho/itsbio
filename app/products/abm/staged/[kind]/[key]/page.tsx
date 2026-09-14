@@ -182,7 +182,7 @@ export default async function AbmStagedDetailPage({
     isManagedAbmImageUrl(url) || isTrustedSpecialCellReferenceImageUrl(url)
   )));
   const gallery = galleryUrls.map((url) => ({
-    url: abmResourceImagePath(url) || url,
+    url: isTrustedSpecialCellReferenceImageUrl(url) ? url : abmResourceImagePath(url) || url,
     alt: title,
   }));
   const hasGallery = gallery.length > 0;
