@@ -38,6 +38,12 @@ export default function AbmStagedCatalog({
   const safePage = Math.min(Math.max(page, 1), totalPages);
   const visible = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
   const base = basePath || `/products/abm/${kind === "product" ? "products" : "services"}`;
+  const recordHref = (row: AbmStagedRecord) => {
+    const href = stagedRecordPath(kind, row);
+    return kind === "product" && base.startsWith("/products/abm/cellular-materials/")
+      ? `${href}?from=${encodeURIComponent(base)}`
+      : href;
+  };
   const pageHref = (nextPage: number) =>
     `${base}?page=${nextPage}${normalizedQuery ? `&q=${encodeURIComponent(query)}` : ""}`;
 
@@ -85,10 +91,10 @@ export default function AbmStagedCatalog({
             {visible.map((row) => (
               <tr key={`${row.kind}-${stagedRecordKey(row)}`}>
                 <td>
-                  <Link href={stagedRecordPath(kind, row)} prefetch={false}>{cleanTitle(row.title)}</Link>
+                  <Link href={recordHref(row)} prefetch={false}>{cleanTitle(row.title)}</Link>
                 </td>
                 <td>
-                  {row.sku ? <Link href={stagedRecordPath(kind, row)} prefetch={false}>{row.sku}</Link> : "—"}
+                  {row.sku ? <Link href={recordHref(row)} prefetch={false}>{row.sku}</Link> : "—"}
                 </td>
                 <td>{kind === "product" ? row.unit || "—" : row.searchCategory || row.filterTitle || "ABM Service"}</td>
               </tr>

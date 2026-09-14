@@ -85,6 +85,41 @@ function cellularProductBreadcrumbs(paths: string[][], hints: string[]): Breadcr
   return resolvedCandidates.sort((left, right) => right.length - left.length)[0] || [];
 }
 
+function cellularBreadcrumbsFromPath(value?: string): BreadcrumbItem[] {
+  if (!value?.startsWith("/")) return [];
+
+  let segments: string[];
+  try {
+    segments = new URL(value, "https://www.itsbio.co.kr").pathname
+      .split("/")
+      .filter(Boolean)
+      .map(decodeURIComponent);
+  } catch {
+    return [];
+  }
+
+  if (segments[0] !== "products" || segments[1] !== "abm" || segments[2] !== "cellular-materials") return [];
+
+  const crumbs: BreadcrumbItem[] = [
+    { label: "Cellular Materials", href: "/products/abm/cellular-materials" },
+  ];
+  const slugs = ["cellular-materials"];
+  let nodes = abmCellularTaxonomy as TaxonomyNode[];
+
+  for (const slug of segments.slice(3)) {
+    const node = nodes.find((item) => item.slug === slug);
+    if (!node) return [];
+    slugs.push(node.slug);
+    crumbs.push({
+      label: node.title,
+      href: `/products/abm/${slugs.map(encodeURIComponent).join("/")}`,
+    });
+    nodes = node.children || [];
+  }
+
+  return crumbs;
+}
+
 function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (character) => ({
     "&": "&amp;",
@@ -115,7 +150,7 @@ export default async function AbmStagedDetailPage({
   searchParams,
 }: {
   params: Promise<{ kind: string; key: string }>;
-  searchParams?: Promise<{ name?: string; category?: string; unit?: string }>;
+  searchParams?: Promise<{ name?: string; category?: string; unit?: string; from?: string }>;
 }) {
   const [{ kind, key }, fallback] = await Promise.all([params, searchParams]);
   if (kind !== "product" && kind !== "service") notFound();
@@ -160,8 +195,11 @@ export default async function AbmStagedDetailPage({
   const activeServicePath = kind === "service"
     ? findAbmServicePathForLabels([...paths.flat(), ...(record.breadcrumbs || [])])
     : [];
+  const requestedProductBreadcrumbs = kind === "product"
+    ? cellularBreadcrumbsFromPath(fallback?.from)
+    : [];
   const productBreadcrumbs = kind === "product"
-    ? cellularProductBreadcrumbs(paths, [
+    ? requestedProductBreadcrumbs.length ? requestedProductBreadcrumbs : cellularProductBreadcrumbs(paths, [
       ...(record.breadcrumbs || []),
       record.category || "",
       record.searchCategory || "",
