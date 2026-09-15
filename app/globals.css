@@ -80,7 +80,9 @@ animation: partners-marquee 22s linear infinite;
    hover to open unrelated third-level menus. */
 @media (min-width: 1024px) {
   .abm-cellular-row:hover > .abm-cellular-row-flyout,
-  .abm-cellular-flyout-row:hover > .abm-cellular-nested-flyout {
+  .abm-cellular-row:focus-within > .abm-cellular-row-flyout,
+  .abm-cellular-flyout-row:hover > .abm-cellular-nested-flyout,
+  .abm-cellular-flyout-row:focus-within > .abm-cellular-nested-flyout {
     display: block;
   }
 }
