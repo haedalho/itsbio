@@ -48,7 +48,7 @@ function FlyoutRows({
           const hasChildren = children.length > 0;
 
           return (
-            <div key={nodePath.join("/")} className="group/cellular-flyout relative">
+            <div key={nodePath.join("/")} className="abm-cellular-flyout-row relative">
               <Link
                 href={categoryHref(nodePath)}
                 prefetch={false}
@@ -66,7 +66,7 @@ function FlyoutRows({
               </Link>
 
               {hasChildren ? (
-                <div className="absolute left-full top-0 z-[10000] hidden pl-2 lg:group-hover/cellular-flyout:block">
+                <div className="abm-cellular-nested-flyout absolute left-full top-0 z-[10000] hidden pl-2">
                   <FlyoutRows
                     nodes={children}
                     activePath={activePath}
@@ -105,7 +105,7 @@ function TaxonomyRows({
         const isOpen = hasChildren && (isActive || isOnTrail);
 
         return (
-          <div key={nodePath.join("/")} className="group/cellular-row relative">
+          <div key={nodePath.join("/")} className="abm-cellular-row relative">
             <Link
               href={categoryHref(nodePath)}
               prefetch={false}
@@ -141,7 +141,7 @@ function TaxonomyRows({
             ) : null}
 
             {hasChildren && !isOpen ? (
-              <div className="absolute left-full top-0 z-[9998] hidden pl-2 lg:group-hover/cellular-row:block">
+              <div className="abm-cellular-row-flyout absolute left-full top-0 z-[9998] hidden pl-2">
                 <FlyoutRows
                   nodes={children}
                   activePath={activePath}

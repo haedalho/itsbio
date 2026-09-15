@@ -75,6 +75,16 @@ animation: partners-marquee 22s linear infinite;
   display: none;
 }
 
+/* Keep recursive ABM sidebar hover states scoped to the row that owns each
+   flyout. Reusing Tailwind named groups at multiple depths causes an ancestor
+   hover to open unrelated third-level menus. */
+@media (min-width: 1024px) {
+  .abm-cellular-row:hover > .abm-cellular-row-flyout,
+  .abm-cellular-flyout-row:hover > .abm-cellular-nested-flyout {
+    display: block;
+  }
+}
+
 /* Kent product source HTML is intentionally preserved. These selectors give the
    original headings, lists and tables a stable Kent-like presentation without
    depending on the optional Tailwind typography plugin. */
