@@ -161,7 +161,7 @@ export default function AbmCellularSidebar({ activePath }: { activePath: string[
   const taxonomy = abmCellularTaxonomy as TaxonomyNode[];
 
   return (
-    <div className="relative z-[500] overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div className="relative z-[40] overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-orange-100 bg-orange-50 px-5 py-4">
         <div className="text-base font-semibold text-orange-600">All Products</div>
       </div>
