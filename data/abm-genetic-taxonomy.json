@@ -1,0 +1,169 @@
+[
+  {
+    "slug": "expression-ready-libraries",
+    "title": "Expression-Ready Libraries",
+    "sourceUrl": "https://www.abmgood.com/expression-ready-libraries.html",
+    "children": [
+      {
+        "slug": "lentiviral-vectors-and-virus",
+        "title": "Lentiviral Vectors & Virus",
+        "sourceUrl": "https://www.abmgood.com/Lentivirus-System.html"
+      },
+      {
+        "slug": "aav-vectors-and-virus",
+        "title": "AAV Vectors & Virus",
+        "sourceUrl": "https://www.abmgood.com/AAV-Adeno-Associated-Virus.html"
+      },
+      {
+        "slug": "adenovirus",
+        "title": "Adenovirus",
+        "sourceUrl": "https://www.abmgood.com/Adenovirus.html"
+      },
+      {
+        "slug": "sirna",
+        "title": "siRNA",
+        "sourceUrl": "https://www.abmgood.com/RNAi-shRNA-sirna-shrna-rnai-lentivirus.html",
+        "children": [
+          {
+            "slug": "lentivirus-sirna-expression-library",
+            "title": "siRNA Lentivirus",
+            "sourceUrl": "https://www.abmgood.com/lentivirus-sirna-expression-library.html"
+          },
+          {
+            "slug": "aav-sirna-expression-library",
+            "title": "siRNA AAV",
+            "sourceUrl": "https://www.abmgood.com/aav-sirna-expression-library.html"
+          },
+          {
+            "slug": "sirna-oligo-dsrna-library",
+            "title": "siRNA dsRNA Oligo",
+            "sourceUrl": "https://www.abmgood.com/sirna-oligo-dsrna-library.html"
+          }
+        ]
+      },
+      {
+        "slug": "mirna",
+        "title": "miRNA",
+        "sourceUrl": "https://www.abmgood.com/miRNA-microRNA.html"
+      },
+      {
+        "slug": "orf-vectors",
+        "title": "ORF Vectors",
+        "sourceUrl": "https://www.abmgood.com/Open-Reading-Frame-Vector.html"
+      },
+      {
+        "slug": "circrna",
+        "title": "circRNA",
+        "sourceUrl": "https://www.abmgood.com/circRNA.html"
+      },
+      {
+        "slug": "control-vectors-and-viruses",
+        "title": "Control Vectors & Viruses",
+        "sourceUrl": "https://www.abmgood.com/Control-Vectors-and-Viruses.html"
+      }
+    ]
+  },
+  {
+    "slug": "crispr",
+    "title": "CRISPR",
+    "sourceUrl": "https://www.abmgood.com/CRISPR-Cas9-sgRNA.html",
+    "children": [
+      {
+        "slug": "crispr-ko-vectors-and-virus",
+        "title": "CRISPR KO Vectors & Virus",
+        "sourceUrl": "https://www.abmgood.com/crispr-knockout-library.html"
+      },
+      {
+        "slug": "crispr-activation-vectors",
+        "title": "CRISPR Activation Vectors",
+        "sourceUrl": "https://www.abmgood.com/crispr-activation-lentivirus-library.html"
+      },
+      {
+        "slug": "cas9-vectors-and-virus",
+        "title": "Cas9 Vectors & Virus",
+        "sourceUrl": "https://www.abmgood.com/cas9-expression-vectors-and-viruses.html"
+      },
+      {
+        "slug": "cas-proteins-and-crispr-screening",
+        "title": "Cas Proteins & CRISPR Screening",
+        "sourceUrl": "https://www.abmgood.com/cas9-proteins.html"
+      }
+    ]
+  },
+  {
+    "slug": "expression-systems",
+    "title": "Expression Systems",
+    "sourceUrl": "https://www.abmgood.com/expression-systems.html",
+    "children": [
+      {
+        "slug": "lentiviral-vectors",
+        "title": "Lentiviral Vectors",
+        "sourceUrl": "https://www.abmgood.com/recombinant-lentiviral-vectors"
+      },
+      {
+        "slug": "aav-vectors",
+        "title": "AAV Vectors",
+        "sourceUrl": "https://www.abmgood.com/recombinant-aav-vectors"
+      },
+      {
+        "slug": "adenoviral-vectors",
+        "title": "Adenoviral Vectors",
+        "sourceUrl": "https://www.abmgood.com/recombinant-adenoviral-vectors"
+      },
+      {
+        "slug": "retroviral-vectors",
+        "title": "Retroviral Vectors",
+        "sourceUrl": "https://www.abmgood.com/recombinant-retroviral-vectors"
+      }
+    ]
+  },
+  {
+    "slug": "specialized-vectors",
+    "title": "Specialized Vectors",
+    "sourceUrl": "https://www.abmgood.com/Vectors.html",
+    "children": [
+      {
+        "slug": "targeted-cell-apoptosis-adenoviruses",
+        "title": "Targeted Cell Apoptosis Adenoviruses",
+        "sourceUrl": "https://www.abmgood.com/Targeted-Cell-Apoptosis-Adenoviruses.html"
+      },
+      {
+        "slug": "ipsc-reporters",
+        "title": "iPSC Reporters",
+        "sourceUrl": "https://www.abmgood.com/iPSC-Reporters.html"
+      }
+    ]
+  },
+  {
+    "slug": "kits-for-viral-vectors",
+    "title": "Kits for Viral Vectors",
+    "sourceUrl": "https://www.abmgood.com/Recombinant-Virus-Kits.html",
+    "children": [
+      {
+        "slug": "virus-packaging-dna-mixes",
+        "title": "Virus Packaging DNA Mixes",
+        "sourceUrl": "https://www.abmgood.com/virus-packaging-mixes.html"
+      },
+      {
+        "slug": "qpcr-virus-titer-kits",
+        "title": "qPCR Virus Titer Kits",
+        "sourceUrl": "https://www.abmgood.com/qPCR-Virus-Titer-Kits.html"
+      },
+      {
+        "slug": "virus-transduction-enhancer",
+        "title": "Virus Transduction Enhancer",
+        "sourceUrl": "https://www.abmgood.com/Transduction-Enhancers.html"
+      },
+      {
+        "slug": "virus-purification-kits",
+        "title": "Virus Purification Kits",
+        "sourceUrl": "https://www.abmgood.com/virus-purification-kit.html"
+      },
+      {
+        "slug": "lentivirus-bundles",
+        "title": "Lentivirus Bundles",
+        "sourceUrl": "https://www.abmgood.com/Lentivirus-Bundles.html"
+      }
+    ]
+  }
+]

@@ -10,8 +10,10 @@ import AbmStagedCatalog from "@/components/products/AbmStagedCatalog";
 import AbmHeroBanner from "@/components/products/AbmHeroBanner";
 import AbmCatalogSideNav from "@/components/products/AbmCatalogSideNav";
 import AbmCellularSidebar from "@/components/products/AbmCellularSidebar";
+import AbmGeneticCatalogSearch from "@/components/products/AbmGeneticCatalogSearch";
 import AbmServiceLanding from "@/components/products/AbmServiceLanding";
 import abmCellularTaxonomy from "@/data/abm-cellular-taxonomy.json";
+import abmGeneticTaxonomy from "@/data/abm-genetic-taxonomy.json";
 import {
   ABM_PRODUCT_GROUPS,
   ABM_SERVICE_GROUPS,
@@ -34,6 +36,7 @@ import {
   abmResourcePagePath,
   isOfficialAbmResourceImageUrl,
 } from "@/lib/abm/resource-links";
+import { getOfficialAbmGeneticCategory } from "@/lib/abm/genetic-category-data";
 import "../abm-3d-landing.css";
 import "../abm-cellular-category.css";
 
@@ -430,6 +433,13 @@ type AbmCellularTaxonomyNode = {
   children?: AbmCellularTaxonomyNode[];
 };
 
+type AbmGeneticTaxonomyNode = {
+  slug: string;
+  title: string;
+  sourceUrl: string;
+  children?: AbmGeneticTaxonomyNode[];
+};
+
 function normalizeAbmCellularSidebar(nodes: TreeNode[]) {
   const existingByPath = new Map<string, TreeNode>();
   const visit = (items: TreeNode[]) => items.forEach((node) => {
@@ -458,6 +468,59 @@ function normalizeAbmCellularSidebar(nodes: TreeNode[]) {
   });
 
   return build(abmCellularTaxonomy as AbmCellularTaxonomyNode[], ["cellular-materials"]);
+}
+
+function normalizeAbmGeneticSidebar(nodes: TreeNode[]) {
+  const existingByPath = new Map<string, TreeNode>();
+  const existingBySource = new Map<string, TreeNode>();
+  const visit = (items: TreeNode[]) => items.forEach((node) => {
+    existingByPath.set(node.path.join("/"), node);
+    if (node.sourceUrl) existingBySource.set(node.sourceUrl.toLowerCase(), node);
+    visit(node.children || []);
+  });
+  visit(nodes);
+
+  const build = (
+    items: AbmGeneticTaxonomyNode[],
+    parentPath: string[],
+  ): TreeNode[] => items.map((item, order) => {
+    const path = [...parentPath, item.slug];
+    const key = path.join("/");
+    const existing = existingByPath.get(key) || existingBySource.get(item.sourceUrl.toLowerCase());
+    return {
+      key,
+      _id: existing?._id || `virtual-${key}`,
+      title: item.title,
+      path,
+      order,
+      sourceUrl: item.sourceUrl,
+      isVirtual: !existing?._id,
+      children: build(item.children || [], path),
+    };
+  });
+
+  return build(abmGeneticTaxonomy as AbmGeneticTaxonomyNode[], ["genetic-materials"]);
+}
+
+function geneticCategoryForPath(path: string[]) {
+  if (path[0] !== "genetic-materials") return undefined;
+  let nodes = abmGeneticTaxonomy as AbmGeneticTaxonomyNode[];
+  let current: AbmGeneticTaxonomyNode | undefined;
+  for (const segment of path.slice(1)) {
+    current = nodes.find((node) => node.slug === segment);
+    if (!current) return undefined;
+    nodes = current.children || [];
+  }
+  return current;
+}
+
+function sanityPathAlias(pathStr: string) {
+  const prefix = "genetic-materials/expression-ready-libraries/sirna/";
+  if (!pathStr.startsWith(prefix)) return pathStr;
+  return pathStr.replace(
+    prefix,
+    "genetic-materials/expression-ready-libraries/RNAi-shRNA-sirna-shrna-rnai-lentivirus/",
+  );
 }
 
 function findTreeNodeByPath(nodes: TreeNode[], path: string[]): TreeNode | undefined {
@@ -978,6 +1041,7 @@ function renderContentBlocks(
   theme: Theme,
   landingVariant: "" | "platforms" | "matrix" = "",
   cellularPresentation: CellularPresentation = "",
+  renderAllHtmlBlocks = false,
 ) {
   if (!Array.isArray(blocks) || blocks.length === 0) return null;
 
@@ -992,7 +1056,7 @@ function renderContentBlocks(
         const type = b?._type;
 
         if (type === "contentBlockHtml") {
-          if (renderedHtml) return null;
+          if (renderedHtml && !renderAllHtmlBlocks) return null;
           renderedHtml = true;
           const html = typeof b?.html === "string" ? b.html : "";
           return (
@@ -1069,6 +1133,7 @@ export default async function AbmProductsPathPage({
   const hasPath = path.length > 0;
   const hasActiveRoot = !!activeRoot;
   const pathStr = path.join("/");
+  const queryPathStr = sanityPathAlias(pathStr);
 
   const data = await sanityCdnClient.fetch(PAGE_QUERY, {
     brandKey,
@@ -1079,7 +1144,7 @@ export default async function AbmProductsPathPage({
     hasActiveRoot,
     activeRoot,
     pathArr: path,
-    pathStr,
+    pathStr: queryPathStr,
   }, PUBLIC_CATALOG_CACHE);
 
   const brand = data?.brand;
@@ -1103,6 +1168,8 @@ export default async function AbmProductsPathPage({
     activeRootTree = buildTreeFromDescendants([activeRoot], descendants);
     if (activeRoot === "cellular-materials") {
       activeRootTree = normalizeAbmCellularSidebar(activeRootTree);
+    } else if (activeRoot === "genetic-materials") {
+      activeRootTree = normalizeAbmGeneticSidebar(activeRootTree);
     }
   }
 
@@ -1332,18 +1399,25 @@ export default async function AbmProductsPathPage({
 
   if (!category?._id && (!activeRootTree || activeRootTree.length === 0)) notFound();
 
+  const officialGeneticCategory = pathStr.startsWith("genetic-materials")
+    ? getOfficialAbmGeneticCategory(pathStr)
+    : undefined;
   const breadcrumbItems = [
     { label: "Home", href: "/" },
     { label: "Products", href: "/products" },
     { label: brand.title, href: `/products/${brandKey}` },
     ...(isKent ? [{ label: KENT_MENU_TITLE, href: `/products/${brandKey}` }] : []),
-    ...path.map((seg: string, i: number) => ({
-      label: humanizeSegment(seg),
-      href: buildHref(brandKey, path.slice(0, i + 1)),
-    })),
+    ...path.map((seg: string, i: number) => {
+      const currentPath = path.slice(0, i + 1);
+      const geneticNode = geneticCategoryForPath(currentPath);
+      return {
+        label: i === 0 && seg === "genetic-materials" ? "Genetic Materials" : geneticNode?.title || humanizeSegment(seg),
+        href: buildHref(brandKey, currentPath),
+      };
+    }),
   ];
 
-  const pageTitle = stripBrandSuffix(category?.title || humanizeSegment(path[path.length - 1] || ""));
+  const pageTitle = stripBrandSuffix(officialGeneticCategory?.title || category?.title || humanizeSegment(path[path.length - 1] || ""));
   const is3dLandingFidelity = brandKey === "abm" && [
     "cellular-materials/3d-and-organoid/3d-culture-platforms",
     "cellular-materials/3d-and-organoid/3dcelmatrix",
@@ -1352,11 +1426,14 @@ export default async function AbmProductsPathPage({
     ? path.at(-1) === "3dcelmatrix" ? "matrix" : "platforms"
     : "";
 
-  const blocks = Array.isArray(category?.contentBlocks)
+  const storedBlocks = Array.isArray(category?.contentBlocks)
     ? category.contentBlocks
     : Array.isArray(category?.blocks)
       ? category.blocks
       : [];
+  const blocks = officialGeneticCategory
+    ? [{ _key: `official-${pathStr}`, _type: "contentBlockHtml", html: officialGeneticCategory.html }]
+    : storedBlocks;
   const primaryHtml = blocks.find((block: any) => block?._type === "contentBlockHtml")?.html || "";
   const cellularPresentation = getCellularPresentation(pathStr, typeof primaryHtml === "string" ? primaryHtml : "");
   const hasEmbeddedCategoryHero = cellularPresentation === "collections" || cellularPresentation === "rich";
@@ -1402,6 +1479,8 @@ export default async function AbmProductsPathPage({
             {!is3dLandingFidelity && !hasEmbeddedCategoryHero ? <h1 className="text-3xl font-bold tracking-tight text-neutral-900">{pageTitle}</h1> : null}
             {!is3dLandingFidelity && !hasEmbeddedCategoryHero ? <CategoryLinkRail brandKey={brandKey} nodes={childCategoryNodes} /> : null}
 
+            {pathStr.startsWith("genetic-materials") ? <AbmGeneticCatalogSearch pathStr={pathStr} /> : null}
+
             {isKent && productsInCategory.length ? (
               <div className="mt-6">
                 <div className="text-sm font-semibold text-neutral-900">Products</div>
@@ -1446,7 +1525,14 @@ export default async function AbmProductsPathPage({
             ) : null}
 
             {blocks.length ? (
-              renderContentBlocks(blocks, brandKey, theme, landingVariant, cellularPresentation)
+              renderContentBlocks(
+                blocks,
+                brandKey,
+                theme,
+                landingVariant,
+                cellularPresentation,
+                pathStr.startsWith("genetic-materials"),
+              )
             ) : fallbackHtml ? (
               <section className="mt-8">
                 <HtmlContent html={fallbackHtml} mode={brandKey === "abm" ? "abm-detail" : "default"} />
