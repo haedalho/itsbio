@@ -101,6 +101,9 @@ function restoreGrowthFactorTools(doc: Document) {
 
   if (table && !doc.querySelector(".abm-growth-search")) {
     table.dataset.abmGrowthCatalog = "true";
+    const initialProductCount = Array.from(table.querySelectorAll("tr")).filter((row) =>
+      !row.classList.contains("abm-table-section-row") && Boolean(row.querySelector("td"))
+    ).length;
     const search = doc.createElement("section");
     search.className = "abm-growth-search";
     search.setAttribute("aria-labelledby", "abm-growth-search-title");
@@ -130,7 +133,7 @@ function restoreGrowthFactorTools(doc: Document) {
         <input id="abm-growth-search-input" data-abm-growth-search type="search" autocomplete="off" placeholder="Gene name, symbol or accession number" />
         <button type="button" data-abm-growth-reset>Clear</button>
       </div>
-      <p class="abm-growth-search-count" data-abm-growth-search-count aria-live="polite"></p>
+      <p class="abm-growth-search-count" data-abm-growth-search-count aria-live="polite">${initialProductCount.toLocaleString()} products available</p>
     `);
     if (!existingHeading) {
       const tableContainer = table.closest(".abm-table-scroll") || table;
