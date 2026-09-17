@@ -429,6 +429,37 @@ function isProductNameHeader(value: string) {
   return /^(?:product(?:\s+(?:name|description))?(?:\s*\/\s*(?:name|description))?|name|description|cell(?:\s+line)?(?:\s+name)?|model(?:\s+name)?)$/.test(header);
 }
 
+function applySemanticTableColumnLayout(table: HTMLTableElement) {
+  const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>("tr"));
+  const headerRow = rows.find((row) => row.querySelector("th"));
+  if (!headerRow) return;
+
+  const headers = Array.from(headerRow.children).map((cell) => collapseWs(cell.textContent || ""));
+  const columnClasses = headers.map((header) => {
+    const normalized = normalizedTableHeader(header);
+    if (isProductNameHeader(header)) return "abm-col-product";
+    if (isCatalogNumberHeader(header)) return "abm-col-catalog";
+    if (/^(?:vector|vector map)$/.test(normalized)) return "abm-col-vector";
+    if (/^(?:application|applications|description|recommended use|recommended uses|use)$/.test(normalized)) {
+      return "abm-col-description";
+    }
+    return "";
+  });
+
+  if (!columnClasses.some(Boolean)) return;
+  table.classList.add(`abm-table-columns-${headers.length}`);
+  if (columnClasses.includes("abm-col-description")) table.classList.add("abm-table-has-description-column");
+
+  rows.forEach((row) => {
+    const cells = Array.from(row.children) as HTMLElement[];
+    cells.forEach((cell, index) => {
+      if (cell.hasAttribute("colspan")) return;
+      const className = columnClasses[index];
+      if (className) cell.classList.add(className);
+    });
+  });
+}
+
 function validCatalogNumber(value: string) {
   const sku = collapseWs(value).replace(/\s+/g, "");
   return sku.length >= 2
@@ -1198,6 +1229,8 @@ export function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props[
         });
         if (nav.children.length) doc.body.insertBefore(nav, doc.body.firstChild);
       }
+
+      applySemanticTableColumnLayout(table as HTMLTableElement);
 
       const existingWrap = table.parentElement?.classList.contains("models-table-wrap") ? table.parentElement : null;
       if (existingWrap) {
