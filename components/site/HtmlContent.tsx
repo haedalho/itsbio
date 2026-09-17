@@ -17,6 +17,13 @@ const TABLE_CLASS = "abm-data-table";
 const EXTERNAL_VECTOR_LINK_ATTR = "data-abm-external-vector";
 const DIRECT_DOCUMENT_PATH = /\.(?:pdf|docx?|xlsx?|pptx?|csv|zip)(?:$|[?#])/i;
 
+type AbmEditorialImage = {
+  src: string;
+  alt: string;
+  title: string;
+  href?: string;
+};
+
 function lower(x: unknown) {
   return String(x ?? "").toLowerCase();
 }
@@ -25,6 +32,259 @@ function removeNode(n: Element | null) {
 }
 function collapseWs(s: string) {
   return (s || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function findHeading(doc: Document, matcher: RegExp) {
+  return Array.from(doc.querySelectorAll<HTMLElement>("h1, h2, h3, h4, h5, h6")).find((heading) =>
+    matcher.test(collapseWs(heading.textContent || ""))
+  );
+}
+
+function createEditorialImage(doc: Document, image: AbmEditorialImage, wide = false) {
+  const figure = doc.createElement("figure");
+  figure.className = wide ? "abm-editorial-image abm-editorial-image--wide" : "abm-editorial-image";
+
+  const img = doc.createElement("img");
+  img.src = abmResourceImagePath(image.src);
+  img.alt = image.alt;
+  img.loading = "lazy";
+  img.decoding = "async";
+
+  if (image.href) {
+    const anchor = doc.createElement("a");
+    anchor.href = image.href;
+    anchor.setAttribute("aria-label", image.title);
+    anchor.appendChild(img);
+    figure.appendChild(anchor);
+  } else {
+    figure.appendChild(img);
+  }
+
+  const caption = doc.createElement("figcaption");
+  caption.textContent = image.title;
+  figure.appendChild(caption);
+  return figure;
+}
+
+function hasEditorialImage(doc: Document, src: string) {
+  const filename = src.split("/").pop()?.replace(/%20/g, " ").toLowerCase() || "";
+  return Array.from(doc.querySelectorAll<HTMLImageElement>("img")).some((img) => {
+    const current = decodeURIComponent(img.getAttribute("src") || "").toLowerCase();
+    return Boolean(filename) && current.includes(filename);
+  });
+}
+
+function addEditorialGallery(doc: Document, title: string, images: AbmEditorialImage[]) {
+  const missing = images.filter((image) => !hasEditorialImage(doc, image.src));
+  if (!missing.length) return;
+
+  const section = doc.createElement("section");
+  section.className = "abm-editorial-gallery";
+  section.setAttribute("aria-label", title);
+  const heading = doc.createElement("h2");
+  heading.textContent = title;
+  section.appendChild(heading);
+
+  const grid = doc.createElement("div");
+  grid.className = "abm-editorial-gallery-grid";
+  missing.forEach((image) => grid.appendChild(createEditorialImage(doc, image)));
+  section.appendChild(grid);
+  doc.body.appendChild(section);
+}
+
+function restoreGrowthFactorTools(doc: Document) {
+  if (!findHeading(doc, /^Growth Factors and Cytokines$/i)) return;
+
+  const table = Array.from(doc.querySelectorAll<HTMLTableElement>("table"))
+    .filter((candidate) => candidate.querySelectorAll("tr").length > 10)
+    .sort((a, b) => b.querySelectorAll("tr").length - a.querySelectorAll("tr").length)[0];
+
+  if (table && !doc.querySelector(".abm-growth-search")) {
+    table.dataset.abmGrowthCatalog = "true";
+    const search = doc.createElement("section");
+    search.className = "abm-growth-search";
+    search.setAttribute("aria-labelledby", "abm-growth-search-title");
+    const existingHeading = findHeading(doc, /^Search Growth Factor and Cytokine Library$/i);
+    const existingDescription = existingHeading?.nextElementSibling?.matches("p")
+      ? existingHeading.nextElementSibling
+      : null;
+    if (existingHeading) {
+      existingHeading.id = "abm-growth-search-title";
+      existingHeading.parentNode?.insertBefore(search, existingHeading);
+      search.appendChild(existingHeading);
+      if (existingDescription) search.appendChild(existingDescription);
+    } else {
+      const heading = doc.createElement("h2");
+      heading.id = "abm-growth-search-title";
+      heading.textContent = "Search Growth Factor and Cytokine Library";
+      search.appendChild(heading);
+    }
+    if (!existingDescription) {
+      const description = doc.createElement("p");
+      description.textContent = "Search by gene name, symbol, accession number, catalogue number, organism, or source.";
+      search.appendChild(description);
+    }
+    search.insertAdjacentHTML("beforeend", `
+      <div class="abm-growth-search-row">
+        <label class="sr-only" for="abm-growth-search-input">Search products</label>
+        <input id="abm-growth-search-input" data-abm-growth-search type="search" autocomplete="off" placeholder="Gene name, symbol or accession number" />
+        <button type="button" data-abm-growth-reset>Clear</button>
+      </div>
+      <p class="abm-growth-search-count" data-abm-growth-search-count aria-live="polite"></p>
+    `);
+    if (!existingHeading) {
+      const tableContainer = table.closest(".abm-table-scroll") || table;
+      tableContainer.parentNode?.insertBefore(search, tableContainer);
+    }
+  }
+
+  addEditorialGallery(doc, "Growth Factor and Cytokine Resources", [
+    {
+      src: "https://www.abmgood.com/assets/images/wysiwyg/Role-of-Growth-Factors-in-Cell-Differentiation_poster_thumbnail.png",
+      alt: "Cell differentiation and maturation using abm growth factors poster",
+      title: "Role of Growth Factors in Cell Differentiation",
+      href: "https://www.abmgood.com/assets/productdocument/document/r/o/role-of-growth-factors-in-cell-differentiation_abm_digital-poster.pdf",
+    },
+    {
+      src: "https://www.abmgood.com/assets/images/category/growth_factors_and_cytokines/Figure-1.png",
+      alt: "Cell differentiation and maturation using growth factors",
+      title: "Cell Differentiation and Maturation",
+    },
+    {
+      src: "https://www.abmgood.com/assets/images/category/growth_factors_and_cytokines/resources_growth-factors-knowledge-base.png",
+      alt: "Growth factors and cytokines introduction",
+      title: "Growth Factors and Cytokines — An Introduction",
+    },
+    {
+      src: "https://www.abmgood.com/assets/images/category/growth_factors_and_cytokines/resources_growth-factors-brochure.png",
+      alt: "Growth factors and cytokines catalogue",
+      title: "Growth Factors and Cytokines Catalogue",
+      href: "https://www.abmgood.com/assets/images/category/growth_factors_and_cytokines/Growth_Factor_Cytokine_Brochure%20(3).pdf",
+    },
+  ]);
+}
+
+const IMMORTALIZATION_TABS = [
+  ["sv40t", "SV40T + Bundles"],
+  ["htert", "hTERT"],
+  ["additional", "Additional Viruses"],
+  ["services", "Services"],
+] as const;
+
+function restoreImmortalizationTools(doc: Document) {
+  if (!findHeading(doc, /^Cell Immortalization Reagents$/i)) return;
+
+  const panels = new Map<string, HTMLElement>();
+  doc.querySelectorAll<HTMLElement>("[data-panel]").forEach((panel) => {
+    const key = panel.dataset.panel || "";
+    if (IMMORTALIZATION_TABS.some(([candidate]) => candidate === key)) panels.set(key, panel);
+  });
+
+  if (panels.size >= 3) {
+    let tabList = doc.querySelector<HTMLElement>(".ci-tabs");
+    if (!tabList) {
+      tabList = doc.createElement("div");
+      panels.values().next().value?.parentNode?.insertBefore(tabList, panels.values().next().value || null);
+    }
+    tabList.className = "abm-immortalization-tabs";
+    tabList.setAttribute("role", "tablist");
+    tabList.setAttribute("aria-label", "Cell immortalization product families");
+    tabList.replaceChildren();
+
+    IMMORTALIZATION_TABS.forEach(([key, label], index) => {
+      const panel = panels.get(key);
+      if (!panel) return;
+      const button = doc.createElement("button");
+      button.type = "button";
+      button.id = `abm-immortalization-tab-${key}`;
+      button.dataset.abmImmortalizationTab = key;
+      button.setAttribute("role", "tab");
+      button.setAttribute("aria-controls", panel.id || `abm-immortalization-panel-${key}`);
+      button.setAttribute("aria-selected", index === 0 ? "true" : "false");
+      button.tabIndex = index === 0 ? 0 : -1;
+      button.textContent = label;
+      tabList?.appendChild(button);
+
+      panel.id ||= `abm-immortalization-panel-${key}`;
+      panel.setAttribute("role", "tabpanel");
+      panel.setAttribute("aria-labelledby", button.id);
+      panel.toggleAttribute("hidden", index !== 0);
+    });
+  } else if (!doc.querySelector(".abm-immortalization-jump-nav")) {
+    const headingMap = [
+      ["sv40t", "SV40T + Bundles", /Recombinant SV40T Virus/i],
+      ["htert", "hTERT", /Recombinant hTERT Virus/i],
+      ["additional", "Additional Viruses", /Additional Immortalization Viruses/i],
+    ] as const;
+    const destinations = headingMap.flatMap(([key, label, matcher]) => {
+      const heading = findHeading(doc, matcher);
+      if (!heading) return [];
+      heading.id = `abm-immortalization-${key}`;
+      return [[label, heading.id] as const];
+    });
+    const firstHeading = destinations.length ? doc.getElementById(destinations[0][1]) : null;
+    if (firstHeading) {
+      const nav = doc.createElement("nav");
+      nav.className = "abm-immortalization-jump-nav";
+      nav.setAttribute("aria-label", "Cell immortalization product families");
+      destinations.forEach(([label, id]) => {
+        const anchor = doc.createElement("a");
+        anchor.href = `#${id}`;
+        anchor.textContent = label;
+        nav.appendChild(anchor);
+      });
+      const service = doc.createElement("a");
+      service.href = "/products/abm/services/cell-and-antibody-services/cell-biology-services/cell-immortalization-service";
+      service.textContent = "Services";
+      nav.appendChild(service);
+      firstHeading.parentNode?.insertBefore(nav, firstHeading);
+    }
+  }
+
+  const workflow = "https://www.abmgood.com/assets/images/tinymce/wpCoSYXvsh2v7QPekJJKTpwfxsDR6jEHnetE6lNS.png";
+  if (!hasEditorialImage(doc, workflow)) {
+    const image = createEditorialImage(doc, {
+      src: workflow,
+      alt: "Cell immortalization workflow showing transduction, selection, validation, and cryopreservation",
+      title: "Cell Immortalization Workflow",
+    }, true);
+    const productsHeading = findHeading(doc, /Browse cell immortalization products by method|Recombinant SV40T Virus/i);
+    const productsSection = productsHeading?.closest("section");
+    if (productsSection?.parentNode) productsSection.parentNode.insertBefore(image, productsSection);
+    else productsHeading?.parentNode?.insertBefore(image, productsHeading);
+  }
+
+  const compatibility = "https://www.abmgood.com/assets/images/tinymce/Cell%20Immortalization%20Reagents%20Compatibility%20Chart.png";
+  if (!hasEditorialImage(doc, compatibility)) {
+    const heading = findHeading(doc, /^Cell Immortalization Reagents Compatibility Chart$/i);
+    const image = createEditorialImage(doc, {
+      src: compatibility,
+      alt: "Cell Immortalization Reagents Compatibility Chart",
+      title: "Cell Immortalization Reagents Compatibility Chart",
+    }, true);
+    const header = heading?.closest(".ci-section-header") || heading;
+    header?.insertAdjacentElement("afterend", image);
+  }
+
+  addEditorialGallery(doc, "Cell Immortalization Resources", [
+    {
+      src: "https://www.abmgood.com/assets/images/category/cell_immort_kits/CRISPR-handbook.png",
+      alt: "Cell Immortalization Handbook",
+      title: "Cell Immortalization Handbook",
+      href: "https://www.abmgood.com/assets/images/category/cell_biology/Cell_Immortalization_Handbook_V7.pdf",
+    },
+    {
+      src: "https://www.abmgood.com/assets/images/category/cell_immort_kits/Cell-Immortalization-Workflow-2.png",
+      alt: "Cell Immortalization Workflow",
+      title: "Cell Immortalization Workflow",
+    },
+    {
+      src: "https://www.abmgood.com/assets/images/category/cell_immort_kits/Custom-Cell-Immortalization-Service-thumbnail-updated.png",
+      alt: "Custom Cell Immortalization Service",
+      title: "Custom Cell Immortalization Service",
+      href: "/products/abm/services/cell-and-antibody-services/cell-biology-services/cell-immortalization-service",
+    },
+  ]);
 }
 
 /**
@@ -906,6 +1166,11 @@ export function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props[
   // ✅ 7) 가독성 개선(문단 래핑)
   if (!isAbmLanding) improveReadability(doc);
 
+  if (mode === "abm-detail") {
+    restoreGrowthFactorTools(doc);
+    restoreImmortalizationTools(doc);
+  }
+
   if (isAbmLanding) restoreCollectionCardActions(doc);
 
   // 8) 빈 요소 정리
@@ -966,8 +1231,67 @@ export default function HtmlContent({ html, className, baseUrl, mode = "default"
       if (href) window.location.assign(href);
     };
 
+    const filterGrowthCatalog = (query: string) => {
+      const table = root.querySelector<HTMLTableElement>('table[data-abm-growth-catalog="true"]');
+      if (!table) return;
+      const normalized = collapseWs(query).toLowerCase();
+      const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>("tr"));
+      const productRows = rows.filter((row) =>
+        !row.classList.contains("abm-table-section-row") && Boolean(row.querySelector("td"))
+      );
+      let visible = 0;
+
+      productRows.forEach((row) => {
+        const matches = !normalized || collapseWs(row.textContent || "").toLowerCase().includes(normalized);
+        row.toggleAttribute("hidden", !matches);
+        if (matches) visible += 1;
+      });
+
+      rows.filter((row) => row.classList.contains("abm-table-section-row")).forEach((sectionRow) => {
+        let sibling = sectionRow.nextElementSibling as HTMLTableRowElement | null;
+        let hasVisibleProduct = false;
+        while (sibling && !sibling.classList.contains("abm-table-section-row")) {
+          if (productRows.includes(sibling) && !sibling.hidden) hasVisibleProduct = true;
+          sibling = sibling.nextElementSibling as HTMLTableRowElement | null;
+        }
+        sectionRow.toggleAttribute("hidden", Boolean(normalized) && !hasVisibleProduct);
+      });
+
+      const count = root.querySelector<HTMLElement>("[data-abm-growth-search-count]");
+      if (count) count.textContent = normalized
+        ? `${visible.toLocaleString()} matching products`
+        : `${productRows.length.toLocaleString()} products available`;
+    };
+
+    const initialGrowthSearch = root.querySelector<HTMLInputElement>("[data-abm-growth-search]");
+    if (initialGrowthSearch) filterGrowthCatalog(initialGrowthSearch.value);
+
     const onClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
+      const resetGrowthSearch = target.closest<HTMLButtonElement>("[data-abm-growth-reset]");
+      if (resetGrowthSearch) {
+        const input = root.querySelector<HTMLInputElement>("[data-abm-growth-search]");
+        if (!input) return;
+        input.value = "";
+        filterGrowthCatalog("");
+        input.focus();
+        return;
+      }
+
+      const immortalizationTab = target.closest<HTMLButtonElement>("[data-abm-immortalization-tab]");
+      if (immortalizationTab) {
+        const key = immortalizationTab.dataset.abmImmortalizationTab || "";
+        root.querySelectorAll<HTMLButtonElement>("[data-abm-immortalization-tab]").forEach((button) => {
+          const active = button === immortalizationTab;
+          button.setAttribute("aria-selected", active ? "true" : "false");
+          button.tabIndex = active ? 0 : -1;
+        });
+        root.querySelectorAll<HTMLElement>("[data-panel]").forEach((panel) => {
+          panel.toggleAttribute("hidden", panel.dataset.panel !== key);
+        });
+        return;
+      }
+
       const toggle = target.closest<HTMLButtonElement>(".validated-lines-toggle");
       if (toggle) {
         const panel = root.querySelector<HTMLElement>("#validated-lines-panel");
@@ -1018,6 +1342,11 @@ export default function HtmlContent({ html, className, baseUrl, mode = "default"
       }
     };
 
+    const onInput = (event: Event) => {
+      const input = (event.target as HTMLElement).closest<HTMLInputElement>("[data-abm-growth-search]");
+      if (input) filterGrowthCatalog(input.value);
+    };
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setModal(false);
@@ -1041,9 +1370,11 @@ export default function HtmlContent({ html, className, baseUrl, mode = "default"
     };
 
     root.addEventListener("click", onClick);
+    root.addEventListener("input", onInput);
     root.addEventListener("keydown", onKeyDown);
     return () => {
       root.removeEventListener("click", onClick);
+      root.removeEventListener("input", onInput);
       root.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = "";
     };
