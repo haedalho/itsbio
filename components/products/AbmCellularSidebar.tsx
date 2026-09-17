@@ -102,7 +102,7 @@ function TaxonomyRows({
         const isOnTrail = !isActive && isPathPrefix(activePath, nodePath);
         const children = node.children || [];
         const hasChildren = children.length > 0;
-        const isMobileOpen = hasChildren && (isActive || isOnTrail);
+        const isExpanded = hasChildren && (isActive || isOnTrail);
 
         return (
           <div key={nodePath.join("/")} className="abm-cellular-row relative">
@@ -122,15 +122,15 @@ function TaxonomyRows({
               {hasChildren ? (
                 <span className="shrink-0 text-orange-500" aria-hidden>
                   <span className="hidden lg:inline">›</span>
-                  <span className="lg:hidden">{isMobileOpen ? "⌃" : "⌄"}</span>
+                  <span className="lg:hidden">{isExpanded ? "⌃" : "⌄"}</span>
                 </span>
               ) : (
                 <span className="shrink-0 text-neutral-300 opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" aria-hidden>›</span>
               )}
             </Link>
 
-            {isMobileOpen ? (
-              <div className="lg:hidden">
+            {isExpanded ? (
+              <div>
                 <TaxonomyRows
                   nodes={children}
                   activePath={activePath}
@@ -140,7 +140,7 @@ function TaxonomyRows({
               </div>
             ) : null}
 
-            {hasChildren ? (
+            {hasChildren && !isExpanded ? (
               <div className="abm-cellular-row-flyout absolute left-full top-0 z-[9998] hidden pl-2">
                 <FlyoutRows
                   nodes={children}
