@@ -1173,7 +1173,7 @@ export default async function AbmProductsPathPage({
         <div className={PAGE_SHELL}>
           <div className="mt-4"><Breadcrumb items={breadcrumbItems} /></div>
           <div className={`mt-5 pb-14 ${CONTENT_LAYOUT}`}>
-            <aside className="relative z-[70] self-start lg:sticky lg:top-24">
+            <aside className="relative z-[40] self-start lg:sticky lg:top-24">
               <AbmCatalogSideNav
                 mode={stagedKind}
                 activeProductRoot={stagedKind === "product" ? selectedGroup?.slug : ""}
@@ -1281,7 +1281,7 @@ export default async function AbmProductsPathPage({
           </div>
 
           <div className={`mt-5 ${CONTENT_LAYOUT}`}>
-            <aside className="relative z-[70] self-start lg:sticky lg:top-24">
+            <aside className="relative z-[40] self-start lg:sticky lg:top-24">
               <SideNavTree
                 brandKey={brandKey}
                 roots={roots}
@@ -1383,7 +1383,7 @@ export default async function AbmProductsPathPage({
         </div>
 
         <div className={`mt-5 ${CONTENT_LAYOUT}`}>
-          <aside className="relative z-[70] self-start lg:sticky lg:top-24">
+          <aside className="relative z-[40] self-start lg:sticky lg:top-24">
             {activeRoot === "cellular-materials" ? (
               <AbmCellularSidebar activePath={path} />
             ) : (
