@@ -353,7 +353,10 @@ function transformImmortalizationCollapses(doc: Document) {
 function isCommerceColumnLabel(value: string) {
   const label = collapseWs(value).replace(/[:：]+$/, "").trim();
   if (!label || label.length > 48) return false;
-  return /^(?:price|unit price|list price|sale price|cost|amount|currency|qty|quantity|cart|add to cart|order|order now|msrp|retail(?: price)?|wholesale(?: price)?|price \((?:usd|cad)\)|(?:usd|cad) price|usd|cad)$/i.test(label);
+  // Quantity is also a legitimate static product specification (for example
+  // "1.0 ml"). Interactive cart quantity controls are removed with forms and
+  // inputs, so keeping this header preserves the official pack-size column.
+  return /^(?:price|unit price|list price|sale price|cost|amount|currency|cart|add to cart|order|order now|msrp|retail(?: price)?|wholesale(?: price)?|price \((?:usd|cad)\)|(?:usd|cad) price|usd|cad)$/i.test(label);
 }
 
 function removeEmptyPrimarySpecificationRows(doc: Document) {
