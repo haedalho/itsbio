@@ -66,16 +66,19 @@ function createEditorialImage(doc: Document, image: AbmEditorialImage, wide = fa
   return figure;
 }
 
-function hasEditorialImage(doc: Document, src: string) {
+function hasEditorialImage(doc: Document, src: string, alt?: string) {
   const filename = src.split("/").pop()?.replace(/%20/g, " ").toLowerCase() || "";
+  const normalizedAlt = collapseWs(alt || "").toLowerCase();
   return Array.from(doc.querySelectorAll<HTMLImageElement>("img")).some((img) => {
     const current = decodeURIComponent(img.getAttribute("src") || "").toLowerCase();
-    return Boolean(filename) && current.includes(filename);
+    const currentAlt = collapseWs(img.getAttribute("alt") || "").toLowerCase();
+    return (Boolean(filename) && current.includes(filename))
+      || (Boolean(normalizedAlt) && currentAlt === normalizedAlt);
   });
 }
 
 function addEditorialGallery(doc: Document, title: string, images: AbmEditorialImage[]) {
-  const missing = images.filter((image) => !hasEditorialImage(doc, image.src));
+  const missing = images.filter((image) => !hasEditorialImage(doc, image.src, image.alt));
   if (!missing.length) return;
 
   const section = doc.createElement("section");
@@ -175,7 +178,12 @@ const IMMORTALIZATION_TABS = [
 ] as const;
 
 function restoreImmortalizationTools(doc: Document) {
-  if (!findHeading(doc, /^Cell Immortalization Reagents$/i)) return;
+  const hasImmortalizationSections = Boolean(
+    findHeading(doc, /Recombinant SV40T Virus/i)
+    && findHeading(doc, /Recombinant hTERT Virus/i)
+    && findHeading(doc, /Additional Immortalization Viruses/i)
+  );
+  if (!hasImmortalizationSections) return;
 
   const panels = new Map<string, HTMLElement>();
   doc.querySelectorAll<HTMLElement>("[data-panel]").forEach((panel) => {
@@ -258,7 +266,7 @@ function restoreImmortalizationTools(doc: Document) {
   }
 
   const compatibility = "https://www.abmgood.com/assets/images/tinymce/Cell%20Immortalization%20Reagents%20Compatibility%20Chart.png";
-  if (!hasEditorialImage(doc, compatibility)) {
+  if (!hasEditorialImage(doc, compatibility, "Cell Immortalization Reagents Compatibility Chart")) {
     const heading = findHeading(doc, /^Cell Immortalization Reagents Compatibility Chart$/i);
     const image = createEditorialImage(doc, {
       src: compatibility,
