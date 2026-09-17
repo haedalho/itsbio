@@ -474,6 +474,25 @@ animation: partners-marquee 22s linear infinite;
 }
 .abm-service-faq-answer > :last-child { margin-bottom: 0; }
 
+.abm-immortalization-explanation {
+  margin: 1rem 0 1.5rem;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+.abm-immortalization-explanation summary {
+  padding: 14px 50px 14px 16px;
+  color: #dc5a2b;
+  text-align: center;
+}
+.abm-immortalization-explanation summary::after { right: 14px; }
+.abm-immortalization-explanation .abm-service-faq-answer {
+  max-width: none;
+  padding: 18px 20px;
+  border-top: 1px solid #e2e8f0;
+  background: #fff7ed;
+}
+
 @media (max-width: 767px) {
   .abm-rich { font-size: 15px; }
   .abm-table-anchor-nav { gap: 7px 9px; font-size: 15px; }
