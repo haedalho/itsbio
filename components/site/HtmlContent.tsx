@@ -298,6 +298,52 @@ function restoreImmortalizationTools(doc: Document) {
   ]);
 }
 
+/** Restore the migrated Cell Immortalization explanation accordions. The
+ * source uses Bootstrap collapse JavaScript, which is intentionally removed
+ * during sanitization; without this conversion the answer table remains as a
+ * large empty panel. */
+function transformImmortalizationCollapses(doc: Document) {
+  const isImmortalizationPage = Boolean(
+    findHeading(doc, /Recombinant SV40T Virus/i)
+    && findHeading(doc, /Recombinant hTERT Virus/i)
+    && findHeading(doc, /Additional Immortalization Viruses/i)
+  );
+  if (!isImmortalizationPage) return;
+
+  const seenTargets = new Set<string>();
+  doc.querySelectorAll<HTMLElement>(".customfaq").forEach((label) => {
+    const trigger = label.closest<HTMLAnchorElement>('a[href^="#"]');
+    const targetId = (trigger?.getAttribute("href") || "").slice(1);
+    if (!targetId || seenTargets.has(targetId)) return;
+
+    const answer = doc.getElementById(targetId);
+    if (!answer || !answer.matches(".panel-collapse,.collapse,.accordion-collapse")) return;
+    const answerBody =
+      answer.querySelector<HTMLElement>(".abm-perfect-faqs-text,.panel-body,.card-body,.accordion-body") || answer;
+    const question = collapseWs(label.textContent || trigger?.textContent || "");
+    if (!question || !collapseWs(answerBody.textContent || "")) return;
+
+    const details = doc.createElement("details");
+    details.className = "abm-service-faq-item abm-immortalization-explanation";
+    const summary = doc.createElement("summary");
+    summary.textContent = question;
+    const content = doc.createElement("div");
+    content.className = "abm-service-faq-answer";
+    content.innerHTML = answerBody.innerHTML.trim();
+    details.append(summary, content);
+
+    const questionTable = trigger?.closest("table");
+    const answerTable = answer.closest("table");
+    const insertionTarget = questionTable || trigger;
+    insertionTarget?.parentNode?.insertBefore(details, insertionTarget);
+    if (questionTable) removeNode(questionTable);
+    else if (trigger) removeNode(trigger);
+    if (answerTable) removeNode(answerTable);
+    else removeNode(answer);
+    seenTargets.add(targetId);
+  });
+}
+
 /**
  * Match only actual commerce column labels. A loose word search here is
  * destructive: specification values commonly contain prose such as
@@ -1001,6 +1047,8 @@ export function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props[
 
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
+
+  if (mode === "abm-detail") transformImmortalizationCollapses(doc);
 
   if (mode === "abm-service") {
     markExternalVectorSectionLinks(doc, effectiveBase);
