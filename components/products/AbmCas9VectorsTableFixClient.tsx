@@ -145,10 +145,30 @@ function markPreservedResourceLink(anchor: HTMLAnchorElement) {
   anchor.dataset.itsbioAbmPreserveLink = "true";
 }
 
+function removeDuplicateAdditionalInformationHeading(root: HTMLElement) {
+  const headings = Array.from(root.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6"));
+
+  headings.forEach((heading) => {
+    if (textOf(heading) !== "Additional Information" || heading.closest(`#${ADDITIONAL_ID}`)) return;
+
+    let removable: HTMLElement = heading;
+    while (
+      removable.parentElement
+      && removable.parentElement !== root
+      && removable.parentElement.children.length === 1
+      && textOf(removable.parentElement) === "Additional Information"
+    ) {
+      removable = removable.parentElement;
+    }
+    removable.remove();
+  });
+}
+
 function ensureAdditionalInformation() {
-  if (document.getElementById(ADDITIONAL_ID)) return;
   const root = document.querySelector<HTMLElement>(".itsbio-html");
   if (!root) return;
+  removeDuplicateAdditionalInformationHeading(root);
+  if (document.getElementById(ADDITIONAL_ID)) return;
 
   const tables = Array.from(root.querySelectorAll<HTMLTableElement>("table")).filter((table) =>
     /Cas9 Nuclease|sgRNA Only|All-in-One spCas9/i.test(textOf(table)),
