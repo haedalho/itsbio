@@ -978,6 +978,7 @@ function renderContentBlocks(
   theme: Theme,
   landingVariant: "" | "platforms" | "matrix" = "",
   cellularPresentation: CellularPresentation = "",
+  hideResources = false,
 ) {
   if (!Array.isArray(blocks) || blocks.length === 0) return null;
 
@@ -1020,6 +1021,7 @@ function renderContentBlocks(
         if (type === "contentBlockResources") {
           if (renderedResources) return null;
           renderedResources = true;
+          if (hideResources) return null;
           const items = normalizeResourceItems(b?.items ?? []);
           return (
             <div key={b._key || "resources"}>
@@ -1360,6 +1362,7 @@ export default async function AbmProductsPathPage({
   const primaryHtml = blocks.find((block: any) => block?._type === "contentBlockHtml")?.html || "";
   const cellularPresentation = getCellularPresentation(pathStr, typeof primaryHtml === "string" ? primaryHtml : "");
   const hasEmbeddedCategoryHero = cellularPresentation === "collections" || cellularPresentation === "rich";
+  const hideDuplicateCas9Resources = pathStr === "genetic-materials/crispr/cas9-vectors-and-virus";
   const hasEmbeddedProductTable = blocks.some((block: any) => {
     const html = typeof block?.html === "string" ? block.html : "";
     return /<table\b/i.test(html) && /Product\s+(?:List|Name)|Cat\.?\s*No\.?/i.test(html);
@@ -1446,7 +1449,7 @@ export default async function AbmProductsPathPage({
             ) : null}
 
             {blocks.length ? (
-              renderContentBlocks(blocks, brandKey, theme, landingVariant, cellularPresentation)
+              renderContentBlocks(blocks, brandKey, theme, landingVariant, cellularPresentation, hideDuplicateCas9Resources)
             ) : fallbackHtml ? (
               <section className="mt-8">
                 <HtmlContent html={fallbackHtml} mode={brandKey === "abm" ? "abm-detail" : "default"} />
