@@ -1,0 +1,128 @@
+.abm-genetic-landing {
+  color: #252525;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.abm-genetic-landing .abm-categories-text {
+  max-width: 980px;
+  color: #3f3f46;
+  line-height: 1.65;
+}
+
+.abm-genetic-landing .abm-custom-page-product-name {
+  margin: 30px 0 16px;
+  color: #dc5a2b;
+  font-size: clamp(1.35rem, 2vw, 1.65rem);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.abm-genetic-landing .module,
+.abm-genetic-landing .htmlcontent-home {
+  width: 100%;
+}
+
+.abm-genetic-landing .htmlcontent-home {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.abm-genetic-landing .htmlcontent-home > li {
+  width: auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.abm-genetic-landing .banners a {
+  display: block;
+  overflow: hidden;
+  border-radius: 2px;
+  background: #f4f4f5;
+}
+
+.abm-genetic-landing .banners img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  transition: transform 180ms ease;
+}
+
+.abm-genetic-landing .banners a:hover img {
+  transform: scale(1.025);
+}
+
+.abm-genetic-landing .abm-category-image-title {
+  margin-top: 10px;
+  color: #18181b;
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.abm-genetic-landing .abm-category-image-title > div {
+  margin-top: 5px;
+  color: #52525b;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.abm-genetic-landing table {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.abm-genetic-landing td {
+  padding: 15px 10px;
+  border-bottom: 1px solid #e4e4e7;
+  vertical-align: top;
+}
+
+.abm-genetic-landing td:first-child {
+  width: 62px;
+  padding-left: 0;
+}
+
+.abm-genetic-landing .citations-num {
+  color: #dc5a2b;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.abm-genetic-landing table a {
+  color: #dc5a2b;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 900px) {
+  .abm-genetic-landing .htmlcontent-home {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .abm-genetic-landing .htmlcontent-home {
+    grid-template-columns: 1fr;
+  }
+
+  .abm-genetic-landing td {
+    padding: 13px 8px;
+  }
+
+  .abm-genetic-landing td:first-child {
+    width: 48px;
+  }
+
+  .abm-genetic-landing .citations-num {
+    font-size: 20px;
+  }
+}

@@ -39,6 +39,7 @@ import {
 import { getOfficialAbmGeneticCategory } from "@/lib/abm/genetic-category-data";
 import "../abm-3d-landing.css";
 import "../abm-cellular-category.css";
+import "../abm-genetic-landing.css";
 
 export const revalidate = 300;
 
@@ -580,19 +581,21 @@ function rewriteRelativeUrls(html: string, baseUrl: string) {
   return out;
 }
 
-function stripUnwantedAbmNav(html: string) {
+function stripUnwantedAbmNav(html: string, preserveEditorialSections = false) {
   if (!html) return "";
   let out = html;
 
   out = out.replace(/<ul[^>]*class=["'][^"']*\babm-page-category-nav-list\b[^"']*["'][\s\S]*?<\/ul>/gi, "");
-  out = out.replace(
-    /<h3[^>]*>[\s\S]*?\bResource\b[\s\S]*?<\/h3>[\s\S]*?<ul[^>]*class=["'][^"']*\bhtmlcontent-home\b[^"']*["'][\s\S]*?<\/ul>[\s\S]*?(?=<h3\b|$)/gi,
-    ""
-  );
-  out = out.replace(
-    /<h3[^>]*>[\s\S]*?\bTop\s*Publications\b[\s\S]*?<\/h3>[\s\S]*?<table[\s\S]*?<\/table>[\s\S]*?(?=<h3\b|$)/gi,
-    ""
-  );
+  if (!preserveEditorialSections) {
+    out = out.replace(
+      /<h3[^>]*>[\s\S]*?\bResource\b[\s\S]*?<\/h3>[\s\S]*?<ul[^>]*class=["'][^"']*\bhtmlcontent-home\b[^"']*["'][\s\S]*?<\/ul>[\s\S]*?(?=<h3\b|$)/gi,
+      ""
+    );
+    out = out.replace(
+      /<h3[^>]*>[\s\S]*?\bTop\s*Publications\b[\s\S]*?<\/h3>[\s\S]*?<table[\s\S]*?<\/table>[\s\S]*?(?=<h3\b|$)/gi,
+      ""
+    );
+  }
 
   out = out.replace(/<script[^>]*type=["']application\/ld\+json["'][\s\S]*?<\/script>/gi, "");
   out = out.replace(/<script[\s\S]*?<\/script>/gi, "");
@@ -607,10 +610,14 @@ function rewriteAnchorsToLegacy(html: string, brandKey: string) {
   });
 }
 
-function safeHtmlForRender(html: string, brandKey: string) {
+function safeHtmlForRender(
+  html: string,
+  brandKey: string,
+  options: { preserveAbmEditorialSections?: boolean } = {},
+) {
   const baseUrl = getBaseUrlForBrand(brandKey);
   let out = html || "";
-  if (brandKey === "abm") out = stripUnwantedAbmNav(out);
+  if (brandKey === "abm") out = stripUnwantedAbmNav(out, options.preserveAbmEditorialSections);
   if (brandKey === "abm") {
     out = out.replace(/<li\b[^>]*>(?:(?!<\/li>)[\s\S])*Wholesale\s+Prices?(?:(?!<\/li>)[\s\S])*<\/li>/gi, "");
     out = out.replace(/Wholesale\s+Prices?/gi, "");
@@ -934,18 +941,22 @@ function HtmlBlock({
   brandKey,
   landingVariant = "",
   cellularPresentation = "",
+  geneticRoot = false,
 }: {
   html: string;
   brandKey: string;
   landingVariant?: "" | "platforms" | "matrix";
   cellularPresentation?: CellularPresentation;
+  geneticRoot?: boolean;
 }) {
-  const cleaned = safeHtmlForRender(html, brandKey);
+  const cleaned = safeHtmlForRender(html, brandKey, { preserveAbmEditorialSections: geneticRoot });
   if (!cleaned) return null;
   const landingFidelity = Boolean(landingVariant);
   const embeddedCellularLanding = cellularPresentation === "collections" || cellularPresentation === "rich";
   const className = landingFidelity
     ? `abm-3d-landing abm-3d-${landingVariant}`
+    : geneticRoot
+      ? "abm-genetic-landing"
     : cellularPresentation
       ? `abm-cellular-category abm-cellular-${cellularPresentation}`
       : undefined;
@@ -954,7 +965,7 @@ function HtmlBlock({
     <section className={landingFidelity || embeddedCellularLanding ? "mt-0" : cellularPresentation ? "mt-6" : "mt-8"}>
       <HtmlContent
         html={cleaned}
-        mode={landingFidelity || embeddedCellularLanding ? "abm-landing" : brandKey === "abm" ? "abm-detail" : "default"}
+        mode={landingFidelity || embeddedCellularLanding || geneticRoot ? "abm-landing" : brandKey === "abm" ? "abm-detail" : "default"}
         className={className}
       />
     </section>
@@ -1042,6 +1053,7 @@ function renderContentBlocks(
   landingVariant: "" | "platforms" | "matrix" = "",
   cellularPresentation: CellularPresentation = "",
   renderAllHtmlBlocks = false,
+  geneticRoot = false,
 ) {
   if (!Array.isArray(blocks) || blocks.length === 0) return null;
 
@@ -1066,6 +1078,7 @@ function renderContentBlocks(
               brandKey={brandKey}
               landingVariant={landingVariant}
               cellularPresentation={cellularPresentation}
+              geneticRoot={geneticRoot}
             />
           );
         }
@@ -1532,6 +1545,7 @@ export default async function AbmProductsPathPage({
                 landingVariant,
                 cellularPresentation,
                 pathStr.startsWith("genetic-materials"),
+                pathStr === "genetic-materials",
               )
             ) : fallbackHtml ? (
               <section className="mt-8">
