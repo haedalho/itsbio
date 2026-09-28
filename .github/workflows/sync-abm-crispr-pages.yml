@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: abm-crispr-category-sync
@@ -45,6 +45,16 @@ jobs:
 
       - name: Sync official CRISPR category content and images
         run: node scripts/sync-abm-crispr-pages.mjs
+
+      - name: Commit synchronized source styles
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/products/abm/abm-crispr-source.css
+          if ! git diff --cached --quiet; then
+            git commit -m "Sync official ABM CRISPR source styles"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
 
       - uses: actions/upload-artifact@v4
         if: always()
