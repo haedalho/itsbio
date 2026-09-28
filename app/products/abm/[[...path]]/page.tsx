@@ -1507,9 +1507,10 @@ export default async function AbmProductsPathPage({
       : [];
   const primaryHtml = blocks.find((block: any) => block?._type === "contentBlockHtml")?.html || "";
   const cellularPresentation = getCellularPresentation(pathStr, typeof primaryHtml === "string" ? primaryHtml : "");
+  const hasEmbeddedCellularHero = cellularPresentation === "collections" || cellularPresentation === "rich";
   const hasEmbeddedCrisprHero = pathStr === "genetic-materials/crispr"
     && /CRISPR\s+Products\s+for\s+Genome\s+Editing/i.test(String(primaryHtml || "").replace(/<[^>]+>/g, " "));
-  const hasEmbeddedCategoryHero = cellularPresentation === "collections" || cellularPresentation === "rich" || hasEmbeddedCrisprHero;
+  const hasEmbeddedCategoryHero = hasEmbeddedCellularHero || hasEmbeddedCrisprHero;
   const hideDuplicateCas9Resources = pathStr === "genetic-materials/crispr/cas9-vectors-and-virus";
   const hasEmbeddedProductTable = blocks.some((block: any) => {
     const html = typeof block?.html === "string" ? block.html : "";
@@ -1554,7 +1555,7 @@ export default async function AbmProductsPathPage({
 
           <main className="min-w-0">
             {!is3dLandingFidelity && !hasEmbeddedCategoryHero ? <h1 className="text-3xl font-bold tracking-tight text-neutral-900">{pageTitle}</h1> : null}
-            {!is3dLandingFidelity && !hasEmbeddedCategoryHero ? <CategoryLinkRail brandKey={brandKey} nodes={childCategoryNodes} /> : null}
+            {!is3dLandingFidelity && !hasEmbeddedCellularHero ? <CategoryLinkRail brandKey={brandKey} nodes={childCategoryNodes} /> : null}
 
             {isKent && productsInCategory.length ? (
               <div className="mt-6">
