@@ -138,6 +138,25 @@ function stableKey(value) {
   return crypto.createHash("sha1").update(String(value || "")).digest("hex").slice(0, 12);
 }
 
+function extractScopedSourceStyles(pagePath, sourceStyles) {
+  const specs = {
+    "genetic-materials/crispr": ["/* ===== Scoped CRISPR Hub styles ===== */", "#abm-crispr-hub"],
+    "genetic-materials/crispr/crispr-ko-vectors-and-virus": ["#crispr-ko-page"],
+    "genetic-materials/crispr/crispr-activation-vectors": ["#abm-crispra-hub"],
+  };
+  const markers = specs[pagePath] || [];
+  for (const marker of markers) {
+    const index = sourceStyles.indexOf(marker);
+    if (index >= 0) return sourceStyles.slice(index).trim();
+  }
+
+  if (pagePath === "genetic-materials/crispr/cas-proteins-and-crispr-screening") {
+    const rule = sourceStyles.match(/\.abm-perfect-table1\s*>\s*thead[\s\S]*?\}/);
+    return rule?.[0]?.trim() || "";
+  }
+  return "";
+}
+
 function stripTags(html) {
   return cleanText(
     String(html || "")
@@ -493,6 +512,7 @@ async function syncPage(page) {
     images: verification.images,
     requiredSections: page.required,
     verification,
+    sourceCss: extractScopedSourceStyles(page.path, sourceStyles),
   };
 }
 
@@ -508,6 +528,19 @@ async function main() {
   for (const page of PAGES) {
     report.pages.push(await syncPage(page));
   }
+
+  const generatedSourceCss = [
+    "/* AUTO-GENERATED. Official ABM CRISPR page-scoped styles only. */",
+    ...report.pages.map((page) => page.sourceCss || "").filter(Boolean),
+    "",
+  ].join("\n\n");
+  const generatedSourceCssPath = path.join(process.cwd(), "app", "products", "abm", "abm-crispr-source.css");
+  fs.writeFileSync(generatedSourceCssPath, generatedSourceCss, "utf8");
+
+  report.pages = report.pages.map(({ sourceCss, ...page }) => ({
+    ...page,
+    sourceCssLength: String(sourceCss || "").length,
+  }));
 
   const output = path.join(REPORT_DIR, "report.json");
   fs.writeFileSync(output, JSON.stringify(report, null, 2));
