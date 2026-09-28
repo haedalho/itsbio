@@ -121,6 +121,57 @@ function cellularBreadcrumbsFromPath(value?: string): BreadcrumbItem[] {
   return crumbs;
 }
 
+
+const GENETIC_BREADCRUMB_LABELS: Record<string, string> = {
+  "genetic-materials": "Genetic Materials",
+  "expression-ready-libraries": "Expression-Ready Libraries",
+  "lentiviral-vectors-and-virus": "Lentiviral Vectors & Virus",
+  "aav-vectors-and-virus": "AAV Vectors & Virus",
+  "crispr": "CRISPR",
+  "crispr-ko-vectors-and-virus": "CRISPR KO Vectors & Virus",
+  "crispr-activation-vectors": "CRISPR Activation Vectors",
+  "cas9-vectors-and-virus": "Cas9 Vectors & Virus",
+  "cas-proteins-and-crispr-screening": "Cas Proteins & CRISPR Screening",
+  "expression-systems": "Expression Systems",
+  "specialized-vectors": "Specialized Vectors",
+  "kits-for-viral-vectors": "Kits for Viral Vectors",
+};
+
+function geneticBreadcrumbsFromPath(value?: string): BreadcrumbItem[] {
+  if (!value?.startsWith("/")) return [];
+
+  let segments: string[];
+  try {
+    segments = new URL(value, "https://www.itsbio.co.kr").pathname
+      .split("/")
+      .filter(Boolean)
+      .map(decodeURIComponent);
+  } catch {
+    return [];
+  }
+
+  if (segments[0] !== "products" || segments[1] !== "abm" || segments[2] !== "genetic-materials") return [];
+
+  const crumbs: BreadcrumbItem[] = [];
+  const route: string[] = [];
+  for (const slug of segments.slice(2)) {
+    route.push(slug);
+    const fallback = slug
+      .split("-")
+      .filter(Boolean)
+      .map((part) => part.length <= 4 && /^(?:aav|orf|sirna|mirna|crispr|cas9|qpcr)$/i.test(part)
+        ? part.toUpperCase().replace("SIRNA", "siRNA").replace("MIRNA", "miRNA").replace("QPCR", "qPCR")
+        : part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
+    crumbs.push({
+      label: GENETIC_BREADCRUMB_LABELS[slug] || fallback,
+      href: `/products/abm/${route.map(encodeURIComponent).join("/")}`,
+    });
+  }
+
+  return crumbs;
+}
+
 function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (character) => ({
     "&": "&amp;",
@@ -204,7 +255,9 @@ export default async function AbmStagedDetailPage({
     ? findAbmServicePathForLabels([...paths.flat(), ...(record.breadcrumbs || [])])
     : [];
   const requestedProductBreadcrumbs = kind === "product"
-    ? cellularBreadcrumbsFromPath(fallback?.from)
+    ? cellularBreadcrumbsFromPath(fallback?.from).length
+      ? cellularBreadcrumbsFromPath(fallback?.from)
+      : geneticBreadcrumbsFromPath(fallback?.from)
     : [];
   const productBreadcrumbs = kind === "product"
     ? requestedProductBreadcrumbs.length ? requestedProductBreadcrumbs : cellularProductBreadcrumbs(paths, [
