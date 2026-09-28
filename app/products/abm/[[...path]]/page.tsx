@@ -37,6 +37,7 @@ import {
 } from "@/lib/abm/resource-links";
 import "../abm-3d-landing.css";
 import "../abm-cellular-category.css";
+import "../abm-crispr-official.css";
 
 export const revalidate = 300;
 
@@ -1020,17 +1021,21 @@ function HtmlBlock({
   if (!cleaned) return null;
   const landingFidelity = Boolean(landingVariant);
   const embeddedCellularLanding = cellularPresentation === "collections" || cellularPresentation === "rich";
+  const cleanedText = cleaned.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ");
+  const officialCrisprContent = brandKey === "abm" && /CRISPR Genome Editing Tools and Services|CRISPR Knockout sgRNA Vectors & Viruses|CRISPR Activation & Repression|Cas9 Expression Vectors and Viruses|Cas Proteins & CRISPR Screening/i.test(cleanedText);
   const className = landingFidelity
     ? `abm-3d-landing abm-3d-${landingVariant}`
     : cellularPresentation
       ? `abm-cellular-category abm-cellular-${cellularPresentation}`
-      : undefined;
+      : officialCrisprContent
+        ? "abm-crispr-official"
+        : undefined;
 
   return (
-    <section className={landingFidelity || embeddedCellularLanding ? "mt-0" : cellularPresentation ? "mt-6" : "mt-8"}>
+    <section className={landingFidelity || embeddedCellularLanding || officialCrisprContent ? "mt-0" : cellularPresentation ? "mt-6" : "mt-8"}>
       <HtmlContent
         html={cleaned}
-        mode={landingFidelity || embeddedCellularLanding ? "abm-landing" : brandKey === "abm" ? "abm-detail" : "default"}
+        mode={landingFidelity || embeddedCellularLanding || officialCrisprContent ? "abm-landing" : brandKey === "abm" ? "abm-detail" : "default"}
         className={className}
         serviceCatalogNumbers={serviceCatalogNumbers}
       />
@@ -1513,8 +1518,16 @@ export default async function AbmProductsPathPage({
   const primaryHtml = blocks.find((block: any) => block?._type === "contentBlockHtml")?.html || "";
   const cellularPresentation = getCellularPresentation(pathStr, typeof primaryHtml === "string" ? primaryHtml : "");
   const hasEmbeddedCellularHero = cellularPresentation === "collections" || cellularPresentation === "rich";
-  const hasEmbeddedCrisprHero = pathStr === "genetic-materials/crispr"
-    && /CRISPR\s+Products\s+for\s+Genome\s+Editing/i.test(String(primaryHtml || "").replace(/<[^>]+>/g, " "));
+  const officialCrisprPaths = new Set([
+    "genetic-materials/crispr",
+    "genetic-materials/crispr/crispr-ko-vectors-and-virus",
+    "genetic-materials/crispr/crispr-activation-vectors",
+    "genetic-materials/crispr/cas9-vectors-and-virus",
+    "genetic-materials/crispr/cas-proteins-and-crispr-screening",
+  ]);
+  const primaryText = String(primaryHtml || "").replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&");
+  const hasEmbeddedCrisprHero = officialCrisprPaths.has(pathStr)
+    && /CRISPR Genome Editing Tools and Services|CRISPR Knockout sgRNA Vectors & Viruses|CRISPR Activation & Repression|Cas9 Expression Vectors and Viruses|Cas Proteins & CRISPR Screening/i.test(primaryText);
   const hasEmbeddedCategoryHero = hasEmbeddedCellularHero || hasEmbeddedCrisprHero;
   const hideDuplicateCas9Resources = pathStr === "genetic-materials/crispr/cas9-vectors-and-virus";
   const hasEmbeddedProductTable = blocks.some((block: any) => {
@@ -1560,7 +1573,7 @@ export default async function AbmProductsPathPage({
 
           <main className="min-w-0">
             {!is3dLandingFidelity && !hasEmbeddedCategoryHero ? <h1 className="text-3xl font-bold tracking-tight text-neutral-900">{pageTitle}</h1> : null}
-            {!is3dLandingFidelity && !hasEmbeddedCellularHero ? <CategoryLinkRail brandKey={brandKey} nodes={categoryRailNodes} /> : null}
+            {!is3dLandingFidelity && !hasEmbeddedCellularHero && !hasEmbeddedCrisprHero ? <CategoryLinkRail brandKey={brandKey} nodes={categoryRailNodes} /> : null}
 
             {isKent && productsInCategory.length ? (
               <div className="mt-6">
