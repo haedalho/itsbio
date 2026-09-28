@@ -1130,8 +1130,14 @@ export function sanitizeAndStyle(
 
   if (mode === "abm-detail") transformImmortalizationCollapses(doc);
 
+  const officialCrisprLanding = isAbmLanding && /CRISPR Genome Editing Tools and Services|CRISPR Knockout sgRNA Vectors & Viruses|CRISPR Activation & Repression|Cas9 Expression Vectors and Viruses|Cas Proteins & CRISPR Screening/i.test(
+    collapseWs(doc.body.textContent || "")
+  );
+
   if (mode === "abm-service") {
     markExternalVectorSectionLinks(doc, effectiveBase);
+    transformServiceFaqs(doc);
+  } else if (officialCrisprLanding) {
     transformServiceFaqs(doc);
   }
 
