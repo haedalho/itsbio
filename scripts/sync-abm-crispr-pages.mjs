@@ -193,10 +193,13 @@ async function fetchWithRetry(url, asBuffer = false) {
 
 function sourceHeading($, title) {
   const wanted = normalized(title);
-  return $("h1,h2,h3")
+  const headings = $("h1,h2,h3");
+  const exact = headings.filter((_, node) => normalized($(node).text()) === wanted).first();
+  if (exact.length) return exact;
+  return headings
     .filter((_, node) => {
       const value = normalized($(node).text());
-      return value === wanted || value.includes(wanted) || wanted.includes(value);
+      return value.length >= 18 && (value.includes(wanted) || wanted.includes(value));
     })
     .first();
 }
@@ -433,6 +436,8 @@ async function syncPage(page) {
   const officialHtml = extractOfficialFragment(page, response.html);
   const rehosted = await rehostImages(officialHtml, page.sourceUrl);
   const verification = verifyPage(page, rehosted.html, rehosted.images.length);
+  const snapshotName = page.path.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") + ".html";
+  fs.writeFileSync(path.join(REPORT_DIR, snapshotName), rehosted.html, "utf8");
   if (!verification.ok) {
     throw new Error(`${page.path}: ${verification.failures.join("; ")}`);
   }
