@@ -847,7 +847,7 @@ function SideNavTree({
 
               {isOpen ? <TreeRows nodes={node.children} depth={depth + 1} /> : null}
 
-              {hasChildren ? (
+              {hasChildren && !isOpen ? (
                 <div className="absolute left-full top-0 z-[130] hidden pl-2 lg:group-hover/tree-row:block">
                   <FlyoutRows nodes={node.children} parentTitle={node.title} />
                 </div>
