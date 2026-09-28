@@ -191,9 +191,10 @@ function cleanHighlightLabel(value: string) {
 
 function restoreCrisprCatalogSearch() {
   const supportedHeadings = new Set([
+    "find crispr sgrna genome editing products for your gene",
     "search crispr sgrna library",
     "search activation sgrna library",
-    "find your crispr knockout product",
+    "search your target gene",
   ]);
 
   const headings = Array.from(document.querySelectorAll<HTMLElement>(".itsbio-html h1,.itsbio-html h2,.itsbio-html h3,.itsbio-html h4"))
