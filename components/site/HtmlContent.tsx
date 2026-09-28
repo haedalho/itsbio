@@ -10,12 +10,15 @@ type Props = {
   /** legacy 등에서 상대경로(href="/", src="/")를 절대경로로 바꾸기 위한 base */
   baseUrl?: string;
   mode?: "default" | "abm-detail" | "abm-service" | "abm-landing";
+  /** ABM tables can mix purchasable products with custom services. */
+  serviceCatalogNumbers?: string[];
 };
 
 const TABLE_WRAP_CLASS = "abm-table-scroll";
 const TABLE_CLASS = "abm-data-table";
 const EXTERNAL_VECTOR_LINK_ATTR = "data-abm-external-vector";
 const DIRECT_DOCUMENT_PATH = /\.(?:pdf|docx?|xlsx?|pptx?|csv|zip)(?:$|[?#])/i;
+const EMPTY_CATALOG_NUMBERS: string[] = [];
 
 type AbmEditorialImage = {
   src: string;
@@ -474,10 +477,12 @@ function validCatalogNumber(value: string) {
 /**
  * Migrated collection pages contain authoritative product rows, but the
  * source HTML often renders Cat. No. and Product Name as plain text. Turn
- * those rows into native internal product links and preserve enough row
- * context for newly published products that are not in the staged corpus yet.
+ * those rows into native internal catalog links, including custom services,
+ * and preserve enough row context for newly published product fallbacks.
  */
-function linkAbmProductTableRows(doc: Document) {
+function linkAbmProductTableRows(doc: Document, serviceCatalogNumbers: readonly string[] = []) {
+  const serviceSkus = new Set(serviceCatalogNumbers.map((sku) => collapseWs(sku).toLowerCase()));
+
   doc.querySelectorAll<HTMLTableElement>("table").forEach((table) => {
     const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>("tr"));
     let headerRow: HTMLTableRowElement | undefined;
@@ -520,7 +525,10 @@ function linkAbmProductTableRows(doc: Document) {
       if (/^\/products\/abm\/cellular-materials(?:\/|$)/.test(window.location.pathname)) {
         query.set("from", window.location.pathname);
       }
-      const href = `/products/abm/staged/product/${encodeURIComponent(sku)}?${query.toString()}`;
+      const isService = serviceSkus.has(sku.toLowerCase());
+      const href = isService
+        ? `/products/abm/staged/service/${encodeURIComponent(sku)}`
+        : `/products/abm/staged/product/${encodeURIComponent(sku)}?${query.toString()}`;
 
       row.dataset.href = href;
       row.classList.add("abm-product-row");
@@ -1067,7 +1075,12 @@ function isManagedAbmImage(src: string) {
   }
 }
 
-export function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"] = "default") {
+export function sanitizeAndStyle(
+  rawHtml: string,
+  baseUrl?: string,
+  mode: Props["mode"] = "default",
+  serviceCatalogNumbers: readonly string[] = [],
+) {
   if (!rawHtml) return "";
 
   // ✅ 0) 문자열 레벨 전처리
@@ -1256,7 +1269,7 @@ export function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props[
     }
   });
 
-  if (isAbmMode) linkAbmProductTableRows(doc);
+  if (isAbmMode) linkAbmProductTableRows(doc, serviceCatalogNumbers);
 
   // ✅ 7) 가독성 개선(문단 래핑)
   if (!isAbmLanding) improveReadability(doc);
@@ -1278,7 +1291,13 @@ export function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props[
   return doc.body.innerHTML.trim();
 }
 
-export default function HtmlContent({ html, className, baseUrl, mode = "default" }: Props) {
+export default function HtmlContent({
+  html,
+  className,
+  baseUrl,
+  mode = "default",
+  serviceCatalogNumbers = EMPTY_CATALOG_NUMBERS,
+}: Props) {
   const [renderHtml, setRenderHtml] = useState<string>("");
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -1287,13 +1306,13 @@ export default function HtmlContent({ html, className, baseUrl, mode = "default"
 
   useEffect(() => {
     try {
-      setRenderHtml(sanitizeAndStyle(input, base, mode));
+      setRenderHtml(sanitizeAndStyle(input, base, mode, serviceCatalogNumbers));
     } catch {
       // fallback: 최소한 mailto / p링크만
       const fallback = normalizeMailto(input);
       setRenderHtml(fallback);
     }
-  }, [input, base, mode]);
+  }, [input, base, mode, serviceCatalogNumbers]);
 
   useEffect(() => {
     if (!mode.startsWith("abm-") || !renderHtml) return;
