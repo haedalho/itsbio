@@ -248,3 +248,158 @@
     font-size: 13px;
   }
 }
+
+
+/* Runtime replacements for source controls that cannot retain ABM's original JS.
+   Values mirror the current source page styling and stay inside the CRISPR roots. */
+#abm-crispr-hub .itsbio-crispr-search,
+#crispr-ko-page .itsbio-crispr-search,
+#abm-crispra-hub .itsbio-crispr-search {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 82px;
+  width: 100%;
+  max-width: none;
+  gap: 0;
+  margin: 12px 0 18px;
+}
+
+#abm-crispr-hub .itsbio-crispr-search input,
+#crispr-ko-page .itsbio-crispr-search input,
+#abm-crispra-hub .itsbio-crispr-search input {
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  margin: 0;
+  padding: 0 14px;
+  border: 1px solid #cfd8df;
+  border-right: 0;
+  border-radius: 8px 0 0 8px;
+  background: #fff;
+  box-shadow: none;
+  color: #333f48;
+  font-size: 15px;
+  line-height: 48px;
+}
+
+#abm-crispr-hub .itsbio-crispr-search button,
+#crispr-ko-page .itsbio-crispr-search button,
+#abm-crispra-hub .itsbio-crispr-search button {
+  width: 82px;
+  height: 48px;
+  min-height: 48px;
+  margin: 0;
+  padding: 0 12px;
+  border: 1px solid #f15a24;
+  border-radius: 0 8px 8px 0;
+  background: #f15a24;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+#abm-crispr-hub .itsbio-crispr-search button:hover,
+#crispr-ko-page .itsbio-crispr-search button:hover,
+#abm-crispra-hub .itsbio-crispr-search button:hover {
+  background: #d94b17;
+  border-color: #d94b17;
+}
+
+/* Activation's source FAQ is Bootstrap-collapse based. HtmlContent converts it
+   to native details so it remains usable without importing supplier scripts. */
+#abm-crispra-hub .abm-service-faq-list {
+  margin-top: 12px;
+}
+
+#abm-crispra-hub .abm-service-faq-item {
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid #edf1f3;
+  border-radius: 0;
+  background: transparent;
+}
+
+#abm-crispra-hub .abm-service-faq-item > summary {
+  list-style: none;
+  padding: 12px 0;
+  color: #263746;
+  font-weight: 700;
+}
+
+#abm-crispra-hub .abm-service-faq-item > summary::-webkit-details-marker {
+  display: none;
+}
+
+#abm-crispra-hub .abm-service-faq-answer {
+  padding: 6px 0 12px 37px;
+  color: #536573;
+}
+
+/* Legacy Cas9/Cas-protein source pages rely on ABM's site-wide category CSS,
+   which is not copied into ITS BIO. Rebuild only those source layout primitives. */
+.abm-crispr-official .abm-categories-title-h2 {
+  margin: 0 0 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #ef6331;
+  color: #333;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.abm-crispr-official .abm-container-fluid {
+  width: 100%;
+}
+
+.abm-crispr-official .htmlcontent-home {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.abm-crispr-official .htmlcontent-home > li {
+  min-width: 0;
+  margin: 0;
+}
+
+.abm-crispr-official .htmlcontent-home .banners {
+  height: 100%;
+}
+
+.abm-crispr-official .htmlcontent-home img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  object-fit: contain;
+  background: #fff;
+}
+
+.abm-crispr-official .abm-sub2-category-image-title {
+  margin-top: 10px;
+  color: #333;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.abm-crispr-official .abm-custom-page-product-name {
+  margin: 38px 0 16px;
+  color: #ef6331;
+  font-size: 24px;
+}
+
+@media (max-width: 767px) {
+  #abm-crispr-hub .itsbio-crispr-search,
+  #crispr-ko-page .itsbio-crispr-search,
+  #abm-crispra-hub .itsbio-crispr-search {
+    grid-template-columns: minmax(0, 1fr) 74px;
+  }
+
+  .abm-crispr-official .htmlcontent-home {
+    grid-template-columns: 1fr;
+  }
+
+  #abm-crispra-hub .abm-service-faq-answer {
+    padding-left: 18px;
+  }
+}
