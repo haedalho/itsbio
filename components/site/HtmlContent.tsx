@@ -466,6 +466,39 @@ function applySemanticTableColumnLayout(table: HTMLTableElement) {
   });
 }
 
+
+function detectAbmProductGroupRows(table: HTMLTableElement) {
+  const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>("tr"));
+  const headerRow = rows.find((row) => row.querySelector("th"));
+  if (!headerRow) return [] as HTMLTableRowElement[];
+
+  const headers = Array.from(headerRow.children).map((cell) => collapseWs(cell.textContent || ""));
+  const hasProductColumn = headers.some(isProductNameHeader);
+  const hasCatalogColumn = headers.some(isCatalogNumberHeader);
+  if (!hasProductColumn || !hasCatalogColumn) return [] as HTMLTableRowElement[];
+
+  return rows.filter((row) => {
+    if (row === headerRow) return false;
+    if (/^table-product-mini-category-/i.test(row.id || "")) return true;
+
+    const cells = Array.from(row.children) as HTMLElement[];
+    if (!cells.length) return false;
+    const populated = cells.filter((cell) => collapseWs(cell.textContent || ""));
+    if (populated.length !== 1) return false;
+
+    const label = collapseWs(populated[0].textContent || "");
+    if (!label || label.length > 90 || validCatalogNumber(label)) return false;
+    if (populated[0].querySelector("a[href], img, input, select, button")) return false;
+
+    const hasExplicitSpan = populated[0].hasAttribute("colspan");
+    const isShortGroupLabel = label.split(/\s+/).length <= 8
+      && !/[.!?]$/.test(label)
+      && !/^(?:product|cat(?:alog)?\.?\s*no|quantity|unit|description)$/i.test(label);
+
+    return hasExplicitSpan || isShortGroupLabel;
+  });
+}
+
 function validCatalogNumber(value: string) {
   const sku = collapseWs(value).replace(/\s+/g, "");
   return sku.length >= 2
@@ -1216,11 +1249,19 @@ export function sanitizeAndStyle(
       table.setAttribute("class", TABLE_CLASS);
       ["style", "width", "height", "bgcolor", "border", "cellpadding", "cellspacing", "align"].forEach((attribute) => table.removeAttribute(attribute));
       table.querySelectorAll("th").forEach((th) => th.setAttribute("scope", "col"));
-      const sectionRows = Array.from(table.querySelectorAll<HTMLTableRowElement>('tr[id^="table-product-mini-category-"]'));
+      const sectionRows = detectAbmProductGroupRows(table as HTMLTableElement);
+      const visibleColumnCount = Math.max(
+        1,
+        Array.from(table.querySelectorAll<HTMLTableRowElement>("tr"))
+          .find((row) => row.querySelector("th"))
+          ?.children.length || 1,
+      );
       sectionRows.forEach((row) => {
         row.classList.add("abm-table-section-row");
         row.removeAttribute("style");
-        row.querySelectorAll("td, th").forEach((cell) => cell.removeAttribute("style"));
+        const cells = Array.from(row.querySelectorAll<HTMLElement>(":scope > td, :scope > th"));
+        cells.forEach((cell) => cell.removeAttribute("style"));
+        if (cells.length === 1) cells[0].setAttribute("colspan", String(visibleColumnCount));
       });
 
       if (sectionRows.length && !doc.querySelector(".abm-table-anchor-nav")) {
