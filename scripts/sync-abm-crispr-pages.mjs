@@ -122,6 +122,9 @@ function cleanText(value) {
 
 function normalized(value) {
   return cleanText(value)
+    .replace(/&amp;/gi, "&")
+    .replace(/&#0*39;|&apos;/gi, "'")
+    .replace(/&quot;/gi, '"')
     .normalize("NFKC")
     .replace(/[™®©]/g, "")
     .replace(/&/g, " and ")
