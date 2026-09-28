@@ -522,7 +522,7 @@ function linkAbmProductTableRows(doc: Document, serviceCatalogNumbers: readonly 
       const unit = unitIndex >= 0 ? collapseWs(cells[unitIndex]?.textContent || "") : "";
       if (category) query.set("category", category);
       if (unit) query.set("unit", unit);
-      if (/^\/products\/abm\/cellular-materials(?:\/|$)/.test(window.location.pathname)) {
+      if (/^\/products\/abm\/(?:cellular-materials|genetic-materials)(?:\/|$)/.test(window.location.pathname)) {
         query.set("from", window.location.pathname);
       }
       const isService = serviceSkus.has(sku.toLowerCase());
