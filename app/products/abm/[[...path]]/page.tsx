@@ -38,6 +38,7 @@ import {
 import "../abm-3d-landing.css";
 import "../abm-cellular-category.css";
 import "../abm-crispr-official.css";
+import "../abm-crispr-source.css";
 
 export const revalidate = 300;
 
