@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
 import HtmlContent from "@/components/site/HtmlContent";
@@ -157,6 +157,13 @@ export default async function AbmStagedDetailPage({
   if (kind !== "product" && kind !== "service") notFound();
   const decodedKey = decodeURIComponent(key);
   const stagedRecord = await getAbmStagedDetail(kind, decodedKey);
+  if (!stagedRecord) {
+    const counterpartKind = kind === "product" ? "service" : "product";
+    const counterpartRecord = await getAbmStagedDetail(counterpartKind, decodedKey);
+    if (counterpartRecord) {
+      permanentRedirect(`/products/abm/staged/${counterpartKind}/${encodeURIComponent(decodedKey)}`);
+    }
+  }
   const fallbackName = String(fallback?.name || "").replace(/\s+/g, " ").trim().slice(0, 240);
   const fallbackCategory = String(fallback?.category || "").replace(/\s+/g, " ").trim().slice(0, 120);
   const fallbackUnit = String(fallback?.unit || "").replace(/\s+/g, " ").trim().slice(0, 120);
