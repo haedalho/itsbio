@@ -1516,7 +1516,16 @@ export default async function AbmProductsPathPage({
     : Array.isArray(category?.blocks)
       ? category.blocks
       : [];
-  const primaryHtml = blocks.find((block: any) => block?._type === "contentBlockHtml")?.html || "";
+  const legacyHtml = typeof category?.legacyHtml === "string" ? category.legacyHtml.trim() : "";
+  const populatedHtmlBlock = blocks.find(
+    (block: any) => block?._type === "contentBlockHtml" && typeof block?.html === "string" && block.html.trim(),
+  );
+  const primaryHtml = populatedHtmlBlock?.html || legacyHtml;
+  const blocksForRender = populatedHtmlBlock
+    ? blocks
+    : primaryHtml
+      ? [{ _key: "legacy-html-fallback", _type: "contentBlockHtml", html: primaryHtml }, ...blocks]
+      : blocks;
   const cellularPresentation = getCellularPresentation(pathStr, typeof primaryHtml === "string" ? primaryHtml : "");
   const hasEmbeddedCellularHero = cellularPresentation === "collections" || cellularPresentation === "rich";
   const officialCrisprPaths = new Set([
@@ -1531,7 +1540,7 @@ export default async function AbmProductsPathPage({
     && /CRISPR Genome Editing Tools and Services|CRISPR Knockout sgRNA Vectors & Viruses|CRISPR Activation & Repression|Cas9 Expression Vectors and Viruses|Cas Proteins & CRISPR Screening/i.test(primaryText);
   const hasEmbeddedCategoryHero = hasEmbeddedCellularHero || hasEmbeddedCrisprHero;
   const hideDuplicateCas9Resources = pathStr === "genetic-materials/crispr/cas9-vectors-and-virus";
-  const hasEmbeddedProductTable = blocks.some((block: any) => {
+  const hasEmbeddedProductTable = blocksForRender.some((block: any) => {
     const html = typeof block?.html === "string" ? block.html : "";
     return /<table\b/i.test(html) && /Product\s+(?:List|Name)|Cat\.?\s*No\.?/i.test(html);
   });
@@ -1539,7 +1548,7 @@ export default async function AbmProductsPathPage({
     ? await getAbmStagedCatalogNumbers("service")
     : [];
 
-  const fallbackHtmlRaw = blocks.length
+  const fallbackHtmlRaw = blocksForRender.length
     ? ""
     : category?.summary
       ? `<p>${escapeHtml(category.summary)}</p>`
@@ -1619,9 +1628,9 @@ export default async function AbmProductsPathPage({
               </div>
             ) : null}
 
-            {blocks.length ? (
+            {blocksForRender.length ? (
               renderContentBlocks(
-                blocks,
+                blocksForRender,
                 brandKey,
                 theme,
                 landingVariant,
