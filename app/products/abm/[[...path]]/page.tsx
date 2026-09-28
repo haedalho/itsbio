@@ -1254,6 +1254,11 @@ export default async function AbmProductsPathPage({
 
   const activePageNode = path.length > 1 ? findTreeNodeByPath(activeRootTree, path) : undefined;
   const childCategoryNodes = path.length === 1 ? activeRootTree : activePageNode?.children || [];
+  const categoryRailNodes = pathStr === "genetic-materials/crispr"
+    ? childCategoryNodes.map((node) => normalizeAbmGeneticNavLabel(node.title) === normalizeAbmGeneticNavLabel("CRISPR Activation Vectors")
+      ? { ...node, title: "CRISPR Activation/Repression" }
+      : node)
+    : childCategoryNodes;
   const isProductListPage = path.length >= 3 || (path.length > 1 && childCategoryNodes.length === 0);
   const isPrimaryAntibodyPage = pathStr === "general-materials/antibodies/primary-antibodies";
   const stagedProductsInCategory = isProductListPage && ABM_ROOTS.includes(path[0] as (typeof ABM_ROOTS)[number])
@@ -1555,7 +1560,7 @@ export default async function AbmProductsPathPage({
 
           <main className="min-w-0">
             {!is3dLandingFidelity && !hasEmbeddedCategoryHero ? <h1 className="text-3xl font-bold tracking-tight text-neutral-900">{pageTitle}</h1> : null}
-            {!is3dLandingFidelity && !hasEmbeddedCellularHero ? <CategoryLinkRail brandKey={brandKey} nodes={childCategoryNodes} /> : null}
+            {!is3dLandingFidelity && !hasEmbeddedCellularHero ? <CategoryLinkRail brandKey={brandKey} nodes={categoryRailNodes} /> : null}
 
             {isKent && productsInCategory.length ? (
               <div className="mt-6">
