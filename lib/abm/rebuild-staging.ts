@@ -477,6 +477,28 @@ export async function getAbmStagedRecords(kind: AbmStagedRecord["kind"]): Promis
   });
 }
 
+const STAGED_CATALOG_NUMBERS_QUERY = `*[
+  _type == "abmRebuildChunk"
+  && version == $version
+  && kind == $kind
+].records[].sku`;
+
+/**
+ * Compact catalog-number lookup used when category tables need to distinguish
+ * product rows from custom-service rows. Keeping this query SKU-only avoids
+ * shipping the complete staged service inventory into the page renderer.
+ */
+export async function getAbmStagedCatalogNumbers(kind: AbmStagedRecord["kind"]): Promise<string[]> {
+  const result = await sanityCdnClient.fetch<string[]>(STAGED_CATALOG_NUMBERS_QUERY, {
+    version: ABM_REBUILD_VERSION,
+    kind,
+  }, PUBLIC_CATALOG_CACHE);
+
+  return Array.from(new Set((Array.isArray(result) ? result : [])
+    .map((sku) => String(sku || "").trim())
+    .filter(Boolean)));
+}
+
 const STAGED_COUNT_QUERY = `select(
   $kind == "product" => count(*[
     _type == "abmRebuildChunk"
