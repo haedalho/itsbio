@@ -1,4 +1,5 @@
 name: Sync ABM CRISPR category pages
+# Manual fidelity sync: 2026-09-28
 
 on:
   push:
