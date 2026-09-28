@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: abm-crispr-category-sync
@@ -45,6 +45,22 @@ jobs:
 
       - name: Sync official CRISPR category content and images
         run: node scripts/sync-abm-crispr-pages.mjs
+
+      - name: Publish synchronized source styles
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          file="app/products/abm/abm-crispr-source.css"
+          current_sha="$(gh api "repos/${GITHUB_REPOSITORY}/contents/${file}?ref=${GITHUB_REF_NAME}" --jq '.sha')"
+          generated_sha="$(git hash-object "${file}")"
+          if [ "${generated_sha}" != "${current_sha}" ]; then
+            content="$(base64 -w0 "${file}")"
+            gh api --method PUT "repos/${GITHUB_REPOSITORY}/contents/${file}" \
+              -f message="Sync official ABM CRISPR source styles" \
+              -f content="${content}" \
+              -f branch="${GITHUB_REF_NAME}" \
+              -f sha="${current_sha}" >/dev/null
+          fi
 
       - uses: actions/upload-artifact@v4
         if: always()
