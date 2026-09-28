@@ -50,9 +50,11 @@ const OFFICIAL_GENETIC_TREE: CanonicalNode[] = [
       "CRISPR KO Vectors and Viruses",
       "CRISPR sgRNA Library",
       "CRISPR Knockout Library",
+      "CRISPR Knockout sgRNA Vectors & Viruses",
+      "CRISPR Knockout sgRNA Vectors and Viruses",
       "CRISPR Cas9 sgRNA Expression Vectors and Virus",
     ]),
-    node("CRISPR Activation Vectors", ["CRISPR Activation", "CRISPRa Vectors"]),
+    node("CRISPR Activation Vectors", ["CRISPR Activation", "CRISPR Activation/Repression", "CRISPRa Vectors"]),
     node("Cas9 Vectors & Virus", [
       "Cas9 Vectors and Virus",
       "Cas9 Vectors and Viruses",
