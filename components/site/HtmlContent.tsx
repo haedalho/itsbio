@@ -709,6 +709,28 @@ function transformServiceFaqs(doc: Document) {
   });
 }
 
+function normalizeCrisprContactForms(doc: Document) {
+  const removedIds = new Set<string>();
+
+  doc.querySelectorAll<HTMLElement>(".hs-form-frame").forEach((frame) => {
+    const wrapper =
+      frame.closest<HTMLElement>(".hub-contact-form-wrap,.ko-contact-form-wrap,.contact-form-wrap,[id$='-form']")
+      || frame.parentElement;
+    if (!wrapper) return;
+    if (wrapper.id) removedIds.add(wrapper.id);
+    wrapper.remove();
+  });
+
+  if (!removedIds.size) return;
+  doc.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((anchor) => {
+    const targetId = (anchor.getAttribute("href") || "").slice(1);
+    if (!removedIds.has(targetId)) return;
+    anchor.setAttribute("href", "/contact");
+    anchor.removeAttribute("target");
+    anchor.removeAttribute("rel");
+  });
+}
+
 function isSmallUiGlyph(img: HTMLImageElement) {
   const src = lower(img.getAttribute("src"));
   const alt = lower(img.getAttribute("alt"));
@@ -1139,6 +1161,7 @@ export function sanitizeAndStyle(
     transformServiceFaqs(doc);
   } else if (officialCrisprLanding) {
     transformServiceFaqs(doc);
+    normalizeCrisprContactForms(doc);
   }
 
   // ✅ 0.5) (가장 중요) 이미지/미디어 URL 보정 + lazyload src 복구
