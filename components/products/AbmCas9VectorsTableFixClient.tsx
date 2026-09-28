@@ -167,6 +167,15 @@ function removeDuplicateAdditionalInformationHeading(root: HTMLElement) {
 function ensureAdditionalInformation() {
   const root = document.querySelector<HTMLElement>(".itsbio-html");
   if (!root) return;
+
+  const rootText = textOf(root);
+  const hasOfficialAdditionalInformation =
+    /Additional Information/i.test(rootText)
+    && /Workflow/i.test(rootText)
+    && /CRISPR Methods\s*&\s*Tools/i.test(rootText)
+    && /CRISPR dCas9 Gene Regulation/i.test(rootText);
+  if (hasOfficialAdditionalInformation) return;
+
   removeDuplicateAdditionalInformationHeading(root);
   if (document.getElementById(ADDITIONAL_ID)) return;
 
