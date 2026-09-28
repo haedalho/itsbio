@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Fidelity sync trigger: 2026-09-28
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
