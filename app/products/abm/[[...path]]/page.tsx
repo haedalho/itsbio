@@ -24,6 +24,7 @@ import {
   type AbmCatalogGroup,
 } from "@/lib/abm/catalog-taxonomy";
 import {
+  getAbmStagedCatalogNumbers,
   getAbmStagedRecordCount,
   getAbmStagedRecords,
   getAbmStagedServiceLanding,
@@ -871,11 +872,13 @@ function HtmlBlock({
   brandKey,
   landingVariant = "",
   cellularPresentation = "",
+  serviceCatalogNumbers = [],
 }: {
   html: string;
   brandKey: string;
   landingVariant?: "" | "platforms" | "matrix";
   cellularPresentation?: CellularPresentation;
+  serviceCatalogNumbers?: string[];
 }) {
   const cleaned = safeHtmlForRender(html, brandKey);
   if (!cleaned) return null;
@@ -893,6 +896,7 @@ function HtmlBlock({
         html={cleaned}
         mode={landingFidelity || embeddedCellularLanding ? "abm-landing" : brandKey === "abm" ? "abm-detail" : "default"}
         className={className}
+        serviceCatalogNumbers={serviceCatalogNumbers}
       />
     </section>
   );
@@ -979,6 +983,7 @@ function renderContentBlocks(
   landingVariant: "" | "platforms" | "matrix" = "",
   cellularPresentation: CellularPresentation = "",
   hideResources = false,
+  serviceCatalogNumbers: string[] = [],
 ) {
   if (!Array.isArray(blocks) || blocks.length === 0) return null;
 
@@ -1003,6 +1008,7 @@ function renderContentBlocks(
               brandKey={brandKey}
               landingVariant={landingVariant}
               cellularPresentation={cellularPresentation}
+              serviceCatalogNumbers={serviceCatalogNumbers}
             />
           );
         }
@@ -1367,6 +1373,9 @@ export default async function AbmProductsPathPage({
     const html = typeof block?.html === "string" ? block.html : "";
     return /<table\b/i.test(html) && /Product\s+(?:List|Name)|Cat\.?\s*No\.?/i.test(html);
   });
+  const serviceCatalogNumbers = brandKey === "abm" && hasEmbeddedProductTable
+    ? await getAbmStagedCatalogNumbers("service")
+    : [];
 
   const fallbackHtmlRaw = blocks.length
     ? ""
@@ -1449,7 +1458,15 @@ export default async function AbmProductsPathPage({
             ) : null}
 
             {blocks.length ? (
-              renderContentBlocks(blocks, brandKey, theme, landingVariant, cellularPresentation, hideDuplicateCas9Resources)
+              renderContentBlocks(
+                blocks,
+                brandKey,
+                theme,
+                landingVariant,
+                cellularPresentation,
+                hideDuplicateCas9Resources,
+                serviceCatalogNumbers,
+              )
             ) : fallbackHtml ? (
               <section className="mt-8">
                 <HtmlContent html={fallbackHtml} mode={brandKey === "abm" ? "abm-detail" : "default"} />
