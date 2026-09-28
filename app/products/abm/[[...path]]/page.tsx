@@ -461,6 +461,142 @@ function normalizeAbmCellularSidebar(nodes: TreeNode[]) {
   return build(abmCellularTaxonomy as AbmCellularTaxonomyNode[], ["cellular-materials"]);
 }
 
+
+type AbmGeneticNavSpec = {
+  title: string;
+  aliases?: string[];
+  children?: AbmGeneticNavSpec[];
+};
+
+const ABM_GENETIC_NAV_SPECS: AbmGeneticNavSpec[] = [
+  {
+    title: "Expression-Ready Libraries",
+    aliases: ["Expression Ready Libraries"],
+    children: [
+      { title: "Lentiviral Vectors & Virus", aliases: ["Lentiviral Vectors and Virus", "Lentiviral Vectors and Viruses"] },
+      { title: "AAV Vectors & Virus", aliases: ["AAV Vectors and Virus", "AAV Vectors and Viruses"] },
+      { title: "Adenovirus" },
+      {
+        title: "siRNA",
+        children: [
+          { title: "siRNA Lentivirus" },
+          { title: "siRNA AAV" },
+          { title: "siRNA dsRNA Oligo", aliases: ["siRNA Oligo", "dsRNA Oligo"] },
+        ],
+      },
+      { title: "miRNA", aliases: ["microRNA"] },
+      { title: "ORF Vectors", aliases: ["ORF Vector"] },
+      { title: "circRNA", aliases: ["Circular RNA"] },
+      { title: "Control Vectors & Viruses", aliases: ["Control Vectors and Viruses", "Control Vectors"] },
+    ],
+  },
+  {
+    title: "CRISPR",
+    aliases: ["CRISPR Products for Genome Editing"],
+    children: [
+      {
+        title: "CRISPR KO Vectors & Virus",
+        aliases: [
+          "CRISPR KO Vectors and Virus",
+          "CRISPR KO Vectors and Viruses",
+          "CRISPR Knockout sgRNA Vectors & Viruses",
+          "CRISPR Knockout sgRNA Vectors and Viruses",
+          "CRISPR sgRNA Library",
+          "CRISPR Knockout Library",
+        ],
+      },
+      {
+        title: "CRISPR Activation Vectors",
+        aliases: ["CRISPR Activation", "CRISPR Activation/Repression", "CRISPRa Vectors"],
+      },
+      {
+        title: "Cas9 Vectors & Virus",
+        aliases: [
+          "Cas9 Vectors and Virus",
+          "Cas9 Vectors and Viruses",
+          "Cas9 Expression Vectors and Virus",
+          "Cas9 Expression Vectors and Viruses",
+        ],
+      },
+      {
+        title: "Cas Proteins & CRISPR Screening",
+        aliases: ["Cas Proteins and CRISPR Screening", "Cas9 Proteins", "Cas Proteins"],
+      },
+    ],
+  },
+  {
+    title: "Expression Systems",
+    children: [
+      { title: "Lentiviral Vectors", aliases: ["Lentivirus Expression System"] },
+      { title: "AAV Vectors", aliases: ["AAV Expression System"] },
+      { title: "Adenoviral Vectors", aliases: ["Adenovirus Vectors", "Adenoviral Expression Vectors"] },
+      { title: "Retroviral Vectors", aliases: ["Retrovirus Vectors"] },
+    ],
+  },
+  {
+    title: "Specialized Vectors",
+    aliases: ["Specialized Vectors & Viruses", "Specialized Vectors and Viruses"],
+    children: [
+      { title: "Targeted Cell Apoptosis Adenoviruses", aliases: ["Targeted Cell Apoptosis Adenovirus"] },
+      { title: "iPSC Reporters", aliases: ["iPSC Reporter"] },
+    ],
+  },
+  {
+    title: "Kits for Viral Vectors",
+    aliases: ["Kits Related to Recombinant Virus", "Recombinant Virus Kits"],
+    children: [
+      { title: "Virus Packaging DNA Mixes", aliases: ["Virus Packaging Mixes"] },
+      { title: "qPCR Virus Titer Kits", aliases: ["Virus Titer Kits", "qPCR Viral Titer Kits"] },
+      { title: "Virus Transduction Enhancer", aliases: ["Virus Transduction Enhancers"] },
+      { title: "Virus Purification Kits", aliases: ["Virus Purification Kit"] },
+      { title: "Lentivirus Bundles", aliases: ["Lentiviral Bundles"] },
+    ],
+  },
+];
+
+function normalizeAbmGeneticNavLabel(value: string) {
+  return String(value || "")
+    .normalize("NFKC")
+    .replace(/[™®©]/g, "")
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function normalizeAbmGeneticSidebar(nodes: TreeNode[]) {
+  const arrange = (items: TreeNode[], specs: AbmGeneticNavSpec[]): TreeNode[] => {
+    const remaining = items.map((node) => ({
+      ...node,
+      children: (node.children || []).map((child) => ({ ...child })),
+    }));
+    const ordered: TreeNode[] = [];
+
+    specs.forEach((spec, order) => {
+      const accepted = [spec.title, ...(spec.aliases || [])].map(normalizeAbmGeneticNavLabel);
+      const index = remaining.findIndex((node) => {
+        const title = normalizeAbmGeneticNavLabel(node.title);
+        const slug = normalizeAbmGeneticNavLabel(node.path.at(-1) || "");
+        return accepted.includes(title) || accepted.includes(slug);
+      });
+      if (index < 0) return;
+
+      const [node] = remaining.splice(index, 1);
+      ordered.push({
+        ...node,
+        title: spec.title,
+        order,
+        children: spec.children?.length ? arrange(node.children || [], spec.children) : node.children || [],
+      });
+    });
+
+    return [...ordered, ...remaining];
+  };
+
+  return arrange(nodes, ABM_GENETIC_NAV_SPECS);
+}
+
 function findTreeNodeByPath(nodes: TreeNode[], path: string[]): TreeNode | undefined {
   const wanted = path.join("/");
   for (const node of nodes) {
@@ -1111,6 +1247,8 @@ export default async function AbmProductsPathPage({
     activeRootTree = buildTreeFromDescendants([activeRoot], descendants);
     if (activeRoot === "cellular-materials") {
       activeRootTree = normalizeAbmCellularSidebar(activeRootTree);
+    } else if (activeRoot === "genetic-materials") {
+      activeRootTree = normalizeAbmGeneticSidebar(activeRootTree);
     }
   }
 
@@ -1351,7 +1489,9 @@ export default async function AbmProductsPathPage({
     })),
   ];
 
-  const pageTitle = stripBrandSuffix(category?.title || humanizeSegment(path[path.length - 1] || ""));
+  const pageTitle = pathStr === "genetic-materials/crispr"
+    ? "CRISPR Products for Genome Editing"
+    : stripBrandSuffix(category?.title || humanizeSegment(path[path.length - 1] || ""));
   const is3dLandingFidelity = brandKey === "abm" && [
     "cellular-materials/3d-and-organoid/3d-culture-platforms",
     "cellular-materials/3d-and-organoid/3dcelmatrix",
@@ -1367,7 +1507,9 @@ export default async function AbmProductsPathPage({
       : [];
   const primaryHtml = blocks.find((block: any) => block?._type === "contentBlockHtml")?.html || "";
   const cellularPresentation = getCellularPresentation(pathStr, typeof primaryHtml === "string" ? primaryHtml : "");
-  const hasEmbeddedCategoryHero = cellularPresentation === "collections" || cellularPresentation === "rich";
+  const hasEmbeddedCrisprHero = pathStr === "genetic-materials/crispr"
+    && /CRISPR\s+Products\s+for\s+Genome\s+Editing/i.test(String(primaryHtml || "").replace(/<[^>]+>/g, " "));
+  const hasEmbeddedCategoryHero = cellularPresentation === "collections" || cellularPresentation === "rich" || hasEmbeddedCrisprHero;
   const hideDuplicateCas9Resources = pathStr === "genetic-materials/crispr/cas9-vectors-and-virus";
   const hasEmbeddedProductTable = blocks.some((block: any) => {
     const html = typeof block?.html === "string" ? block.html : "";
