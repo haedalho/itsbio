@@ -30,6 +30,7 @@ import {
   getAbmStagedServiceLanding,
   isManagedAbmImageUrl,
 } from "@/lib/abm/rebuild-staging";
+import { internalizeAbmHref } from "@/lib/abm/internal-links";
 import {
   abmResourceImagePath,
   abmResourcePagePath,
@@ -119,8 +120,7 @@ function stripBrandSuffix(title: string) {
 
 function legacyHref(brandKey: string, url: string) {
   if (brandKey === "abm") {
-    const resourcePath = abmResourcePagePath(url);
-    if (resourcePath) return resourcePath;
+    return internalizeAbmHref(url, "https://www.abmgood.com");
   }
   return `/products/${brandKey}/legacy?u=${encodeURIComponent(url)}`;
 }
