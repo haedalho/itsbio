@@ -174,7 +174,25 @@ function ensureAdditionalInformation() {
     && /Workflow/i.test(rootText)
     && /CRISPR Methods\s*&\s*Tools/i.test(rootText)
     && /CRISPR dCas9 Gene Regulation/i.test(rootText);
-  if (hasOfficialAdditionalInformation) return;
+  if (hasOfficialAdditionalInformation) {
+    const workflow = root.querySelector<HTMLElement>(".abm-category-workflow");
+    const workflowAnchor = workflow?.querySelector<HTMLAnchorElement>("a");
+    if (workflow && !workflow.dataset.itsbioWorkflowRestored && !workflowAnchor?.getAttribute("href")) {
+      workflow.dataset.itsbioWorkflowRestored = "true";
+      workflow.setAttribute("role", "button");
+      workflow.setAttribute("tabindex", "0");
+      workflow.setAttribute("aria-label", "View simplified CRISPR workflow");
+      workflow.style.cursor = "pointer";
+      workflow.addEventListener("click", openWorkflowModal);
+      workflow.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openWorkflowModal();
+        }
+      });
+    }
+    return;
+  }
 
   removeDuplicateAdditionalInformationHeading(root);
   if (document.getElementById(ADDITIONAL_ID)) return;
