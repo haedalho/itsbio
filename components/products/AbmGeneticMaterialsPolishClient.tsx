@@ -188,6 +188,59 @@ function cleanHighlightLabel(value: string) {
     .trim();
 }
 
+
+function restoreCrisprCatalogSearch() {
+  const supportedHeadings = new Set([
+    "search crispr sgrna library",
+    "search activation sgrna library",
+    "find your crispr knockout product",
+  ]);
+
+  const headings = Array.from(document.querySelectorAll<HTMLElement>(".itsbio-html h1,.itsbio-html h2,.itsbio-html h3,.itsbio-html h4"))
+    .filter((heading) => supportedHeadings.has(norm(heading.textContent)));
+
+  headings.forEach((heading) => {
+    if (heading.dataset.itsbioCrisprSearch === "true") return;
+    const sectionNodes = nearestSectionBoundary(heading);
+    if (!sectionNodes.length) return;
+
+    sectionNodes.forEach((node) => {
+      if (norm(node.textContent) === "search results will be displayed here") node.remove();
+    });
+
+    const form = document.createElement("form");
+    form.className = "itsbio-crispr-search";
+    form.method = "get";
+    form.action = "/search";
+    form.dataset.itsbioCrisprSearchForm = "true";
+
+    const brand = document.createElement("input");
+    brand.type = "hidden";
+    brand.name = "brand";
+    brand.value = "abm";
+
+    const input = document.createElement("input");
+    input.type = "search";
+    input.name = "q";
+    input.required = true;
+    input.autocomplete = "off";
+    input.placeholder = "Gene name, symbol, accession number or Cat. No.";
+    input.setAttribute("aria-label", "Search ABM CRISPR products");
+
+    const button = document.createElement("button");
+    button.type = "submit";
+    button.textContent = "Search";
+
+    form.append(brand, input, button);
+
+    const explanation = sectionNodes.find((node) => node.tagName === "P" && norm(node.textContent));
+    if (explanation) explanation.insertAdjacentElement("afterend", form);
+    else heading.insertAdjacentElement("afterend", form);
+
+    heading.dataset.itsbioCrisprSearch = "true";
+  });
+}
+
 function normalizeHighlightedProducts() {
   const headings = Array.from(document.querySelectorAll<HTMLElement>(".itsbio-html h1,.itsbio-html h2,.itsbio-html h3,.itsbio-html h4"))
     .filter((heading) => norm(heading.textContent) === "highlighted products and services");
@@ -258,6 +311,7 @@ export default function AbmGeneticMaterialsPolishClient() {
         queued = false;
         if (disposed) return;
         normalizeGeneticNavigation();
+        restoreCrisprCatalogSearch();
         normalizeHighlightedProducts();
       });
     };
