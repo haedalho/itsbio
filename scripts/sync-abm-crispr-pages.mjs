@@ -436,6 +436,15 @@ async function getCategory(pathString) {
 async function syncPage(page) {
   console.log(`[FETCH] ${page.path} <- ${page.sourceUrl}`);
   const response = await fetchWithRetry(page.sourceUrl, false);
+  const sourceDom = cheerio.load(response.html || "", { decodeEntities: false });
+  const sourceStyles = sourceDom("style")
+    .toArray()
+    .map((node) => sourceDom(node).html() || "")
+    .filter(Boolean)
+    .join("\n\n");
+  const sourceStyleName = page.path.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") + "-source-styles.css";
+  fs.writeFileSync(path.join(REPORT_DIR, sourceStyleName), sourceStyles, "utf8");
+
   const officialHtml = extractOfficialFragment(page, response.html);
   const rehosted = await rehostImages(officialHtml, page.sourceUrl);
   const verification = verifyPage(page, rehosted.html, rehosted.images.length);
