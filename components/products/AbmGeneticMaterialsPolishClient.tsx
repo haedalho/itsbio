@@ -189,6 +189,7 @@ function cleanHighlightLabel(value: string) {
 }
 
 const CRISPR_KO_SOURCE_URL = "https://www.abmgood.com/crispr-knockout-library.html";
+const CRISPR_ACTIVATION_SOURCE_URL = "https://www.abmgood.com/crispr-activation-lentivirus-library.html";
 
 function restoreCrisprCatalogSearch() {
   const supportedHeadings = new Set([
@@ -221,6 +222,44 @@ function restoreCrisprCatalogSearch() {
         container.remove();
       });
     });
+
+    const isActivationLibrarySearch =
+      norm(heading.textContent) === "search activation sgrna library"
+      && Boolean(heading.closest("#abm-crispra-hub"));
+
+    if (isActivationLibrarySearch) {
+      const explanation = sectionNodes.find((node) => node.tagName === "P" && norm(node.textContent));
+      if (explanation) {
+        explanation.textContent =
+          "Search ABM’s live CRISPRa sgRNA vector library by gene name, symbol, or accession number.";
+      }
+
+      const actionRow = document.createElement("div");
+      actionRow.className = "itsbio-crispra-search-link-row";
+
+      const action = document.createElement("a");
+      action.className = "itsbio-crispra-search-link";
+      action.href = CRISPR_ACTIVATION_SOURCE_URL;
+      action.target = "_blank";
+      action.rel = "noreferrer noopener";
+      action.textContent = "Search CRISPR Activation sgRNA Vectors on ABM ↗";
+
+      const note = document.createElement("span");
+      note.className = "itsbio-crispra-search-note";
+      note.textContent = "ABM maintains the live Human, Mouse, and Rat activation sgRNA library.";
+
+      actionRow.append(action, note);
+
+      sectionNodes.forEach((node) => {
+        if (node !== explanation) node.remove();
+      });
+
+      if (explanation) explanation.insertAdjacentElement("afterend", actionRow);
+      else heading.insertAdjacentElement("afterend", actionRow);
+
+      heading.dataset.itsbioCrisprSearch = "true";
+      return;
+    }
 
     const isKoTargetSearch = norm(heading.textContent) === "search your target gene" && Boolean(heading.closest("#crispr-ko-page"));
     if (isKoTargetSearch) {
