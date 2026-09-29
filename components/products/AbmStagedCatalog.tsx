@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import type { AbmStagedRecord } from "@/lib/abm/rebuild-staging";
 import { stagedRecordKey, stagedRecordPath } from "@/lib/abm/rebuild-staging";
+import { verifiedMissingAbmVectorUrl } from "@/lib/abm/vector-links";
 
 const PAGE_SIZE = 30;
 
@@ -38,11 +39,17 @@ export default function AbmStagedCatalog({
   const safePage = Math.min(Math.max(page, 1), totalPages);
   const visible = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
   const base = basePath || `/products/abm/${kind === "product" ? "products" : "services"}`;
-  const recordHref = (row: AbmStagedRecord) => {
+  const recordTarget = (row: AbmStagedRecord) => {
+    const external = kind === "product" ? verifiedMissingAbmVectorUrl(row) : "";
+    if (external) return { href: external, external: true };
+
     const href = stagedRecordPath(kind, row);
-    return kind === "product" && base.startsWith("/products/abm/cellular-materials/")
-      ? `${href}?from=${encodeURIComponent(base)}`
-      : href;
+    return {
+      href: kind === "product" && base.startsWith("/products/abm/cellular-materials/")
+        ? `${href}?from=${encodeURIComponent(base)}`
+        : href,
+      external: false,
+    };
   };
   const pageHref = (nextPage: number) =>
     `${base}?page=${nextPage}${normalizedQuery ? `&q=${encodeURIComponent(query)}` : ""}`;
@@ -88,17 +95,31 @@ export default function AbmStagedCatalog({
               </tr>
             </thead>
             <tbody>
-            {visible.map((row) => (
-              <tr key={`${row.kind}-${stagedRecordKey(row)}`}>
-                <td>
-                  <Link href={recordHref(row)} prefetch={false}>{cleanTitle(row.title)}</Link>
-                </td>
-                <td>
-                  {row.sku ? <Link href={recordHref(row)} prefetch={false}>{row.sku}</Link> : "—"}
-                </td>
-                <td>{kind === "product" ? row.unit || "—" : row.searchCategory || row.filterTitle || "ABM Service"}</td>
-              </tr>
-            ))}
+            {visible.map((row) => {
+              const target = recordTarget(row);
+              const title = cleanTitle(row.title);
+              return (
+                <tr key={`${row.kind}-${stagedRecordKey(row)}`}>
+                  <td>
+                    {target.external ? (
+                      <a href={target.href} target="_blank" rel="noopener noreferrer">{title}</a>
+                    ) : (
+                      <Link href={target.href} prefetch={false}>{title}</Link>
+                    )}
+                  </td>
+                  <td>
+                    {row.sku ? (
+                      target.external ? (
+                        <a href={target.href} target="_blank" rel="noopener noreferrer">{row.sku}</a>
+                      ) : (
+                        <Link href={target.href} prefetch={false}>{row.sku}</Link>
+                      )
+                    ) : "—"}
+                  </td>
+                  <td>{kind === "product" ? row.unit || "—" : row.searchCategory || row.filterTitle || "ABM Service"}</td>
+                </tr>
+              );
+            })}
             </tbody>
           </table>
         </div>
