@@ -507,6 +507,10 @@
 
 /* Compact handoff for the supplier-maintained gene-specific KO catalog.
    Keep the official comparison cards untouched; only the search action leaves ITS BIO. */
+#crispr-ko-page .itsbio-crispr-ko-search-heading {
+  margin-top: 22px !important;
+}
+
 #crispr-ko-page .itsbio-crispr-ko-search-link-row {
   display: flex;
   align-items: center;
