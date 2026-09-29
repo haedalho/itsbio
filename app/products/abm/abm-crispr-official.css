@@ -505,183 +505,22 @@
   }
 }
 
-
-/* CRISPR KO large vector catalog handoff: keep ITS BIO lightweight while ABM
-   remains the live source of thousands of gene-specific vector SKUs. */
-#crispr-ko-page .itsbio-crispr-vector-handoff {
-  margin: 14px 0 20px;
-  padding: 22px;
-  border: 1px solid #efd3c6;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #fff8f4, #ffffff);
-}
-
-#crispr-ko-page .itsbio-crispr-vector-eyebrow {
-  margin-bottom: 8px;
-  color: #d94b17;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-
-#crispr-ko-page .itsbio-crispr-vector-copy {
-  max-width: 850px;
-  margin: 0;
-  color: #526273;
-  font-size: 14px;
-  line-height: 1.65;
-}
-
-#crispr-ko-page .itsbio-crispr-vector-copy strong {
-  color: #102a52;
-}
-
-#crispr-ko-page .itsbio-crispr-vector-steps {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 18px;
-}
-
-#crispr-ko-page .itsbio-crispr-vector-step {
+/* Compact handoff for the supplier-maintained gene-specific KO catalog.
+   Keep the official comparison cards untouched; only the search action leaves ITS BIO. */
+#crispr-ko-page .itsbio-crispr-ko-search-link-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-height: 56px;
-  padding: 12px;
-  border: 1px solid #e3e8ee;
-  border-radius: 8px;
-  background: #fff;
-  color: #344456;
-  font-size: 13px;
-}
-
-#crispr-ko-page .itsbio-crispr-vector-step span {
-  flex: 0 0 auto;
-  display: inline-flex;
-  width: 28px;
-  height: 28px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: #f15a24;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-#crispr-ko-page .itsbio-crispr-vector-actions {
-  display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  margin-top: 18px;
+  gap: 10px 14px;
+  margin: 12px 0 4px;
 }
 
-#crispr-ko-page .itsbio-crispr-vector-actions a {
-  display: inline-flex;
-  min-height: 42px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 7px;
-  padding: 9px 14px;
-  font-size: 13px;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-#crispr-ko-page .itsbio-crispr-vector-primary {
-  border: 1px solid #f15a24;
-  background: #f15a24;
-  color: #fff !important;
-}
-
-#crispr-ko-page .itsbio-crispr-vector-primary:hover {
-  border-color: #d94b17;
-  background: #d94b17;
-}
-
-#crispr-ko-page .itsbio-crispr-vector-secondary {
-  border: 1px solid #f15a24;
-  background: #fff;
-  color: #d94b17 !important;
-}
-
-#crispr-ko-page .itsbio-crispr-vector-secondary:hover {
-  background: #fff4ee;
-}
-
-#crispr-ko-page .itsbio-crispr-vector-quote {
-  border: 1px solid #cfd8df;
-  background: #fff;
-  color: #102a52 !important;
-}
-
-#crispr-ko-page .itsbio-crispr-vector-quote:hover {
-  border-color: #aeb9c5;
-  background: #f8fafc;
-}
-
-@media (max-width: 767px) {
-  #crispr-ko-page .itsbio-crispr-vector-steps {
-    grid-template-columns: 1fr;
-  }
-
-  #crispr-ko-page .itsbio-crispr-vector-actions {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  #crispr-ko-page .itsbio-crispr-vector-actions a {
-    width: 100%;
-  }
-}
-
-
-/* Simplified CRISPR KO handoff: cards go straight to ABM vector/backbone pages,
-   while one compact CTA handles the full gene-specific live catalog. */
-#crispr-ko-page button.ko-system-choice[data-itsbio-external-ready="true"] {
-  position: relative;
-  padding-bottom: 42px !important;
-}
-
-#crispr-ko-page button.ko-system-choice[data-itsbio-external-ready="true"]::after {
-  content: "";
-  position: absolute;
-  right: 16px;
-  bottom: 14px;
-  left: 16px;
-  height: 1px;
-  background: #edf1f4;
-}
-
-#crispr-ko-page .itsbio-crispr-card-external {
-  position: absolute;
-  right: 16px;
-  bottom: 12px;
-  left: 16px;
-  z-index: 1;
-  display: block;
-  color: #d94b17;
-  font-size: 12px;
-  line-height: 18px;
-  font-weight: 700;
-  text-align: left;
-}
-
-#crispr-ko-page button.ko-system-choice[data-itsbio-external-ready="true"]:hover .itsbio-crispr-card-external,
-#crispr-ko-page button.ko-system-choice[data-itsbio-external-ready="true"]:focus-visible .itsbio-crispr-card-external {
-  text-decoration: underline;
-}
-
-#crispr-ko-page .itsbio-crispr-live-catalog-link {
+#crispr-ko-page .itsbio-crispr-ko-search-link {
   display: inline-flex;
   min-height: 44px;
   align-items: center;
   justify-content: center;
-  margin: 8px 0 4px;
-  padding: 10px 18px;
+  padding: 10px 17px;
   border: 1px solid #f15a24;
   border-radius: 7px;
   background: #f15a24;
@@ -693,9 +532,26 @@
   transition: background .18s ease, border-color .18s ease, transform .18s ease;
 }
 
-#crispr-ko-page .itsbio-crispr-live-catalog-link:hover,
-#crispr-ko-page .itsbio-crispr-live-catalog-link:focus-visible {
+#crispr-ko-page .itsbio-crispr-ko-search-link:hover,
+#crispr-ko-page .itsbio-crispr-ko-search-link:focus-visible {
   transform: translateY(-1px);
   border-color: #d94b17;
   background: #d94b17;
+}
+
+#crispr-ko-page .itsbio-crispr-ko-search-note {
+  color: #667487;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 767px) {
+  #crispr-ko-page .itsbio-crispr-ko-search-link-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  #crispr-ko-page .itsbio-crispr-ko-search-link {
+    width: 100%;
+  }
 }
