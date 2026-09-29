@@ -626,6 +626,17 @@ function officialAbmTarget(href: string, baseUrl: string) {
   return isOfficialAbmUrl(resolved) ? resolved : "";
 }
 
+function clickedOfficialAbmTarget(href: string) {
+  const value = String(href || "").trim();
+  if (!value) return "";
+
+  const legacyTarget = extractLegacyAbmTarget(value);
+  if (legacyTarget && isOfficialAbmUrl(legacyTarget)) return legacyTarget;
+
+  if (/^https?:/i.test(value) && isOfficialAbmUrl(value)) return value;
+  return "";
+}
+
 function normalizeCas9VectorOutboundLinks(doc: Document, baseUrl: string) {
   const isCas9VectorPage = /Cas9 Expression Vectors and Viruses/i.test(collapseWs(doc.body.textContent || ""));
   if (!isCas9VectorPage) return;
@@ -1515,6 +1526,20 @@ export default function HtmlContent({
 
     const onClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
+
+      // Cas9 vector catalog: ABM destinations must always open in a new tab.
+      // Internal ITS BIO links keep normal same-tab navigation.
+      if (root.querySelector(".itsbio-cas9-vector-table")) {
+        const anchor = target.closest<HTMLAnchorElement>("a[href]");
+        const externalTarget = anchor ? clickedOfficialAbmTarget(anchor.getAttribute("href") || "") : "";
+        if (anchor && externalTarget) {
+          event.preventDefault();
+          event.stopPropagation();
+          window.open(externalTarget, "_blank", "noopener,noreferrer");
+          return;
+        }
+      }
+
       const resetGrowthSearch = target.closest<HTMLButtonElement>("[data-abm-growth-reset]");
       if (resetGrowthSearch) {
         const input = root.querySelector<HTMLInputElement>("[data-abm-growth-search]");
