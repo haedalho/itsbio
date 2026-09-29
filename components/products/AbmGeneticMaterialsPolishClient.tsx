@@ -190,52 +190,6 @@ function cleanHighlightLabel(value: string) {
 
 const CRISPR_KO_SOURCE_URL = "https://www.abmgood.com/crispr-knockout-library.html";
 
-const CRISPR_KO_SCOPES = [
-  {
-    match: ["lentiviral", "lentivector", "lentivirus"],
-    backboneUrl: "https://www.abmgood.com/vds/viewer/cat/224",
-    label: "Browse Lentiviral Vectors on ABM",
-  },
-  {
-    match: ["aav"],
-    backboneUrl: "https://www.abmgood.com/vds/viewer/cat/158",
-    label: "Browse AAV Vectors on ABM",
-  },
-  {
-    match: ["non viral", "nonviral", "plasmid"],
-    backboneUrl: "https://www.abmgood.com/vds/viewer/cat/149",
-    label: "Browse Non-Viral Vectors on ABM",
-  },
-] as const;
-
-function crisprKoScopeFromText(value: string | null | undefined) {
-  const text = norm(value);
-  return CRISPR_KO_SCOPES.find((item) => item.match.some((token) => text.includes(token))) || null;
-}
-
-function decorateCrisprKoSystemCards() {
-  const root = document.querySelector<HTMLElement>("#crispr-ko-page");
-  if (!root) return;
-
-  root.querySelectorAll<HTMLButtonElement>("button.ko-system-choice").forEach((button) => {
-    if (button.dataset.itsbioExternalReady === "true") return;
-    const scope = crisprKoScopeFromText(button.textContent);
-    if (!scope) return;
-
-    button.classList.remove("is-selected");
-    button.removeAttribute("aria-pressed");
-    button.dataset.itsbioExternalReady = "true";
-    button.dataset.itsbioExternalHref = scope.backboneUrl;
-    button.setAttribute("aria-label", `${scope.label} (opens ABM in a new tab)`);
-    button.setAttribute("title", `${scope.label} ↗`);
-
-    const cue = document.createElement("span");
-    cue.className = "itsbio-crispr-card-external";
-    cue.textContent = "Open on ABM ↗";
-    button.appendChild(cue);
-  });
-}
-
 function restoreCrisprCatalogSearch() {
   const supportedHeadings = new Set([
     "find crispr sgrna genome editing products for your gene",
@@ -258,25 +212,41 @@ function restoreCrisprCatalogSearch() {
 
     const isKoTargetSearch = norm(heading.textContent) === "search your target gene" && Boolean(heading.closest("#crispr-ko-page"));
     if (isKoTargetSearch) {
-      heading.textContent = "Gene-Specific CRISPR KO Vectors";
+      heading.textContent = "Find CRISPR Knockout Products for Your Gene";
 
       const explanation = sectionNodes.find((node) => node.tagName === "P" && norm(node.textContent));
       if (explanation) {
-        explanation.textContent = "Search ABM’s live catalog by gene symbol, gene name, or accession number.";
+        explanation.textContent =
+          "Search ABM’s live catalog for gene-specific Lentiviral, AAV, and Non-Viral CRISPR KO vectors and viruses.";
       }
 
+      const actionRow = document.createElement("div");
+      actionRow.className = "itsbio-crispr-ko-search-link-row";
+
       const action = document.createElement("a");
-      action.className = "itsbio-crispr-live-catalog-link";
+      action.className = "itsbio-crispr-ko-search-link";
       action.href = CRISPR_KO_SOURCE_URL;
       action.target = "_blank";
       action.rel = "noreferrer noopener";
-      action.textContent = "Search Gene-Specific Vectors on ABM ↗";
+      action.textContent = "Search CRISPR KO Vectors & Viruses on ABM ↗";
 
-      if (explanation) explanation.insertAdjacentElement("afterend", action);
-      else heading.insertAdjacentElement("afterend", action);
+      const note = document.createElement("span");
+      note.className = "itsbio-crispr-ko-search-note";
+      note.textContent = "Search by gene symbol, gene name, or accession number.";
+
+      actionRow.append(action, note);
+
+      if (explanation) explanation.insertAdjacentElement("afterend", actionRow);
+      else heading.insertAdjacentElement("afterend", actionRow);
 
       sectionNodes.forEach((node) => {
-        if (node !== explanation && node.matches("form,.itsbio-crispr-search,.itsbio-crispr-vector-handoff")) node.remove();
+        if (
+          node !== explanation
+          && node !== actionRow
+          && node.matches("form,.itsbio-crispr-search,.itsbio-crispr-vector-handoff,.itsbio-crispr-live-catalog-link")
+        ) {
+          node.remove();
+        }
       });
 
       heading.dataset.itsbioCrisprSearch = "true";
@@ -385,32 +355,18 @@ export default function AbmGeneticMaterialsPolishClient() {
         queued = false;
         if (disposed) return;
         normalizeGeneticNavigation();
-        decorateCrisprKoSystemCards();
         restoreCrisprCatalogSearch();
         normalizeHighlightedProducts();
       });
     };
 
-    const onCrisprKoSystemClick = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      const choice = target.closest<HTMLButtonElement>("#crispr-ko-page button.ko-system-choice[data-itsbio-external-href]");
-      if (!choice) return;
-
-      const href = choice.dataset.itsbioExternalHref || "";
-      if (!href) return;
-      event.preventDefault();
-      window.open(href, "_blank", "noopener,noreferrer");
-    };
-
     apply();
     const observer = new MutationObserver(apply);
     observer.observe(document.body, { childList: true, subtree: true });
-    document.addEventListener("click", onCrisprKoSystemClick);
 
     return () => {
       disposed = true;
       observer.disconnect();
-      document.removeEventListener("click", onCrisprKoSystemClick);
     };
   }, [pathname]);
 
