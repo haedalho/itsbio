@@ -8,6 +8,7 @@ import {
   type AbmStagedRecord,
 } from "@/lib/abm/rebuild-staging";
 import { OFFICIAL_ABM_CELL_MODEL_PRODUCTS } from "@/lib/abm/cell-model-data";
+import { verifiedMissingAbmVectorUrl } from "@/lib/abm/vector-links";
 import { cleaverProductHref, findLocalCleaverProduct, searchLocalCleaverProducts } from "@/lib/cleaver/catalog";
 import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 
@@ -49,6 +50,7 @@ type SearchResult = {
   href: string;
   kind: "Product" | "Service";
   direct: boolean;
+  external?: boolean;
   score: number;
 };
 
@@ -297,12 +299,23 @@ function ResultCard({ result }: { result: SearchResult }) {
       <h3 className="mt-3 text-lg font-semibold leading-7 text-slate-950">{result.title}</h3>
       {result.description ? <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">{result.description}</p> : null}
       <div className="mt-5">
-        <Link
-          href={result.href}
-          className="inline-flex items-center rounded-full bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-700"
-        >
-          {result.direct ? "View product" : "View matching products"}
-        </Link>
+        {result.external ? (
+          <a
+            href={result.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center rounded-full bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-700"
+          >
+            View on ABM ↗
+          </a>
+        ) : (
+          <Link
+            href={result.href}
+            className="inline-flex items-center rounded-full bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-700"
+          >
+            {result.direct ? "View product" : "View matching products"}
+          </Link>
+        )}
       </div>
     </article>
   );
@@ -386,6 +399,8 @@ export default async function SearchPage({
 
   if (!q) redirect("/products");
 
+  let exactMissingVectorResult: SearchResult | null = null;
+
   const catalogNumber = normalizeCatalogNumber(q);
   if (isCatalogNumberCandidate(catalogNumber)) {
     const [exactDocs, stagedProduct, stagedService] = await Promise.all([
@@ -411,8 +426,25 @@ export default async function SearchPage({
       if (localCleaver) exactTargets.push(cleaverProductHref(localCleaver));
     }
 
-    if (stagedProduct) exactTargets.push(stagedRecordPath("product", stagedProduct));
+    const exactMissingVectorUrl = stagedProduct ? verifiedMissingAbmVectorUrl(stagedProduct) : "";
+    if (stagedProduct && !exactMissingVectorUrl) exactTargets.push(stagedRecordPath("product", stagedProduct));
     if (stagedService) exactTargets.push(stagedRecordPath("service", stagedService));
+
+    if (stagedProduct && exactMissingVectorUrl) {
+      exactMissingVectorResult = {
+        id: `abm-missing-vector:${stagedProduct.sku || stagedProduct.url}`,
+        title: stagedProduct.title,
+        sku: stagedProduct.sku || undefined,
+        description: stagedProduct.previewSummary,
+        brandKey: "abm",
+        brandLabel: "ABM",
+        href: exactMissingVectorUrl,
+        kind: "Product",
+        direct: true,
+        external: true,
+        score: 130,
+      };
+    }
 
     if (!stagedProduct && !stagedService) {
       exactTargets.push(
@@ -439,6 +471,7 @@ export default async function SearchPage({
   ]);
 
   const results: SearchResult[] = [];
+  if (exactMissingVectorResult) results.push(exactMissingVectorResult);
 
   for (const row of Array.isArray(liveRows) ? liveRows : []) {
     const title = stringValue(row.title);
@@ -482,6 +515,7 @@ export default async function SearchPage({
     const title = stringValue(row.title);
     if (!title) continue;
     const sku = stringValue(row.sku) || undefined;
+    const externalVectorUrl = row.kind === "product" ? verifiedMissingAbmVectorUrl(row) : "";
     results.push({
       id: `abm-staged:${row.kind}:${sku || row.url}`,
       title,
@@ -489,9 +523,10 @@ export default async function SearchPage({
       description: stringValue(row.previewSummary) || undefined,
       brandKey: "abm",
       brandLabel: "ABM",
-      href: stagedRecordPath(row.kind, row),
+      href: externalVectorUrl || stagedRecordPath(row.kind, row),
       kind: row.kind === "service" ? "Service" : "Product",
       direct: true,
+      external: Boolean(externalVectorUrl),
       score: scoreMatch(title, sku, q) + 2,
     });
   }
