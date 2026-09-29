@@ -85,20 +85,22 @@ function isVectorFamilyRecord(record: AbmVectorLinkRecord) {
 
   const labels = recordLabels(record);
   const joined = labels.join(" | ");
-  if (!joined.includes("genetic materials")) return false;
-  if (NON_VECTOR_HINTS.some((hint) => joined.includes(hint))) return false;
-
   const title = norm(record.title);
+  const manualVectorSku = Boolean(MANUALLY_VERIFIED_VECTOR_URLS[String(record.sku || "").toUpperCase()]);
   const titleLooksVectorLike =
     /\bvector\b|\bvectors\b|\blentivector\b|\bplasmid\b/.test(title);
 
-  const manualVectorSku = Boolean(MANUALLY_VERIFIED_VECTOR_URLS[String(record.sku || "").toUpperCase()]);
+  // Some staged records do not retain the full "Genetic Materials" breadcrumb.
+  // A manually reviewed Vector SKU or an explicit Vector title is sufficient.
+  if (manualVectorSku || titleLooksVectorLike) return true;
+
+  if (NON_VECTOR_HINTS.some((hint) => joined.includes(hint))) return false;
   const familyLooksVectorLike = VECTOR_FAMILY_HINTS.some((hint) => joined.includes(hint));
 
-  // Category/family hints alone are not enough because many ABM tables mix
-  // Vector and Virus rows under the same heading. Require an explicit
-  // vector-like title unless the SKU has been manually verified as Vector.
-  return manualVectorSku || titleLooksVectorLike || (familyLooksVectorLike && /\bvector\b|\bvectors\b/.test(title));
+  // Family hints alone must never turn Virus rows into Vector rows.
+  return joined.includes("genetic materials")
+    && familyLooksVectorLike
+    && /\bvector\b|\bvectors\b/.test(title);
 }
 
 function normalizedSku(value: string | null | undefined) {
