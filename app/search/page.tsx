@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import {
   ABM_REBUILD_VERSION,
   getAbmStagedRecord,
+  getAbmStagedDetailPresence,
   stagedRecordPath,
   type AbmStagedRecord,
 } from "@/lib/abm/rebuild-staging";
@@ -426,16 +427,27 @@ export default async function SearchPage({
       if (localCleaver) exactTargets.push(cleaverProductHref(localCleaver));
     }
 
-    const exactMissingVectorUrl = stagedProduct ? verifiedMissingAbmVectorUrl(stagedProduct) : "";
-    if (stagedProduct && !exactMissingVectorUrl) exactTargets.push(stagedRecordPath("product", stagedProduct));
+    const exactDetailSkus = stagedProduct
+      ? await getAbmStagedDetailPresence("product", [stagedProduct.sku])
+      : new Set<string>();
+    const effectiveStagedProduct = stagedProduct
+      ? { ...stagedProduct, hasDetail: exactDetailSkus.has(stagedProduct.sku) }
+      : undefined;
+    const exactMissingVectorUrl = effectiveStagedProduct
+      ? verifiedMissingAbmVectorUrl(effectiveStagedProduct)
+      : "";
+
+    if (effectiveStagedProduct && !exactMissingVectorUrl) {
+      exactTargets.push(stagedRecordPath("product", effectiveStagedProduct));
+    }
     if (stagedService) exactTargets.push(stagedRecordPath("service", stagedService));
 
-    if (stagedProduct && exactMissingVectorUrl) {
+    if (effectiveStagedProduct && exactMissingVectorUrl) {
       exactMissingVectorResult = {
-        id: `abm-missing-vector:${stagedProduct.sku || stagedProduct.url}`,
-        title: stagedProduct.title,
-        sku: stagedProduct.sku || undefined,
-        description: stagedProduct.previewSummary,
+        id: `abm-missing-vector:${effectiveStagedProduct.sku || effectiveStagedProduct.url}`,
+        title: effectiveStagedProduct.title,
+        sku: effectiveStagedProduct.sku || undefined,
+        description: effectiveStagedProduct.previewSummary,
         brandKey: "abm",
         brandLabel: "ABM",
         href: exactMissingVectorUrl,
@@ -511,11 +523,21 @@ export default async function SearchPage({
   const stagedRows = (Array.isArray(stagedChunks) ? stagedChunks : [])
     .flatMap((chunk) => (Array.isArray(chunk?.matches) ? chunk.matches : []));
 
+  const stagedProductSkus = stagedRows
+    .filter((row) => row.kind === "product")
+    .map((row) => stringValue(row.sku))
+    .filter(Boolean);
+  const stagedDetailSkus = await getAbmStagedDetailPresence("product", stagedProductSkus);
+  const stagedDetailSkuKeys = new Set([...stagedDetailSkus].map((sku) => sku.toLowerCase()));
+
   for (const row of stagedRows) {
     const title = stringValue(row.title);
     if (!title) continue;
     const sku = stringValue(row.sku) || undefined;
-    const externalVectorUrl = row.kind === "product" ? verifiedMissingAbmVectorUrl(row) : "";
+    const effectiveRow = row.kind === "product"
+      ? { ...row, hasDetail: Boolean(sku && stagedDetailSkuKeys.has(sku.toLowerCase())) }
+      : row;
+    const externalVectorUrl = row.kind === "product" ? verifiedMissingAbmVectorUrl(effectiveRow) : "";
     results.push({
       id: `abm-staged:${row.kind}:${sku || row.url}`,
       title,
