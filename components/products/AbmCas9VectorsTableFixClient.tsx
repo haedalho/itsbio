@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { abmResourceImagePath } from "@/lib/abm/resource-links";
 
 const TARGET_PATH = "/products/abm/genetic-materials/crispr/cas9-vectors-and-virus";
+// Vector rows must never replace the current ITS BIO tab.
 const PRICE_TEXT = /^(?:(?:US|CA)?\$\s?\d[\d,.]*(?:\s*(?:USD|CAD))?|price|pricing|inquiry)$/i;
 const SECTION_LABELS = /^(?:Cas9 Nuclease|Cas9 Nickase|dCas9 \(double mutant\)|Other Cas Nucleases|Lentiviral|AAV|Adenovirus|Non-viral)$/i;
 const ADDITIONAL_ID = "itsbio-cas9-additional-info";
