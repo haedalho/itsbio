@@ -614,9 +614,84 @@ const STAGED_DETAIL_PRESENCE_QUERY = `
   && kind == $kind
   && count(records[key in $keys]) > 0
 ]{
-  "keys": records[key in $keys].key
+  "records": records[key in $keys]{
+    key,
+    sourceUnavailable,
+    previewImage,
+    images,
+    introHtml,
+    description,
+    overview,
+    specificationsHtml,
+    datasheetHtml,
+    documentsHtml,
+    faqsHtml,
+    referencesHtml,
+    reviewsHtml,
+    serviceDetailsHtml,
+    documents
+  }
 }
 `;
+
+type StagedDetailPresenceRecord = {
+  key?: string;
+  sourceUnavailable?: boolean;
+  previewImage?: string;
+  images?: unknown[];
+  introHtml?: string;
+  description?: string;
+  overview?: string;
+  specificationsHtml?: string;
+  datasheetHtml?: string;
+  documentsHtml?: string;
+  faqsHtml?: string;
+  referencesHtml?: string;
+  reviewsHtml?: string;
+  serviceDetailsHtml?: string;
+  documents?: unknown[];
+};
+
+function plainDetailText(value: unknown) {
+  return String(value || "")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;|&#160;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function hasUsableStagedDetail(record: StagedDetailPresenceRecord) {
+  if (record.sourceUnavailable) return false;
+
+  const hasMedia = Boolean(String(record.previewImage || "").trim())
+    || (Array.isArray(record.images) && record.images.length > 0);
+  const hasDocuments = Array.isArray(record.documents) && record.documents.length > 0;
+
+  const structured = [
+    record.specificationsHtml,
+    record.datasheetHtml,
+    record.documentsHtml,
+    record.faqsHtml,
+    record.referencesHtml,
+    record.reviewsHtml,
+    record.serviceDetailsHtml,
+  ].some((value) => {
+    const raw = String(value || "").trim();
+    if (!raw) return false;
+    return /<(?:table|tr|td|th|a|ul|ol|li)\b/i.test(raw) || plainDetailText(raw).length >= 60;
+  });
+
+  const narrativeLength = [
+    record.introHtml,
+    record.description,
+    record.overview,
+  ].map(plainDetailText).join(" ").trim().length;
+
+  return hasMedia || hasDocuments || structured || narrativeLength >= 160;
+}
 
 export async function getAbmStagedDetailPresence(
   kind: AbmStagedRecord["kind"],
@@ -631,22 +706,24 @@ export async function getAbmStagedDetailPresence(
 
   if (!keys.length) return new Set<string>();
 
-  const chunks = await sanityClient.fetch<Array<{ keys?: string[] }>>(
+  const chunks = await sanityClient.fetch<Array<{ records?: StagedDetailPresenceRecord[] }>>(
     STAGED_DETAIL_PRESENCE_QUERY,
     { version: ABM_REBUILD_VERSION, kind, keys },
     PUBLIC_CATALOG_CACHE,
   );
 
-  const present = new Set(
+  const usable = new Set(
     (Array.isArray(chunks) ? chunks : [])
-      .flatMap((chunk) => Array.isArray(chunk.keys) ? chunk.keys : [])
-      .map((key) => String(key || "").trim().toLowerCase()),
+      .flatMap((chunk) => Array.isArray(chunk.records) ? chunk.records : [])
+      .filter(hasUsableStagedDetail)
+      .map((record) => String(record.key || "").trim().toLowerCase())
+      .filter(Boolean),
   );
 
   return new Set(
     catalogNumbers
       .map((value) => String(value || "").trim())
-      .filter((value) => present.has(`${kind}:${value.toLowerCase()}`)),
+      .filter((value) => usable.has(`${kind}:${value.toLowerCase()}`)),
   );
 }
 
