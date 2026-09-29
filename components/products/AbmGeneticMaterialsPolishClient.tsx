@@ -188,6 +188,35 @@ function cleanHighlightLabel(value: string) {
     .trim();
 }
 
+const CRISPR_KO_SCOPES = [
+  { value: "crispr-ko-lentiviral", label: "sgRNA Lentivector" },
+  { value: "crispr-ko-aav", label: "sgRNA AAV" },
+  { value: "crispr-ko-nonviral", label: "sgRNA Non-Viral Vector" },
+] as const;
+
+type CrisprKoScope = (typeof CRISPR_KO_SCOPES)[number]["value"];
+
+function crisprKoScopeFromText(value: string | null | undefined): CrisprKoScope | "" {
+  const text = norm(value);
+  if (/\blentiviral\b|\blentivector\b|\blentivirus\b/.test(text)) return "crispr-ko-lentiviral";
+  if (/\baav\b/.test(text)) return "crispr-ko-aav";
+  if (/\bnon viral\b|\bnonviral\b|\bplasmid\b/.test(text)) return "crispr-ko-nonviral";
+  return "";
+}
+
+function applyCrisprKoSystemChoice(scope: CrisprKoScope) {
+  const root = document.querySelector<HTMLElement>("#crispr-ko-page");
+  if (!root) return;
+
+  root.querySelectorAll<HTMLButtonElement>("button.ko-system-choice").forEach((button) => {
+    const active = crisprKoScopeFromText(button.textContent) === scope;
+    button.classList.toggle("is-selected", active);
+    button.setAttribute("aria-pressed", active ? "true" : "false");
+  });
+
+  const select = root.querySelector<HTMLSelectElement>('select[name="scope"][data-itsbio-crispr-ko-scope="true"]');
+  if (select) select.value = scope;
+}
 
 function restoreCrisprCatalogSearch() {
   const supportedHeadings = new Set([
@@ -220,19 +249,47 @@ function restoreCrisprCatalogSearch() {
     brand.name = "brand";
     brand.value = "abm";
 
+    const isKoTargetSearch = norm(heading.textContent) === "search your target gene" && Boolean(heading.closest("#crispr-ko-page"));
+
     const input = document.createElement("input");
     input.type = "search";
     input.name = "q";
     input.required = true;
     input.autocomplete = "off";
-    input.placeholder = "Gene name, symbol, accession number or Cat. No.";
+    input.placeholder = isKoTargetSearch
+      ? "Try TP53, EGFR, KRAS, or a RefSeq accession"
+      : "Gene name, symbol, accession number or Cat. No.";
     input.setAttribute("aria-label", "Search ABM CRISPR products");
 
     const button = document.createElement("button");
     button.type = "submit";
     button.textContent = "Search";
 
-    form.append(brand, input, button);
+    if (isKoTargetSearch) {
+      form.classList.add("itsbio-crispr-search--with-select");
+
+      const scopeSelect = document.createElement("select");
+      scopeSelect.name = "scope";
+      scopeSelect.dataset.itsbioCrisprKoScope = "true";
+      scopeSelect.setAttribute("aria-label", "CRISPR knockout delivery system");
+      CRISPR_KO_SCOPES.forEach((item) => {
+        const option = document.createElement("option");
+        option.value = item.value;
+        option.textContent = item.label;
+        scopeSelect.appendChild(option);
+      });
+
+      const selectedChoice =
+        document.querySelector<HTMLButtonElement>("#crispr-ko-page button.ko-system-choice.is-selected")
+        || document.querySelector<HTMLButtonElement>("#crispr-ko-page button.ko-system-choice");
+      const initialScope = crisprKoScopeFromText(selectedChoice?.textContent) || "crispr-ko-lentiviral";
+      scopeSelect.value = initialScope;
+      applyCrisprKoSystemChoice(initialScope);
+
+      form.append(brand, scopeSelect, input, button);
+    } else {
+      form.append(brand, input, button);
+    }
 
     const explanation = sectionNodes.find((node) => node.tagName === "P" && norm(node.textContent));
     if (explanation) explanation.insertAdjacentElement("afterend", form);
@@ -317,13 +374,39 @@ export default function AbmGeneticMaterialsPolishClient() {
       });
     };
 
+    const onCrisprKoSystemClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      const choice = target.closest<HTMLButtonElement>("#crispr-ko-page button.ko-system-choice");
+      if (!choice) return;
+      const scope = crisprKoScopeFromText(choice.textContent);
+      if (!scope) return;
+
+      event.preventDefault();
+      applyCrisprKoSystemChoice(scope);
+      const input = document.querySelector<HTMLInputElement>('#crispr-ko-page .itsbio-crispr-search input[name="q"]');
+      input?.focus();
+    };
+
+    const onCrisprKoScopeChange = (event: Event) => {
+      const select = (event.target as HTMLElement).closest<HTMLSelectElement>(
+        '#crispr-ko-page select[name="scope"][data-itsbio-crispr-ko-scope="true"]',
+      );
+      if (!select) return;
+      const scope = CRISPR_KO_SCOPES.find((item) => item.value === select.value)?.value;
+      if (scope) applyCrisprKoSystemChoice(scope);
+    };
+
     apply();
     const observer = new MutationObserver(apply);
     observer.observe(document.body, { childList: true, subtree: true });
+    document.addEventListener("click", onCrisprKoSystemClick);
+    document.addEventListener("change", onCrisprKoScopeChange);
 
     return () => {
       disposed = true;
       observer.disconnect();
+      document.removeEventListener("click", onCrisprKoSystemClick);
+      document.removeEventListener("change", onCrisprKoScopeChange);
     };
   }, [pathname]);
 
