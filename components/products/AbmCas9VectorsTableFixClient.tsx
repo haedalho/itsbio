@@ -20,6 +20,45 @@ function textOf(element: Element | null) {
   return String(element?.textContent || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
 }
 
+const OFFICIAL_ABM_HOSTS = new Set(["abmgood.com", "www.abmgood.com", "info.abmgood.com"]);
+
+function officialAbmTargetFromHref(href: string) {
+  const value = String(href || "").trim();
+  if (!value) return "";
+
+  try {
+    const url = new URL(value, window.location.origin);
+    if (url.pathname === "/products/abm/legacy" || url.pathname === "/products/abm/resolve") {
+      const target = (url.searchParams.get("u") || "").trim();
+      if (!target) return "";
+      const official = new URL(target);
+      return OFFICIAL_ABM_HOSTS.has(official.hostname.toLowerCase()) ? official.toString() : "";
+    }
+
+    return OFFICIAL_ABM_HOSTS.has(url.hostname.toLowerCase()) ? url.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
+function preserveVectorRowLinks(row: HTMLTableRowElement) {
+  const isVectorRow = Array.from(row.cells).some((cell) => /^Vector$/i.test(textOf(cell)));
+  if (!isVectorRow) return;
+
+  row.dataset.itsbioAbmVectorRow = "true";
+
+  row.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((anchor) => {
+    const direct = officialAbmTargetFromHref(anchor.getAttribute("href") || "");
+    if (!direct) return;
+
+    anchor.setAttribute("href", direct);
+    anchor.setAttribute("target", "_blank");
+    anchor.setAttribute("rel", "noopener noreferrer");
+    anchor.dataset.itsbioAbmPreserveLink = "true";
+    anchor.dataset.itsbioAbmProductResolved = "true";
+  });
+}
+
 function removeTrailingPriceCells(row: HTMLTableRowElement) {
   const cells = Array.from(row.cells);
   for (let index = cells.length - 1; index >= 0; index -= 1) {
@@ -71,6 +110,8 @@ function normalizeTable(table: HTMLTableElement) {
   Array.from(table.rows).forEach((row) => {
     const cells = Array.from(row.cells);
     if (!cells.length) return;
+
+    preserveVectorRowLinks(row);
 
     const label = textOf(cells[0]);
     const isSection = cells.length === 1 || SECTION_LABELS.test(label) || row.id.startsWith("table-product-mini-category-");
