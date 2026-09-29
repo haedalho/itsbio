@@ -663,6 +663,7 @@ function plainDetailText(value: unknown) {
     .trim();
 }
 
+// Vector routing treats only visibly useful migrated detail as internal.
 function hasUsableStagedDetail(record: StagedDetailPresenceRecord) {
   if (record.sourceUnavailable) return false;
 
