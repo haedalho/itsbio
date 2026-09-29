@@ -188,10 +188,27 @@ function cleanHighlightLabel(value: string) {
     .trim();
 }
 
+const CRISPR_KO_SOURCE_URL = "https://www.abmgood.com/crispr-knockout-library.html";
+
 const CRISPR_KO_SCOPES = [
-  { value: "crispr-ko-lentiviral", label: "sgRNA Lentivector" },
-  { value: "crispr-ko-aav", label: "sgRNA AAV" },
-  { value: "crispr-ko-nonviral", label: "sgRNA Non-Viral Vector" },
+  {
+    value: "crispr-ko-lentiviral",
+    label: "sgRNA Lentivector",
+    backboneUrl: "https://www.abmgood.com/vds/viewer/cat/224",
+    backboneLabel: "Browse Lentiviral Backbones on ABM ↗",
+  },
+  {
+    value: "crispr-ko-aav",
+    label: "sgRNA AAV",
+    backboneUrl: "https://www.abmgood.com/vds/viewer/cat/158",
+    backboneLabel: "Browse AAV Backbones on ABM ↗",
+  },
+  {
+    value: "crispr-ko-nonviral",
+    label: "sgRNA Non-Viral Vector",
+    backboneUrl: "https://www.abmgood.com/vds/viewer/cat/149",
+    backboneLabel: "Browse Non-Viral Backbones on ABM ↗",
+  },
 ] as const;
 
 type CrisprKoScope = (typeof CRISPR_KO_SCOPES)[number]["value"];
@@ -216,6 +233,13 @@ function applyCrisprKoSystemChoice(scope: CrisprKoScope) {
 
   const select = root.querySelector<HTMLSelectElement>('select[name="scope"][data-itsbio-crispr-ko-scope="true"]');
   if (select) select.value = scope;
+
+  const selected = CRISPR_KO_SCOPES.find((item) => item.value === scope);
+  const backboneLink = root.querySelector<HTMLAnchorElement>("[data-itsbio-crispr-backbone-link]");
+  if (selected && backboneLink) {
+    backboneLink.href = selected.backboneUrl;
+    backboneLink.textContent = selected.backboneLabel;
+  }
 }
 
 function restoreCrisprCatalogSearch() {
@@ -262,8 +286,9 @@ function restoreCrisprCatalogSearch() {
     input.setAttribute("aria-label", "Search ABM CRISPR products");
 
     const button = document.createElement("button");
-    button.type = "submit";
-    button.textContent = "Search";
+    button.type = isKoTargetSearch ? "button" : "submit";
+    button.textContent = isKoTargetSearch ? "Search ABM ↗" : "Search";
+    if (isKoTargetSearch) button.dataset.itsbioCrisprVectorSearch = "true";
 
     if (isKoTargetSearch) {
       form.classList.add("itsbio-crispr-search--with-select");
@@ -286,7 +311,33 @@ function restoreCrisprCatalogSearch() {
       scopeSelect.value = initialScope;
       applyCrisprKoSystemChoice(initialScope);
 
-      form.append(brand, scopeSelect, input, button);
+      const selectedScope = CRISPR_KO_SCOPES.find((item) => item.value === initialScope)!;
+
+      const note = document.createElement("p");
+      note.className = "itsbio-crispr-vector-note";
+      note.textContent = "Gene-specific vector products are maintained in ABM’s live catalog. Search opens ABM in a new tab.";
+
+      const actions = document.createElement("div");
+      actions.className = "itsbio-crispr-vector-actions";
+
+      const backboneLink = document.createElement("a");
+      backboneLink.href = selectedScope.backboneUrl;
+      backboneLink.target = "_blank";
+      backboneLink.rel = "noreferrer noopener";
+      backboneLink.dataset.itsbioCrisprBackboneLink = "true";
+      backboneLink.textContent = selectedScope.backboneLabel;
+
+      const quoteLink = document.createElement("a");
+      quoteLink.href = "/quote";
+      quoteLink.textContent = "Request a Quote from ITS BIO →";
+
+      const status = document.createElement("span");
+      status.className = "itsbio-crispr-vector-status";
+      status.dataset.itsbioCrisprVectorStatus = "true";
+      status.setAttribute("aria-live", "polite");
+
+      actions.append(backboneLink, quoteLink, status);
+      form.append(scopeSelect, input, button, note, actions);
     } else {
       form.append(brand, input, button);
     }
@@ -376,6 +427,28 @@ export default function AbmGeneticMaterialsPolishClient() {
 
     const onCrisprKoSystemClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
+
+      const externalSearch = target.closest<HTMLButtonElement>("[data-itsbio-crispr-vector-search]");
+      if (externalSearch) {
+        event.preventDefault();
+        const root = externalSearch.closest<HTMLElement>("#crispr-ko-page");
+        const input = root?.querySelector<HTMLInputElement>('.itsbio-crispr-search input[name="q"]');
+        const query = input?.value.trim() || "";
+        const status = root?.querySelector<HTMLElement>("[data-itsbio-crispr-vector-status]");
+
+        window.open(CRISPR_KO_SOURCE_URL, "_blank", "noopener,noreferrer");
+        if (query && navigator.clipboard?.writeText) {
+          void navigator.clipboard.writeText(query).then(() => {
+            if (status) status.textContent = "Search term copied — paste it into ABM’s gene search.";
+          }).catch(() => {
+            if (status) status.textContent = "ABM opened in a new tab. Enter the gene there to search the live catalog.";
+          });
+        } else if (status) {
+          status.textContent = "ABM opened in a new tab. Enter the gene there to search the live catalog.";
+        }
+        return;
+      }
+
       const choice = target.closest<HTMLButtonElement>("#crispr-ko-page button.ko-system-choice");
       if (!choice) return;
       const scope = crisprKoScopeFromText(choice.textContent);
