@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import type { AbmStagedRecord } from "@/lib/abm/rebuild-staging";
-import { stagedRecordKey, stagedRecordPath } from "@/lib/abm/rebuild-staging";
+import { getAbmStagedDetailPresence, stagedRecordKey, stagedRecordPath } from "@/lib/abm/rebuild-staging";
 import { verifiedMissingAbmVectorUrl } from "@/lib/abm/vector-links";
 
 const PAGE_SIZE = 30;
@@ -10,7 +10,7 @@ function cleanTitle(value: string) {
   return value.replace(/\s+/g, " ").trim() || "Untitled item";
 }
 
-export default function AbmStagedCatalog({
+export default async function AbmStagedCatalog({
   kind,
   records,
   query,
@@ -38,9 +38,17 @@ export default function AbmStagedCatalog({
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(Math.max(page, 1), totalPages);
   const visible = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const visibleDetailSkus = kind === "product"
+    ? await getAbmStagedDetailPresence("product", visible.map((row) => row.sku).filter(Boolean))
+    : new Set<string>();
+  const visibleDetailSkuKeys = new Set([...visibleDetailSkus].map((sku) => sku.toLowerCase()));
+
   const base = basePath || `/products/abm/${kind === "product" ? "products" : "services"}`;
   const recordTarget = (row: AbmStagedRecord) => {
-    const external = kind === "product" ? verifiedMissingAbmVectorUrl(row) : "";
+    const effectiveRow = kind === "product"
+      ? { ...row, hasDetail: Boolean(row.sku && visibleDetailSkuKeys.has(row.sku.toLowerCase())) }
+      : row;
+    const external = kind === "product" ? verifiedMissingAbmVectorUrl(effectiveRow) : "";
     if (external) return { href: external, external: true };
 
     const href = stagedRecordPath(kind, row);
