@@ -42,21 +42,103 @@ function officialAbmTargetFromHref(href: string) {
   }
 }
 
-function preserveVectorRowLinks(row: HTMLTableRowElement) {
+function validSku(value: string) {
+  return /^[A-Za-z][A-Za-z0-9._+/-]*\d[A-Za-z0-9._+/-]*$/.test(value);
+}
+
+function vectorRowSku(row: HTMLTableRowElement) {
+  return Array.from(row.cells)
+    .map((cell) => textOf(cell))
+    .reverse()
+    .find((value) => validSku(value)) || "";
+}
+
+function markVectorRowLinks(row: HTMLTableRowElement) {
   const isVectorRow = Array.from(row.cells).some((cell) => /^Vector$/i.test(textOf(cell)));
   if (!isVectorRow) return;
 
-  row.dataset.itsbioAbmVectorRow = "true";
+  const sku = vectorRowSku(row);
+  if (!sku) return;
 
+  row.dataset.itsbioAbmVectorRow = "true";
+  row.dataset.itsbioAbmVectorSku = sku;
+
+  let preferredSource = "";
   row.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((anchor) => {
     const direct = officialAbmTargetFromHref(anchor.getAttribute("href") || "");
-    if (!direct) return;
+    if (direct) {
+      anchor.dataset.itsbioAbmVectorSource = direct;
+      if (!preferredSource && !/\/vector\//i.test(new URL(direct).pathname)) preferredSource = direct;
+    }
 
-    anchor.setAttribute("href", direct);
-    anchor.setAttribute("target", "_blank");
-    anchor.setAttribute("rel", "noopener noreferrer");
+    // Freeze Vector links before the generic ABM product resolvers run.
     anchor.dataset.itsbioAbmPreserveLink = "true";
     anchor.dataset.itsbioAbmProductResolved = "true";
+  });
+
+  if (!preferredSource) {
+    preferredSource = Array.from(row.querySelectorAll<HTMLAnchorElement>("a[data-itsbio-abm-vector-source]"))
+      .map((anchor) => anchor.dataset.itsbioAbmVectorSource || "")
+      .find(Boolean) || "";
+  }
+  if (preferredSource) row.dataset.itsbioAbmVectorSource = preferredSource;
+}
+
+type VectorDestination = {
+  href: string;
+  external: boolean;
+  hasDetail: boolean;
+};
+
+async function resolveVectorDestinations(root: ParentNode) {
+  const rows = Array.from(root.querySelectorAll<HTMLTableRowElement>('tr[data-itsbio-abm-vector-row="true"]'));
+  const pending = rows.filter((row) => row.dataset.itsbioAbmVectorResolved !== "true");
+  if (!pending.length) return;
+
+  const skus = [...new Set(pending.map((row) => row.dataset.itsbioAbmVectorSku || "").filter(Boolean))];
+  if (!skus.length) return;
+
+  let items: Record<string, VectorDestination> = {};
+  try {
+    const response = await fetch(`/api/abm/vector-destinations?skus=${encodeURIComponent(skus.join(","))}`, {
+      credentials: "same-origin",
+    });
+    if (response.ok) {
+      const payload = await response.json();
+      items = payload?.items && typeof payload.items === "object" ? payload.items : {};
+    }
+  } catch {
+    // The source links already present in the ABM table remain the fallback.
+  }
+
+  pending.forEach((row) => {
+    const sku = (row.dataset.itsbioAbmVectorSku || "").toUpperCase();
+    const item = items[sku];
+    const source = row.dataset.itsbioAbmVectorSource || "";
+
+    const useInternal = Boolean(item?.hasDetail);
+    const href = useInternal
+      ? `${item.href}?from=${encodeURIComponent(TARGET_PATH)}`
+      : (item?.external ? item.href : source);
+
+    if (!href) return;
+
+    row.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((anchor) => {
+      anchor.setAttribute("href", href);
+      anchor.dataset.itsbioAbmPreserveLink = "true";
+      anchor.dataset.itsbioAbmProductResolved = "true";
+
+      if (useInternal) {
+        anchor.removeAttribute("target");
+        anchor.removeAttribute("rel");
+      } else {
+        anchor.setAttribute("target", "_blank");
+        anchor.setAttribute("rel", "noopener noreferrer");
+      }
+    });
+
+    row.dataset.itsbioAbmVectorResolved = "true";
+    row.dataset.itsbioAbmVectorExternal = useInternal ? "false" : "true";
   });
 }
 
@@ -112,7 +194,7 @@ function normalizeTable(table: HTMLTableElement) {
     const cells = Array.from(row.cells);
     if (!cells.length) return;
 
-    preserveVectorRowLinks(row);
+    markVectorRowLinks(row);
 
     const label = textOf(cells[0]);
     const isSection = cells.length === 1 || SECTION_LABELS.test(label) || row.id.startsWith("table-product-mini-category-");
@@ -279,6 +361,8 @@ function fixPage() {
   ensureStyles();
   fixCas9Tables();
   ensureAdditionalInformation();
+  const root = document.querySelector(".itsbio-html");
+  if (root) void resolveVectorDestinations(root);
 }
 
 export default function AbmCas9VectorsTableFixClient() {
@@ -290,21 +374,18 @@ export default function AbmCas9VectorsTableFixClient() {
     const onVectorClickCapture = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
       const anchor = target?.closest<HTMLAnchorElement>(".itsbio-html a[href]");
-      if (!anchor) return;
+      const row = anchor?.closest<HTMLTableRowElement>('tr[data-itsbio-abm-vector-row="true"]');
+      if (!anchor || !row) return;
 
-      const row = anchor.closest<HTMLTableRowElement>("tr");
-      if (!row) return;
-
-      const isVectorRow = Array.from(row.cells).some((cell) => /^Vector$/i.test(textOf(cell)));
-      if (!isVectorRow) return;
-
-      const direct = officialAbmTargetFromHref(anchor.getAttribute("href") || "");
-      if (!direct) return;
-
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopImmediatePropagation();
-      window.open(direct, "_blank", "noopener,noreferrer");
+      // Never let an unresolved legacy/resolve URL replace the current tab.
+      // Once resolved, normal browser behavior handles internal same-tab or
+      // missing-vector external new-tab navigation.
+      if (row.dataset.itsbioAbmVectorResolved !== "true") {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        void resolveVectorDestinations(document);
+      }
     };
 
     document.addEventListener("click", onVectorClickCapture, true);
