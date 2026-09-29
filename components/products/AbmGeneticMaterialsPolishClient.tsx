@@ -192,62 +192,48 @@ const CRISPR_KO_SOURCE_URL = "https://www.abmgood.com/crispr-knockout-library.ht
 
 const CRISPR_KO_SCOPES = [
   {
-    value: "crispr-ko-lentiviral",
-    label: "sgRNA Lentivector",
+    match: ["lentiviral", "lentivector", "lentivirus"],
     backboneUrl: "https://www.abmgood.com/vds/viewer/cat/224",
-    backboneLabel: "Browse Lentiviral Backbones on ABM ↗",
+    label: "Browse Lentiviral Vectors on ABM",
   },
   {
-    value: "crispr-ko-aav",
-    label: "sgRNA AAV",
+    match: ["aav"],
     backboneUrl: "https://www.abmgood.com/vds/viewer/cat/158",
-    backboneLabel: "Browse AAV Backbones on ABM ↗",
+    label: "Browse AAV Vectors on ABM",
   },
   {
-    value: "crispr-ko-nonviral",
-    label: "sgRNA Non-Viral Vector",
+    match: ["non viral", "nonviral", "plasmid"],
     backboneUrl: "https://www.abmgood.com/vds/viewer/cat/149",
-    backboneLabel: "Browse Non-Viral Backbones on ABM ↗",
+    label: "Browse Non-Viral Vectors on ABM",
   },
 ] as const;
 
-type CrisprKoScope = (typeof CRISPR_KO_SCOPES)[number]["value"];
-
-function crisprKoScopeFromText(value: string | null | undefined): CrisprKoScope | "" {
+function crisprKoScopeFromText(value: string | null | undefined) {
   const text = norm(value);
-  if (text.includes("lentiviral") || text.includes("lentivector") || text.includes("lentivirus")) return "crispr-ko-lentiviral";
-  if (text.includes("aav")) return "crispr-ko-aav";
-  if (text.includes("non viral") || text.includes("nonviral") || text.includes("plasmid")) return "crispr-ko-nonviral";
-  return "";
+  return CRISPR_KO_SCOPES.find((item) => item.match.some((token) => text.includes(token))) || null;
 }
 
-function applyCrisprKoSystemChoice(scope: CrisprKoScope) {
+function decorateCrisprKoSystemCards() {
   const root = document.querySelector<HTMLElement>("#crispr-ko-page");
   if (!root) return;
 
   root.querySelectorAll<HTMLButtonElement>("button.ko-system-choice").forEach((button) => {
-    const active = crisprKoScopeFromText(button.textContent) === scope;
-    button.classList.toggle("is-selected", active);
-    button.setAttribute("aria-pressed", active ? "true" : "false");
+    if (button.dataset.itsbioExternalReady === "true") return;
+    const scope = crisprKoScopeFromText(button.textContent);
+    if (!scope) return;
+
+    button.classList.remove("is-selected");
+    button.removeAttribute("aria-pressed");
+    button.dataset.itsbioExternalReady = "true";
+    button.dataset.itsbioExternalHref = scope.backboneUrl;
+    button.setAttribute("aria-label", `${scope.label} (opens ABM in a new tab)`);
+    button.setAttribute("title", `${scope.label} ↗`);
+
+    const cue = document.createElement("span");
+    cue.className = "itsbio-crispr-card-external";
+    cue.textContent = "Open on ABM ↗";
+    button.appendChild(cue);
   });
-
-  const selected = CRISPR_KO_SCOPES.find((item) => item.value === scope);
-  if (!selected) return;
-
-  const finderLink = root.querySelector<HTMLAnchorElement>("[data-itsbio-crispr-finder-link]");
-  if (finderLink) {
-    finderLink.href = CRISPR_KO_SOURCE_URL;
-    finderLink.textContent = `Find ${selected.label} on ABM ↗`;
-  }
-
-  const backboneLink = root.querySelector<HTMLAnchorElement>("[data-itsbio-crispr-backbone-link]");
-  if (backboneLink) {
-    backboneLink.href = selected.backboneUrl;
-    backboneLink.textContent = selected.backboneLabel;
-  }
-
-  const selectedLabel = root.querySelector<HTMLElement>("[data-itsbio-crispr-selected-label]");
-  if (selectedLabel) selectedLabel.textContent = selected.label;
 }
 
 function restoreCrisprCatalogSearch() {
@@ -270,6 +256,33 @@ function restoreCrisprCatalogSearch() {
       if (norm(node.textContent) === "search results will be displayed here") node.remove();
     });
 
+    const isKoTargetSearch = norm(heading.textContent) === "search your target gene" && Boolean(heading.closest("#crispr-ko-page"));
+    if (isKoTargetSearch) {
+      heading.textContent = "Gene-Specific CRISPR KO Vectors";
+
+      const explanation = sectionNodes.find((node) => node.tagName === "P" && norm(node.textContent));
+      if (explanation) {
+        explanation.textContent = "Search ABM’s live catalog by gene symbol, gene name, or accession number.";
+      }
+
+      const action = document.createElement("a");
+      action.className = "itsbio-crispr-live-catalog-link";
+      action.href = CRISPR_KO_SOURCE_URL;
+      action.target = "_blank";
+      action.rel = "noreferrer noopener";
+      action.textContent = "Search Gene-Specific Vectors on ABM ↗";
+
+      if (explanation) explanation.insertAdjacentElement("afterend", action);
+      else heading.insertAdjacentElement("afterend", action);
+
+      sectionNodes.forEach((node) => {
+        if (node !== explanation && node.matches("form,.itsbio-crispr-search,.itsbio-crispr-vector-handoff")) node.remove();
+      });
+
+      heading.dataset.itsbioCrisprSearch = "true";
+      return;
+    }
+
     const form = document.createElement("form");
     form.className = "itsbio-crispr-search";
     form.method = "get";
@@ -280,8 +293,6 @@ function restoreCrisprCatalogSearch() {
     brand.type = "hidden";
     brand.name = "brand";
     brand.value = "abm";
-
-    const isKoTargetSearch = norm(heading.textContent) === "search your target gene" && Boolean(heading.closest("#crispr-ko-page"));
 
     const input = document.createElement("input");
     input.type = "search";
@@ -294,76 +305,6 @@ function restoreCrisprCatalogSearch() {
     const button = document.createElement("button");
     button.type = "submit";
     button.textContent = "Search";
-
-    if (isKoTargetSearch) {
-      heading.textContent = "Find Your Gene-Specific Vector on ABM";
-
-      const selectedChoice =
-        document.querySelector<HTMLButtonElement>("#crispr-ko-page button.ko-system-choice.is-selected")
-        || document.querySelector<HTMLButtonElement>("#crispr-ko-page button.ko-system-choice");
-      const initialScope = crisprKoScopeFromText(selectedChoice?.textContent) || "crispr-ko-lentiviral";
-      const selectedScope = CRISPR_KO_SCOPES.find((item) => item.value === initialScope)!;
-
-      const panel = document.createElement("div");
-      panel.className = "itsbio-crispr-vector-handoff";
-
-      const eyebrow = document.createElement("div");
-      eyebrow.className = "itsbio-crispr-vector-eyebrow";
-      eyebrow.textContent = "ABM Live Vector Catalog";
-
-      const copy = document.createElement("p");
-      copy.className = "itsbio-crispr-vector-copy";
-      copy.innerHTML = 'ABM maintains thousands of gene-specific CRISPR KO vectors. Open the live catalog and search there by gene symbol, gene name, or accession number. Selected system: <strong data-itsbio-crispr-selected-label></strong>';
-
-      const steps = document.createElement("div");
-      steps.className = "itsbio-crispr-vector-steps";
-      ["Choose the delivery system above", "Open ABM’s live vector catalog", "Send the Cat. No. to ITS BIO for a quote"].forEach((label, index) => {
-        const item = document.createElement("div");
-        item.className = "itsbio-crispr-vector-step";
-        item.innerHTML = `<span>${index + 1}</span><strong>${label}</strong>`;
-        steps.appendChild(item);
-      });
-
-      const actions = document.createElement("div");
-      actions.className = "itsbio-crispr-vector-actions";
-
-      const finderLink = document.createElement("a");
-      finderLink.href = CRISPR_KO_SOURCE_URL;
-      finderLink.target = "_blank";
-      finderLink.rel = "noreferrer noopener";
-      finderLink.className = "itsbio-crispr-vector-primary";
-      finderLink.dataset.itsbioCrisprFinderLink = "true";
-      finderLink.textContent = `Find ${selectedScope.label} on ABM ↗`;
-
-      const backboneLink = document.createElement("a");
-      backboneLink.href = selectedScope.backboneUrl;
-      backboneLink.target = "_blank";
-      backboneLink.rel = "noreferrer noopener";
-      backboneLink.className = "itsbio-crispr-vector-secondary";
-      backboneLink.dataset.itsbioCrisprBackboneLink = "true";
-      backboneLink.textContent = selectedScope.backboneLabel;
-
-      const quoteLink = document.createElement("a");
-      quoteLink.href = "/quote";
-      quoteLink.className = "itsbio-crispr-vector-quote";
-      quoteLink.textContent = "Request a Quote from ITS BIO →";
-
-      actions.append(finderLink, backboneLink, quoteLink);
-      panel.append(eyebrow, copy, steps, actions);
-
-      const explanation = sectionNodes.find((node) => node.tagName === "P" && norm(node.textContent));
-      if (explanation) {
-        explanation.textContent = "Gene-specific vectors are searched directly in ABM’s live catalog so the latest inventory is always available.";
-        explanation.insertAdjacentElement("afterend", panel);
-      } else {
-        heading.insertAdjacentElement("afterend", panel);
-      }
-
-      applyCrisprKoSystemChoice(initialScope);
-      heading.dataset.itsbioCrisprSearch = "true";
-      return;
-    }
-
     form.append(brand, input, button);
 
     const explanation = sectionNodes.find((node) => node.tagName === "P" && norm(node.textContent));
@@ -444,6 +385,7 @@ export default function AbmGeneticMaterialsPolishClient() {
         queued = false;
         if (disposed) return;
         normalizeGeneticNavigation();
+        decorateCrisprKoSystemCards();
         restoreCrisprCatalogSearch();
         normalizeHighlightedProducts();
       });
@@ -451,16 +393,13 @@ export default function AbmGeneticMaterialsPolishClient() {
 
     const onCrisprKoSystemClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-
-      const choice = target.closest<HTMLButtonElement>("#crispr-ko-page button.ko-system-choice");
+      const choice = target.closest<HTMLButtonElement>("#crispr-ko-page button.ko-system-choice[data-itsbio-external-href]");
       if (!choice) return;
-      const scope = crisprKoScopeFromText(choice.textContent);
-      if (!scope) return;
 
+      const href = choice.dataset.itsbioExternalHref || "";
+      if (!href) return;
       event.preventDefault();
-      applyCrisprKoSystemChoice(scope);
-      const input = document.querySelector<HTMLInputElement>('#crispr-ko-page .itsbio-crispr-search input[name="q"]');
-      input?.focus();
+      window.open(href, "_blank", "noopener,noreferrer");
     };
 
     apply();
