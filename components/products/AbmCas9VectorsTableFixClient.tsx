@@ -286,6 +286,28 @@ export default function AbmCas9VectorsTableFixClient() {
   useEffect(() => {
     if (pathname !== TARGET_PATH) return;
 
+    const onVectorClickCapture = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      const anchor = target?.closest<HTMLAnchorElement>(".itsbio-html a[href]");
+      if (!anchor) return;
+
+      const row = anchor.closest<HTMLTableRowElement>("tr");
+      if (!row) return;
+
+      const isVectorRow = Array.from(row.cells).some((cell) => /^Vector$/i.test(textOf(cell)));
+      if (!isVectorRow) return;
+
+      const direct = officialAbmTargetFromHref(anchor.getAttribute("href") || "");
+      if (!direct) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      window.open(direct, "_blank", "noopener,noreferrer");
+    };
+
+    document.addEventListener("click", onVectorClickCapture, true);
+
     let frame = 0;
     const run = () => {
       cancelAnimationFrame(frame);
@@ -302,6 +324,7 @@ export default function AbmCas9VectorsTableFixClient() {
     window.addEventListener("keydown", onKeyDown);
 
     return () => {
+      document.removeEventListener("click", onVectorClickCapture, true);
       observer.disconnect();
       cancelAnimationFrame(frame);
       window.removeEventListener("keydown", onKeyDown);
