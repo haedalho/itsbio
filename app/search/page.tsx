@@ -620,7 +620,7 @@ export default async function SearchPage({
                           <h2 className="mt-1 text-xl font-semibold text-slate-950">{group.label}</h2>
                         </div>
                         {group.items.length > 1 ? (
-                          <Link href={makeSearchHref(q, group.key)} className="text-sm font-semibold text-orange-600 hover:text-orange-700">
+                          <Link href={makeSearchHref(q, group.key, undefined, selectedScope)} className="text-sm font-semibold text-orange-600 hover:text-orange-700">
                             View {group.items.length} matches →
                           </Link>
                         ) : null}
