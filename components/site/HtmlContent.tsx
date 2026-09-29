@@ -518,6 +518,23 @@ function linkAbmProductTableRows(doc: Document, serviceCatalogNumbers: readonly 
 
   doc.querySelectorAll<HTMLTableElement>("table").forEach((table) => {
     const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>("tr"));
+
+    // Cas9 Vectors & Virus is already an authoritative ABM link table.
+    // Do not rewrite its product names / Cat. No. into staged ITS BIO routes:
+    // verified ABM product and vector-map links must remain direct external
+    // destinations so target="_blank" reliably opens a new tab.
+    const earlyHeaders = rows.slice(0, 6)
+      .flatMap((row) => Array.from(row.children).map((cell) => normalizedTableHeader(collapseWs(cell.textContent || ""))));
+    const isCas9VectorCatalog =
+      earlyHeaders.includes("product name")
+      && earlyHeaders.includes("vector map")
+      && earlyHeaders.includes("format")
+      && earlyHeaders.some((header) => isCatalogNumberHeader(header));
+    if (isCas9VectorCatalog) {
+      table.classList.add("itsbio-cas9-vector-table");
+      return;
+    }
+
     let headerRow: HTMLTableRowElement | undefined;
     let headers: string[] = [];
     let skuIndex = -1;
