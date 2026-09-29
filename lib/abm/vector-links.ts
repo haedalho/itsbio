@@ -13,6 +13,22 @@ export type AbmVectorLinkRecord = {
 };
 
 const OFFICIAL_ABM_HOSTS = new Set(["abmgood.com", "www.abmgood.com"]);
+const MANUALLY_VERIFIED_VECTOR_URLS: Record<string, string> = {
+  K002: "https://www.abmgood.com/cas9-nuclease-lentiviral-vector.html",
+  K003: "https://www.abmgood.com/cas9-nuclease-lentivirus.html",
+  K207: "https://www.abmgood.com/sacas9-nuclease-aav-vector.html",
+  K004: "https://www.abmgood.com/cas9-nuclease-adenovirus.html",
+  K014: "https://www.abmgood.com/dcas9-c-terminal-cloning-vector.html",
+  K097: "https://www.abmgood.com/crispra-dcas9-vpr-lentiviral-vector.html",
+  K098: "https://www.abmgood.com/crispra-dcas9-vpr-lentivirus.html",
+  K203: "https://www.abmgood.com/dcas9-krab-lentiviral-vector.html",
+  K204: "https://www.abmgood.com/dcas9-krab-lentivirus.html",
+  K096: "https://www.abmgood.com/dcas9-tet1cd-lentiviral-vector.html",
+  K090: "https://www.abmgood.com/dcas9-tet1cd-lentivirus.html",
+  K091: "https://www.abmgood.com/dcas9-dnmt3a-lentiviral-vector.html",
+  K092: "https://www.abmgood.com/dcas9-dnmt3a-lentivirus.html",
+};
+
 
 const VECTOR_FAMILY_HINTS = [
   "lentiviral vectors",
@@ -145,6 +161,9 @@ export function verifiedAbmVectorProductUrl(record: AbmVectorLinkRecord) {
 
   const sku = String(record.sku || "").trim();
   if (!sku) return "";
+
+  const manual = MANUALLY_VERIFIED_VECTOR_URLS[sku.toUpperCase()];
+  if (manual) return manual;
 
   const candidates = [record.sourceUrl, record.url]
     .map(cleanOfficialProductUrl)
