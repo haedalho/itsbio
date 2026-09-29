@@ -607,6 +607,49 @@ const STAGED_DETAIL_QUERY = `(*[
   && $key in records[].key
 ] | order(_id asc))[0].records[key == $key][0]`;
 
+const STAGED_DETAIL_PRESENCE_QUERY = `
+*[
+  _type == "abmRebuildDetailChunk"
+  && version == $version
+  && kind == $kind
+  && count(records[key in $keys]) > 0
+]{
+  "keys": records[key in $keys].key
+}
+`;
+
+export async function getAbmStagedDetailPresence(
+  kind: AbmStagedRecord["kind"],
+  catalogNumbers: readonly string[],
+) {
+  const keys = [...new Set(
+    catalogNumbers
+      .map((value) => String(value || "").trim().toLowerCase())
+      .filter(Boolean)
+      .map((value) => `${kind}:${value}`),
+  )];
+
+  if (!keys.length) return new Set<string>();
+
+  const chunks = await sanityCdnClient.fetch<Array<{ keys?: string[] }>>(
+    STAGED_DETAIL_PRESENCE_QUERY,
+    { version: ABM_REBUILD_VERSION, kind, keys },
+    PUBLIC_CATALOG_CACHE,
+  );
+
+  const present = new Set(
+    (Array.isArray(chunks) ? chunks : [])
+      .flatMap((chunk) => Array.isArray(chunk.keys) ? chunk.keys : [])
+      .map((key) => String(key || "").trim().toLowerCase()),
+  );
+
+  return new Set(
+    catalogNumbers
+      .map((value) => String(value || "").trim())
+      .filter((value) => present.has(`${kind}:${value.toLowerCase()}`)),
+  );
+}
+
 // A small number of rebuild records have reviewed content but no copied image array.
 // Reuse only already-managed Sanity media from the matching legacy ABM product;
 // never use its body, price, or external supplier media as a content fallback.
