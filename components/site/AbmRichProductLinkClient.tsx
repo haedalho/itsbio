@@ -32,18 +32,9 @@ function preserveCas9VectorAnchor(anchor: HTMLAnchorElement, pathname: string) {
   const row = anchor.closest<HTMLTableRowElement>("tr");
   if (!row) return false;
 
-  const isVectorRow = Array.from(row.cells).some((cell) => /^Vector$/i.test(collapse(cell.textContent)));
-  if (!isVectorRow) return false;
-
-  const direct = extractOfficialAbmUrl(collapse(anchor.getAttribute("href")));
-  if (!direct) return false;
-
-  anchor.setAttribute("href", direct);
-  anchor.setAttribute("target", "_blank");
-  anchor.setAttribute("rel", "noopener noreferrer");
-  anchor.dataset.itsbioAbmPreserveLink = "true";
-  anchor.dataset.itsbioAbmProductResolved = "true";
-  return true;
+  // Cas9 Vector rows are resolved by AbmCas9VectorsTableFixClient using the
+  // staged hasDetail flag. Generic ABM resolvers must not rewrite them.
+  return Array.from(row.cells).some((cell) => /^Vector$/i.test(collapse(cell.textContent)));
 }
 
 function catNoFromText(value: string) {
