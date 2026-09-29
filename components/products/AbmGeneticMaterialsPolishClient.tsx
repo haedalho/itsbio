@@ -207,7 +207,19 @@ function restoreCrisprCatalogSearch() {
     if (!sectionNodes.length) return;
 
     sectionNodes.forEach((node) => {
-      if (norm(node.textContent) === "search results will be displayed here") node.remove();
+      const text = norm(node.textContent);
+      if (text === "search results will be displayed here") {
+        node.remove();
+        return;
+      }
+
+      node.querySelectorAll<HTMLElement>("div,p,span").forEach((child) => {
+        if (norm(child.textContent) !== "search results will be displayed here") return;
+        const container =
+          child.closest<HTMLElement>(".ko-empty-results,.result-section,#outer-box")
+          || child;
+        container.remove();
+      });
     });
 
     const isKoTargetSearch = norm(heading.textContent) === "search your target gene" && Boolean(heading.closest("#crispr-ko-page"));
