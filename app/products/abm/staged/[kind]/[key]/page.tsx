@@ -1,4 +1,4 @@
-import { notFound, permanentRedirect } from "next/navigation";
+import { notFound, permanentRedirect, redirect } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
 import HtmlContent from "@/components/site/HtmlContent";
@@ -10,6 +10,7 @@ import ProductTabsClient from "@/components/products/ProductTabs";
 import abmCellularTaxonomy from "@/data/abm-cellular-taxonomy.json";
 import { ABM_PRODUCT_GROUPS, findAbmServicePathForLabels } from "@/lib/abm/catalog-taxonomy";
 import { abmResourceImagePath } from "@/lib/abm/resource-links";
+import { verifiedAbmVectorProductUrl } from "@/lib/abm/vector-links";
 import {
   getAbmStagedDetail,
   isManagedAbmImageUrl,
@@ -231,6 +232,9 @@ export default async function AbmStagedDetailPage({
     images: [],
   } : undefined);
   if (!record) notFound();
+
+  const verifiedVectorUrl = kind === "product" ? verifiedAbmVectorProductUrl(record) : "";
+  if (verifiedVectorUrl) redirect(verifiedVectorUrl);
 
   const title = record.title || record.sku || "ABM item";
   const galleryUrls = Array.from(new Set([
