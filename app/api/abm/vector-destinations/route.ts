@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { ABM_REBUILD_VERSION, stagedRecordPath, type AbmStagedRecord } from "@/lib/abm/rebuild-staging";
+import { ABM_REBUILD_VERSION, getAbmStagedDetailPresence, stagedRecordPath, type AbmStagedRecord } from "@/lib/abm/rebuild-staging";
 import { verifiedMissingAbmVectorUrl } from "@/lib/abm/vector-links";
 import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 
@@ -37,17 +37,25 @@ export async function GET(request: NextRequest) {
   const records = (Array.isArray(chunks) ? chunks : [])
     .flatMap((chunk) => Array.isArray(chunk.matches) ? chunk.matches : []);
 
+  const detailSkus = await getAbmStagedDetailPresence(
+    "product",
+    records.map((record) => String(record.sku || "").trim()).filter(Boolean),
+  );
+  const detailSkuKeys = new Set([...detailSkus].map((sku) => sku.toLowerCase()));
+
   const items: Record<string, { href: string; external: boolean; hasDetail: boolean }> = {};
 
   for (const record of records) {
     const sku = String(record.sku || "").trim();
     if (!sku) continue;
 
-    const external = verifiedMissingAbmVectorUrl(record);
+    const hasDetail = detailSkuKeys.has(sku.toLowerCase());
+    const effectiveRecord = { ...record, hasDetail };
+    const external = verifiedMissingAbmVectorUrl(effectiveRecord);
     items[sku.toUpperCase()] = {
       href: external || stagedRecordPath("product", record),
       external: Boolean(external),
-      hasDetail: record.hasDetail === true,
+      hasDetail,
     };
   }
 
