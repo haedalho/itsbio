@@ -609,6 +609,30 @@ function officialAbmTarget(href: string, baseUrl: string) {
   return isOfficialAbmUrl(resolved) ? resolved : "";
 }
 
+function normalizeCas9VectorOutboundLinks(doc: Document, baseUrl: string) {
+  const isCas9VectorPage = /Cas9 Expression Vectors and Viruses/i.test(collapseWs(doc.body.textContent || ""));
+  if (!isCas9VectorPage) return;
+
+  doc.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((anchor) => {
+    const href = (anchor.getAttribute("href") || "").trim();
+    if (!href) return;
+
+    const externalTarget = officialAbmTarget(href, baseUrl);
+    if (externalTarget) {
+      anchor.setAttribute("href", externalTarget);
+      anchor.setAttribute(EXTERNAL_VECTOR_LINK_ATTR, "true");
+      anchor.setAttribute("target", "_blank");
+      anchor.setAttribute("rel", "noopener noreferrer");
+      return;
+    }
+
+    if (isInternalItsbioHref(href)) {
+      anchor.removeAttribute("target");
+      anchor.removeAttribute("rel");
+    }
+  });
+}
+
 function isHeadingAtOrAbove(el: Element, level: number) {
   const match = /^H([1-6])$/.exec(el.tagName);
   return !!match && Number(match[1]) <= level;
@@ -1183,6 +1207,7 @@ export function sanitizeAndStyle(
     transformServiceFaqs(doc);
     normalizeCrisprContactForms(doc);
     removeCrisprSearchResultsPlaceholder(doc);
+    normalizeCas9VectorOutboundLinks(doc, effectiveBase);
   }
 
   // ✅ 0.5) (가장 중요) 이미지/미디어 URL 보정 + lazyload src 복구
