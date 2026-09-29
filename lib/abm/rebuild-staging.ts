@@ -631,7 +631,7 @@ export async function getAbmStagedDetailPresence(
 
   if (!keys.length) return new Set<string>();
 
-  const chunks = await sanityCdnClient.fetch<Array<{ keys?: string[] }>>(
+  const chunks = await sanityClient.fetch<Array<{ keys?: string[] }>>(
     STAGED_DETAIL_PRESENCE_QUERY,
     { version: ABM_REBUILD_VERSION, kind, keys },
     PUBLIC_CATALOG_CACHE,
