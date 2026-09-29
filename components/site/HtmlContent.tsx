@@ -620,44 +620,61 @@ function extractLegacyAbmTarget(href: string) {
   }
 }
 
+function extractResolveAbmTarget(href: string) {
+  try {
+    const url = new URL(href, "https://www.itsbio.co.kr");
+    if (url.pathname !== "/products/abm/resolve") return "";
+    const target = (url.searchParams.get("u") || "").trim();
+    return isOfficialAbmUrl(target) ? target : "";
+  } catch {
+    return "";
+  }
+}
+
 function officialAbmTarget(href: string, baseUrl: string) {
   const legacyTarget = extractLegacyAbmTarget(href);
   const resolved = legacyTarget || (baseUrl ? resolveUrl(href, baseUrl) : href);
   return isOfficialAbmUrl(resolved) ? resolved : "";
 }
 
-function clickedOfficialAbmTarget(href: string) {
-  const value = String(href || "").trim();
-  if (!value) return "";
-
-  const legacyTarget = extractLegacyAbmTarget(value);
-  if (legacyTarget && isOfficialAbmUrl(legacyTarget)) return legacyTarget;
-
-  if (/^https?:/i.test(value) && isOfficialAbmUrl(value)) return value;
-  return "";
-}
-
-function normalizeCas9VectorOutboundLinks(doc: Document, baseUrl: string) {
+function normalizeCas9VectorOutboundLinks(doc: Document) {
   const isCas9VectorPage = /Cas9 Expression Vectors and Viruses/i.test(collapseWs(doc.body.textContent || ""));
   if (!isCas9VectorPage) return;
 
-  doc.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((anchor) => {
-    const href = (anchor.getAttribute("href") || "").trim();
-    if (!href) return;
+  doc.querySelectorAll<HTMLTableElement>("table").forEach((table) => {
+    const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>("tr"));
+    const headerTexts = rows.slice(0, 6)
+      .flatMap((row) => Array.from(row.children).map((cell) => normalizedTableHeader(collapseWs(cell.textContent || ""))));
+    const isCas9Catalog =
+      headerTexts.includes("product name")
+      && headerTexts.includes("vector map")
+      && headerTexts.includes("format")
+      && headerTexts.some((header) => isCatalogNumberHeader(header));
+    if (!isCas9Catalog) return;
 
-    const externalTarget = officialAbmTarget(href, baseUrl);
-    if (externalTarget) {
-      anchor.setAttribute("href", externalTarget);
-      anchor.setAttribute(EXTERNAL_VECTOR_LINK_ATTR, "true");
-      anchor.setAttribute("target", "_blank");
-      anchor.setAttribute("rel", "noopener noreferrer");
-      return;
-    }
+    table.classList.add("itsbio-cas9-vector-table");
 
-    if (isInternalItsbioHref(href)) {
-      anchor.removeAttribute("target");
-      anchor.removeAttribute("rel");
-    }
+    rows.forEach((row) => {
+      const cells = Array.from(row.children) as HTMLElement[];
+      const formatCell = cells.find((cell) => /^vector$/i.test(collapseWs(cell.textContent || "")));
+      if (!formatCell) return;
+
+      row.dataset.abmVectorRow = "true";
+
+      row.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((anchor) => {
+        const href = (anchor.getAttribute("href") || "").trim();
+        const direct =
+          extractResolveAbmTarget(href)
+          || extractLegacyAbmTarget(href)
+          || (/^https?:/i.test(href) && isOfficialAbmUrl(href) ? href : "");
+        if (!direct || !isOfficialAbmUrl(direct)) return;
+
+        anchor.setAttribute("href", direct);
+        anchor.setAttribute("target", "_blank");
+        anchor.setAttribute("rel", "noopener noreferrer");
+        anchor.setAttribute(EXTERNAL_VECTOR_LINK_ATTR, "true");
+      });
+    });
   });
 }
 
@@ -1235,7 +1252,7 @@ export function sanitizeAndStyle(
     transformServiceFaqs(doc);
     normalizeCrisprContactForms(doc);
     removeCrisprSearchResultsPlaceholder(doc);
-    normalizeCas9VectorOutboundLinks(doc, effectiveBase);
+    normalizeCas9VectorOutboundLinks(doc);
   }
 
   // ✅ 0.5) (가장 중요) 이미지/미디어 URL 보정 + lazyload src 복구
@@ -1526,19 +1543,6 @@ export default function HtmlContent({
 
     const onClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-
-      // Cas9 vector catalog: ABM destinations must always open in a new tab.
-      // Internal ITS BIO links keep normal same-tab navigation.
-      if (root.querySelector(".itsbio-cas9-vector-table")) {
-        const anchor = target.closest<HTMLAnchorElement>("a[href]");
-        const externalTarget = anchor ? clickedOfficialAbmTarget(anchor.getAttribute("href") || "") : "";
-        if (anchor && externalTarget) {
-          event.preventDefault();
-          event.stopPropagation();
-          window.open(externalTarget, "_blank", "noopener,noreferrer");
-          return;
-        }
-      }
 
       const resetGrowthSearch = target.closest<HTMLButtonElement>("[data-abm-growth-reset]");
       if (resetGrowthSearch) {
