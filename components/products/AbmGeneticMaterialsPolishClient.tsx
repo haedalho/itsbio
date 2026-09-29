@@ -198,9 +198,9 @@ type CrisprKoScope = (typeof CRISPR_KO_SCOPES)[number]["value"];
 
 function crisprKoScopeFromText(value: string | null | undefined): CrisprKoScope | "" {
   const text = norm(value);
-  if (/\blentiviral\b|\blentivector\b|\blentivirus\b/.test(text)) return "crispr-ko-lentiviral";
-  if (/\baav\b/.test(text)) return "crispr-ko-aav";
-  if (/\bnon viral\b|\bnonviral\b|\bplasmid\b/.test(text)) return "crispr-ko-nonviral";
+  if (text.includes("lentiviral") || text.includes("lentivector") || text.includes("lentivirus")) return "crispr-ko-lentiviral";
+  if (text.includes("aav")) return "crispr-ko-aav";
+  if (text.includes("non viral") || text.includes("nonviral") || text.includes("plasmid")) return "crispr-ko-nonviral";
   return "";
 }
 
