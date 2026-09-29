@@ -609,3 +609,55 @@
   background: #fbfdff !important;
   box-shadow: 0 4px 12px rgba(23,101,193,.06) !important;
 }
+
+
+/* CRISPR activation sgRNA library is maintained live by ABM.
+   Keep the migrated activation content, but hand the large gene-specific vector search off to ABM. */
+#abm-crispra-hub .itsbio-crispra-search-link-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin: 12px 0 22px;
+}
+
+#abm-crispra-hub .itsbio-crispra-search-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 17px;
+  border: 1px solid #f15a24;
+  border-radius: 7px;
+  background: #f15a24;
+  color: #fff !important;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-decoration: none !important;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+#abm-crispra-hub .itsbio-crispra-search-link:hover,
+#abm-crispra-hub .itsbio-crispra-search-link:focus-visible {
+  transform: translateY(-1px);
+  border-color: #d94b17;
+  background: #d94b17;
+}
+
+#abm-crispra-hub .itsbio-crispra-search-note {
+  color: #667487;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 767px) {
+  #abm-crispra-hub .itsbio-crispra-search-link-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  #abm-crispra-hub .itsbio-crispra-search-link {
+    width: 100%;
+  }
+}
