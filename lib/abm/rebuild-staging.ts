@@ -668,7 +668,11 @@ function hasUsableStagedDetail(record: StagedDetailPresenceRecord) {
 
   const hasMedia = Boolean(String(record.previewImage || "").trim())
     || (Array.isArray(record.images) && record.images.length > 0);
-  const hasDocuments = Array.isArray(record.documents) && record.documents.length > 0;
+  const hasDocuments = Array.isArray(record.documents) && record.documents.some((item) => {
+    if (!item || typeof item !== "object") return false;
+    const doc = item as { url?: unknown; href?: unknown };
+    return Boolean(String(doc.url || doc.href || "").trim());
+  });
 
   const structured = [
     record.specificationsHtml,
@@ -678,11 +682,7 @@ function hasUsableStagedDetail(record: StagedDetailPresenceRecord) {
     record.referencesHtml,
     record.reviewsHtml,
     record.serviceDetailsHtml,
-  ].some((value) => {
-    const raw = String(value || "").trim();
-    if (!raw) return false;
-    return /<(?:table|tr|td|th|a|ul|ol|li)\b/i.test(raw) || plainDetailText(raw).length >= 60;
-  });
+  ].some((value) => plainDetailText(value).length >= 60);
 
   const narrativeLength = [
     record.introHtml,
