@@ -264,7 +264,7 @@
 }
 
 #crispr-ko-page .itsbio-crispr-search--with-select {
-  grid-template-columns: minmax(150px, 165px) minmax(0, 1fr) 58px;
+  grid-template-columns: minmax(150px, 165px) minmax(0, 1fr) 122px;
 }
 
 #crispr-ko-page .itsbio-crispr-search--with-select select {
@@ -289,8 +289,8 @@
 }
 
 #crispr-ko-page .itsbio-crispr-search--with-select button {
-  width: 58px;
-  padding: 0;
+  width: 122px;
+  padding: 0 10px;
 }
 
 #crispr-ko-page .itsbio-crispr-search--with-select select:focus,
@@ -348,8 +348,43 @@
 }
 
 #crispr-ko-page form.itsbio-crispr-search.itsbio-crispr-search--with-select button {
-  width: 58px;
-  padding: 0;
+  width: 122px;
+  padding: 0 10px;
+}
+
+#crispr-ko-page .itsbio-crispr-vector-note {
+  grid-column: 1 / -1;
+  margin: 6px 0 0;
+  color: #667487;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+#crispr-ko-page .itsbio-crispr-vector-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  margin-top: 4px;
+}
+
+#crispr-ko-page .itsbio-crispr-vector-actions a {
+  color: #d94b17;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+#crispr-ko-page .itsbio-crispr-vector-actions a:hover {
+  text-decoration: underline;
+}
+
+#crispr-ko-page .itsbio-crispr-vector-status {
+  flex: 1 1 100%;
+  min-height: 18px;
+  color: #667487;
+  font-size: 12px;
 }
 
 /* Activation's source FAQ is Bootstrap-collapse based. HtmlContent converts it
