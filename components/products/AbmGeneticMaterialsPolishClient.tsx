@@ -213,6 +213,7 @@ function restoreCrisprCatalogSearch() {
     const isKoTargetSearch = norm(heading.textContent) === "search your target gene" && Boolean(heading.closest("#crispr-ko-page"));
     if (isKoTargetSearch) {
       heading.textContent = "Find CRISPR Knockout Products for Your Gene";
+      heading.classList.add("itsbio-crispr-ko-search-heading");
 
       const explanation = sectionNodes.find((node) => node.tagName === "P" && norm(node.textContent));
       if (explanation) {
