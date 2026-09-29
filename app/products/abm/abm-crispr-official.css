@@ -555,3 +555,53 @@
     width: 100%;
   }
 }
+
+
+/* CRISPR KO system cards are comparison cards, not a selected tab state.
+   Match each outline to the existing badge/system color. */
+#crispr-ko-page .ko-system-selector > button.ko-system-choice {
+  cursor: default !important;
+  padding: 16px 17px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(1),
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(1).is-selected {
+  border: 1.5px solid var(--ko-orange) !important;
+  background: #fffaf7 !important;
+}
+
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(2),
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(2).is-selected {
+  border: 1.5px solid var(--ko-green) !important;
+  background: #fbfefb !important;
+}
+
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(3),
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(3).is-selected {
+  border: 1.5px solid var(--ko-blue) !important;
+  background: #fbfdff !important;
+}
+
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(1):hover,
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(1):focus-visible {
+  border-color: var(--ko-orange) !important;
+  background: #fffaf7 !important;
+  box-shadow: 0 4px 12px rgba(241,90,36,.06) !important;
+}
+
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(2):hover,
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(2):focus-visible {
+  border-color: var(--ko-green) !important;
+  background: #fbfefb !important;
+  box-shadow: 0 4px 12px rgba(47,168,79,.06) !important;
+}
+
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(3):hover,
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(3):focus-visible {
+  border-color: var(--ko-blue) !important;
+  background: #fbfdff !important;
+  box-shadow: 0 4px 12px rgba(23,101,193,.06) !important;
+}
