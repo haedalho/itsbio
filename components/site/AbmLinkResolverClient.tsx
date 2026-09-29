@@ -7,6 +7,7 @@ const ABM_ROOTS = new Set(["general-materials", "cellular-materials", "genetic-m
 const GEL_DOCUMENTATION_PATH = "/products/abm/general-materials/gel-documentation";
 const DNA_STAINS_TARGET = `${GEL_DOCUMENTATION_PATH}#safeview-dna-stains`;
 const GEL_IMAGER_TARGET = "/products/abm/staged/product/E1001";
+const CAS9_VECTORS_PATH = "/products/abm/genetic-materials/crispr/cas9-vectors-and-virus";
 
 type MenuItem = {
   id?: string;
@@ -134,7 +135,7 @@ function ensureGelDocumentationAnchor(pathname: string) {
 function extractOfficialAbmUrl(href: string) {
   try {
     const url = new URL(href, window.location.origin);
-    if (url.pathname === "/products/abm/legacy") {
+    if (url.pathname === "/products/abm/legacy" || url.pathname === "/products/abm/resolve") {
       const target = url.searchParams.get("u") || "";
       if (target) return target;
     }
@@ -192,6 +193,25 @@ function rewriteMegaMenuLinks(menuItems: MenuItem[]) {
     anchor.setAttribute("href", `/products/abm/${root}`);
     anchor.dataset.itsbioAbmCategoryResolved = "false";
   });
+}
+
+function preserveCas9VectorAnchor(anchor: HTMLAnchorElement, pathname: string) {
+  if (pathname !== CAS9_VECTORS_PATH) return false;
+  const row = anchor.closest<HTMLTableRowElement>("tr");
+  if (!row) return false;
+
+  const isVectorRow = Array.from(row.cells).some((cell) => /^Vector$/i.test(collapse(cell.textContent)));
+  if (!isVectorRow) return false;
+
+  const direct = extractOfficialAbmUrl(collapse(anchor.getAttribute("href")));
+  if (!direct) return false;
+
+  anchor.setAttribute("href", direct);
+  anchor.setAttribute("target", "_blank");
+  anchor.setAttribute("rel", "noopener noreferrer");
+  anchor.dataset.itsbioAbmPreserveLink = "true";
+  anchor.dataset.itsbioAbmProductResolved = "true";
+  return true;
 }
 
 function catNoFromText(value: string) {
@@ -281,6 +301,7 @@ function rewriteRichProductLinks(pathname: string) {
   if (!pathname.startsWith("/products/abm/")) return;
 
   document.querySelectorAll<HTMLAnchorElement>(".itsbio-html a[href]").forEach((anchor) => {
+    if (preserveCas9VectorAnchor(anchor, pathname)) return;
     if (anchor.dataset.itsbioAbmProductResolved === "true") return;
     if (anchor.dataset.itsbioAbmPreserveLink === "true") return;
 
