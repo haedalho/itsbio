@@ -10,23 +10,19 @@ export type AbmVectorLinkRecord = {
   listingFilters?: Array<{ title?: string; path?: string[] }>;
   listingPaths?: string[][];
   breadcrumbs?: string[];
+  hasDetail?: boolean;
 };
 
 const OFFICIAL_ABM_HOSTS = new Set(["abmgood.com", "www.abmgood.com"]);
 const MANUALLY_VERIFIED_VECTOR_URLS: Record<string, string> = {
+  // Vector-format SKUs only. Virus-format SKUs intentionally stay internal.
   K002: "https://www.abmgood.com/cas9-nuclease-lentiviral-vector.html",
-  K003: "https://www.abmgood.com/cas9-nuclease-lentivirus.html",
   K207: "https://www.abmgood.com/sacas9-nuclease-aav-vector.html",
-  K004: "https://www.abmgood.com/cas9-nuclease-adenovirus.html",
   K014: "https://www.abmgood.com/dcas9-c-terminal-cloning-vector.html",
   K097: "https://www.abmgood.com/crispra-dcas9-vpr-lentiviral-vector.html",
-  K098: "https://www.abmgood.com/crispra-dcas9-vpr-lentivirus.html",
   K203: "https://www.abmgood.com/dcas9-krab-lentiviral-vector.html",
-  K204: "https://www.abmgood.com/dcas9-krab-lentivirus.html",
   K096: "https://www.abmgood.com/dcas9-tet1cd-lentiviral-vector.html",
-  K090: "https://www.abmgood.com/dcas9-tet1cd-lentivirus.html",
   K091: "https://www.abmgood.com/dcas9-dnmt3a-lentiviral-vector.html",
-  K092: "https://www.abmgood.com/dcas9-dnmt3a-lentivirus.html",
 };
 
 
@@ -94,10 +90,15 @@ function isVectorFamilyRecord(record: AbmVectorLinkRecord) {
 
   const title = norm(record.title);
   const titleLooksVectorLike =
-    /\bvector\b|\bvectors\b|\blentivector\b|\blentivirus\b|\baav\b|\badenovirus\b|\bretrovirus\b/.test(title);
+    /\bvector\b|\bvectors\b|\blentivector\b|\bplasmid\b/.test(title);
 
+  const manualVectorSku = Boolean(MANUALLY_VERIFIED_VECTOR_URLS[String(record.sku || "").toUpperCase()]);
   const familyLooksVectorLike = VECTOR_FAMILY_HINTS.some((hint) => joined.includes(hint));
-  return titleLooksVectorLike || familyLooksVectorLike;
+
+  // Category/family hints alone are not enough because many ABM tables mix
+  // Vector and Virus rows under the same heading. Require an explicit
+  // vector-like title unless the SKU has been manually verified as Vector.
+  return manualVectorSku || titleLooksVectorLike || (familyLooksVectorLike && /\bvector\b|\bvectors\b/.test(title));
 }
 
 function normalizedSku(value: string | null | undefined) {
@@ -180,4 +181,15 @@ export function verifiedAbmVectorProductUrl(record: AbmVectorLinkRecord) {
 
 export function isVerifiedAbmVectorExternal(record: AbmVectorLinkRecord) {
   return Boolean(verifiedAbmVectorProductUrl(record));
+}
+
+
+/**
+ * Use ABM as an external fallback only when the Vector product has not yet
+ * been migrated into a reviewed ITS BIO detail. Migrated vectors remain on
+ * ITS BIO; missing vectors open the verified ABM source in a new tab.
+ */
+export function verifiedMissingAbmVectorUrl(record: AbmVectorLinkRecord) {
+  if (record.hasDetail !== false) return "";
+  return verifiedAbmVectorProductUrl(record);
 }
