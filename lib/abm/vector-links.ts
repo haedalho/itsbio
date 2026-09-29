@@ -190,6 +190,14 @@ export function isVerifiedAbmVectorExternal(record: AbmVectorLinkRecord) {
  * ITS BIO; missing vectors open the verified ABM source in a new tab.
  */
 export function verifiedMissingAbmVectorUrl(record: AbmVectorLinkRecord) {
-  if (record.hasDetail !== false) return "";
-  return verifiedAbmVectorProductUrl(record);
+  if (record.hasDetail !== false || !isVectorFamilyRecord(record)) return "";
+
+  const strict = verifiedAbmVectorProductUrl(record);
+  if (strict) return strict;
+
+  // Older ABM Vector product URLs do not always include the Cat.No. in the
+  // pathname. For an unmigrated staged Vector record, its own reviewed source
+  // URL is still authoritative as long as it is an individual ABM page (not a
+  // search/category/vector-viewer URL).
+  return cleanOfficialProductUrl(record.sourceUrl) || cleanOfficialProductUrl(record.url);
 }
