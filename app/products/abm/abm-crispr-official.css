@@ -263,6 +263,44 @@
   margin: 12px 0 18px;
 }
 
+#crispr-ko-page .itsbio-crispr-search--with-select {
+  grid-template-columns: minmax(150px, 165px) minmax(0, 1fr) 58px;
+}
+
+#crispr-ko-page .itsbio-crispr-search--with-select select {
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  margin: 0;
+  padding: 0 34px 0 12px;
+  border: 1px solid #f15a24;
+  border-right-color: #cfd8df;
+  border-radius: 8px 0 0 8px;
+  background: #fff;
+  color: #333f48;
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+}
+
+#crispr-ko-page .itsbio-crispr-search--with-select input {
+  border-left: 0;
+  border-radius: 0;
+}
+
+#crispr-ko-page .itsbio-crispr-search--with-select button {
+  width: 58px;
+  padding: 0;
+}
+
+#crispr-ko-page .itsbio-crispr-search--with-select select:focus,
+#crispr-ko-page .itsbio-crispr-search--with-select input:focus {
+  position: relative;
+  z-index: 1;
+  border-color: #f15a24;
+  box-shadow: inset 0 0 0 1px #f15a24;
+}
+
 #abm-crispr-hub .itsbio-crispr-search input,
 #crispr-ko-page .itsbio-crispr-search input,
 #abm-crispra-hub .itsbio-crispr-search input {
@@ -393,6 +431,24 @@
   #crispr-ko-page .itsbio-crispr-search,
   #abm-crispra-hub .itsbio-crispr-search {
     grid-template-columns: minmax(0, 1fr) 74px;
+  }
+
+  #crispr-ko-page .itsbio-crispr-search--with-select {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  #crispr-ko-page .itsbio-crispr-search--with-select select,
+  #crispr-ko-page .itsbio-crispr-search--with-select input,
+  #crispr-ko-page .itsbio-crispr-search--with-select button {
+    width: 100%;
+    border: 1px solid #cfd8df;
+    border-radius: 7px;
+  }
+
+  #crispr-ko-page .itsbio-crispr-search--with-select select,
+  #crispr-ko-page .itsbio-crispr-search--with-select button {
+    border-color: #f15a24;
   }
 
   .abm-crispr-official .htmlcontent-home {
