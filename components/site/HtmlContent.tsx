@@ -641,6 +641,16 @@ function normalizeCas9VectorOutboundLinks(doc: Document) {
   const isCas9VectorPage = /Cas9 Expression Vectors and Viruses/i.test(collapseWs(doc.body.textContent || ""));
   if (!isCas9VectorPage) return;
 
+  // Only vector destinations open a new tab. Ordinary ITS BIO navigation and
+  // virus rows stay in the current tab.
+  doc.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((anchor) => {
+    const href = (anchor.getAttribute("href") || "").trim();
+    if (isInternalItsbioHref(href)) {
+      anchor.removeAttribute("target");
+      anchor.removeAttribute("rel");
+    }
+  });
+
   doc.querySelectorAll<HTMLTableElement>("table").forEach((table) => {
     const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>("tr"));
     const headerTexts = rows.slice(0, 6)
@@ -657,7 +667,16 @@ function normalizeCas9VectorOutboundLinks(doc: Document) {
     rows.forEach((row) => {
       const cells = Array.from(row.children) as HTMLElement[];
       const formatCell = cells.find((cell) => /^vector$/i.test(collapseWs(cell.textContent || "")));
-      if (!formatCell) return;
+      if (!formatCell) {
+        row.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((anchor) => {
+          const href = (anchor.getAttribute("href") || "").trim();
+          if (isInternalItsbioHref(href)) {
+            anchor.removeAttribute("target");
+            anchor.removeAttribute("rel");
+          }
+        });
+        return;
+      }
 
       row.dataset.abmVectorRow = "true";
 
