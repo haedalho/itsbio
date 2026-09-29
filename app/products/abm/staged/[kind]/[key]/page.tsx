@@ -11,6 +11,7 @@ import abmCellularTaxonomy from "@/data/abm-cellular-taxonomy.json";
 import { ABM_PRODUCT_GROUPS, findAbmServicePathForLabels } from "@/lib/abm/catalog-taxonomy";
 import { abmResourceImagePath } from "@/lib/abm/resource-links";
 import { verifiedAbmVectorProductUrl } from "@/lib/abm/vector-links";
+// Verified vector redirects are resolved at request time so reviewed ABM links stay current.
 import {
   getAbmStagedDetail,
   isManagedAbmImageUrl,
