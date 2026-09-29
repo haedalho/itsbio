@@ -1,4 +1,4 @@
-import { notFound, permanentRedirect, redirect } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 
 import Breadcrumb from "@/components/site/Breadcrumb";
 import HtmlContent from "@/components/site/HtmlContent";
@@ -10,8 +10,7 @@ import ProductTabsClient from "@/components/products/ProductTabs";
 import abmCellularTaxonomy from "@/data/abm-cellular-taxonomy.json";
 import { ABM_PRODUCT_GROUPS, findAbmServicePathForLabels } from "@/lib/abm/catalog-taxonomy";
 import { abmResourceImagePath } from "@/lib/abm/resource-links";
-import { verifiedAbmVectorProductUrl } from "@/lib/abm/vector-links";
-// Verified vector redirects are resolved at request time so reviewed ABM links stay current.
+import { verifiedMissingAbmVectorUrl } from "@/lib/abm/vector-links";
 import {
   getAbmStagedDetail,
   isManagedAbmImageUrl,
@@ -234,8 +233,7 @@ export default async function AbmStagedDetailPage({
   } : undefined);
   if (!record) notFound();
 
-  const verifiedVectorUrl = kind === "product" ? verifiedAbmVectorProductUrl(record) : "";
-  if (verifiedVectorUrl) redirect(verifiedVectorUrl);
+  const verifiedVectorFallbackUrl = kind === "product" ? verifiedMissingAbmVectorUrl(record) : "";
 
   const title = record.title || record.sku || "ABM item";
   const galleryUrls = Array.from(new Set([
@@ -426,7 +424,17 @@ export default async function AbmStagedDetailPage({
 
             {!record.hasDetail ? (
               <div className="mt-8 border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">
-                This item is in the authoritative ABM inventory. Its reviewed detail is being migrated and will appear here after the complete staging corpus passes validation.
+                <p>This item is in the authoritative ABM inventory. Its reviewed detail is being migrated and will appear here after the complete staging corpus passes validation.</p>
+                {verifiedVectorFallbackUrl ? (
+                  <a
+                    href={verifiedVectorFallbackUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center rounded-md bg-[#f2632f] px-4 py-2 font-semibold text-white no-underline hover:bg-[#d95221]"
+                  >
+                    View Vector on ABM ↗
+                  </a>
+                ) : null}
               </div>
             ) : !record.sourceUnavailable && !overviewHtml && !record.specificationsHtml && !record.serviceDetailsHtml ? (
               <div className="mt-8 border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">
