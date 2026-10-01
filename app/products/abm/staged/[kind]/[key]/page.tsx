@@ -404,13 +404,6 @@ export default async function AbmStagedDetailPage({
               </aside>
             </div>
 
-            {kind === "product" && overviewHtml ? (
-              <section className="mt-9 border-t border-neutral-200 pt-7" aria-labelledby="abm-product-overview">
-                <h2 id="abm-product-overview" className="text-2xl font-bold text-[#dc5a2b]">Overview</h2>
-                <div className="mt-4"><HtmlContent html={overviewHtml} baseUrl={record.sourceUrl} mode="abm-detail" /></div>
-              </section>
-            ) : null}
-
             <div className="mt-10 itsbio-product-tabs">
               <ProductTabsClient
                 overviewHtml={kind === "service" ? overviewHtml : undefined}
