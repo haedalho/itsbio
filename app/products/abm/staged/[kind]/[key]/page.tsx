@@ -185,9 +185,14 @@ function escapeHtml(value: string) {
 
 function usableIntroHtml(introHtml?: string, description?: string) {
   const intro = String(introHtml || "").trim();
-  // Older parser output sometimes captured the complete tab container as intro.
-  // Never render that duplicate wrapper; Specifications and resources have their own tabs.
-  if (intro && !/product-info-box|\btab-content\b/i.test(intro)) return intro;
+
+  // ABM's newer Vector product pages place an interactive configuration panel
+  // directly after the product heading. Older collectors treated every sibling
+  // before the information tabs as "Overview", so configurator controls and
+  // modal markup could leak into the migrated overview.
+  const contaminated = /product-info-box|\btab-content\b|customize-(?:service|selected|blank|container)|\bbl-dialog\b|confirm-modal-dialog|continue-add-blank-control-dialog/i.test(intro);
+
+  if (intro && !contaminated) return intro;
   return description ? `<p>${escapeHtml(description)}</p>` : "";
 }
 
