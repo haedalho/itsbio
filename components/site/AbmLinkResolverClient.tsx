@@ -299,7 +299,7 @@ function rewriteRichProductLinks(pathname: string) {
     if (anchor.dataset.itsbioAbmPreserveLink === "true") return;
 
     const href = collapse(anchor.getAttribute("href"));
-    if (!href || href.startsWith("#") || /\.(?:pdf|docx?|xlsx?|pptx?|csv|zip)(?:$|[?#])/i.test(href)) return;
+    if (!href || href.startsWith("#") || /^(?:mailto:|tel:)/i.test(href) || /\.(?:pdf|docx?|xlsx?|pptx?|csv|zip)(?:$|[?#])/i.test(href)) return;
     // If HtmlContent already mapped an ABM category/service to a concrete ITS BIO
     // route, keep that destination. Only legacy ABM product URLs should continue
     // through the product resolver.
