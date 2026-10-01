@@ -219,6 +219,16 @@ animation: partners-marquee 22s linear infinite;
   text-decoration: none;
 }
 
+/* Product-detail prose follows ABM's inline FAQ/reference link treatment.
+   Keep editorial arrows elsewhere, but never turn sentence links into CTA-like labels. */
+.itsbio-product-tabs .abm-rich a[href^="/products/abm/"]::after {
+  content: none;
+}
+
+.itsbio-product-tabs .abm-rich a {
+  display: inline;
+}
+
 .abm-table-anchor-nav {
   display: flex;
   flex-wrap: wrap;
