@@ -960,7 +960,10 @@ function improveReadability(doc: Document) {
     return c.includes("row") || c.includes("col-");
   };
 
-  const candidates = Array.from(doc.querySelectorAll("div, section, span"));
+  // Keep inline spans inline. ABM FAQ/reference prose frequently wraps
+  // sentence links in <span><a>...</a></span>; converting those spans into
+  // paragraphs breaks one sentence into multiple lines.
+  const candidates = Array.from(doc.querySelectorAll("div, section"));
   for (const el of candidates) {
     if (!el.parentElement) continue;
     if (el.closest("table, .abm-table-scroll")) continue;
