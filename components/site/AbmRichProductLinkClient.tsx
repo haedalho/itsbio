@@ -133,6 +133,13 @@ function rewriteRichProductLinks(pathname: string) {
 
     const href = collapse(anchor.getAttribute("href"));
     if (!href || href.startsWith("#") || DIRECT_DOCUMENT_PATH.test(href)) return;
+    // If HtmlContent already mapped an ABM category/service to a concrete ITS BIO
+    // route, keep that destination. Only legacy ABM product URLs should continue
+    // through the product resolver.
+    if (/^\/products\/abm\/(?!legacy(?:\/|\?|$))/i.test(href)) {
+      anchor.dataset.itsbioAbmProductResolved = "true";
+      return;
+    }
     if (/^\/products\/abm\/(?:item|staged|resolve)(?:\/|\?|$)/i.test(href)) {
       anchor.dataset.itsbioAbmProductResolved = "true";
       return;
