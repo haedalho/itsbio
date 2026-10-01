@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
+import { isOfficialAbmVectorUrl } from "@/lib/abm/internal-links";
+
 const ABM_ROOTS = new Set(["general-materials", "cellular-materials", "genetic-materials"]);
 const GEL_DOCUMENTATION_PATH = "/products/abm/general-materials/gel-documentation";
 const DNA_STAINS_TARGET = `${GEL_DOCUMENTATION_PATH}#safeview-dna-stains`;
@@ -307,6 +309,16 @@ function rewriteRichProductLinks(pathname: string) {
     }
     if (/^\/(?:products\/abm\/(?:item|staged|resolve)\/)/i.test(href)) return;
 
+    const sourceUrl = extractOfficialAbmUrl(href);
+    if (sourceUrl && isOfficialAbmVectorUrl(sourceUrl)) {
+      anchor.setAttribute("href", sourceUrl);
+      anchor.setAttribute("target", "_blank");
+      anchor.setAttribute("rel", "noreferrer noopener");
+      anchor.dataset.itsbioAbmPreserveLink = "true";
+      anchor.dataset.itsbioAbmProductResolved = "true";
+      return;
+    }
+
     const context = findProductContext(anchor);
     if (!context) return;
 
@@ -314,11 +326,16 @@ function rewriteRichProductLinks(pathname: string) {
     const sku = collapse(context.sku);
     if (!title && !sku) return;
 
-    const sourceUrl = extractOfficialAbmUrl(href);
+    const clickedText = collapse(anchor.textContent);
+    const isSkuLink = Boolean(sku) && clickedText.toLowerCase() === sku.toLowerCase();
     const params = new URLSearchParams();
-    if (title) params.set("title", title);
-    if (sku) params.set("sku", sku);
-    if (sourceUrl) params.set("u", sourceUrl);
+    if (isSkuLink) {
+      params.set("sku", sku);
+    } else {
+      if (title) params.set("title", title);
+      if (sourceUrl) params.set("u", sourceUrl);
+      else if (sku) params.set("sku", sku);
+    }
 
     anchor.setAttribute("href", `/products/abm/resolve?${params.toString()}`);
     anchor.removeAttribute("target");

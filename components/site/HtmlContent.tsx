@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { internalizeAbmHref, isOfficialAbmUrl } from "@/lib/abm/internal-links";
+import { internalizeAbmHref, isOfficialAbmUrl, isOfficialAbmVectorUrl } from "@/lib/abm/internal-links";
 import { abmResourceImagePath } from "@/lib/abm/resource-links";
 
 type Props = {
@@ -576,23 +576,23 @@ function linkAbmProductTableRows(doc: Document, serviceCatalogNumbers: readonly 
         query.set("from", window.location.pathname);
       }
       const isService = serviceSkus.has(sku.toLowerCase());
-      const href = isService
+      const catalogHref = isService
         ? `/products/abm/staged/service/${encodeURIComponent(sku)}`
         : `/products/abm/staged/product/${encodeURIComponent(sku)}?${query.toString()}`;
 
-      row.dataset.href = href;
+      row.dataset.href = catalogHref;
       row.classList.add("abm-product-row");
       row.setAttribute("role", "link");
       row.setAttribute("tabindex", "0");
       row.setAttribute("aria-label", `View ${name} (${sku})`);
 
-      [cells[nameIndex], cells[skuIndex]].forEach((cell) => {
+      const linkCellToCatalog = (cell: HTMLElement | undefined) => {
         if (!cell) return;
         const existingAnchors = Array.from(cell.querySelectorAll<HTMLAnchorElement>("a"));
         if (existingAnchors.length) {
           existingAnchors.forEach((anchor) => {
             anchor.classList.add("abm-product-table-link");
-            anchor.setAttribute("href", href);
+            anchor.setAttribute("href", catalogHref);
             anchor.setAttribute("aria-label", `View ${name} (${sku})`);
             anchor.removeAttribute("target");
             anchor.removeAttribute("rel");
@@ -601,11 +601,36 @@ function linkAbmProductTableRows(doc: Document, serviceCatalogNumbers: readonly 
         }
         const anchor = doc.createElement("a");
         anchor.className = "abm-product-table-link";
-        anchor.setAttribute("href", href);
+        anchor.setAttribute("href", catalogHref);
         anchor.setAttribute("aria-label", `View ${name} (${sku})`);
         while (cell.firstChild) anchor.appendChild(cell.firstChild);
         cell.appendChild(anchor);
+      };
+
+      const nameCell = cells[nameIndex];
+      const vectorAnchors = Array.from(nameCell?.querySelectorAll<HTMLAnchorElement>("a") || []).filter((anchor) => {
+        const href = anchor.getAttribute("href") || "";
+        const officialTarget = officialAbmTarget(href, "https://www.abmgood.com");
+        return isOfficialAbmVectorUrl(officialTarget);
       });
+
+      if (vectorAnchors.length) {
+        vectorAnchors.forEach((anchor) => {
+          const officialTarget = officialAbmTarget(anchor.getAttribute("href") || "", "https://www.abmgood.com");
+          anchor.classList.add("abm-product-table-link");
+          anchor.setAttribute("href", officialTarget);
+          anchor.setAttribute("target", "_blank");
+          anchor.setAttribute("rel", "noreferrer noopener");
+          anchor.setAttribute("data-itsbio-abm-preserve-link", "true");
+          anchor.setAttribute("aria-label", `Open ${name} vector map on ABM`);
+        });
+      } else {
+        linkCellToCatalog(nameCell);
+      }
+
+      // Cat. No. is the authoritative ITS BIO identity key even when several
+      // official ABM rows share the same source URL.
+      linkCellToCatalog(cells[skuIndex]);
     });
   });
 }

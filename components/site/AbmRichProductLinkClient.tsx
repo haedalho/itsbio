@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
+import { isOfficialAbmVectorUrl } from "@/lib/abm/internal-links";
+
 const ABM_CATEGORY_PATH = /^\/products\/abm\/(?:general-materials|cellular-materials|genetic-materials)(?:\/|$)/i;
 const DIRECT_DOCUMENT_PATH = /\.(?:pdf|docx?|xlsx?|pptx?|csv|zip)(?:$|[?#])/i;
 const CAS9_VECTORS_PATH = "/products/abm/genetic-materials/crispr/cas9-vectors-and-virus";
@@ -145,6 +147,16 @@ function rewriteRichProductLinks(pathname: string) {
       return;
     }
 
+    const sourceUrl = extractOfficialAbmUrl(href);
+    if (sourceUrl && isOfficialAbmVectorUrl(sourceUrl)) {
+      anchor.setAttribute("href", sourceUrl);
+      anchor.setAttribute("target", "_blank");
+      anchor.setAttribute("rel", "noreferrer noopener");
+      anchor.dataset.itsbioAbmPreserveLink = "true";
+      anchor.dataset.itsbioAbmProductResolved = "true";
+      return;
+    }
+
     const context = findProductContext(anchor);
     if (!context) return;
 
@@ -152,11 +164,16 @@ function rewriteRichProductLinks(pathname: string) {
     const sku = collapse(context.sku);
     if (!title && !sku) return;
 
-    const sourceUrl = extractOfficialAbmUrl(href);
+    const clickedText = collapse(anchor.textContent);
+    const isSkuLink = Boolean(sku) && clickedText.toLowerCase() === sku.toLowerCase();
     const params = new URLSearchParams();
-    if (title) params.set("title", title);
-    if (sku) params.set("sku", sku);
-    if (sourceUrl) params.set("u", sourceUrl);
+    if (isSkuLink) {
+      params.set("sku", sku);
+    } else {
+      if (title) params.set("title", title);
+      if (sourceUrl) params.set("u", sourceUrl);
+      else if (sku) params.set("sku", sku);
+    }
 
     anchor.setAttribute("href", `/products/abm/resolve?${params.toString()}`);
     anchor.removeAttribute("target");
