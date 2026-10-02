@@ -1,10 +1,21 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { usePathname, useSearchParams } from "next/navigation";
 
 const SHOW_DELAY_MS = 140;
+const SLOW_NAVIGATION_MS = 760;
+const COMPLETE_HOLD_MS = 180;
 const FAILSAFE_MS = 12000;
+
+type IndicatorState = "hidden" | "running" | "complete";
+
+type SlowTarget = {
+  element: HTMLElement;
+  top: number;
+  height: number;
+};
 
 function sameDocumentHashOnly(current: URL, target: URL) {
   return (
@@ -15,32 +26,156 @@ function sameDocumentHashOnly(current: URL, target: URL) {
   );
 }
 
+function findContentTarget() {
+  const mains = Array.from(document.querySelectorAll<HTMLElement>("main"));
+  if (!mains.length) return null;
+
+  // ABM and Kent keep the changing page content next to their persistent sidebar.
+  const productContent = mains.find((main) => main.classList.contains("min-w-0"));
+  if (productContent) return productContent;
+
+  // Cleaver's main wraps a sidebar/content grid. Cover only its content section.
+  for (const main of mains) {
+    const aside = main.querySelector("aside");
+    const grid = aside?.parentElement;
+    if (!grid) continue;
+    const section = Array.from(grid.children).find(
+      (child): child is HTMLElement => child instanceof HTMLElement && child.tagName === "SECTION",
+    );
+    if (section) return section;
+  }
+
+  return mains[0];
+}
+
+function createSlowTarget(): SlowTarget | null {
+  const element = findContentTarget();
+  if (!element) return null;
+
+  const rect = element.getBoundingClientRect();
+  const viewportTop = Math.max(rect.top, 92);
+  const top = Math.max(0, viewportTop - rect.top);
+  const availableHeight = Math.max(300, window.innerHeight - viewportTop - 24);
+
+  element.classList.add("navigation-loading-target");
+  element.setAttribute("aria-busy", "true");
+
+  return {
+    element,
+    top,
+    height: Math.min(620, availableHeight),
+  };
+}
+
+function SlowContentSkeleton({ target }: { target: SlowTarget }) {
+  return createPortal(
+    <div
+      className="navigation-content-skeleton"
+      style={{ top: target.top, height: target.height }}
+      aria-hidden="true"
+    >
+      <div className="navigation-skeleton-inner">
+        <div className="navigation-skeleton-line navigation-skeleton-line-short" />
+        <div className="navigation-skeleton-line navigation-skeleton-line-title" />
+        <div className="navigation-skeleton-line navigation-skeleton-line-wide" />
+        <div className="navigation-skeleton-grid">
+          <div className="navigation-skeleton-card" />
+          <div className="navigation-skeleton-card" />
+          <div className="navigation-skeleton-card" />
+        </div>
+        <div className="navigation-skeleton-rows">
+          <div />
+          <div />
+          <div />
+          <div />
+        </div>
+      </div>
+    </div>,
+    target.element,
+  );
+}
+
 export default function NavigationLoadingOverlay() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [visible, setVisible] = useState(false);
+  const [indicatorState, setIndicatorState] = useState<IndicatorState>("hidden");
+  const [slowTarget, setSlowTarget] = useState<SlowTarget | null>(null);
   const pendingRef = useRef(false);
+  const indicatorVisibleRef = useRef(false);
+  const activeAnchorRef = useRef<HTMLAnchorElement | null>(null);
+  const slowTargetRef = useRef<SlowTarget | null>(null);
   const showTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const slowTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const completeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const failsafeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearTimers = () => {
     if (showTimerRef.current) clearTimeout(showTimerRef.current);
+    if (slowTimerRef.current) clearTimeout(slowTimerRef.current);
+    if (completeTimerRef.current) clearTimeout(completeTimerRef.current);
     if (failsafeRef.current) clearTimeout(failsafeRef.current);
     showTimerRef.current = null;
+    slowTimerRef.current = null;
+    completeTimerRef.current = null;
     failsafeRef.current = null;
+  };
+
+  const clearPendingDecorations = () => {
+    if (activeAnchorRef.current) {
+      activeAnchorRef.current.removeAttribute("data-navigation-loading");
+      activeAnchorRef.current = null;
+    }
+    if (slowTargetRef.current) {
+      slowTargetRef.current.element.classList.remove("navigation-loading-target");
+      slowTargetRef.current.element.removeAttribute("aria-busy");
+      slowTargetRef.current = null;
+    }
+    setSlowTarget(null);
   };
 
   const finish = () => {
     pendingRef.current = false;
     clearTimers();
-    setVisible(false);
+    clearPendingDecorations();
+
+    if (!indicatorVisibleRef.current) {
+      setIndicatorState("hidden");
+      return;
+    }
+
+    setIndicatorState("complete");
+    completeTimerRef.current = setTimeout(() => {
+      indicatorVisibleRef.current = false;
+      setIndicatorState("hidden");
+      completeTimerRef.current = null;
+    }, COMPLETE_HOLD_MS);
   };
 
-  const begin = () => {
+  const begin = (anchor?: HTMLAnchorElement) => {
     if (pendingRef.current) return;
     pendingRef.current = true;
     clearTimers();
-    showTimerRef.current = setTimeout(() => setVisible(true), SHOW_DELAY_MS);
+    clearPendingDecorations();
+    indicatorVisibleRef.current = false;
+    setIndicatorState("hidden");
+
+    if (anchor) {
+      activeAnchorRef.current = anchor;
+      anchor.setAttribute("data-navigation-loading", "true");
+    }
+
+    showTimerRef.current = setTimeout(() => {
+      indicatorVisibleRef.current = true;
+      setIndicatorState("running");
+    }, SHOW_DELAY_MS);
+
+    slowTimerRef.current = setTimeout(() => {
+      const target = createSlowTarget();
+      if (!target) return;
+      slowTargetRef.current = target;
+      setSlowTarget(target);
+    }, SLOW_NAVIGATION_MS);
+
     failsafeRef.current = setTimeout(finish, FAILSAFE_MS);
   };
 
@@ -78,10 +213,8 @@ export default function NavigationLoadingOverlay() {
         && nextUrl.hash === currentUrl.hash
       ) return;
 
-      // Do not prevent the click and do not call router.push here.
-      // Next.js Link must keep ownership of the navigation so its native
-      // prefetch/cache path remains intact. The overlay is visual feedback only.
-      begin();
+      // Keep ownership of the navigation with Next.js so its cache remains intact.
+      begin(anchor);
     };
 
     const onSubmit = (event: SubmitEvent) => {
@@ -99,13 +232,11 @@ export default function NavigationLoadingOverlay() {
       }
       if (action.origin !== window.location.origin) return;
 
-      // Keep the browser/framework's normal form navigation path as well.
       begin();
     };
 
     const onPageShow = () => {
-      // BFCache restores should be instant. Do not force router.refresh() here;
-      // it turns an otherwise instant back/forward navigation into a server fetch.
+      // BFCache restores should remain instant; never force a refresh here.
       finish();
     };
 
@@ -118,28 +249,22 @@ export default function NavigationLoadingOverlay() {
       document.removeEventListener("submit", onSubmit);
       window.removeEventListener("pageshow", onPageShow);
       clearTimers();
+      clearPendingDecorations();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!visible) return null;
-
   return (
-    <div
-      className="fixed inset-0 z-[9998] flex items-center justify-center bg-white/58 backdrop-blur-[2px]"
-      role="status"
-      aria-live="polite"
-      aria-label="Loading page"
-    >
-      <div className="flex min-w-[190px] flex-col items-center rounded-[24px] border border-slate-200 bg-white/95 px-8 py-7 shadow-[0_24px_70px_rgba(15,23,42,0.16)]">
-        <div className="relative h-11 w-11" aria-hidden="true">
-          <div className="absolute inset-0 rounded-full border-[3px] border-amber-100" />
-          <div className="absolute inset-0 animate-spin rounded-full border-[3px] border-transparent border-r-amber-400 border-t-amber-500" />
-          <div className="absolute inset-[15px] rounded-full bg-amber-400" />
+    <>
+      {indicatorState !== "hidden" ? (
+        <div className="navigation-progress" role="status" aria-live="polite" aria-label="Loading page">
+          <span className="sr-only">Loading the next page</span>
+          <span className="navigation-progress-rail">
+            <span className="navigation-progress-bar" data-state={indicatorState} />
+          </span>
         </div>
-        <div className="mt-4 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">ITS BIO</div>
-        <div className="mt-1 text-sm font-semibold text-slate-900">Loading…</div>
-      </div>
-    </div>
+      ) : null}
+      {slowTarget ? <SlowContentSkeleton target={slowTarget} /> : null}
+    </>
   );
 }
