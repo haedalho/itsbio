@@ -31,12 +31,11 @@ function extractOfficialAbmUrl(href: string) {
 
 function preserveCas9VectorAnchor(anchor: HTMLAnchorElement, pathname: string) {
   if (pathname !== CAS9_VECTORS_PATH) return false;
-  const row = anchor.closest<HTMLTableRowElement>("tr");
-  if (!row) return false;
 
-  // HtmlContent preserves each Cas9 product, Cat.No and vector-map source
-  // independently. Generic client resolvers must not collapse the row again.
-  return Array.from(row.cells).some((cell) => /^Vector$/i.test(collapse(cell.textContent)));
+  // Both Cas9 tables are normalized by HtmlContent. The sgRNA table has no
+  // Format column, so a literal "Vector"-cell check misses its C420/C446 rows
+  // and rewrites their verified Cat.No destinations to sku-only resolver URLs.
+  return Boolean(anchor.closest("table.itsbio-cas9-vector-table"));
 }
 
 function catNoFromText(value: string) {
