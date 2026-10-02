@@ -608,10 +608,7 @@ a[data-navigation-loading="true"] {
   right: 0;
   left: 0;
   overflow: hidden;
-  border: 1px solid rgb(226 232 240 / 88%);
-  border-radius: 18px;
-  background: rgb(255 255 255 / 96%);
-  box-shadow: 0 18px 48px rgb(15 23 42 / 9%);
+  background: #fff;
   opacity: 1;
   pointer-events: none;
 }
@@ -619,38 +616,40 @@ a[data-navigation-loading="true"] {
 .navigation-content-skeleton::after {
   position: absolute;
   inset: 0;
-  background: linear-gradient(100deg, transparent 15%, rgb(255 255 255 / 72%) 45%, transparent 72%);
+  background: linear-gradient(100deg, transparent 18%, rgb(255 255 255 / 68%) 46%, transparent 74%);
   content: "";
   transform: translateX(-100%);
   animation: navigation-skeleton-shimmer 1.55s ease-in-out infinite;
 }
 
 .navigation-skeleton-inner {
-  padding: clamp(22px, 4vw, 42px);
+  width: 100%;
+  padding: 8px 0 48px;
 }
 
 .navigation-skeleton-line,
 .navigation-skeleton-card,
 .navigation-skeleton-rows > div {
-  border-radius: 10px;
-  background: #f1f5f9;
+  border-radius: 8px;
+  background: #f0f2f4;
 }
 
 .navigation-skeleton-line { height: 13px; }
-.navigation-skeleton-line-short { width: min(22%, 150px); background: #ffedd5; }
-.navigation-skeleton-line-title { width: min(58%, 470px); height: 34px; margin-top: 16px; }
-.navigation-skeleton-line-wide { width: min(86%, 760px); margin-top: 18px; }
+.navigation-skeleton-line-short { width: min(20%, 140px); background: #fff0e8; }
+.navigation-skeleton-line-title { width: min(56%, 470px); height: 32px; margin-top: 15px; }
+.navigation-skeleton-line-wide { width: min(84%, 760px); margin-top: 20px; }
+.navigation-skeleton-line-medium { width: min(68%, 610px); margin-top: 10px; }
 
 .navigation-skeleton-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
-  margin-top: 30px;
+  margin-top: 32px;
 }
 
-.navigation-skeleton-card { height: 116px; }
-.navigation-skeleton-rows { margin-top: 26px; }
-.navigation-skeleton-rows > div { height: 42px; margin-top: 8px; }
+.navigation-skeleton-card { height: 120px; }
+.navigation-skeleton-rows { margin-top: 30px; }
+.navigation-skeleton-rows > div { height: 44px; margin-top: 9px; }
 
 @keyframes navigation-skeleton-shimmer {
   0% { transform: translateX(-100%); }

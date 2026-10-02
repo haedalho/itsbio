@@ -55,7 +55,8 @@ function createSlowTarget(): SlowTarget | null {
   const rect = element.getBoundingClientRect();
   const viewportTop = Math.max(rect.top, 92);
   const top = Math.max(0, viewportTop - rect.top);
-  const availableHeight = Math.max(300, window.innerHeight - viewportTop - 24);
+  const visibleHeight = Math.max(420, window.innerHeight - viewportTop);
+  const remainingContentHeight = Math.max(visibleHeight, rect.height - top);
 
   element.classList.add("navigation-loading-target");
   element.setAttribute("aria-busy", "true");
@@ -63,7 +64,9 @@ function createSlowTarget(): SlowTarget | null {
   return {
     element,
     top,
-    height: Math.min(620, availableHeight),
+    // Cover the whole visible content column so the skeleton reads as the
+    // page itself loading, not as a card floating above the previous page.
+    height: Math.min(960, remainingContentHeight),
   };
 }
 
@@ -78,6 +81,7 @@ function SlowContentSkeleton({ target }: { target: SlowTarget }) {
         <div className="navigation-skeleton-line navigation-skeleton-line-short" />
         <div className="navigation-skeleton-line navigation-skeleton-line-title" />
         <div className="navigation-skeleton-line navigation-skeleton-line-wide" />
+        <div className="navigation-skeleton-line navigation-skeleton-line-medium" />
         <div className="navigation-skeleton-grid">
           <div className="navigation-skeleton-card" />
           <div className="navigation-skeleton-card" />
