@@ -154,7 +154,11 @@ function setAnchorLabel(anchor: HTMLAnchorElement, label: string) {
 }
 
 function normalizeGeneticNavigation() {
-  const anchors = Array.from(document.querySelectorAll<HTMLAnchorElement>(`a[href^="${GENETIC_ROOT}"]`));
+  const anchors = Array.from(document.querySelectorAll<HTMLAnchorElement>(`a[href^="${GENETIC_ROOT}"]`))
+    // Product-table links can intentionally point at a category while keeping
+    // their visible Cat.No (for example C442). They are content, not navigation,
+    // and must not be relabelled to "CRISPR KO Vectors & Virus".
+    .filter((anchor) => !anchor.closest(".itsbio-html table"));
   anchors.forEach((anchor) => {
     const canonical = canonicalNodeForAnchor(anchor);
     if (canonical) setAnchorLabel(anchor, canonical.label);

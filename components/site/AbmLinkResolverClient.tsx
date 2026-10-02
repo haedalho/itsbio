@@ -199,12 +199,13 @@ function rewriteMegaMenuLinks(menuItems: MenuItem[]) {
 
 function preserveCas9VectorAnchor(anchor: HTMLAnchorElement, pathname: string) {
   if (pathname !== CAS9_VECTORS_PATH) return false;
-  const row = anchor.closest<HTMLTableRowElement>("tr");
-  if (!row) return false;
 
-  // HtmlContent preserves each Cas9 product, Cat.No and vector-map source
-  // independently. Generic client resolvers must not collapse the row again.
-  return Array.from(row.cells).some((cell) => /^Vector$/i.test(collapse(cell.textContent)));
+  // HtmlContent marks both Cas9 product tables after preserving the three
+  // independent ABM destinations (product, vector map and Cat.No). The sgRNA
+  // table has no Format column, so checking for a literal "Vector" cell misses
+  // rows such as C420/C446 and the generic resolver collapses their Cat.No back
+  // to `/resolve?sku=...`. Preserve every anchor in either marked table.
+  return Boolean(anchor.closest("table.itsbio-cas9-vector-table"));
 }
 
 function catNoFromText(value: string) {

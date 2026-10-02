@@ -612,9 +612,12 @@ function linkAbmProductTableRows(
       if (validateCatalog && !isProduct && !isService) {
         // Keep an authoritative source/legacy link when the migrated HTML has
         // one, but remove generated staged/sku-only links that can only 404 or
-        // bounce to the ABM root. Plain Cat.No text remains plain text.
+        // bounce to the ABM root. Product-name links may retain their verified
+        // ABM source, but an unresolved Cat.No must remain plain text: the
+        // generic client resolver otherwise turns that source anchor back into
+        // a misleading `/resolve?sku=...` destination.
         removeGeneratedCatalogLinks(cells[nameIndex], sku);
-        removeGeneratedCatalogLinks(cells[skuIndex], sku);
+        removeGeneratedCatalogLinks(cells[skuIndex], sku, true);
         row.removeAttribute("data-href");
         row.classList.remove("abm-product-row");
         row.removeAttribute("role");

@@ -41,7 +41,7 @@ assert.equal(
 const missing = render(`
   <table><tr><th>Product Name</th><th>Cat.No.</th></tr>
   <tr><td><a href="/products/abm/resolve?title=Missing&amp;u=https%3A%2F%2Fwww.abmgood.com%2Fmissing.html">Missing vector</a></td>
-  <td><a href="/products/abm/staged/product/CIR001">CIR001</a></td></tr></table>
+  <td><a href="https://www.abmgood.com/missing.html">CIR001</a></td></tr></table>
 `);
 assert.equal(missing.querySelector("tr[data-abm-unresolved-sku='CIR001']") !== null, true);
 assert.equal(missing.querySelector("td:nth-child(1) a")?.getAttribute("href")?.includes("u="), true);
