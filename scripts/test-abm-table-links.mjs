@@ -59,12 +59,17 @@ const cas9 = render(`
   <table><tr><th>Product Name</th><th>Vector Map</th><th>Cat.No.</th></tr>
   <tr><td><a href="https://www.abmgood.com/CRISPR-Knockout-Lentivirus-Library.html">All-in-One</a></td>
   <td><a href="https://www.abmgood.com/vector/pLenti-U6-sgRNA">View</a></td>
-  <td><a href="https://www.abmgood.com/crispr-knockout-library.html">C442</a></td></tr></table>
+  <td><a href="https://www.abmgood.com/crispr-knockout-library.html">C442</a></td></tr>
+  <tr><td><a href="https://www.abmgood.com/Custom-Multiplex-sgRNA-Vector.html">Multiplexed sgRNAs</a></td>
+  <td><a href="https://www.abmgood.com/vector/pLenti-Multi-sgRNA-PGK-Neo">View</a></td>
+  <td><a href="/products/abm/resolve?sku=C420">C420</a></td></tr></table>
 `, [], ["C442"]);
 const cas9Links = Array.from(cas9.querySelectorAll("a")).map((anchor) => anchor.getAttribute("href"));
 assert.equal(cas9Links[0]?.startsWith("/products/abm/legacy?u="), true);
 assert.equal(cas9Links[1], "https://www.abmgood.com/vector/pLenti-U6-sgRNA");
 assert.equal(cas9Links[2], "/products/abm/genetic-materials/crispr/crispr-ko-vectors-and-virus");
-assert.equal(new Set(cas9Links).size, 3);
+assert.equal(cas9Links[3]?.includes("Custom-Multiplex-sgRNA-Vector.html"), true);
+assert.equal(cas9Links[4], "https://www.abmgood.com/vector/pLenti-Multi-sgRNA-PGK-Neo");
+assert.equal(cas9Links[5], cas9Links[3]);
 
 console.log("ABM vector table link regression checks passed.");

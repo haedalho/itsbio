@@ -1550,8 +1550,12 @@ export default async function AbmProductsPathPage({
     const html = typeof block?.html === "string" ? block.html : "";
     return /<table\b/i.test(html) && /Product\s+(?:List|Name)|Cat\.?\s*No\.?/i.test(html);
   });
+  const tableHtml = blocksForRender
+    .map((block: any) => typeof block?.html === "string" ? block.html : "")
+    .filter(Boolean)
+    .join("\n");
   const tableCatalogNumbers = brandKey === "abm" && hasEmbeddedProductTable
-    ? extractAbmTableCatalogNumbers(String(primaryHtml || ""))
+    ? extractAbmTableCatalogNumbers(tableHtml)
     : [];
   const tableCatalogKeys = new Set(tableCatalogNumbers.map((sku) => sku.toLowerCase()));
   const [allProductCatalogNumbers, allServiceCatalogNumbers] = tableCatalogNumbers.length

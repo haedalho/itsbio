@@ -737,19 +737,45 @@ function normalizeCas9VectorOutboundLinks(doc: Document) {
 
   doc.querySelectorAll<HTMLTableElement>("table").forEach((table) => {
     const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>("tr"));
-    const headerTexts = rows.slice(0, 6)
-      .flatMap((row) => Array.from(row.children).map((cell) => normalizedTableHeader(collapseWs(cell.textContent || ""))));
+    const candidateHeaderRows = rows.slice(0, 6).map((row) =>
+      Array.from(row.children).map((cell) => normalizedTableHeader(collapseWs(cell.textContent || ""))),
+    );
+    const headerTexts = candidateHeaderRows.flat();
     const isCas9Catalog =
       headerTexts.includes("product name")
       && headerTexts.includes("vector map")
-      && headerTexts.includes("format")
       && headerTexts.some((header) => isCatalogNumberHeader(header));
     if (!isCas9Catalog) return;
+
+    const columnHeaders = candidateHeaderRows.find((headers) =>
+      headers.includes("product name") && headers.some((header) => isCatalogNumberHeader(header)),
+    ) || [];
+    const productIndex = columnHeaders.indexOf("product name");
+    const catalogIndex = columnHeaders.findIndex((header) => isCatalogNumberHeader(header));
 
     table.classList.add("itsbio-cas9-vector-table");
 
     rows.forEach((row) => {
       const cells = Array.from(row.children) as HTMLElement[];
+      const productAnchor = productIndex >= 0
+        ? cells[productIndex]?.querySelector<HTMLAnchorElement>("a[href]")
+        : null;
+      const catalogAnchor = catalogIndex >= 0
+        ? cells[catalogIndex]?.querySelector<HTMLAnchorElement>("a[href]")
+        : null;
+      if (productAnchor && catalogAnchor) {
+        const catalogHref = (catalogAnchor.getAttribute("href") || "").trim();
+        const productHref = (productAnchor.getAttribute("href") || "").trim();
+        // On ABM, several Cas9 Cat.No cells intentionally share the product
+        // destination (for example K004, C420 and C446). The generic sanitizer
+        // can reduce those Cat.No anchors to an unresolvable sku-only URL;
+        // restore the verified row product destination instead.
+        if (isGeneratedCatalogHref(catalogHref, collapseWs(catalogAnchor.textContent || "")) && productHref) {
+          catalogAnchor.setAttribute("href", productHref);
+          catalogAnchor.removeAttribute("target");
+          catalogAnchor.removeAttribute("rel");
+        }
+      }
       const formatCell = cells.find((cell) => /^vector$/i.test(collapseWs(cell.textContent || "")));
       if (!formatCell) {
         row.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((anchor) => {
