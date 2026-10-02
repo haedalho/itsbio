@@ -36,6 +36,7 @@ import {
   abmResourcePagePath,
   isOfficialAbmResourceImageUrl,
 } from "@/lib/abm/resource-links";
+import { extractAbmTableCatalogNumbers } from "@/lib/abm/table-catalog";
 import "../abm-3d-landing.css";
 import "../abm-cellular-category.css";
 import "../abm-crispr-official.css";
@@ -1010,12 +1011,14 @@ function HtmlBlock({
   brandKey,
   landingVariant = "",
   cellularPresentation = "",
+  productCatalogNumbers,
   serviceCatalogNumbers = [],
 }: {
   html: string;
   brandKey: string;
   landingVariant?: "" | "platforms" | "matrix";
   cellularPresentation?: CellularPresentation;
+  productCatalogNumbers?: string[];
   serviceCatalogNumbers?: string[];
 }) {
   const cleaned = safeHtmlForRender(html, brandKey);
@@ -1038,6 +1041,7 @@ function HtmlBlock({
         html={cleaned}
         mode={landingFidelity || embeddedCellularLanding || officialCrisprContent ? "abm-landing" : brandKey === "abm" ? "abm-detail" : "default"}
         className={className}
+        productCatalogNumbers={productCatalogNumbers}
         serviceCatalogNumbers={serviceCatalogNumbers}
       />
     </section>
@@ -1125,6 +1129,7 @@ function renderContentBlocks(
   landingVariant: "" | "platforms" | "matrix" = "",
   cellularPresentation: CellularPresentation = "",
   hideResources = false,
+  productCatalogNumbers?: string[],
   serviceCatalogNumbers: string[] = [],
 ) {
   if (!Array.isArray(blocks) || blocks.length === 0) return null;
@@ -1150,6 +1155,7 @@ function renderContentBlocks(
               brandKey={brandKey}
               landingVariant={landingVariant}
               cellularPresentation={cellularPresentation}
+              productCatalogNumbers={productCatalogNumbers}
               serviceCatalogNumbers={serviceCatalogNumbers}
             />
           );
@@ -1544,8 +1550,21 @@ export default async function AbmProductsPathPage({
     const html = typeof block?.html === "string" ? block.html : "";
     return /<table\b/i.test(html) && /Product\s+(?:List|Name)|Cat\.?\s*No\.?/i.test(html);
   });
-  const serviceCatalogNumbers = brandKey === "abm" && hasEmbeddedProductTable
-    ? await getAbmStagedCatalogNumbers("service")
+  const tableCatalogNumbers = brandKey === "abm" && hasEmbeddedProductTable
+    ? extractAbmTableCatalogNumbers(String(primaryHtml || ""))
+    : [];
+  const tableCatalogKeys = new Set(tableCatalogNumbers.map((sku) => sku.toLowerCase()));
+  const [allProductCatalogNumbers, allServiceCatalogNumbers] = tableCatalogNumbers.length
+    ? await Promise.all([
+        getAbmStagedCatalogNumbers("product"),
+        getAbmStagedCatalogNumbers("service"),
+      ])
+    : [[], []];
+  const productCatalogNumbers = tableCatalogNumbers.length
+    ? allProductCatalogNumbers.filter((sku) => tableCatalogKeys.has(sku.toLowerCase()))
+    : undefined;
+  const serviceCatalogNumbers = tableCatalogNumbers.length
+    ? allServiceCatalogNumbers.filter((sku) => tableCatalogKeys.has(sku.toLowerCase()))
     : [];
 
   const fallbackHtmlRaw = blocksForRender.length
@@ -1636,6 +1655,7 @@ export default async function AbmProductsPathPage({
                 landingVariant,
                 cellularPresentation,
                 hideDuplicateCas9Resources,
+                productCatalogNumbers,
                 serviceCatalogNumbers,
               )
             ) : fallbackHtml ? (

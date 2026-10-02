@@ -202,8 +202,8 @@ function preserveCas9VectorAnchor(anchor: HTMLAnchorElement, pathname: string) {
   const row = anchor.closest<HTMLTableRowElement>("tr");
   if (!row) return false;
 
-  // Cas9 Vector rows are resolved by AbmCas9VectorsTableFixClient using the
-  // staged hasDetail flag. Generic ABM resolvers must not rewrite them.
+  // HtmlContent preserves each Cas9 product, Cat.No and vector-map source
+  // independently. Generic client resolvers must not collapse the row again.
   return Array.from(row.cells).some((cell) => /^Vector$/i.test(collapse(cell.textContent)));
 }
 

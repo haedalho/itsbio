@@ -10,6 +10,8 @@ type Props = {
   /** legacy 등에서 상대경로(href="/", src="/")를 절대경로로 바꾸기 위한 base */
   baseUrl?: string;
   mode?: "default" | "abm-detail" | "abm-service" | "abm-landing";
+  /** Product Cat.Nos present in the staged inventory for this HTML block. */
+  productCatalogNumbers?: string[];
   /** ABM tables can mix purchasable products with custom services. */
   serviceCatalogNumbers?: string[];
 };
@@ -513,8 +515,39 @@ function validCatalogNumber(value: string) {
  * those rows into native internal catalog links, including custom services,
  * and preserve enough row context for newly published product fallbacks.
  */
-function linkAbmProductTableRows(doc: Document, serviceCatalogNumbers: readonly string[] = []) {
+function unwrapAnchor(anchor: HTMLAnchorElement) {
+  anchor.replaceWith(...Array.from(anchor.childNodes));
+}
+
+function isGeneratedCatalogHref(href: string, sku: string) {
+  try {
+    const url = new URL(href, "https://www.itsbio.co.kr");
+    if (/^\/products\/abm\/staged\/(?:product|service)\//i.test(url.pathname)) return true;
+    return url.pathname === "/products/abm/resolve"
+      && collapseWs(url.searchParams.get("sku") || "").toLowerCase() === collapseWs(sku).toLowerCase()
+      && !url.searchParams.get("u");
+  } catch {
+    return false;
+  }
+}
+
+function removeGeneratedCatalogLinks(cell: HTMLElement | undefined, sku: string, removeAll = false) {
+  if (!cell) return;
+  Array.from(cell.querySelectorAll<HTMLAnchorElement>("a[href]")).forEach((anchor) => {
+    const href = anchor.getAttribute("href") || "";
+    if (removeAll || isGeneratedCatalogHref(href, sku)) unwrapAnchor(anchor);
+  });
+}
+
+function linkAbmProductTableRows(
+  doc: Document,
+  productCatalogNumbers?: readonly string[],
+  serviceCatalogNumbers: readonly string[] = [],
+) {
+  const validateCatalog = Array.isArray(productCatalogNumbers);
+  const productSkus = new Set((productCatalogNumbers || []).map((sku) => collapseWs(sku).toLowerCase()));
   const serviceSkus = new Set(serviceCatalogNumbers.map((sku) => collapseWs(sku).toLowerCase()));
+  const isCas9ExpressionPage = /Cas9 Expression Vectors and Viruses/i.test(collapseWs(doc.body.textContent || ""));
 
   doc.querySelectorAll<HTMLTableElement>("table").forEach((table) => {
     const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>("tr"));
@@ -530,7 +563,7 @@ function linkAbmProductTableRows(doc: Document, serviceCatalogNumbers: readonly 
       && earlyHeaders.includes("vector map")
       && earlyHeaders.includes("format")
       && earlyHeaders.some((header) => isCatalogNumberHeader(header));
-    if (isCas9VectorCatalog) {
+    if (isCas9ExpressionPage || isCas9VectorCatalog) {
       table.classList.add("itsbio-cas9-vector-table");
       return;
     }
@@ -565,7 +598,31 @@ function linkAbmProductTableRows(doc: Document, serviceCatalogNumbers: readonly 
 
       const sku = collapseWs(cells[skuIndex]?.textContent || "").replace(/\s+/g, "");
       const name = collapseWs(cells[nameIndex]?.textContent || "");
-      if (!validCatalogNumber(sku) || !name) return;
+      if (!validCatalogNumber(sku) || !name) {
+        // Labels such as "By Serotype" are options, not catalog identities.
+        // Never turn them into a resolver link.
+        if (name && sku) removeGeneratedCatalogLinks(cells[skuIndex], sku, true);
+        return;
+      }
+
+      const skuKey = sku.toLowerCase();
+      const isService = serviceSkus.has(skuKey);
+      const isProduct = productSkus.has(skuKey);
+
+      if (validateCatalog && !isProduct && !isService) {
+        // Keep an authoritative source/legacy link when the migrated HTML has
+        // one, but remove generated staged/sku-only links that can only 404 or
+        // bounce to the ABM root. Plain Cat.No text remains plain text.
+        removeGeneratedCatalogLinks(cells[nameIndex], sku);
+        removeGeneratedCatalogLinks(cells[skuIndex], sku);
+        row.removeAttribute("data-href");
+        row.classList.remove("abm-product-row");
+        row.removeAttribute("role");
+        row.removeAttribute("tabindex");
+        row.removeAttribute("aria-label");
+        row.dataset.abmUnresolvedSku = sku;
+        return;
+      }
 
       const query = new URLSearchParams({ name });
       const category = categoryIndex >= 0 ? collapseWs(cells[categoryIndex]?.textContent || "") : "";
@@ -575,7 +632,6 @@ function linkAbmProductTableRows(doc: Document, serviceCatalogNumbers: readonly 
       if (/^\/products\/abm\/(?:cellular-materials|genetic-materials)(?:\/|$)/.test(window.location.pathname)) {
         query.set("from", window.location.pathname);
       }
-      const isService = serviceSkus.has(sku.toLowerCase());
       const catalogHref = isService
         ? `/products/abm/staged/service/${encodeURIComponent(sku)}`
         : `/products/abm/staged/product/${encodeURIComponent(sku)}?${query.toString()}`;
@@ -711,7 +767,10 @@ function normalizeCas9VectorOutboundLinks(doc: Document) {
           extractResolveAbmTarget(href)
           || extractLegacyAbmTarget(href)
           || (/^https?:/i.test(href) && isOfficialAbmUrl(href) ? href : "");
-        if (!direct || !isOfficialAbmUrl(direct)) return;
+        // Preserve only the actual vector-map/designer destination as an
+        // external link. Product-name and Cat.No links must keep their own
+        // source meaning and continue through the ITS BIO legacy resolver.
+        if (!direct || !isOfficialAbmVectorUrl(direct)) return;
 
         anchor.setAttribute("href", direct);
         anchor.setAttribute("target", "_blank");
@@ -1270,12 +1329,13 @@ export function sanitizeAndStyle(
   rawHtml: string,
   baseUrl?: string,
   mode: Props["mode"] = "default",
+  productCatalogNumbers?: readonly string[],
   serviceCatalogNumbers: readonly string[] = [],
 ) {
   if (!rawHtml) return "";
 
   // ✅ 0) 문자열 레벨 전처리
-  let html = normalizeMailto(rawHtml);
+  const html = normalizeMailto(rawHtml);
   const isAbmMode = mode === "abm-detail" || mode === "abm-service" || mode === "abm-landing";
   const isAbmLanding = mode === "abm-landing";
 
@@ -1477,7 +1537,7 @@ export function sanitizeAndStyle(
     }
   });
 
-  if (isAbmMode) linkAbmProductTableRows(doc, serviceCatalogNumbers);
+  if (isAbmMode) linkAbmProductTableRows(doc, productCatalogNumbers, serviceCatalogNumbers);
 
   // ✅ 7) 가독성 개선(문단 래핑)
   if (!isAbmLanding) improveReadability(doc);
@@ -1504,6 +1564,7 @@ export default function HtmlContent({
   className,
   baseUrl,
   mode = "default",
+  productCatalogNumbers,
   serviceCatalogNumbers = EMPTY_CATALOG_NUMBERS,
 }: Props) {
   const [renderHtml, setRenderHtml] = useState<string>("");
@@ -1514,13 +1575,13 @@ export default function HtmlContent({
 
   useEffect(() => {
     try {
-      setRenderHtml(sanitizeAndStyle(input, base, mode, serviceCatalogNumbers));
+      setRenderHtml(sanitizeAndStyle(input, base, mode, productCatalogNumbers, serviceCatalogNumbers));
     } catch {
       // fallback: 최소한 mailto / p링크만
       const fallback = normalizeMailto(input);
       setRenderHtml(fallback);
     }
-  }, [input, base, mode, serviceCatalogNumbers]);
+  }, [input, base, mode, productCatalogNumbers, serviceCatalogNumbers]);
 
   useEffect(() => {
     if (!mode.startsWith("abm-") || !renderHtml) return;

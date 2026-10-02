@@ -1,0 +1,70 @@
+import assert from "node:assert/strict";
+
+import { JSDOM } from "jsdom";
+
+const pageUrl = "https://www.itsbio.co.kr/products/abm/genetic-materials/expression-ready-libraries/control-vectors-and-viruses";
+const browser = new JSDOM("<!doctype html><html><body></body></html>", { url: pageUrl });
+
+Object.assign(globalThis, {
+  window: browser.window,
+  document: browser.window.document,
+  DOMParser: browser.window.DOMParser,
+  Element: browser.window.Element,
+  HTMLElement: browser.window.HTMLElement,
+  HTMLAnchorElement: browser.window.HTMLAnchorElement,
+  HTMLTableElement: browser.window.HTMLTableElement,
+  HTMLTableRowElement: browser.window.HTMLTableRowElement,
+});
+
+const { sanitizeAndStyle } = await import("../components/site/HtmlContent.tsx");
+const { extractAbmTableCatalogNumbers } = await import("../lib/abm/table-catalog.ts");
+
+function render(html, products = [], services = []) {
+  return new JSDOM(sanitizeAndStyle(html, "https://www.abmgood.com", "abm-landing", products, services)).window.document;
+}
+
+assert.deepEqual(extractAbmTableCatalogNumbers(`
+  <table><tr><th>Product Name</th><th>Cat.No.</th></tr>
+  <tr><td>Missing vector</td><td>CIR001</td></tr>
+  <tr><td>AAV control</td><td>By Serotype</td></tr></table>
+`), ["CIR001"]);
+
+const known = render(`
+  <table><tr><th>Product Name</th><th>Cat.No.</th></tr>
+  <tr><td>Known vector</td><td>K002</td></tr></table>
+`, ["K002"]);
+assert.equal(
+  known.querySelector("td a")?.getAttribute("href"),
+  "/products/abm/staged/product/K002?name=Known+vector&from=%2Fproducts%2Fabm%2Fgenetic-materials%2Fexpression-ready-libraries%2Fcontrol-vectors-and-viruses",
+);
+
+const missing = render(`
+  <table><tr><th>Product Name</th><th>Cat.No.</th></tr>
+  <tr><td><a href="/products/abm/resolve?title=Missing&amp;u=https%3A%2F%2Fwww.abmgood.com%2Fmissing.html">Missing vector</a></td>
+  <td><a href="/products/abm/staged/product/CIR001">CIR001</a></td></tr></table>
+`);
+assert.equal(missing.querySelector("tr[data-abm-unresolved-sku='CIR001']") !== null, true);
+assert.equal(missing.querySelector("td:nth-child(1) a")?.getAttribute("href")?.includes("u="), true);
+assert.equal(missing.querySelector("td:nth-child(2) a"), null);
+
+const option = render(`
+  <table><tr><th>Product Name</th><th>Cat.No.</th></tr>
+  <tr><td>AAV control</td><td><a href="/products/abm/resolve?sku=By+Serotype">By Serotype</a></td></tr></table>
+`);
+assert.equal(option.querySelector("td:nth-child(2) a"), null);
+assert.equal(option.querySelector("td:nth-child(2)")?.textContent?.trim(), "By Serotype");
+
+const cas9 = render(`
+  <h1>Cas9 Expression Vectors and Viruses</h1>
+  <table><tr><th>Product Name</th><th>Vector Map</th><th>Cat.No.</th></tr>
+  <tr><td><a href="https://www.abmgood.com/CRISPR-Knockout-Lentivirus-Library.html">All-in-One</a></td>
+  <td><a href="https://www.abmgood.com/vector/pLenti-U6-sgRNA">View</a></td>
+  <td><a href="https://www.abmgood.com/crispr-knockout-library.html">C442</a></td></tr></table>
+`, [], ["C442"]);
+const cas9Links = Array.from(cas9.querySelectorAll("a")).map((anchor) => anchor.getAttribute("href"));
+assert.equal(cas9Links[0]?.startsWith("/products/abm/legacy?u="), true);
+assert.equal(cas9Links[1], "https://www.abmgood.com/vector/pLenti-U6-sgRNA");
+assert.equal(cas9Links[2], "/products/abm/genetic-materials/crispr/crispr-ko-vectors-and-virus");
+assert.equal(new Set(cas9Links).size, 3);
+
+console.log("ABM vector table link regression checks passed.");
