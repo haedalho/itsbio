@@ -434,7 +434,7 @@ function isCatalogNumberHeader(value: string) {
 
 function isProductNameHeader(value: string) {
   const header = normalizedTableHeader(value);
-  return /^(?:product(?:\s+(?:name|description))?(?:\s*\/\s*(?:name|description))?|name|description|cell(?:\s+line)?(?:\s+name)?|model(?:\s+name)?)$/.test(header);
+  return /^(?:product(?:\s+(?:name|description))?(?:\s*\/\s*(?:name|description))?|cloning\s+vector|name|description|cell(?:\s+line)?(?:\s+name)?|model(?:\s+name)?)$/.test(header);
 }
 
 function applySemanticTableColumnLayout(table: HTMLTableElement) {
@@ -1566,7 +1566,13 @@ export function sanitizeAndStyle(
     }
   });
 
-  if (isAbmMode) linkAbmProductTableRows(doc, productCatalogNumbers, serviceCatalogNumbers);
+  if (isAbmMode) {
+    linkAbmProductTableRows(doc, productCatalogNumbers, serviceCatalogNumbers);
+    // Run after the generic ABM table/link pass as well. Some source Cat.No
+    // anchors become sku-only resolver URLs during that pass; Cas9 tables must
+    // restore ABM's verified row destination after every generic rewrite.
+    normalizeCas9VectorOutboundLinks(doc);
+  }
 
   // ✅ 7) 가독성 개선(문단 래핑)
   if (!isAbmLanding) improveReadability(doc);

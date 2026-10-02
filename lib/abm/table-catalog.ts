@@ -19,7 +19,7 @@ function isCatalogHeader(value: string) {
 }
 
 function isProductHeader(value: string) {
-  return /^(?:product(?:\s+(?:name|description))?(?:\s*\/\s*(?:name|description))?|name|description|cell(?:\s+line)?(?:\s+name)?|model(?:\s+name)?)$/.test(
+  return /^(?:product(?:\s+(?:name|description))?(?:\s*\/\s*(?:name|description))?|cloning\s+vector|name|description|cell(?:\s+line)?(?:\s+name)?|model(?:\s+name)?)$/.test(
     normalizedHeader(value),
   );
 }
