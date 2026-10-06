@@ -55,6 +55,17 @@ const missingCloningVector = render(`
 assert.equal(missingCloningVector.querySelector("td:nth-child(1) a")?.getAttribute("href"), "https://www.abmgood.com/vector/pAdeno");
 assert.equal(missingCloningVector.querySelector("td:nth-child(2) a"), null);
 
+const restoredCloningVector = render(`
+  <table><tr><th>Cloning Vector</th><th>Cat. No.</th><th>Tag/Marker</th></tr>
+  <tr><td><a href="https://www.abmgood.com/vector/pLenti-III-HA">pLenti-III-HA</a></td>
+  <td><a href="https://www.abmgood.com/lenti-iii-ha-expression-vector-lv022.html">LV022</a></td><td>C-His, Puro</td></tr></table>
+`, ["LV022"]);
+assert.equal(restoredCloningVector.querySelector("td:nth-child(1) a")?.getAttribute("href"), "https://www.abmgood.com/vector/pLenti-III-HA");
+assert.equal(
+  restoredCloningVector.querySelector("td:nth-child(2) a")?.getAttribute("href"),
+  "/products/abm/staged/product/LV022?name=pLenti-III-HA&from=%2Fproducts%2Fabm%2Fgenetic-materials%2Fexpression-ready-libraries%2Fcontrol-vectors-and-viruses",
+);
+
 const option = render(`
   <table><tr><th>Product Name</th><th>Cat.No.</th></tr>
   <tr><td>AAV control</td><td><a href="/products/abm/resolve?sku=By+Serotype">By Serotype</a></td></tr></table>
