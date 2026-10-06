@@ -33,28 +33,20 @@ const VERIFIED_IPSC_VECTOR_MAP_IDS: Record<string, number> = {
 
 function AbmVectorMapPreview({ mapId, title }: { mapId: number; title: string }) {
   const mapUrl = `https://www.abmgood.com/vds/map/cat/${mapId}`;
-  const viewerUrl = `https://www.abmgood.com/vds/viewer/cat/${mapId}`;
 
   return (
     <div className="min-h-[320px]">
-      <div className="relative mx-auto h-[440px] w-full max-w-[560px] overflow-hidden bg-white">
+      <div className="relative mx-auto aspect-square w-full max-w-[560px] overflow-hidden bg-white">
         <iframe
           src={mapUrl}
           title={`${title} vector map`}
-          className="h-full w-full border-0 bg-white"
+          className="pointer-events-none absolute left-1/2 top-1/2 h-[620px] w-[600px] -translate-x-1/2 -translate-y-1/2 scale-[0.84] border-0 bg-white"
           loading="lazy"
           referrerPolicy="no-referrer"
+          scrolling="no"
+          tabIndex={-1}
+          aria-hidden="true"
         />
-      </div>
-      <div className="mt-3 text-center">
-        <a
-          href={viewerUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs font-semibold text-[#dc5a2b] underline underline-offset-2"
-        >
-          Open vector map on ABM ↗
-        </a>
       </div>
     </div>
   );
