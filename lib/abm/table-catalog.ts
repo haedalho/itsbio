@@ -58,13 +58,31 @@ export function extractAbmTableCatalogNumbers(html: string) {
       return true;
     });
 
-    if (headerIndex < 0 || skuIndex < 0) return;
+    if (headerIndex >= 0 && skuIndex >= 0) {
+      rows.slice(headerIndex + 1).forEach((row) => {
+        const cells = $(row).children("th,td").toArray();
+        const sku = collapseWhitespace($(cells[skuIndex]).text()).replace(/\s+/g, "");
+        if (!isCatalogNumber(sku)) return;
+        catalogNumbers.set(sku.toLowerCase(), sku);
+      });
+    }
 
-    rows.slice(headerIndex + 1).forEach((row) => {
+    // ABM's Lentivirus Bundles use a comparison matrix instead of a normal
+    // Cat.No. column. Bundle SKUs appear horizontally on rows labelled
+    // "Bundle Cat. No.", so collect those identities separately.
+    rows.forEach((row) => {
       const cells = $(row).children("th,td").toArray();
-      const sku = collapseWhitespace($(cells[skuIndex]).text()).replace(/\s+/g, "");
-      if (!isCatalogNumber(sku)) return;
-      catalogNumbers.set(sku.toLowerCase(), sku);
+      const texts = cells.map((cell) => collapseWhitespace($(cell).text()));
+      const labelIndex = texts.findIndex((value) =>
+        /^(?:bundle\s+cat(?:alog)?\.?\s*(?:no|number)\.?|bundle\s+sku)$/i.test(value),
+      );
+      if (labelIndex < 0) return;
+
+      texts.slice(labelIndex + 1).forEach((value) => {
+        const sku = value.replace(/\s+/g, "");
+        if (!isCatalogNumber(sku)) return;
+        catalogNumbers.set(sku.toLowerCase(), sku);
+      });
     });
   });
 
