@@ -121,13 +121,17 @@ const VERIFIED_EXPRESSION_SYSTEM_PRODUCTS: Record<string, AbmStagedDetail> = {
       ["Enhanced Lentivirus Safety Features: Replication Incompetency", "https://www.abmgood.com/uploads/document/Lentivirus%20incompetency-abm.pdf"],
       ["Suggested MOI for Common Cancer Cell Lines", "https://www.abmgood.com/uploads/document/A4%20%20%20lenti%20infection%20%20Cancer%20Cell%20Line%20Guide.pdf"],
     ]),
-    images: [],
+    images: ["/images/abm/LV022-vector-map.svg"],
+    imageCaption: "Official ABM Vector Design Studio map for pLenti-III-HA (8183 bp).",
+    imageCreditUrl: "https://www.abmgood.com/vds/viewer/cat/148",
+    imageCreditLabel: "View official vector map",
     verification: {
       source: "official-abm-product-page",
       checkedAt: "2026-10-06",
       skuMatches: true,
       hasSpecifications: true,
-      officialImagePresent: false,
+      officialImagePresent: true,
+      officialImageSource: "ABM Vector Design Studio",
     },
   },
 };
@@ -447,6 +451,7 @@ function applyVerifiedSpecialCellDetail(detail: AbmStagedDetail) {
 
 export function isManagedAbmImageUrl(value?: string) {
   if (!value) return false;
+  if (/^\/images\/abm\/[A-Za-z0-9._-]+\.(?:avif|gif|jpe?g|png|svg|webp)$/i.test(value)) return true;
   try {
     const url = new URL(value);
     if (url.hostname !== "cdn.sanity.io" || !url.pathname.startsWith("/images/9b5twpc8/")) return false;
