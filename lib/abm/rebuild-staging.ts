@@ -82,6 +82,65 @@ function referenceList(items: Array<[string, string]>) {
 }
 
 /**
+ * Current ABM Expression Systems tables still expose this live product, but it
+ * is absent from the search inventory used by the staged rebuild. Keep the
+ * reviewed official detail here so the Cat.No. does not silently degrade to
+ * plain text while the Vector Design Studio link remains available separately.
+ */
+const VERIFIED_EXPRESSION_SYSTEM_PRODUCTS: Record<string, AbmStagedDetail> = {
+  lv022: {
+    kind: "product",
+    sku: "LV022",
+    title: "Lenti-III-HA Expression Vector",
+    url: "https://www.abmgood.com/lenti-iii-ha-expression-vector-lv022.html",
+    sourceUrl: "https://www.abmgood.com/lenti-iii-ha-expression-vector-lv022.html",
+    unit: "10 µg",
+    category: "Lentiviral Vectors",
+    searchCategory: "Expression Systems",
+    filterTitle: "Lentiviral Vectors",
+    filterPath: ["Genetic Materials", "Expression Systems", "Lentiviral Vectors"],
+    listingPaths: [["Genetic Materials", "Expression Systems", "Lentiviral Vectors"]],
+    breadcrumbs: ["Genetic Materials", "Expression Systems", "Lentiviral Vectors"],
+    hasDetail: true,
+    description: "The Lenti-III-HA expression vector is an improved version of our orignal Lenti-Easy HA vector, with a greater selection of subcloning sites and a different stable selection marker, Puromycin.",
+    storage: "-20°C or below.",
+    materialCitation: "If use of this material results in a scientific publication, please cite the material in the following manner: Applied Biological Materials Inc, Cat. No. LV022",
+    specificationsHtml: specificationTable([
+      ["Cat. No.", "LV022"],
+      ["Name", "Lenti-III-HA Expression Vector"],
+      ["Unit", "10 µg"],
+      ["Description", "The Lenti-III-HA expression vector is an improved version of our orignal Lenti-Easy HA vector, with a greater selection of subcloning sites and a different stable selection marker, Puromycin."],
+      ["Storage Condition", "-20°C or below."],
+      ["Note", "NOT FOR RESALE without prior written consent of abm. This product is distributed for laboratory research only."],
+      ["Material Citation", "If use of this material results in a scientific publication, please cite the material in the following manner: Applied Biological Materials Inc, Cat. No. LV022"],
+    ]),
+    documentsHtml: referenceList([
+      ["Selection-Drug Killing Curve", "https://www.abmgood.com/document/Drug%20selection%20killing%20curve%20Final_111315.pdf"],
+      ["Lentivirus Infection Protocol", "https://www.abmgood.com/uploads/document/a4_lenti_infection-with-spinoculation_.pdf"],
+      ["Plasmid Amplification Protocol", "https://www.abmgood.com/uploads/document/Plasmid%20Amplification%20Protocol%202026.pdf"],
+      ["Enhanced Lentivirus Safety Features: Replication Incompetency", "https://www.abmgood.com/uploads/document/Lentivirus%20incompetency-abm.pdf"],
+      ["Suggested MOI for Common Cancer Cell Lines", "https://www.abmgood.com/uploads/document/A4%20%20%20lenti%20infection%20%20Cancer%20Cell%20Line%20Guide.pdf"],
+    ]),
+    images: [],
+    verification: {
+      source: "official-abm-product-page",
+      checkedAt: "2026-10-06",
+      skuMatches: true,
+      hasSpecifications: true,
+      officialImagePresent: false,
+    },
+  },
+};
+
+function verifiedExpressionSystemProduct(key: string) {
+  const normalized = decodeURIComponent(String(key || "")).trim().toLowerCase();
+  return VERIFIED_EXPRESSION_SYSTEM_PRODUCTS[normalized]
+    || Object.values(VERIFIED_EXPRESSION_SYSTEM_PRODUCTS).find((record) =>
+      record.url.toLowerCase() === normalized || String(record.sourceUrl || "").toLowerCase() === normalized
+    );
+}
+
+/**
  * ABM retired these six product-detail URLs while retaining the products in
  * its current Special Cell Line Collection tables. The reviewed records below
  * complete those otherwise table-only entries from the current ABM collection,
@@ -464,7 +523,7 @@ export async function getAbmStagedRecords(kind: AbmStagedRecord["kind"]): Promis
     kind,
   }, PUBLIC_CATALOG_CACHE);
   const details = new Map((result?.details || []).map((detail) => [String(detail.key || "").toLowerCase(), detail]));
-  return (Array.isArray(result?.records) ? result.records : []).filter((record) =>
+  const records = (Array.isArray(result?.records) ? result.records : []).filter((record) =>
     kind !== "product" || !isNonProductCatalogTool(record)
   ).map((record) => {
     const key = `${kind}:${String(record.sku || record.url).trim().toLowerCase()}`;
@@ -475,6 +534,15 @@ export async function getAbmStagedRecords(kind: AbmStagedRecord["kind"]): Promis
       breadcrumbs: detail?.breadcrumbs,
     };
   });
+  if (kind !== "product") return records;
+
+  const existingSkus = new Set(records.map((record) => String(record.sku || "").trim().toLowerCase()));
+  return [
+    ...records,
+    ...Object.values(VERIFIED_EXPRESSION_SYSTEM_PRODUCTS).filter((record) =>
+      !existingSkus.has(record.sku.toLowerCase())
+    ),
+  ];
 }
 
 const STAGED_CATALOG_NUMBERS_QUERY = `*[
@@ -494,9 +562,13 @@ export async function getAbmStagedCatalogNumbers(kind: AbmStagedRecord["kind"]):
     kind,
   }, PUBLIC_CATALOG_CACHE);
 
-  return Array.from(new Set((Array.isArray(result) ? result : [])
+  const catalogNumbers = (Array.isArray(result) ? result : [])
     .map((sku) => String(sku || "").trim())
-    .filter(Boolean)));
+    .filter(Boolean);
+  if (kind === "product") {
+    catalogNumbers.push(...Object.values(VERIFIED_EXPRESSION_SYSTEM_PRODUCTS).map((record) => record.sku));
+  }
+  return Array.from(new Set(catalogNumbers));
 }
 
 const STAGED_COUNT_QUERY = `select(
@@ -579,6 +651,8 @@ function officialCellRecord(key: string): AbmStagedRecord | undefined {
 export async function getAbmStagedRecord(kind: AbmStagedRecord["kind"], key: string) {
   const decodedKey = decodeURIComponent(key);
   if (kind === "product") {
+    const expressionSystemRecord = verifiedExpressionSystemProduct(decodedKey);
+    if (expressionSystemRecord) return expressionSystemRecord;
     if (isNonProductCatalogToolKey(decodedKey)) return null;
     const cellRecord = officialCellRecord(decodedKey);
     if (cellRecord) return cellRecord;
@@ -721,11 +795,17 @@ export async function getAbmStagedDetailPresence(
       .filter(Boolean),
   );
 
-  return new Set(
+  const present = new Set(
     catalogNumbers
       .map((value) => String(value || "").trim())
       .filter((value) => usable.has(`${kind}:${value.toLowerCase()}`)),
   );
+  if (kind === "product") {
+    catalogNumbers.forEach((value) => {
+      if (verifiedExpressionSystemProduct(value)) present.add(String(value || "").trim());
+    });
+  }
+  return present;
 }
 
 // A small number of rebuild records have reviewed content but no copied image array.
@@ -786,6 +866,8 @@ function isInvalidCollectedDetail(staged: Record<string, unknown>) {
 export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: string): Promise<AbmStagedDetail | undefined> {
   const decodedKey = decodeURIComponent(key);
   if (kind === "product") {
+    const expressionSystemDetail = verifiedExpressionSystemProduct(decodedKey);
+    if (expressionSystemDetail) return expressionSystemDetail;
     const cellRecord = officialCellRecord(decodedKey);
     const cellDetail = cellRecord ? findOfficialAbmCellDetail(cellRecord.sku || decodedKey) : undefined;
     if (cellRecord && cellDetail) {
