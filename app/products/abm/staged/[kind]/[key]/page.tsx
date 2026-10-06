@@ -19,20 +19,18 @@ import {
 
 export const revalidate = 300;
 
-// ABM renders these iPSC Reporter products with the live Vector Design Studio
-// map in the primary media area. Do not substitute collected/static product
-// thumbnails: the map is the manufacturer's canonical visual for these SKUs.
-const VERIFIED_IPSC_VECTOR_MAP_IDS: Record<string, number> = {
-  "000776A": 406,
-  "000774A": 405,
-  "000834A": 399,
-  "000835A": 400,
-  LV028858: 316,
-  LV028859: 315,
-};
+// ABM's iPSC Reporter products each have a distinct canonical Vector Design
+// Studio map. Keep exact local SVG copies in the existing product gallery so
+// the six Cat.No. rows never share a thumbnail or depend on iframe rendering.
+const VERIFIED_IPSC_VECTOR_MAP_IDS: Record<string, number> = {};
 
 const VERIFIED_STATIC_VECTOR_IMAGES: Record<string, string> = {
-  LV028859: "/abm/vector-maps/LV028859.png",
+  "000776A": "/images/abm/000776A-vector-map.svg",
+  "000774A": "/images/abm/000774A-vector-map.svg",
+  "000834A": "/images/abm/000834A-vector-map.svg",
+  "000835A": "/images/abm/000835A-vector-map.svg",
+  LV028858: "/images/abm/LV028858-vector-map.svg",
+  LV028859: "/images/abm/LV028859-vector-map.svg",
 };
 
 type TaxonomyNode = {
