@@ -73,6 +73,19 @@ const option = render(`
 assert.equal(option.querySelector("td:nth-child(2) a"), null);
 assert.equal(option.querySelector("td:nth-child(2)")?.textContent?.trim(), "By Serotype");
 
+const apoptosisVectors = render(`
+  <table><tr><th>Product Name</th><th>Cat. No.</th><th>Titer</th></tr>
+  <tr><td><a href="https://www.abmgood.com/CMV-Control-Apoptosis-Adenovirus-G3000.html">CMV Control Apoptosis Adenovirus</a></td><td>G3000</td><td>1 x 10^6 pfu/ml</td></tr>
+  <tr><td><a href="https://www.abmgood.com/Endothelial-Apoptosis-Adenovirus-G3001.html">Endothelial Apoptosis Adenovirus</a></td><td>G3001</td><td>1 x 10^6 pfu/ml</td></tr>
+  <tr><td><a href="https://www.abmgood.com/Epithelial-Apoptosis-Adenovirus-G3002.html">Epithelial Apoptosis Adenovirus</a></td><td>G3002</td><td>1 x 10^6 pfu/ml</td></tr></table>
+`, ["G3000", "G3001", "G3002"]);
+const apoptosisLinks = [...new Set(Array.from(apoptosisVectors.querySelectorAll("tbody a")).map((anchor) => anchor.getAttribute("href")))];
+assert.deepEqual(apoptosisLinks, [
+  "/products/abm/staged/product/G3000?name=CMV+Control+Apoptosis+Adenovirus&from=%2Fproducts%2Fabm%2Fgenetic-materials%2Fexpression-ready-libraries%2Fcontrol-vectors-and-viruses",
+  "/products/abm/staged/product/G3001?name=Endothelial+Apoptosis+Adenovirus&from=%2Fproducts%2Fabm%2Fgenetic-materials%2Fexpression-ready-libraries%2Fcontrol-vectors-and-viruses",
+  "/products/abm/staged/product/G3002?name=Epithelial+Apoptosis+Adenovirus&from=%2Fproducts%2Fabm%2Fgenetic-materials%2Fexpression-ready-libraries%2Fcontrol-vectors-and-viruses",
+]);
+
 const cas9 = render(`
   <h1>Cas9 Expression Vectors and Viruses</h1>
   <table><tr><th>Product Name</th><th>Vector Map</th><th>Cat.No.</th></tr>
