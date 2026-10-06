@@ -41,10 +41,17 @@ export default function ProductGalleryClient({
   if (!media.length) return null;
 
   const active = media[Math.min(activeIdx, media.length - 1)];
+  const isStaticVectorImage =
+    active.kind === "image" && active.url.startsWith("/abm/vector-maps/");
 
   return (
     <div className="w-full">
-      <div className="relative mx-auto aspect-square w-full max-w-[560px] overflow-hidden bg-neutral-50">
+      <div
+        className={[
+          "relative mx-auto aspect-square w-full max-w-[560px] overflow-hidden",
+          isStaticVectorImage ? "flex items-center justify-center bg-white" : "bg-neutral-50",
+        ].join(" ")}
+      >
         {active.kind === "vector-map" ? (
           <iframe
             src={active.url}
@@ -59,6 +66,17 @@ export default function ProductGalleryClient({
             tabIndex={-1}
             aria-hidden="true"
           />
+        ) : isStaticVectorImage ? (
+          <div className="aspect-square w-full max-w-[400px] overflow-hidden bg-white">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={active.url}
+              alt={active.alt || title || "Product image"}
+              className="h-full w-full scale-[1.055] object-contain"
+              loading="eager"
+              referrerPolicy="no-referrer"
+            />
+          </div>
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -109,6 +127,17 @@ export default function ProductGalleryClient({
                       <span>Vector</span>
                       <span>Map</span>
                     </span>
+                  ) : item.url.startsWith("/abm/vector-maps/") ? (
+                    <div className="h-full w-full overflow-hidden bg-white">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.url}
+                        alt={item.alt || title || "Product thumbnail"}
+                        className="h-full w-full scale-[1.055] object-contain"
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
