@@ -53,6 +53,29 @@ const KENT_MENU_TITLE = "General Lab Equipment";
 const PAGE_SHELL = "mx-auto max-w-[1320px] px-6";
 const CONTENT_LAYOUT = "grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[296px_minmax(0,1fr)]";
 
+const TARGETED_APOPTOSIS_PATH = [
+  "genetic-materials",
+  "specialized-vectors",
+  "targeted-cell-apoptosis-adenoviruses",
+];
+
+const VERIFIED_TARGETED_APOPTOSIS_HTML = `
+  <p>abm’s unique Adenoviruses provide a targeted clean-up step for iPSC workflows, enabling inducible, selective depletion of non-reprogrammed and off-target cells. These recombinant adenoviruses transiently deliver a construct in which a cell type-specific promoter drives expression of an inducible caspase.</p>
+  <p>After transduction, addition of the small molecule Rimiducid (AP1903) or AP20187 activates apoptosis specifically in targeted cell populations, resulting in efficient depletion of residual somatic cells and enrichment of a purified iPSC population.</p>
+  <table>
+    <thead><tr><th>Product Name</th><th>Cat. No.</th><th>Quantity</th><th>Titer</th><th>Price</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://www.abmgood.com/CMV-Control-Apoptosis-Adenovirus-G3000.html">CMV Control Apoptosis Adenovirus</a></td><td><a href="https://www.abmgood.com/CMV-Control-Apoptosis-Adenovirus-G3000.html">G3000</a></td><td>1.0 ml</td><td>1 × 10<sup>6</sup> pfu/ml</td><td>$1250.00</td></tr>
+      <tr><td><a href="https://www.abmgood.com/Endothelial-Apoptosis-Adenovirus-G3001.html">Endothelial Apoptosis Adenovirus</a></td><td><a href="https://www.abmgood.com/Endothelial-Apoptosis-Adenovirus-G3001.html">G3001</a></td><td>1.0 ml</td><td>1 × 10<sup>6</sup> pfu/ml</td><td>$1250.00</td></tr>
+      <tr><td><a href="https://www.abmgood.com/Epithelial-Apoptosis-Adenovirus-G3002.html">Epithelial Apoptosis Adenovirus</a></td><td><a href="https://www.abmgood.com/Epithelial-Apoptosis-Adenovirus-G3002.html">G3002</a></td><td>1.0 ml</td><td>1 × 10<sup>6</sup> pfu/ml</td><td>$1250.00</td></tr>
+    </tbody>
+  </table>
+  <h3>Mechanism</h3>
+  <p><img src="https://www.abmgood.com/assets/images/tinymce/Targeted-Cell-Apoptosis-Adenovirus-Workflow.jpg" alt="Targeted Cell Apoptosis Adenovirus workflow" /></p>
+  <h3>Supporting Data</h3>
+  <p>Coming soon</p>
+`;
+
 type Theme = {
   accentBg: string;
   accentText: string;
@@ -598,6 +621,29 @@ function normalizeAbmGeneticSidebar(nodes: TreeNode[]) {
   };
 
   return arrange(nodes, ABM_GENETIC_NAV_SPECS);
+}
+
+function includeVerifiedSpecializedVectorPages(nodes: TreeNode[]): TreeNode[] {
+  return nodes.map((node) => {
+    const children = includeVerifiedSpecializedVectorPages(node.children || []);
+    if (normalizeAbmGeneticNavLabel(node.title) !== normalizeAbmGeneticNavLabel("Specialized Vectors")) {
+      return { ...node, children };
+    }
+
+    const targetKey = TARGETED_APOPTOSIS_PATH.join("/");
+    const target = children.find((child) => child.path.join("/") === targetKey) || {
+      key: targetKey,
+      _id: `verified-${targetKey}`,
+      title: "Targeted Cell Apoptosis Adenoviruses",
+      path: TARGETED_APOPTOSIS_PATH,
+      order: 0,
+      sourceUrl: "https://www.abmgood.com/Targeted-Cell-Apoptosis-Adenoviruses.html",
+      isVirtual: false,
+      children: [],
+    };
+    const others = children.filter((child) => child.path.join("/") !== targetKey);
+    return { ...node, children: [target, ...others] };
+  });
 }
 
 function findTreeNodeByPath(nodes: TreeNode[], path: string[]): TreeNode | undefined {
@@ -1243,7 +1289,21 @@ export default async function AbmProductsPathPage({
 
   const roots: CatLite[] = Array.isArray(data?.roots) ? data.roots : [];
   const descendants: CatLite[] = Array.isArray(data?.descendants) ? data.descendants : [];
-  const category = data?.category || null;
+  let category = data?.category || null;
+  if (pathStr === TARGETED_APOPTOSIS_PATH.join("/")) {
+    category = {
+      ...(category || {}),
+      _id: category?._id || "verified-targeted-cell-apoptosis-adenoviruses",
+      title: "Targeted Cell Apoptosis Adenoviruses",
+      path: TARGETED_APOPTOSIS_PATH,
+      sourceUrl: "https://www.abmgood.com/Targeted-Cell-Apoptosis-Adenoviruses.html",
+      contentBlocks: [{
+        _key: "verified-targeted-cell-apoptosis-content",
+        _type: "contentBlockHtml",
+        html: VERIFIED_TARGETED_APOPTOSIS_HTML,
+      }],
+    };
+  }
 
   const productsInCategory: Array<{
     _id: string;
@@ -1260,7 +1320,7 @@ export default async function AbmProductsPathPage({
     if (activeRoot === "cellular-materials") {
       activeRootTree = normalizeAbmCellularSidebar(activeRootTree);
     } else if (activeRoot === "genetic-materials") {
-      activeRootTree = normalizeAbmGeneticSidebar(activeRootTree);
+      activeRootTree = includeVerifiedSpecializedVectorPages(normalizeAbmGeneticSidebar(activeRootTree));
     }
   }
 
