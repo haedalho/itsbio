@@ -32,7 +32,7 @@ const VERIFIED_IPSC_VECTOR_MAP_IDS: Record<string, number> = {
 };
 
 const VERIFIED_STATIC_VECTOR_IMAGES: Record<string, string> = {
-  LV028859: "/abm/vector-maps/LV028859.svg",
+  LV028859: "/abm/vector-maps/LV028859.png",
 };
 
 type TaxonomyNode = {
