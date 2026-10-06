@@ -9,39 +9,66 @@ type Img = {
   creditUrl?: string;
 };
 
+type VectorMap = {
+  url: string;
+  alt?: string;
+};
+
+type MediaItem =
+  | ({ kind: "image" } & Img)
+  | ({ kind: "vector-map" } & VectorMap);
+
 export default function ProductGalleryClient({
   images,
   title,
+  vectorMap,
 }: {
   images: Img[];
   title?: string;
+  vectorMap?: VectorMap;
 }) {
-  const safe = (images || []).filter((x) => x?.url);
+  const safeImages = (images || []).filter((x) => x?.url);
+  const media: MediaItem[] = [
+    ...(vectorMap?.url ? [{ kind: "vector-map" as const, ...vectorMap }] : []),
+    ...safeImages.map((image) => ({ kind: "image" as const, ...image })),
+  ];
   const [activeIdx, setActiveIdx] = React.useState(0);
 
   React.useEffect(() => {
     setActiveIdx(0);
-  }, [safe.length]);
+  }, [media.length]);
 
-  if (!safe.length) return null;
+  if (!media.length) return null;
 
-  const active = safe[Math.min(activeIdx, safe.length - 1)];
+  const active = media[Math.min(activeIdx, media.length - 1)];
 
   return (
     <div className="w-full">
-      {/* Main (카드 제거, 내부만 유지) */}
       <div className="relative mx-auto aspect-square w-full max-w-[560px] overflow-hidden bg-neutral-50">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={active.url}
-          alt={active.alt || title || "Product image"}
-          className="absolute inset-0 h-full w-full object-contain"
-          loading="eager"
-          referrerPolicy="no-referrer"
-        />
+        {active.kind === "vector-map" ? (
+          <iframe
+            src={active.url}
+            title={active.alt || `${title || "Product"} vector map`}
+            className="pointer-events-none absolute left-1/2 top-1/2 h-[620px] w-[600px] -translate-x-1/2 -translate-y-1/2 scale-[0.84] border-0 bg-white"
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            scrolling="no"
+            tabIndex={-1}
+            aria-hidden="true"
+          />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={active.url}
+            alt={active.alt || title || "Product image"}
+            className="absolute inset-0 h-full w-full object-contain"
+            loading="eager"
+            referrerPolicy="no-referrer"
+          />
+        )}
       </div>
 
-      {active.caption ? (
+      {active.kind === "image" && active.caption ? (
         <p className="mx-auto mt-3 max-w-[560px] text-center text-xs leading-5 text-neutral-500">
           {active.creditUrl ? (
             <a
@@ -56,15 +83,14 @@ export default function ProductGalleryClient({
         </p>
       ) : null}
 
-      {/* Thumbnails */}
-      {safe.length > 1 ? (
+      {media.length > 1 ? (
         <div className="mt-4">
           <div className="flex justify-center gap-3 overflow-x-auto pb-1">
-            {safe.map((img, i) => {
+            {media.map((item, i) => {
               const selected = i === activeIdx;
               return (
                 <button
-                  key={`${img.url}-${i}`}
+                  key={`${item.kind}-${item.url}-${i}`}
                   type="button"
                   onClick={() => setActiveIdx(i)}
                   className={[
@@ -73,23 +99,30 @@ export default function ProductGalleryClient({
                       ? "border-orange-500 ring-2 ring-orange-500/30"
                       : "border-neutral-200 hover:border-neutral-300",
                   ].join(" ")}
-                  aria-label={`Select image ${i + 1}`}
+                  aria-label={item.kind === "vector-map" ? "Select vector map" : `Select image ${i + 1}`}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={img.url}
-                    alt={img.alt || title || "Product thumbnail"}
-                    className="h-full w-full object-contain"
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
-                  />
+                  {item.kind === "vector-map" ? (
+                    <span className="flex h-full w-full flex-col items-center justify-center bg-neutral-50 px-1 text-center text-[9px] font-semibold uppercase leading-tight tracking-wide text-neutral-600">
+                      <span>Vector</span>
+                      <span>Map</span>
+                    </span>
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={item.url}
+                      alt={item.alt || title || "Product thumbnail"}
+                      className="h-full w-full object-contain"
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                    />
+                  )}
                 </button>
               );
             })}
           </div>
 
           <div className="mt-2 text-center text-xs text-neutral-500">
-            {activeIdx + 1} / {safe.length}
+            {activeIdx + 1} / {media.length}
           </div>
         </div>
       ) : null}
