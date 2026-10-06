@@ -154,15 +154,15 @@ function applyVerifiedIpscVectorMap(detail: AbmStagedDetail) {
     ...detail,
     previewImage: image,
     images: [image],
-    imageCaption: `Official ABM Vector Design Studio map for ${map.label}.`,
-    imageCreditUrl: `https://www.abmgood.com/vds/viewer/cat/${map.catId}`,
-    imageCreditLabel: "View official vector map",
+    imageCaption: undefined,
+    imageCreditUrl: undefined,
+    imageCreditLabel: undefined,
     verification: {
       ...(detail.verification || {}),
       officialImagePresent: true,
       officialImageSource: "ABM Vector Design Studio",
       officialVectorMapCatId: map.catId,
-      officialVectorMapCheckedAt: "2026-10-06",
+      officialVectorMapCheckedAt: sku === "LV028859" ? "2026-10-06" : "2026-10-07",
     },
   };
 }
