@@ -77,14 +77,31 @@ const apoptosisVectors = render(`
   <table><tr><th>Product Name</th><th>Cat. No.</th><th>Titer</th></tr>
   <tr><td><a href="https://www.abmgood.com/CMV-Control-Apoptosis-Adenovirus-G3000.html">CMV Control Apoptosis Adenovirus</a></td><td>G3000</td><td>1 x 10^6 pfu/ml</td></tr>
   <tr><td><a href="https://www.abmgood.com/Endothelial-Apoptosis-Adenovirus-G3001.html">Endothelial Apoptosis Adenovirus</a></td><td>G3001</td><td>1 x 10^6 pfu/ml</td></tr>
-  <tr><td><a href="https://www.abmgood.com/Epithelial-Apoptosis-Adenovirus-G3002.html">Epithelial Apoptosis Adenovirus</a></td><td>G3002</td><td>1 x 10^6 pfu/ml</td></tr></table>
-`, ["G3000", "G3001", "G3002"]);
+  <tr><td><a href="https://www.abmgood.com/Epithelial-Apoptosis-Adenovirus-G3002.html">Epithelial Apoptosis Adenovirus</a></td><td>G3002</td><td>1 x 10^6 pfu/ml</td></tr>
+  <tr><td><a href="https://www.abmgood.com/Astrocyte-Apoptosis-Adenovirus-G3003.html">Astrocyte Apoptosis Adenovirus</a></td><td>G3003</td><td>1 x 10^6 pfu/ml</td></tr>
+  <tr><td><a href="https://www.abmgood.com/Fibroblast-Apoptosis-Adenovirus-G3004.html">Fibroblast Apoptosis Adenovirus</a></td><td>G3004</td><td>1 x 10^6 pfu/ml</td></tr>
+  <tr><td><a href="https://www.abmgood.com/Microglia-Apoptosis-Adenovirus-G3005.html">Microglia Apoptosis Adenovirus</a></td><td>G3005</td><td>1 x 10^6 pfu/ml</td></tr></table>
+`, ["G3000", "G3001", "G3002", "G3003", "G3004", "G3005"]);
 const apoptosisLinks = [...new Set(Array.from(apoptosisVectors.querySelectorAll("tbody a")).map((anchor) => anchor.getAttribute("href")))];
 assert.deepEqual(apoptosisLinks, [
   "/products/abm/staged/product/G3000?name=CMV+Control+Apoptosis+Adenovirus&from=%2Fproducts%2Fabm%2Fgenetic-materials%2Fexpression-ready-libraries%2Fcontrol-vectors-and-viruses",
   "/products/abm/staged/product/G3001?name=Endothelial+Apoptosis+Adenovirus&from=%2Fproducts%2Fabm%2Fgenetic-materials%2Fexpression-ready-libraries%2Fcontrol-vectors-and-viruses",
   "/products/abm/staged/product/G3002?name=Epithelial+Apoptosis+Adenovirus&from=%2Fproducts%2Fabm%2Fgenetic-materials%2Fexpression-ready-libraries%2Fcontrol-vectors-and-viruses",
+  "/products/abm/staged/product/G3003?name=Astrocyte+Apoptosis+Adenovirus&from=%2Fproducts%2Fabm%2Fgenetic-materials%2Fexpression-ready-libraries%2Fcontrol-vectors-and-viruses",
+  "/products/abm/staged/product/G3004?name=Fibroblast+Apoptosis+Adenovirus&from=%2Fproducts%2Fabm%2Fgenetic-materials%2Fexpression-ready-libraries%2Fcontrol-vectors-and-viruses",
+  "/products/abm/staged/product/G3005?name=Microglia+Apoptosis+Adenovirus&from=%2Fproducts%2Fabm%2Fgenetic-materials%2Fexpression-ready-libraries%2Fcontrol-vectors-and-viruses",
 ]);
+
+const ipscReporters = render(`
+  <table><tr><th>Product Name</th><th>Cat. No.</th><th>Quantity</th></tr>
+  <tr><td><a href="https://www.abmgood.com/oct4-ecfp-reporter-adenovirus.html">Oct4 ECFP Reporter Adenovirus</a></td><td>000776A</td><td>1.0 ml</td></tr>
+  <tr><td><a href="https://www.abmgood.com/myc-eyfp-reporter-adenovirus.html">Myc EYFP Reporter Adenovirus</a></td><td>000774A</td><td>1.0 ml</td></tr>
+  <tr><td><a href="https://www.abmgood.com/eos-c-3-eip-adenovirus.html">EOS-C (3+)-EiP Adenovirus</a></td><td>000834A</td><td>1.0 ml</td></tr>
+  <tr><td><a href="https://www.abmgood.com/eos-s-4-eip-adenovirus.html">EOS-S (4+)-EiP Adenovirus</a></td><td>000835A</td><td>1.0 ml</td></tr>
+  <tr><td><a href="https://www.abmgood.com/eos-lentiviral-vector-pl-sin-eos-c3-eip-lv028858.html">EOS Lentiviral Vector (PL-SIN-EOS-C(3)-EiP)</a></td><td>LV028858</td><td>1.0 µg DNA</td></tr>
+  <tr><td><a href="https://www.abmgood.com/eos-lentiviral-vector-pl-sin-eos-s4-eip-lv028859.html">EOS Lentiviral Vector (PL-SIN-EOS-S(4)-EiP)</a></td><td>LV028859</td><td>1.0 µg DNA</td></tr></table>
+`, ["000776A", "000774A", "000834A", "000835A", "LV028858", "LV028859"]);
+assert.equal(ipscReporters.querySelectorAll("tbody a[href^='/products/abm/staged/product/']").length, 6);
 
 const cas9 = render(`
   <h1>Cas9 Expression Vectors and Viruses</h1>
