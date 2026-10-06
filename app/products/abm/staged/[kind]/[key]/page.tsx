@@ -31,6 +31,10 @@ const VERIFIED_IPSC_VECTOR_MAP_IDS: Record<string, number> = {
   LV028859: 315,
 };
 
+const VERIFIED_STATIC_VECTOR_IMAGES: Record<string, string> = {
+  LV028859: "/abm/vector-maps/LV028859.svg",
+};
+
 type TaxonomyNode = {
   slug: string;
   title: string;
@@ -263,10 +267,17 @@ export default async function AbmStagedDetailPage({
     url: isTrustedSpecialCellReferenceImageUrl(url) ? url : abmResourceImagePath(url) || url,
     alt: title,
   }));
-  const vectorMapId = kind === "product"
-    ? VERIFIED_IPSC_VECTOR_MAP_IDS[String(record.sku || decodedKey).toUpperCase()]
+  const productSku = String(record.sku || decodedKey).toUpperCase();
+  const verifiedStaticVectorImage = kind === "product"
+    ? VERIFIED_STATIC_VECTOR_IMAGES[productSku]
     : undefined;
-  const hasGallery = Boolean(vectorMapId) || gallery.length > 0;
+  const vectorMapId = kind === "product" && !verifiedStaticVectorImage
+    ? VERIFIED_IPSC_VECTOR_MAP_IDS[productSku]
+    : undefined;
+  const verifiedVectorGallery = verifiedStaticVectorImage
+    ? [{ url: verifiedStaticVectorImage, alt: title }]
+    : gallery;
+  const hasGallery = Boolean(vectorMapId) || verifiedVectorGallery.length > 0;
   const paths = Array.isArray(record.listingPaths) && record.listingPaths.length
     ? record.listingPaths
     : record.listingFilters?.map((item) => item.path).filter((path): path is string[] => Array.isArray(path) && path.length > 0)
@@ -363,7 +374,7 @@ export default async function AbmStagedDetailPage({
               {hasGallery ? (
                 <div className="min-h-[320px]">
                   <ProductGalleryClient
-                    images={vectorMapId ? [] : gallery}
+                    images={vectorMapId ? [] : verifiedVectorGallery}
                     title={title}
                     vectorMap={vectorMapId ? {
                       url: `https://www.abmgood.com/vds/map/cat/${vectorMapId}`,
