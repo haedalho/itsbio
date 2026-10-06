@@ -103,6 +103,56 @@ const ipscReporters = render(`
 `, ["000776A", "000774A", "000834A", "000835A", "LV028858", "LV028859"]);
 assert.equal(ipscReporters.querySelectorAll("tbody a[href^='/products/abm/staged/product/']").length, 6);
 
+const lentivirusBundlesHtml = `
+  <table>
+    <thead><tr><th>Product Name</th><th>Quantity</th><th></th><th></th><th>Bundle 1</th><th>Bundle 2</th><th>Individual Cat. No.</th></tr></thead>
+    <tbody>
+      <tr><td></td><td>Bundle Cat. No.</td>
+        <td><a href="https://www.abmgood.com/qPCR-Lentivirus-Titer-Kit-ViralEntry-Bundle-LV900-G515.html">LV900-G515</a></td>
+        <td><a href="https://www.abmgood.com/2nd-generation-packaging-mix-dnafectin-LV003-G2500.html">LV003-G2500</a></td>
+        <td><a href="https://www.abmgood.com/2nd-Generation-Lentivirus-Bundle-1.html">Lenti-Bundle-1</a></td>
+        <td><a href="https://www.abmgood.com/2nd-Generation-Lentivirus-Bundle-2.html">Lenti-Bundle-2</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Product Name</th><th>Quantity</th><th></th><th></th><th>Bundle 3</th><th>Bundle 4</th><th>Individual Cat. No.</th></tr></thead>
+    <tbody>
+      <tr><td></td><td>Bundle Cat. No.</td>
+        <td><a href="https://www.abmgood.com/qPCR-Lentivirus-Titer-Kit-ViralEntry-Bundle-LV900-G515.html">LV900-G515</a></td>
+        <td><a href="https://www.abmgood.com/3rd-generation-packaging-mix-dnafectin-LV053-G2500.html">LV053-G2500</a></td>
+        <td><a href="https://www.abmgood.com/3rd-Generation-Lentivirus-Bundle-3.html">Lenti-Bundle-3</a></td>
+        <td><a href="https://www.abmgood.com/3rd-Generation-Lentivirus-Bundle-4.html">Lenti-Bundle-4</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+`;
+assert.deepEqual(extractAbmTableCatalogNumbers(lentivirusBundlesHtml), [
+  "LV900-G515",
+  "LV003-G2500",
+  "Lenti-Bundle-1",
+  "Lenti-Bundle-2",
+  "LV053-G2500",
+  "Lenti-Bundle-3",
+  "Lenti-Bundle-4",
+]);
+
+const lentivirusBundles = render(lentivirusBundlesHtml, [
+  "LV900-G515",
+  "LV003-G2500",
+  "Lenti-Bundle-1",
+  "Lenti-Bundle-2",
+  "LV053-G2500",
+  "Lenti-Bundle-3",
+  "Lenti-Bundle-4",
+]);
+const bundleStagedLinks = Array.from(lentivirusBundles.querySelectorAll("tbody a"))
+  .map((anchor) => anchor.getAttribute("href"))
+  .filter((href) => href?.startsWith("/products/abm/staged/product/"));
+assert.equal(new Set(bundleStagedLinks).size, 7);
+
 const cas9 = render(`
   <h1>Cas9 Expression Vectors and Viruses</h1>
   <table><tr><th>Product Name</th><th>Vector Map</th><th>Cat.No.</th></tr>
