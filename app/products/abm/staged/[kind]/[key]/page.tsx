@@ -19,6 +19,47 @@ import {
 
 export const revalidate = 300;
 
+// ABM renders these iPSC Reporter products with the live Vector Design Studio
+// map in the primary media area. Do not substitute collected/static product
+// thumbnails: the map is the manufacturer's canonical visual for these SKUs.
+const VERIFIED_IPSC_VECTOR_MAP_IDS: Record<string, number> = {
+  "000776A": 406,
+  "000774A": 405,
+  "000834A": 399,
+  "000835A": 400,
+  LV028858: 316,
+  LV028859: 315,
+};
+
+function AbmVectorMapPreview({ mapId, title }: { mapId: number; title: string }) {
+  const mapUrl = `https://www.abmgood.com/vds/map/cat/${mapId}`;
+  const viewerUrl = `https://www.abmgood.com/vds/viewer/cat/${mapId}`;
+
+  return (
+    <div className="min-h-[320px]">
+      <div className="relative mx-auto h-[440px] w-full max-w-[560px] overflow-hidden bg-white">
+        <iframe
+          src={mapUrl}
+          title={`${title} vector map`}
+          className="h-full w-full border-0 bg-white"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+        />
+      </div>
+      <div className="mt-3 text-center">
+        <a
+          href={viewerUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs font-semibold text-[#dc5a2b] underline underline-offset-2"
+        >
+          Open vector map on ABM ↗
+        </a>
+      </div>
+    </div>
+  );
+}
+
 type TaxonomyNode = {
   slug: string;
   title: string;
@@ -251,7 +292,10 @@ export default async function AbmStagedDetailPage({
     url: isTrustedSpecialCellReferenceImageUrl(url) ? url : abmResourceImagePath(url) || url,
     alt: title,
   }));
-  const hasGallery = gallery.length > 0;
+  const vectorMapId = kind === "product"
+    ? VERIFIED_IPSC_VECTOR_MAP_IDS[String(record.sku || decodedKey).toUpperCase()]
+    : undefined;
+  const hasGallery = Boolean(vectorMapId) || gallery.length > 0;
   const paths = Array.isArray(record.listingPaths) && record.listingPaths.length
     ? record.listingPaths
     : record.listingFilters?.map((item) => item.path).filter((path): path is string[] => Array.isArray(path) && path.length > 0)
@@ -345,7 +389,9 @@ export default async function AbmStagedDetailPage({
             <h1 className="max-w-4xl text-3xl font-bold leading-tight tracking-tight text-neutral-950">{title}</h1>
 
             <div className="mt-6 grid gap-8 border-t border-neutral-200 pt-7 md:grid-cols-[minmax(0,1fr)_400px]">
-              {hasGallery ? (
+              {vectorMapId ? (
+                <AbmVectorMapPreview mapId={vectorMapId} title={title} />
+              ) : hasGallery ? (
                 <div className="min-h-[320px]">
                   <ProductGalleryClient images={gallery} title={title} />
                   {record.imageCaption ? (
