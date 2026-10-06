@@ -586,6 +586,55 @@ function linkAbmProductTableRows(
       }
     }
 
+    // ABM's Lentivirus Bundles use a horizontal comparison matrix. The
+    // product identities live across a "Bundle Cat. No." row rather than in a
+    // normal Cat.No. column, so route each known bundle cell independently.
+    rows.forEach((row) => {
+      const cells = Array.from(row.children) as HTMLElement[];
+      const labels = cells.map((cell) => collapseWs(cell.textContent || ""));
+      const labelIndex = labels.findIndex((value) =>
+        /^(?:bundle\s+cat(?:alog)?\.?\s*(?:no|number)\.?|bundle\s+sku)$/i.test(value),
+      );
+      if (labelIndex < 0) return;
+
+      cells.slice(labelIndex + 1).forEach((cell) => {
+        const sku = collapseWs(cell.textContent || "").replace(/\s+/g, "");
+        if (!validCatalogNumber(sku)) return;
+
+        const skuKey = sku.toLowerCase();
+        const isProduct = productSkus.has(skuKey);
+        const isService = serviceSkus.has(skuKey);
+        if (validateCatalog && !isProduct && !isService) return;
+
+        const query = new URLSearchParams({ name: sku });
+        if (/^\/products\/abm\/(?:cellular-materials|genetic-materials)(?:\/|$)/.test(window.location.pathname)) {
+          query.set("from", window.location.pathname);
+        }
+        const catalogHref = isService
+          ? `/products/abm/staged/service/${encodeURIComponent(sku)}`
+          : `/products/abm/staged/product/${encodeURIComponent(sku)}?${query.toString()}`;
+
+        const anchors = Array.from(cell.querySelectorAll<HTMLAnchorElement>("a"));
+        if (anchors.length) {
+          anchors.forEach((anchor) => {
+            anchor.classList.add("abm-product-table-link");
+            anchor.setAttribute("href", catalogHref);
+            anchor.setAttribute("aria-label", `View ${sku}`);
+            anchor.removeAttribute("target");
+            anchor.removeAttribute("rel");
+            anchor.dataset.itsbioAbmProductResolved = "true";
+          });
+        } else {
+          const anchor = doc.createElement("a");
+          anchor.className = "abm-product-table-link";
+          anchor.setAttribute("href", catalogHref);
+          anchor.setAttribute("aria-label", `View ${sku}`);
+          while (cell.firstChild) anchor.appendChild(cell.firstChild);
+          cell.appendChild(anchor);
+        }
+      });
+    });
+
     if (!headerRow) return;
 
     const categoryIndex = headers.findIndex((header) => /^(?:category|model type|cell type|bio system)$/.test(normalizedTableHeader(header)));
