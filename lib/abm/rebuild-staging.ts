@@ -136,6 +136,37 @@ const VERIFIED_EXPRESSION_SYSTEM_PRODUCTS: Record<string, AbmStagedDetail> = {
   },
 };
 
+const VERIFIED_IPSC_VECTOR_MAPS: Record<string, { catId: string; label: string }> = {
+  "000776A": { catId: "406", label: "pAdeno-Oct4-ECFP" },
+  "000774A": { catId: "405", label: "pAdeno-Myc-EYFP" },
+  "000834A": { catId: "399", label: "pAdeno-EOS-C(3)-EiP" },
+  "000835A": { catId: "400", label: "pAdeno-EOS-S(4)-EiP" },
+  LV028858: { catId: "316", label: "PL-SIN-EOS-C(3)-EiP" },
+  LV028859: { catId: "315", label: "PL-SIN-EOS-S(4)-EiP" },
+};
+
+function applyVerifiedIpscVectorMap(detail: AbmStagedDetail) {
+  const sku = String(detail.sku || "").trim().toUpperCase();
+  const map = VERIFIED_IPSC_VECTOR_MAPS[sku];
+  if (!map) return detail;
+  const image = `/images/abm/${sku}-vector-map.svg`;
+  return {
+    ...detail,
+    previewImage: image,
+    images: [image],
+    imageCaption: `Official ABM Vector Design Studio map for ${map.label}.`,
+    imageCreditUrl: `https://www.abmgood.com/vds/viewer/cat/${map.catId}`,
+    imageCreditLabel: "View official vector map",
+    verification: {
+      ...(detail.verification || {}),
+      officialImagePresent: true,
+      officialImageSource: "ABM Vector Design Studio",
+      officialVectorMapCatId: map.catId,
+      officialVectorMapCheckedAt: "2026-10-06",
+    },
+  };
+}
+
 function verifiedExpressionSystemProduct(key: string) {
   const normalized = decodeURIComponent(String(key || "")).trim().toLowerCase();
   return VERIFIED_EXPRESSION_SYSTEM_PRODUCTS[normalized]
@@ -447,6 +478,10 @@ function applyVerifiedSpecialCellDetail(detail: AbmStagedDetail) {
   merged.hasDetail = true;
   merged.sourceUnavailable = false;
   return merged;
+}
+
+function applyVerifiedProductDetail(detail: AbmStagedDetail) {
+  return applyVerifiedIpscVectorMap(applyVerifiedSpecialCellDetail(detail));
 }
 
 export function isManagedAbmImageUrl(value?: string) {
@@ -878,7 +913,7 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
     if (cellRecord && cellDetail) {
       let images = normalizedDetailImages(cellDetail.previewImage, cellDetail.images);
       if (!images.length) images = await getExistingManagedProductImages(cellRecord);
-      return applyVerifiedSpecialCellDetail({
+      return applyVerifiedProductDetail({
         ...cellRecord,
         ...cellDetail,
         kind,
@@ -915,7 +950,7 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
     direct.sourceUrl = String(direct.sourceUrl || direct.url || "").trim();
     direct.hasDetail = true;
     direct.images = normalizedDetailImages(direct.previewImage, direct.images);
-    return applyVerifiedSpecialCellDetail(direct);
+    return applyVerifiedProductDetail(direct);
   }
 
   if (!record) return undefined;
@@ -923,7 +958,7 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
   if (staged && isInvalidCollectedDetail(staged)) {
     let images = normalizedDetailImages(record.previewImage);
     if (!images.length) images = await getExistingManagedProductImages(record);
-    return applyVerifiedSpecialCellDetail({
+    return applyVerifiedProductDetail({
       ...record,
       sourceUrl: String(record.url || "").trim(),
       hasDetail: true,
@@ -937,7 +972,7 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
     if (officialCellDetail) {
       let images = normalizedDetailImages(officialCellDetail.previewImage, officialCellDetail.images);
       if (!images.length) images = await getExistingManagedProductImages(record);
-      return applyVerifiedSpecialCellDetail({
+      return applyVerifiedProductDetail({
         ...record,
         ...officialCellDetail,
         kind,
@@ -948,7 +983,7 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
     }
     let images = normalizedDetailImages(record.previewImage);
     if (!images.length) images = await getExistingManagedProductImages(record);
-    return applyVerifiedSpecialCellDetail({
+    return applyVerifiedProductDetail({
       ...record,
       sourceUrl: String(record.url || "").trim(),
       hasDetail: false,
@@ -962,5 +997,5 @@ export async function getAbmStagedDetail(kind: AbmStagedRecord["kind"], key: str
   detail.hasDetail = true;
   detail.images = normalizedDetailImages(detail.previewImage, detail.images);
   if (!detail.images.length) detail.images = await getExistingManagedProductImages(record);
-  return applyVerifiedSpecialCellDetail(detail);
+  return applyVerifiedProductDetail(detail);
 }
