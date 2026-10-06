@@ -153,6 +153,46 @@ const bundleStagedLinks = Array.from(lentivirusBundles.querySelectorAll("tbody a
   .filter((href) => href?.startsWith("/products/abm/staged/product/"));
 assert.equal(new Set(bundleStagedLinks).size, 7);
 
+const viralKitProducts = [
+  ["2nd Generation Packaging Mix", "LV003"],
+  ["2nd Gen. Packaging Mix & DNAfectin Plus Combo Pack", "LV003-G2500"],
+  ["3rd Generation Packaging Mix", "LV053"],
+  ["3rd Gen. Packaging Mix & DNAfectin Plus Combo Pack", "LV053-G2500"],
+  ["Retrovirus Packaging Mix", "E-510"],
+  ["AAV Packaging Mix (Serotype 1)", "AAV1001"],
+  ["AAV Packaging Mix (Serotype 2)", "AAV1002"],
+  ["AAV Packaging Mix (Serotype 3)", "AAV1003"],
+  ["AAV Packaging Mix (Serotype 4)", "AAV1004"],
+  ["AAV Packaging Mix (Serotype 5)", "AAV1005"],
+  ["AAV Packaging Mix (Serotype 6)", "AAV1006"],
+  ["qPCR Lentivirus Titer Kit", "LV900"],
+  ["qPCR AAV Titer Kit", "G931"],
+  ["qPCR Retrovirus Titer Kit", "G949"],
+  ["ViralEntry Transduction Enhancer", "G515"],
+  ["AAViralEntry Transduction Enhancer", "G516"],
+  ["Ultra-Pure Lentivirus Purification Kit", "LV998"],
+  ["Speedy Lentivirus Purification Kit", "LV999"],
+];
+const viralKitHtml = `
+  <table>
+    <tr><th>Product Name</th><th>Cat. No.</th><th>Size</th></tr>
+    ${viralKitProducts.map(([name, sku]) => `<tr><td><a href="https://www.abmgood.com/${sku}.html">${name}</a></td><td>${sku}</td><td>1</td></tr>`).join("")}
+  </table>
+`;
+const viralKitDoc = render(viralKitHtml, viralKitProducts.map(([, sku]) => sku));
+for (const [, sku] of viralKitProducts) {
+  const row = Array.from(viralKitDoc.querySelectorAll("tr")).find((candidate) =>
+    candidate.textContent?.includes(sku),
+  );
+  assert.ok(row, `missing rendered viral kit row ${sku}`);
+  const hrefs = Array.from(row.querySelectorAll("a")).map((anchor) => anchor.getAttribute("href") || "");
+  assert.equal(
+    hrefs.some((href) => href.startsWith(`/products/abm/staged/product/${encodeURIComponent(sku)}`)),
+    true,
+    `viral kit ${sku} did not route to staged detail`,
+  );
+}
+
 const cas9 = render(`
   <h1>Cas9 Expression Vectors and Viruses</h1>
   <table><tr><th>Product Name</th><th>Vector Map</th><th>Cat.No.</th></tr>
