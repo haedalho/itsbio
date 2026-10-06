@@ -31,27 +31,6 @@ const VERIFIED_IPSC_VECTOR_MAP_IDS: Record<string, number> = {
   LV028859: 315,
 };
 
-function AbmVectorMapPreview({ mapId, title }: { mapId: number; title: string }) {
-  const mapUrl = `https://www.abmgood.com/vds/map/cat/${mapId}`;
-
-  return (
-    <div className="min-h-[320px]">
-      <div className="relative mx-auto aspect-square w-full max-w-[560px] overflow-hidden bg-white">
-        <iframe
-          src={mapUrl}
-          title={`${title} vector map`}
-          className="pointer-events-none absolute left-1/2 top-1/2 h-[620px] w-[600px] -translate-x-1/2 -translate-y-1/2 scale-[0.84] border-0 bg-white"
-          loading="lazy"
-          referrerPolicy="no-referrer"
-          scrolling="no"
-          tabIndex={-1}
-          aria-hidden="true"
-        />
-      </div>
-    </div>
-  );
-}
-
 type TaxonomyNode = {
   slug: string;
   title: string;
@@ -381,12 +360,17 @@ export default async function AbmStagedDetailPage({
             <h1 className="max-w-4xl text-3xl font-bold leading-tight tracking-tight text-neutral-950">{title}</h1>
 
             <div className="mt-6 grid gap-8 border-t border-neutral-200 pt-7 md:grid-cols-[minmax(0,1fr)_400px]">
-              {vectorMapId ? (
-                <AbmVectorMapPreview mapId={vectorMapId} title={title} />
-              ) : hasGallery ? (
+              {hasGallery ? (
                 <div className="min-h-[320px]">
-                  <ProductGalleryClient images={gallery} title={title} />
-                  {record.imageCaption ? (
+                  <ProductGalleryClient
+                    images={vectorMapId ? [] : gallery}
+                    title={title}
+                    vectorMap={vectorMapId ? {
+                      url: `https://www.abmgood.com/vds/map/cat/${vectorMapId}`,
+                      alt: `${title} vector map`,
+                    } : undefined}
+                  />
+                  {!vectorMapId && record.imageCaption ? (
                     <p className="mx-auto mt-3 max-w-[560px] text-center text-xs leading-5 text-neutral-500">
                       {record.imageCaption}{" "}
                       {record.imageCreditUrl ? (
