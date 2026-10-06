@@ -981,13 +981,16 @@ function normalizeResourceItems(rawItems: any[]) {
       const title = typeof it?.title === "string" ? it.title.trim() : "";
       const subtitle = typeof it?.subtitle === "string" ? it.subtitle.trim() : "";
       const imageUrl = typeof it?.imageUrl === "string" ? it.imageUrl.trim() : "";
+      const verifiedImageUrl = /EOS iPSC Reporters/i.test(title) && /EOS-Reporters\.pdf/i.test(href)
+        ? "https://www.abmgood.com/assets/images/tinymce/j5zfRZ4xL0WljzG25jjKGvpOAC3XvNRB2toUgb8P.png"
+        : imageUrl;
 
       return {
         key: it?._key || `${title}-${href}-${i}`,
         title: title || "(untitled)",
         subtitle,
         href,
-        imageUrl,
+        imageUrl: verifiedImageUrl,
       };
     })
     .filter((x) => x.href);
