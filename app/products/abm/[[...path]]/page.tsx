@@ -68,9 +68,6 @@ const VERIFIED_TARGETED_APOPTOSIS_HTML = `
       <tr><td><a href="https://www.abmgood.com/CMV-Control-Apoptosis-Adenovirus-G3000.html">CMV Control Apoptosis Adenovirus</a></td><td><a href="https://www.abmgood.com/CMV-Control-Apoptosis-Adenovirus-G3000.html">G3000</a></td><td>1.0 ml</td><td>1 × 10<sup>6</sup> pfu/ml</td></tr>
       <tr><td><a href="https://www.abmgood.com/Endothelial-Apoptosis-Adenovirus-G3001.html">Endothelial Apoptosis Adenovirus</a></td><td><a href="https://www.abmgood.com/Endothelial-Apoptosis-Adenovirus-G3001.html">G3001</a></td><td>1.0 ml</td><td>1 × 10<sup>6</sup> pfu/ml</td></tr>
       <tr><td><a href="https://www.abmgood.com/Epithelial-Apoptosis-Adenovirus-G3002.html">Epithelial Apoptosis Adenovirus</a></td><td><a href="https://www.abmgood.com/Epithelial-Apoptosis-Adenovirus-G3002.html">G3002</a></td><td>1.0 ml</td><td>1 × 10<sup>6</sup> pfu/ml</td></tr>
-      <tr><td><a href="https://www.abmgood.com/Astrocyte-Apoptosis-Adenovirus-G3003.html">Astrocyte Apoptosis Adenovirus</a></td><td><a href="https://www.abmgood.com/Astrocyte-Apoptosis-Adenovirus-G3003.html">G3003</a></td><td>1.0 ml</td><td>1 × 10<sup>6</sup> pfu/ml</td></tr>
-      <tr><td><a href="https://www.abmgood.com/Fibroblast-Apoptosis-Adenovirus-G3004.html">Fibroblast Apoptosis Adenovirus</a></td><td><a href="https://www.abmgood.com/Fibroblast-Apoptosis-Adenovirus-G3004.html">G3004</a></td><td>1.0 ml</td><td>1 × 10<sup>6</sup> pfu/ml</td></tr>
-      <tr><td><a href="https://www.abmgood.com/Microglia-Apoptosis-Adenovirus-G3005.html">Microglia Apoptosis Adenovirus</a></td><td><a href="https://www.abmgood.com/Microglia-Apoptosis-Adenovirus-G3005.html">G3005</a></td><td>1.0 ml</td><td>1 × 10<sup>6</sup> pfu/ml</td></tr>
     </tbody>
   </table>
   <h3>Mechanism</h3>
