@@ -49,7 +49,10 @@ export default function ProductGalleryClient({
           <iframe
             src={active.url}
             title={active.alt || `${title || "Product"} vector map`}
-            className="pointer-events-none absolute left-1/2 top-1/2 h-[620px] w-[600px] -translate-x-1/2 -translate-y-1/2 scale-[0.84] border-0 bg-white"
+            width={600}
+            height={620}
+            className="pointer-events-none h-[620px] w-[600px] border-0 bg-white"
+            style={{ transform: "translateX(-25%) scale(0.5)" }}
             loading="lazy"
             referrerPolicy="no-referrer"
             scrolling="no"
