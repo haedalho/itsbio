@@ -364,6 +364,54 @@ function isCommerceColumnLabel(value: string) {
   return /^(?:price|unit price|list price|sale price|cost|amount|currency|cart|add to cart|order|order now|msrp|retail(?: price)?|wholesale(?: price)?|price \((?:usd|cad)\)|(?:usd|cad) price|usd|cad)$/i.test(label);
 }
 
+/** The two unnamed bundle columns contain real package combinations. Keep
+ * their checks in place and label them from the catalog row, rather than
+ * treating them as empty columns or ordinary product-table fields. */
+function normalizeLentivirusBundleTables(doc: Document) {
+  doc.querySelectorAll<HTMLTableElement>("table").forEach((table) => {
+    const rows = Array.from(table.rows);
+    const header = rows.find((row) => row.querySelector("th"));
+    const catalogRow = rows.find((row) =>
+      /^(?:bundle\s+cat(?:alog)?\.?\s*(?:no|number)\.?)$/i.test(collapseWs(row.cells[1]?.textContent || "")),
+    );
+    if (!header || !catalogRow || !isProductNameHeader(header.cells[0]?.textContent || "")
+      || !/^quantity$/i.test(collapseWs(header.cells[1]?.textContent || ""))) return;
+
+    const headers = Array.from(header.cells);
+    const priceIndex = headers.findIndex((cell) => /^individual price$/i.test(collapseWs(cell.textContent || "")));
+    rows.forEach((row) => {
+      if (Array.from(row.cells).some((cell) => /^bundle price$/i.test(collapseWs(cell.textContent || "")))) {
+        removeNode(row);
+      } else if (priceIndex >= 0) {
+        removeNode(row.cells[priceIndex]);
+      }
+    });
+
+    Array.from(header.cells).forEach((cell, index) => {
+      if (index > 1 && !collapseWs(cell.textContent || "")) {
+        cell.textContent = collapseWs(catalogRow.cells[index]?.textContent || "");
+      }
+      cell.querySelectorAll<HTMLElement>("[style]").forEach((child) => child.style.removeProperty("color"));
+      cell.querySelectorAll<HTMLElement>("span").forEach((child) => {
+        if (/^best value$/i.test(collapseWs(child.textContent || ""))) {
+          child.removeAttribute("style");
+          child.classList.add("itsbio-bundle-best-value");
+        }
+      });
+    });
+
+    // The footer label spans Product + Quantity; package numbers remain
+    // directly beneath the four corresponding checkmark columns.
+    if (!collapseWs(catalogRow.cells[0]?.textContent || "")) {
+      removeNode(catalogRow.cells[0]);
+      catalogRow.cells[0].colSpan = 2;
+    }
+    catalogRow.classList.add("itsbio-bundle-catalog-row");
+    catalogRow.querySelectorAll("[style]").forEach((child) => child.removeAttribute("style"));
+    table.setAttribute("data-itsbio-bundle-table", "true");
+  });
+}
+
 function removeEmptyPrimarySpecificationRows(doc: Document) {
   doc.querySelectorAll<HTMLTableRowElement>(
     ".abm-products-specification > table > tbody > tr, .abm-products-specification > table > tr"
@@ -1524,6 +1572,7 @@ export function sanitizeAndStyle(
   removeEmptyPrimarySpecificationRows(doc);
 
   // 6) 판매 컬럼 제거 + ABM 정보 표를 동일한 구조와 디자인으로 정규화
+  if (isAbmMode) normalizeLentivirusBundleTables(doc);
   doc.querySelectorAll("table").forEach((table) => {
     const rows = Array.from(table.querySelectorAll(":scope > thead > tr, :scope > tbody > tr, :scope > tr"));
     const candidateRows = rows.slice(0, 4);

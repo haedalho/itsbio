@@ -74,6 +74,59 @@ const ABM_CATALOG_POLISH_CSS = `
   background: #fff7ed;
 }
 
+/* Bundle matrices retain four package columns, including the two combo packs
+   whose source headers were blank. Give each checkmark a readable column. */
+.itsbio-html table[data-itsbio-bundle-table] {
+  min-width: 920px !important;
+  table-layout: fixed !important;
+}
+
+.itsbio-html table[data-itsbio-bundle-table] th,
+.itsbio-html table[data-itsbio-bundle-table] td {
+  vertical-align: middle !important;
+  overflow-wrap: normal;
+  word-break: normal;
+  font-size: 14px;
+}
+
+.itsbio-html table[data-itsbio-bundle-table] thead th {
+  width: 12% !important;
+  color: #fff !important;
+}
+
+.itsbio-html table[data-itsbio-bundle-table] thead th:first-child { width: 30% !important; }
+.itsbio-html table[data-itsbio-bundle-table] thead th:nth-child(2) { width: 10% !important; }
+.itsbio-html table[data-itsbio-bundle-table] tr:not(.itsbio-bundle-catalog-row) > :nth-child(n+3) {
+  text-align: center !important;
+}
+.itsbio-html table[data-itsbio-bundle-table] tr > :nth-child(2) { white-space: nowrap; }
+.itsbio-html table[data-itsbio-bundle-table] thead th span:not(.itsbio-bundle-best-value) { color: inherit !important; }
+.itsbio-html table[data-itsbio-bundle-table] .itsbio-bundle-best-value {
+  display: inline-block;
+  margin-top: 5px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #fef08a;
+  color: #422006;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.itsbio-html table[data-itsbio-bundle-table] .itsbio-bundle-catalog-row > td {
+  background: #fff7ed !important;
+  color: #111827;
+  font-weight: 600;
+  text-align: center !important;
+}
+.itsbio-html table[data-itsbio-bundle-table] .itsbio-bundle-catalog-row > td:first-child {
+  width: auto !important;
+  text-align: left !important;
+}
+.itsbio-html table[data-itsbio-bundle-table] .itsbio-bundle-catalog-row a {
+  color: #9a3412;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* Cas9 Vectors & Virus keeps ABM's native rowspan grouping after the Price
    column is removed. This is intentionally scoped to that one category. */
 .itsbio-html .itsbio-cas9-vector-table {

@@ -161,6 +161,52 @@ const bundleStagedLinks = Array.from(lentivirusBundles.querySelectorAll("tbody a
   .filter((href) => href?.startsWith("/products/abm/staged/product/"));
 assert.equal(new Set(bundleStagedLinks).size, 7);
 
+// Reproduce the migrated matrices: two blank but populated combo headers,
+// nested source text colors, and a sparse footer left after price stripping.
+for (const generation of [2, 3]) {
+  const packagingSku = generation === 2 ? "LV003" : "LV053";
+  const firstBundle = generation === 2 ? 1 : 3;
+  const packageSkus = ["LV900-G515", `${packagingSku}-G2500`, `Lenti-Bundle-${firstBundle}`, `Lenti-Bundle-${firstBundle + 1}`];
+  const checkRows = [
+    ["Packaging Mix", "100 μg", "", "✔", "✔", "✔", packagingSku, ""],
+    ["DNAfectin Plus", "1.0 ml", "", "✔", "✔", "✔", "G2500", ""],
+    ["qPCR Lentivirus Titer Kit", "100 rxn", "✔", "", "✔", "✔", "LV900", ""],
+    ["ViralEntry Transduction Enhancer", "1.0 ml", "✔", "", "", "✔", "G515", ""],
+  ];
+  const matrixHtml = `<table><thead><tr>
+    <th>Product Name</th><th>Quantity</th><th></th><th></th>
+    <th>Bundle ${firstBundle}</th><th>Bundle ${firstBundle + 1}<br><span style="color:black;background:yellow">Best Value</span></th>
+    <th><span style="color:#7e8c8d">Individual Cat. No.</span></th><th>Individual Price</th>
+    </tr></thead><tbody>
+    ${checkRows.map((cells) => `<tr>${cells.map((value) => `<td>${value}</td>`).join("")}</tr>`).join("")}
+    <tr><td></td><td><span style="color:white">Bundle Cat. No.</span></td>
+    ${packageSkus.map((sku) => `<td>${sku}</td>`).join("")}<td></td><td></td></tr>
+    <tr><td></td><td><span style="color:white">Bundle Price</span></td><td></td><td></td></tr>
+    </tbody></table>`;
+
+  for (const mode of ["abm-landing", "abm-detail"]) {
+    const matrix = new JSDOM(sanitizeAndStyle(matrixHtml, "https://www.abmgood.com", mode, packageSkus)).window.document;
+    const table = matrix.querySelector("table[data-itsbio-bundle-table]");
+    assert.ok(table, `${generation}nd/rd generation matrix is recognized in ${mode}`);
+    assert.deepEqual(Array.from(table.querySelectorAll("thead th")).map((cell) => cell.textContent.trim()), [
+      "Product Name", "Quantity", packageSkus[0], packageSkus[1], `Bundle ${firstBundle}`, `Bundle ${firstBundle + 1}Best Value`, "Individual Cat. No.",
+    ]);
+    const bodyRows = Array.from(table.querySelectorAll("tbody tr"));
+    assert.equal(bodyRows.length, 5);
+    bodyRows.slice(0, 4).forEach((row, index) => {
+      assert.deepEqual(Array.from(row.cells).map((cell) => cell.textContent.trim()), checkRows[index].slice(0, 7));
+    });
+    const catalogRow = bodyRows[4];
+    assert.equal(catalogRow.cells[0].colSpan, 2);
+    assert.equal(catalogRow.cells[0].textContent.trim(), "Bundle Cat. No.");
+    assert.equal(catalogRow.querySelector("[style]"), null);
+    assert.equal(Array.from(catalogRow.cells).reduce((sum, cell) => sum + cell.colSpan, 0), 7);
+    assert.deepEqual(Array.from(catalogRow.querySelectorAll("a")).map((link) => link.getAttribute("href").split("?")[0]),
+      packageSkus.map((sku) => `/products/abm/staged/product/${sku}`));
+    assert.equal(/price/i.test(table.textContent), false);
+  }
+}
+
 const viralKitProducts = [
   ["2nd Generation Packaging Mix", "LV003"],
   ["2nd Gen. Packaging Mix & DNAfectin Plus Combo Pack", "LV003-G2500"],
