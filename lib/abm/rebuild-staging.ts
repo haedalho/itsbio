@@ -136,6 +136,8 @@ const VERIFIED_EXPRESSION_SYSTEM_PRODUCTS: Record<string, AbmStagedDetail> = {
   },
 };
 
+// ABM assigns new feature colors each time its live map renders. The local
+// SVGs retain reviewed product-page color snapshots and canonical geometry.
 const VERIFIED_IPSC_VECTOR_MAPS: Record<string, { catId: string; label: string }> = {
   "000776A": { catId: "406", label: "pAdeno-Oct4-ECFP" },
   "000774A": { catId: "405", label: "pAdeno-Myc-EYFP" },
@@ -154,9 +156,9 @@ function applyVerifiedIpscVectorMap(detail: AbmStagedDetail) {
     ...detail,
     previewImage: image,
     images: [image],
-    imageCaption: undefined,
-    imageCreditUrl: undefined,
-    imageCreditLabel: undefined,
+    imageCaption: `Official ABM Vector Design Studio map for ${map.label}.`,
+    imageCreditUrl: `https://www.abmgood.com/vds/viewer/cat/${map.catId}`,
+    imageCreditLabel: "View official vector map",
     verification: {
       ...(detail.verification || {}),
       officialImagePresent: true,
