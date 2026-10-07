@@ -128,6 +128,44 @@ const ABM_CATALOG_POLISH_CSS = `
   text-underline-offset: 3px;
 }
 
+.itsbio-html .itsbio-packaging-explainer {
+  margin-block: 24px;
+  border-block: 1px solid #e5e7eb;
+  padding-block: 16px;
+}
+.itsbio-html .itsbio-packaging-explainer > summary {
+  cursor: pointer;
+  color: #c2410c;
+  font-weight: 700;
+  font-size: 18px;
+}
+.itsbio-html .itsbio-packaging-explainer > div { margin-top: 16px; }
+.itsbio-html .itsbio-packaging-workflow { margin: 24px 0; }
+.itsbio-html .itsbio-packaging-workflow img {
+  width: min(100%, 800px);
+  height: auto;
+}
+.itsbio-html table[data-itsbio-packaging-products] {
+  min-width: 600px !important;
+  table-layout: fixed !important;
+}
+.itsbio-html table[data-itsbio-packaging-products] tr:not(.abm-table-section-row) > :first-child {
+  width: 80% !important;
+}
+.itsbio-html table[data-itsbio-packaging-products] tr:not(.abm-table-section-row) > :last-child {
+  width: 20% !important;
+}
+.itsbio-html table[data-itsbio-packaging-comparison] {
+  min-width: 600px !important;
+  table-layout: fixed !important;
+}
+.itsbio-html table[data-itsbio-packaging-comparison] th,
+.itsbio-html table[data-itsbio-packaging-comparison] td {
+  width: 24% !important;
+  overflow-wrap: normal;
+}
+.itsbio-html table[data-itsbio-packaging-comparison] tr > :first-child { width: 28% !important; }
+
 /* Enhancer applications are short labels, rather than long descriptions.
    Allocate the space to the product names and keep the result image at its
    native size so the migrated 651px source is not enlarged. */

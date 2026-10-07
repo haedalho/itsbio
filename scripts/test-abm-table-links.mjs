@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 
 import { JSDOM } from "jsdom";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 
 const pageUrl = "https://www.itsbio.co.kr/products/abm/genetic-materials/expression-ready-libraries/control-vectors-and-viruses";
 const browser = new JSDOM("<!doctype html><html><body></body></html>", { url: pageUrl });
@@ -18,6 +20,7 @@ Object.assign(globalThis, {
 
 const { sanitizeAndStyle } = await import("../components/site/HtmlContent.tsx");
 const { extractAbmTableCatalogNumbers } = await import("../lib/abm/table-catalog.ts");
+const { restorePackagingMixesBlocks } = await import("../lib/abm/packaging-mixes.ts");
 
 function render(html, products = [], services = []) {
   return new JSDOM(sanitizeAndStyle(html, "https://www.abmgood.com", "abm-landing", products, services)).window.document;
@@ -269,6 +272,46 @@ for (const mode of ["abm-landing", "abm-detail"]) {
 }
 const unrelatedSample = render(`<div id="free_sample"><p>Unrelated category content</p></div>`);
 assert.equal(unrelatedSample.querySelector("#free_sample")?.textContent, "Unrelated category content");
+
+const packagingPath = "genetic-materials/kits-for-viral-vectors/virus-packaging-dna-mixes";
+const packagingSkus = ["LV003", "LV003-G2500", "LV053", "LV053-G2500", "E-510", "AAV1001", "AAV1002", "AAV1003", "AAV1004", "AAV1005", "AAV1006"];
+const packagingBlocks = [
+  { _key: "html", _type: "contentBlockHtml", html: `<p>Existing overview</p><div id="abm-category-section2"><h3>Products</h3><table id="table2"><thead><tr><th>Product Name</th><th>Cat. No.</th><th>Price</th></tr></thead><tbody>${packagingSkus.map(sku => `<tr><td>Product ${sku}</td><td>${sku}</td><td>$10</td></tr>`).join("")}</tbody></table></div>` },
+  { _key: "resources", _type: "contentBlockResources", items: [{ title: "Existing resource", href: "https://info.abmgood.com/lentivirus" }] },
+];
+const restoredPackaging = restorePackagingMixesBlocks(packagingPath, packagingBlocks);
+assert.deepEqual(restoredPackaging.map(block => block._type), ["contentBlockHtml", "contentBlockAbmPackagingVideo", "contentBlockResources", "contentBlockAbmPackagingPublications"]);
+assert.deepEqual(restorePackagingMixesBlocks(packagingPath, restoredPackaging), restoredPackaging, "restoration does not duplicate sections");
+assert.equal(restorePackagingMixesBlocks("genetic-materials/crispr", packagingBlocks), packagingBlocks, "other categories retain their content");
+assert.equal(restoredPackaging[2], packagingBlocks[1], "the resource record is retained");
+const resourceDestinations = ["crispr-cas9-introduction", "lentivirus-system", "adeno-associated-virus-aav", "adenovirus-system"];
+const missingResourceBanners = restorePackagingMixesBlocks(packagingPath, [packagingBlocks[0], {
+  _type: "contentBlockResources", items: resourceDestinations.map(path => ({ title: path, href: `https://info.abmgood.com/${path}` })),
+}])[2];
+assert.equal(missingResourceBanners.items.filter(item => item.imageUrl.startsWith("https://cdn.sanity.io/images/")).length, 4);
+assert.deepEqual(missingResourceBanners.items.map(item => item.href), resourceDestinations.map(path => `https://info.abmgood.com/${path}`));
+assert.equal(missingResourceBanners.items.every(item => item.imageFit === "contain"), true);
+assert.equal(packagingBlocks[0].html.includes("data-itsbio-packaging-intro"), false, "the CMS input is not mutated");
+const restoredPackagingDoc = render(restoredPackaging[0].html, packagingSkus);
+assert.equal(restoredPackagingDoc.querySelector("details summary")?.textContent, "Understanding viral packaging mixes");
+assert.equal(restoredPackagingDoc.querySelectorAll("table[data-itsbio-packaging-comparison] tbody tr").length, 5);
+assert.equal(restoredPackagingDoc.querySelectorAll("table[data-itsbio-packaging-products] tbody tr").length, 11);
+assert.equal(restoredPackagingDoc.querySelectorAll("table[data-itsbio-packaging-products] thead th").length, 2);
+assert.equal(restoredPackagingDoc.querySelectorAll("table[data-itsbio-packaging-products] a").length, 22);
+assert.match(restoredPackagingDoc.querySelector(".itsbio-packaging-workflow img")?.src, /35da2c880ee0ab3fe32ab098fd65f40934f3dc96/);
+
+// Standalone JSX rendering uses the same components as the category route.
+globalThis.React = React;
+const guideModule = await import("../components/products/AbmViralKitGuide.tsx");
+const Guide = guideModule.default.default || guideModule.default;
+const mediaModule = await import("../components/products/AbmPackagingMedia.tsx");
+const packagingFaq = new JSDOM(renderToStaticMarkup(React.createElement(Guide, { path: packagingPath, position: "after", sourceHtml: restoredPackaging[0].html }))).window.document;
+assert.equal(packagingFaq.querySelectorAll("details").length, 20, "all supplier FAQ topics are represented");
+const packagingVideo = new JSDOM(renderToStaticMarkup(React.createElement(mediaModule.AbmPackagingVideo))).window.document;
+assert.equal(packagingVideo.querySelector("iframe")?.src, "https://www.youtube.com/embed/LzgsgVO5WYI");
+const packagingPubs = new JSDOM(renderToStaticMarkup(React.createElement(mediaModule.AbmPackagingPublications))).window.document;
+assert.equal(packagingPubs.querySelectorAll("article").length, 3);
+assert.equal(packagingPubs.querySelectorAll('a[href^="https://doi.org/"]').length, 3);
 
 const cas9 = render(`
   <h1>Cas9 Expression Vectors and Viruses</h1>

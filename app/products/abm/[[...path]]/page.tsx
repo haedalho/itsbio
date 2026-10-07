@@ -12,6 +12,8 @@ import AbmCatalogSideNav from "@/components/products/AbmCatalogSideNav";
 import AbmCellularSidebar from "@/components/products/AbmCellularSidebar";
 import AbmServiceLanding from "@/components/products/AbmServiceLanding";
 import AbmViralKitGuide from "@/components/products/AbmViralKitGuide";
+import { AbmPackagingVideo, AbmPackagingPublications } from "@/components/products/AbmPackagingMedia";
+import { restorePackagingMixesBlocks } from "@/lib/abm/packaging-mixes";
 import abmCellularTaxonomy from "@/data/abm-cellular-taxonomy.json";
 import {
   ABM_PRODUCT_GROUPS,
@@ -992,6 +994,7 @@ function normalizeResourceItems(rawItems: any[]) {
         subtitle,
         href,
         imageUrl: verifiedImageUrl,
+        imageFit: it?.imageFit === "contain" ? "contain" as const : "cover" as const,
       };
     })
     .filter((x) => x.href);
@@ -1102,17 +1105,19 @@ function ResourceSection({
   items,
   brandKey,
   theme,
+  title = "Resource",
 }: {
-  items: Array<{ key: string; title: string; subtitle?: string; href: string; imageUrl?: string }>;
+  items: Array<{ key: string; title: string; subtitle?: string; href: string; imageUrl?: string; imageFit?: "contain" | "cover" }>;
   brandKey: string;
   theme: Theme;
+  title?: string;
 }) {
   const safeItems = items.filter((x) => typeof x?.href === "string" && x.href.trim().length > 0);
   if (!safeItems.length) return null;
 
   return (
     <section className="mt-10">
-      <h3 className={`text-2xl font-bold ${theme.accentText}`}>Resource</h3>
+      <h3 className={`text-2xl font-bold ${theme.accentText}`}>{title}</h3>
 
       <div className="mt-4 grid gap-x-7 gap-y-8 sm:grid-cols-2 xl:grid-cols-4">
         {safeItems.map((x) => (
@@ -1121,7 +1126,7 @@ function ResourceSection({
               {isTrustedAbmResourceImageUrl(x.imageUrl) ? <div className="overflow-hidden bg-neutral-100">
                 <div className="relative aspect-[16/9] w-full">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={trustedAbmResourceImageSrc(x.imageUrl)} alt={x.title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                  <img src={trustedAbmResourceImageSrc(x.imageUrl)} alt={x.title} className={`absolute inset-0 h-full w-full ${x.imageFit === "contain" ? "object-contain" : "object-cover"}`} loading="lazy" />
                 </div>
               </div> : null}
 
@@ -1194,6 +1199,13 @@ function renderContentBlocks(
       {blocks.map((b: any) => {
         const type = b?._type;
 
+        if (brandKey === "abm" && type === "contentBlockAbmPackagingVideo") {
+          return <AbmPackagingVideo key={b._key} />;
+        }
+        if (brandKey === "abm" && type === "contentBlockAbmPackagingPublications") {
+          return <AbmPackagingPublications key={b._key} />;
+        }
+
         if (type === "contentBlockHtml") {
           if (renderedHtml) return null;
           renderedHtml = true;
@@ -1229,7 +1241,7 @@ function renderContentBlocks(
           const items = normalizeResourceItems(b?.items ?? []);
           return (
             <div key={b._key || "resources"}>
-              <ResourceSection items={items} brandKey={brandKey} theme={theme} />
+              <ResourceSection items={items} brandKey={brandKey} theme={theme} title={b.title || "Resource"} />
             </div>
           );
         }
@@ -1591,11 +1603,14 @@ export default async function AbmProductsPathPage({
     (block: any) => block?._type === "contentBlockHtml" && typeof block?.html === "string" && block.html.trim(),
   );
   const primaryHtml = populatedHtmlBlock?.html || legacyHtml;
-  const blocksForRender = populatedHtmlBlock
+  const originalBlocksForRender = populatedHtmlBlock
     ? blocks
     : primaryHtml
       ? [{ _key: "legacy-html-fallback", _type: "contentBlockHtml", html: primaryHtml }, ...blocks]
       : blocks;
+  const blocksForRender = brandKey === "abm"
+    ? restorePackagingMixesBlocks(pathStr, originalBlocksForRender)
+    : originalBlocksForRender;
   const cellularPresentation = getCellularPresentation(pathStr, typeof primaryHtml === "string" ? primaryHtml : "");
   const hasEmbeddedCellularHero = cellularPresentation === "collections" || cellularPresentation === "rich";
   const officialCrisprPaths = new Set([
