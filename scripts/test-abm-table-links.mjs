@@ -304,6 +304,25 @@ assert.match(restoredPackagingDoc.querySelector(".itsbio-packaging-workflow img"
 globalThis.React = React;
 const guideModule = await import("../components/products/AbmViralKitGuide.tsx");
 const Guide = guideModule.default.default || guideModule.default;
+const titerModule = await import("../components/products/AbmTiterKitLanding.tsx");
+const TiterLanding = titerModule.default.default || titerModule.default;
+const titerDoc = new JSDOM(renderToStaticMarkup(React.createElement(TiterLanding))).window.document;
+assert.deepEqual(Array.from(titerDoc.querySelectorAll("table thead th"), cell => cell.textContent), ["Product", "Cat. No.", "Viral System", "Method", "Size"]);
+assert.deepEqual(Array.from(titerDoc.querySelectorAll("table tbody tr"), row => Array.from(row.cells, cell => cell.textContent)), [
+  ["qPCR Lentivirus Titer Kit", "LV900", "Lentivirus", "RT-qPCR", "100 rxn"],
+  ["qPCR AAV Titer Kit", "G931", "AAV", "qPCR", "100 rxn"],
+  ["qPCR Retrovirus Titer Kit", "G949", "Retrovirus", "RT-qPCR", "100 rxn"],
+]);
+assert.equal(titerDoc.querySelectorAll("details").length, 6);
+assert.equal(titerDoc.querySelectorAll("figure img").length, 3);
+assert.equal(titerDoc.querySelectorAll("img").length, 5);
+assert.equal(titerDoc.querySelectorAll('a[href^="https://doi.org/"]').length, 3);
+assert.equal(titerDoc.querySelectorAll('a[href^="/products/abm/staged/product/"]').length, 12);
+for (const anchor of titerDoc.querySelectorAll('a[href^="#"]')) {
+  assert.ok(titerDoc.getElementById(anchor.getAttribute("href").slice(1)), "in-page navigation has a destination");
+}
+assert.equal(renderToStaticMarkup(React.createElement(Guide, { path: titerModule.TITER_PATH, position: "before", sourceHtml: "" })), "", "the obsolete titer comparison is removed");
+assert.equal(renderToStaticMarkup(React.createElement(Guide, { path: titerModule.TITER_PATH, position: "after", sourceHtml: "" })), "", "the obsolete titer FAQ is removed");
 const mediaModule = await import("../components/products/AbmPackagingMedia.tsx");
 const packagingFaq = new JSDOM(renderToStaticMarkup(React.createElement(Guide, { path: packagingPath, position: "after", sourceHtml: restoredPackaging[0].html }))).window.document;
 assert.equal(packagingFaq.querySelectorAll("details").length, 20, "all supplier FAQ topics are represented");

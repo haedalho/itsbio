@@ -12,6 +12,7 @@ import AbmCatalogSideNav from "@/components/products/AbmCatalogSideNav";
 import AbmCellularSidebar from "@/components/products/AbmCellularSidebar";
 import AbmServiceLanding from "@/components/products/AbmServiceLanding";
 import AbmViralKitGuide from "@/components/products/AbmViralKitGuide";
+import AbmTiterKitLanding, { TITER_KITS, TITER_PATH } from "@/components/products/AbmTiterKitLanding";
 import { AbmPackagingVideo, AbmPackagingPublications } from "@/components/products/AbmPackagingMedia";
 import { restorePackagingMixesBlocks } from "@/lib/abm/packaging-mixes";
 import abmCellularTaxonomy from "@/data/abm-cellular-taxonomy.json";
@@ -1625,7 +1626,8 @@ export default async function AbmProductsPathPage({
     && /CRISPR Genome Editing Tools and Services|CRISPR Knockout sgRNA Vectors & Viruses|CRISPR Activation & Repression|Cas9 Expression Vectors and Viruses|Cas Proteins & CRISPR Screening/i.test(primaryText);
   const hasEmbeddedCategoryHero = hasEmbeddedCellularHero || hasEmbeddedCrisprHero;
   const hideDuplicateCas9Resources = pathStr === "genetic-materials/crispr/cas9-vectors-and-virus";
-  const hasEmbeddedProductTable = blocksForRender.some((block: any) => {
+  const isTiterLanding = brandKey === "abm" && pathStr === TITER_PATH;
+  const hasEmbeddedProductTable = isTiterLanding || blocksForRender.some((block: any) => {
     const html = typeof block?.html === "string" ? block.html : "";
     return /<table\b/i.test(html) && /Product\s+(?:List|Name)|Cat\.?\s*No\.?/i.test(html);
   });
@@ -1633,7 +1635,9 @@ export default async function AbmProductsPathPage({
     .map((block: any) => typeof block?.html === "string" ? block.html : "")
     .filter(Boolean)
     .join("\n");
-  const tableCatalogNumbers = brandKey === "abm" && hasEmbeddedProductTable
+  const tableCatalogNumbers = isTiterLanding
+    ? TITER_KITS.map((kit) => kit.sku)
+    : brandKey === "abm" && hasEmbeddedProductTable
     ? extractAbmTableCatalogNumbers(tableHtml)
     : [];
   const tableCatalogKeys = new Set(tableCatalogNumbers.map((sku) => sku.toLowerCase()));
@@ -1730,9 +1734,9 @@ export default async function AbmProductsPathPage({
               </div>
             ) : null}
 
-            {brandKey === "abm" ? <AbmViralKitGuide path={pathStr} position="before" sourceHtml={tableHtml} /> : null}
+            {brandKey === "abm" && !isTiterLanding ? <AbmViralKitGuide path={pathStr} position="before" sourceHtml={tableHtml} /> : null}
 
-            {blocksForRender.length ? (
+            {isTiterLanding ? <AbmTiterKitLanding /> : blocksForRender.length ? (
               renderContentBlocks(
                 blocksForRender,
                 brandKey,
@@ -1774,7 +1778,7 @@ export default async function AbmProductsPathPage({
               </div>
             )}
 
-            {brandKey === "abm" ? <AbmViralKitGuide path={pathStr} position="after" sourceHtml={tableHtml} /> : null}
+            {brandKey === "abm" && !isTiterLanding ? <AbmViralKitGuide path={pathStr} position="after" sourceHtml={tableHtml} /> : null}
 
             {isPrimaryAntibodyPage ? (
               <form
