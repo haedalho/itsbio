@@ -50,6 +50,9 @@ export function internalizeAbmHref(rawHref: string, baseUrl = "") {
 
   if (!ABM_HOSTS.has(resolved.hostname.toLowerCase())) return resolved.toString();
   resolved.protocol = "https:";
+  // Learning resources use a separate host; preserve it before normalizing
+  // product and category URLs to www.abmgood.com.
+  if (normalizeAbmResourcePageUrl(resolved.toString())) return abmResourcePagePath(resolved.toString());
   resolved.hostname = "www.abmgood.com";
 
   const categoryRoute = ABM_CATEGORY_ROUTES.get(resolved.pathname.toLowerCase().replace(/\/+$/, "") || "/");
@@ -59,7 +62,6 @@ export function internalizeAbmHref(rawHref: string, baseUrl = "") {
   // the same table row. Keep the official vector design page intact so the
   // caller can open that precise map in a new tab.
   if (VECTOR_PATH.test(resolved.pathname)) return resolved.toString();
-  if (normalizeAbmResourcePageUrl(resolved.toString())) return abmResourcePagePath(resolved.toString());
 
   if (COMMERCE_PATH.test(resolved.pathname)) return "";
   if (resolved.pathname.startsWith("/uploads/") || DOCUMENT_PATH.test(resolved.pathname)) {

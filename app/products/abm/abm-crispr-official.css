@@ -467,6 +467,10 @@
   aspect-ratio: 727 / 418;
 }
 
+.abm-crispr-official .abm-cas-resources a::after {
+  content: none;
+}
+
 .abm-crispr-official .abm-cas-resources .abm-sub2-category-image-title {
   text-align: center;
 }

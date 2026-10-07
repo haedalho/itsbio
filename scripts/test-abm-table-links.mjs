@@ -21,6 +21,14 @@ Object.assign(globalThis, {
 const { sanitizeAndStyle } = await import("../components/site/HtmlContent.tsx");
 const { extractAbmTableCatalogNumbers } = await import("../lib/abm/table-catalog.ts");
 const { restorePackagingMixesBlocks } = await import("../lib/abm/packaging-mixes.ts");
+const { internalizeAbmHref } = await import("../lib/abm/internal-links.ts");
+
+for (const path of ["crispr-cas9", "crispr-cas9-methods-tools", "crispr-cas9-sgrna-design"]) {
+  const source = `https://info.abmgood.com/${path}`;
+  const destination = new URL(internalizeAbmHref(source), pageUrl);
+  assert.equal(destination.pathname, "/products/abm/resource");
+  assert.equal(destination.searchParams.get("u"), source);
+}
 
 function render(html, products = [], services = []) {
   return new JSDOM(sanitizeAndStyle(html, "https://www.abmgood.com", "abm-landing", products, services)).window.document;
