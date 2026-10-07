@@ -128,6 +128,28 @@ const ABM_CATALOG_POLISH_CSS = `
   text-underline-offset: 3px;
 }
 
+/* Enhancer applications are short labels, rather than long descriptions.
+   Allocate the space to the product names and keep the result image at its
+   native size so the migrated 651px source is not enlarged. */
+.itsbio-html table[data-itsbio-enhancer-table] {
+  table-layout: fixed !important;
+}
+.itsbio-html table[data-itsbio-enhancer-table] th:first-child,
+.itsbio-html table[data-itsbio-enhancer-table] td:first-child { width: 50% !important; }
+.itsbio-html table[data-itsbio-enhancer-table] th:nth-child(2),
+.itsbio-html table[data-itsbio-enhancer-table] td:nth-child(2) { width: 14% !important; }
+.itsbio-html table[data-itsbio-enhancer-table] th:nth-child(3),
+.itsbio-html table[data-itsbio-enhancer-table] td:nth-child(3) { width: 22% !important; }
+.itsbio-html table[data-itsbio-enhancer-table] th:last-child,
+.itsbio-html table[data-itsbio-enhancer-table] td:last-child { width: 14% !important; }
+.itsbio-html .itsbio-enhancer-guarantee { margin-inline: auto; }
+.itsbio-html #ViralEntry .col-sm-12 > img {
+  width: auto !important;
+  max-width: 100%;
+  height: auto;
+  margin-inline: auto;
+}
+
 /* Cas9 Vectors & Virus keeps ABM's native rowspan grouping after the Price
    column is removed. This is intentionally scoped to that one category. */
 .itsbio-html .itsbio-cas9-vector-table {

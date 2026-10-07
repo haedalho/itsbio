@@ -247,6 +247,29 @@ for (const [, sku] of viralKitProducts) {
   );
 }
 
+const enhancerImages = Array.from({ length: 11 }, (_, index) => `<img src="https://cdn.sanity.io/images/9b5twpc8/production/enhancer-${index}.png">`);
+const enhancerHtml = `
+  <div style="text-align:center">${enhancerImages[0]}</div>
+  <div id="ProductList"><table><thead><tr><th>Product Name</th><th>Cat. No.</th><th>Application</th><th>Size</th><th>Price</th></tr></thead><tbody>
+  <tr><td>ViralEntry Transduction Enhancer</td><td>G515</td><td>Lentivirus</td><td>1.0 ml</td><td>$185</td></tr>
+  <tr><td>AAViralEntry Transduction Enhancer</td><td>G516</td><td>AAV</td><td>1.0 ml</td><td>$185</td></tr></tbody></table></div>
+  <div id="ViralEntry"><p>Lentivirus results</p>${enhancerImages.slice(1, 6).join("")}</div>
+  <div id="AAViralEntry"><p>AAV results</p>${enhancerImages.slice(6).join("")}</div>
+  <div id="free_sample"><h3>Request a Free Sample</h3><p>Use the form below</p><form><input></form></div>
+`;
+for (const mode of ["abm-landing", "abm-detail"]) {
+  const enhancer = new JSDOM(sanitizeAndStyle(enhancerHtml, "https://www.abmgood.com", mode, ["G515", "G516"])).window.document;
+  assert.equal(enhancer.querySelectorAll("img").length, 11, "enhancer polish preserves all source images");
+  assert.equal(enhancer.querySelector("img")?.classList.contains("itsbio-enhancer-guarantee"), true);
+  assert.equal(enhancer.querySelectorAll("table[data-itsbio-enhancer-table] thead th").length, 4);
+  assert.equal(enhancer.querySelector("#free_sample"), null, "do not retain instructions for a stripped sample form");
+  assert.equal(enhancer.querySelector("#ViralEntry p")?.textContent, "Lentivirus results");
+  assert.equal(enhancer.querySelector("#AAViralEntry p")?.textContent, "AAV results");
+  assert.equal(enhancer.querySelectorAll("tbody a").length, 4);
+}
+const unrelatedSample = render(`<div id="free_sample"><p>Unrelated category content</p></div>`);
+assert.equal(unrelatedSample.querySelector("#free_sample")?.textContent, "Unrelated category content");
+
 const cas9 = render(`
   <h1>Cas9 Expression Vectors and Viruses</h1>
   <table><tr><th>Product Name</th><th>Vector Map</th><th>Cat.No.</th></tr>

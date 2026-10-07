@@ -412,6 +412,20 @@ function normalizeLentivirusBundleTables(doc: Document) {
   });
 }
 
+function normalizeTransductionEnhancerLanding(doc: Document) {
+  if (!doc.getElementById("ViralEntry") || !doc.getElementById("AAViralEntry")) return;
+  doc.querySelectorAll("#ProductList table").forEach((table) => {
+    table.setAttribute("data-itsbio-enhancer-table", "true");
+  });
+  const firstImage = doc.querySelector("img");
+  if (firstImage && !firstImage.closest("#ProductList, #ViralEntry, #AAViralEntry")) {
+    firstImage.classList.add("itsbio-enhancer-guarantee");
+  }
+  // The manufacturer's sample form and its actions are stripped above. Its
+  // remaining instructions cannot be used to request a sample on ITS BIO.
+  removeNode(doc.getElementById("free_sample"));
+}
+
 function removeEmptyPrimarySpecificationRows(doc: Document) {
   doc.querySelectorAll<HTMLTableRowElement>(
     ".abm-products-specification > table > tbody > tr, .abm-products-specification > table > tr"
@@ -1572,7 +1586,10 @@ export function sanitizeAndStyle(
   removeEmptyPrimarySpecificationRows(doc);
 
   // 6) 판매 컬럼 제거 + ABM 정보 표를 동일한 구조와 디자인으로 정규화
-  if (isAbmMode) normalizeLentivirusBundleTables(doc);
+  if (isAbmMode) {
+    normalizeLentivirusBundleTables(doc);
+    normalizeTransductionEnhancerLanding(doc);
+  }
   doc.querySelectorAll("table").forEach((table) => {
     const rows = Array.from(table.querySelectorAll(":scope > thead > tr, :scope > tbody > tr, :scope > tr"));
     const candidateRows = rows.slice(0, 4);
