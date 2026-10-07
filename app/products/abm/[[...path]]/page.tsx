@@ -11,6 +11,7 @@ import AbmHeroBanner from "@/components/products/AbmHeroBanner";
 import AbmCatalogSideNav from "@/components/products/AbmCatalogSideNav";
 import AbmCellularSidebar from "@/components/products/AbmCellularSidebar";
 import AbmServiceLanding from "@/components/products/AbmServiceLanding";
+import AbmViralKitGuide from "@/components/products/AbmViralKitGuide";
 import abmCellularTaxonomy from "@/data/abm-cellular-taxonomy.json";
 import {
   ABM_PRODUCT_GROUPS,
@@ -1714,6 +1715,8 @@ export default async function AbmProductsPathPage({
               </div>
             ) : null}
 
+            {brandKey === "abm" ? <AbmViralKitGuide path={pathStr} position="before" sourceHtml={tableHtml} /> : null}
+
             {blocksForRender.length ? (
               renderContentBlocks(
                 blocksForRender,
@@ -1755,6 +1758,8 @@ export default async function AbmProductsPathPage({
                 ) : null}
               </div>
             )}
+
+            {brandKey === "abm" ? <AbmViralKitGuide path={pathStr} position="after" sourceHtml={tableHtml} /> : null}
 
             {isPrimaryAntibodyPage ? (
               <form
