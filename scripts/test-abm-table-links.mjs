@@ -293,7 +293,7 @@ assert.deepEqual(missingResourceBanners.items.map(item => item.href), resourceDe
 assert.equal(missingResourceBanners.items.every(item => item.imageFit === "contain"), true);
 assert.equal(packagingBlocks[0].html.includes("data-itsbio-packaging-intro"), false, "the CMS input is not mutated");
 const restoredPackagingDoc = render(restoredPackaging[0].html, packagingSkus);
-assert.equal(restoredPackagingDoc.querySelector("details summary")?.textContent, "Understanding viral packaging mixes");
+assert.equal(restoredPackagingDoc.querySelector("details summary")?.textContent, "What Is a Viral Packaging Mix? ↓ (Click to expand)");
 assert.equal(restoredPackagingDoc.querySelectorAll("table[data-itsbio-packaging-comparison] tbody tr").length, 5);
 assert.equal(restoredPackagingDoc.querySelectorAll("table[data-itsbio-packaging-products] tbody tr").length, 11);
 assert.equal(restoredPackagingDoc.querySelectorAll("table[data-itsbio-packaging-products] thead th").length, 2);

@@ -12,7 +12,7 @@ const PACKAGING_INTRO = `
   <li>Compatible transfection, titration and transduction reagents complete the workflow.</li>
 </ul>
 <details class="itsbio-packaging-explainer">
-<summary>Understanding viral packaging mixes</summary>
+<summary>What Is a Viral Packaging Mix? ↓ (Click to expand)</summary>
 <div>
 <p>Helper plasmids supply particle-production functions, while a separate transfer vector carries the intended genetic cargo. Producer cells such as HEK293T supply the environment for assembly.</p>
 <p>Lentiviral helpers encode structural, enzymatic, regulatory and envelope functions. Third-generation systems place Rev on a separate helper plasmid; second-generation systems combine more functions.</p>
