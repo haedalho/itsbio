@@ -14,19 +14,22 @@ const PACKAGING_INTRO = `
 <details class="itsbio-packaging-explainer">
 <summary>What Is a Viral Packaging Mix? ↓ (Click to expand)</summary>
 <div>
-<p>Helper plasmids supply particle-production functions, while a separate transfer vector carries the intended genetic cargo. Producer cells such as HEK293T supply the environment for assembly.</p>
-<p>Lentiviral helpers encode structural, enzymatic, regulatory and envelope functions. Third-generation systems place Rev on a separate helper plasmid; second-generation systems combine more functions.</p>
-<p>AAV uses Rep, Cap and adenoviral helper functions. Its cargo usually remains outside the host genome, whereas lentiviral and retroviral vectors are commonly used for integration.</p>
-<p>Separating these functions reduces recombination risk. DNA quality, transfection performance and producer-cell condition also influence results.</p>
+<p>A viral packaging mix is a combination of helper plasmids used to produce recombinant viral particles in mammalian producer cells, most commonly HEK293T cells. These plasmids provide the essential viral proteins required for assembly, replication, and packaging of viral genomes into infectious particles. The gene of interest is carried separately on a transfer vector, allowing researchers to generate viral vectors without directly handling fully replication-competent viruses.</p>
+<p>Packaging plasmids are required because most viral vectors used in research have been engineered to remove genes necessary for replication. This makes them safer for laboratory use but also means they cannot produce viral particles on their own. Helper plasmids supply the missing functions in trans, enabling efficient production of lentivirus, retrovirus, or adeno-associated virus (AAV) particles depending on the system used.</p>
+<p>Lentiviral packaging typically involves plasmids encoding structural proteins (Gag), enzymatic proteins (Pol), regulatory proteins (such as Rev in some systems), and an envelope protein such as VSV-G. These components assemble in producer cells to form lentiviral particles capable of integrating genetic cargo into dividing and non-dividing cells. Retroviral packaging systems are similar but are generally more limited to dividing cells and often use slightly different envelope and gag-pol configurations depending on the system design.</p>
+<p>AAV packaging works differently from lentivirus and retrovirus systems. AAV requires rep and cap genes for replication and capsid formation, along with helper functions typically provided by adenoviral genes. Importantly, AAV vectors generally do not integrate into the host genome at high frequency, making them widely used for transient or long-term episomal gene expression in vivo and in vitro.</p>
+<p>Viral genes are separated across multiple plasmids to improve biosafety and reduce the risk of generating replication-competent virus. By splitting essential viral functions into independent plasmids, the likelihood of recombination into a fully functional virus is extremely low under properly designed systems. Modern lentiviral systems further improve safety through self-inactivating (SIN) long terminal repeats (LTRs), which reduce transcriptional activity after integration into target cells.</p>
+<p>Several factors influence viral titer and overall production efficiency, including plasmid design, DNA purity, transfection efficiency, ratio of packaging components, producer cell health, culture conditions, and harvest timing. Optimizing these parameters can significantly improve viral yield and consistency across experiments.</p>
+<p>Overall, viral packaging mixes provide a standardized and reliable platform for producing high-quality viral vectors for gene delivery, stable cell line generation, CRISPR-based editing, and in vivo research applications, while maintaining multiple layers of experimental control and biosafety.</p>
 <div class="abm-table-scroll" role="region" aria-label="Viral system comparison" tabindex="0">
 <table data-itsbio-packaging-comparison="true">
 <thead><tr><th>Feature</th><th>Lentivirus</th><th>Retrovirus</th><th>AAV</th></tr></thead>
 <tbody>
-<tr><td>Integration</td><td>Yes</td><td>Yes</td><td>Generally no</td></tr>
-<tr><td>Non-dividing cells</td><td>Yes</td><td>Limited</td><td>Yes</td></tr>
-<tr><td>Cargo capacity</td><td>~8 kb</td><td>~8 kb</td><td>~4.7 kb</td></tr>
-<tr><td>Persistent expression</td><td>Excellent</td><td>Good</td><td>Excellent</td></tr>
-<tr><td>Typical use</td><td>Stable expression, CRISPR</td><td>Stable expression in dividing cells</td><td>In vivo delivery</td></tr>
+<tr><td>Genome Integration</td><td>Yes</td><td>Yes</td><td>Typically No</td></tr>
+<tr><td>Non-dividing Cells</td><td>Yes</td><td>Limited</td><td>Yes</td></tr>
+<tr><td>Cargo Capacity</td><td>~8 kb</td><td>~8 kb</td><td>~4.7 kb</td></tr>
+<tr><td>Long-term Expression</td><td>Excellent</td><td>Good</td><td>Excellent</td></tr>
+<tr><td>Typical Applications</td><td>Stable expression, CRISPR</td><td>Stable expression in dividing cells</td><td>In vivo gene delivery</td></tr>
 </tbody></table></div>
 </div></details>
 <h2>Why choose ABM packaging mixes?</h2>
