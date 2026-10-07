@@ -7,6 +7,7 @@ const GEL_DOCUMENTATION = "/products/abm/general-materials/gel-documentation";
 const DNA_STAINS = `${GEL_DOCUMENTATION}#safeview-dna-stains`;
 const GEL_IMAGER = "/products/abm/staged/product/E1001";
 const ABM_CATEGORY_ROOTS = new Set(["general-materials", "cellular-materials", "genetic-materials"]);
+const CRISPR_ROOT = "/products/abm/genetic-materials/crispr";
 
 type MenuItem = {
   title?: string;
@@ -242,6 +243,11 @@ function findCanonicalCategory(items: MenuItem[], root: string, leaf: string) {
 }
 
 async function canonicalizeMissingCategory(pathname: string) {
+  // CRISPR landing/subcategory routes are curated and must never be
+  // auto-canonicalized after render. Navigation away from these pages should
+  // only happen from an explicit user click.
+  if (pathname === CRISPR_ROOT || pathname.startsWith(`${CRISPR_ROOT}/`)) return;
+
   const requested = requestedCategoryPath(pathname);
   if (!requested) return;
 

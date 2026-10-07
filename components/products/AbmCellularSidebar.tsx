@@ -48,7 +48,7 @@ function FlyoutRows({
           const hasChildren = children.length > 0;
 
           return (
-            <div key={nodePath.join("/")} className="group/cellular-flyout relative">
+            <div key={nodePath.join("/")} className="abm-cellular-flyout-row relative">
               <Link
                 href={categoryHref(nodePath)}
                 prefetch={false}
@@ -66,7 +66,7 @@ function FlyoutRows({
               </Link>
 
               {hasChildren ? (
-                <div className="absolute left-full top-0 z-[10000] hidden pl-2 lg:group-hover/cellular-flyout:block">
+                <div className="abm-cellular-nested-flyout absolute left-full top-0 z-[10000] hidden pl-2">
                   <FlyoutRows
                     nodes={children}
                     activePath={activePath}
@@ -102,10 +102,10 @@ function TaxonomyRows({
         const isOnTrail = !isActive && isPathPrefix(activePath, nodePath);
         const children = node.children || [];
         const hasChildren = children.length > 0;
-        const isOpen = hasChildren && (isActive || isOnTrail);
+        const isExpanded = hasChildren && (isActive || isOnTrail);
 
         return (
-          <div key={nodePath.join("/")} className="group/cellular-row relative">
+          <div key={nodePath.join("/")} className="abm-cellular-row relative">
             <Link
               href={categoryHref(nodePath)}
               prefetch={false}
@@ -122,15 +122,15 @@ function TaxonomyRows({
               {hasChildren ? (
                 <span className="shrink-0 text-orange-500" aria-hidden>
                   <span className="hidden lg:inline">›</span>
-                  <span className="lg:hidden">{isOpen ? "⌃" : "⌄"}</span>
+                  <span className="lg:hidden">{isExpanded ? "⌃" : "⌄"}</span>
                 </span>
               ) : (
                 <span className="shrink-0 text-neutral-300 opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" aria-hidden>›</span>
               )}
             </Link>
 
-            {isOpen ? (
-              <div className="lg:block">
+            {isExpanded ? (
+              <div>
                 <TaxonomyRows
                   nodes={children}
                   activePath={activePath}
@@ -140,8 +140,8 @@ function TaxonomyRows({
               </div>
             ) : null}
 
-            {hasChildren ? (
-              <div className="absolute left-full top-0 z-[9998] hidden pl-2 lg:group-hover/cellular-row:block">
+            {hasChildren && !isExpanded ? (
+              <div className="abm-cellular-row-flyout absolute left-full top-0 z-[9998] hidden pl-2">
                 <FlyoutRows
                   nodes={children}
                   activePath={activePath}
@@ -161,43 +161,30 @@ export default function AbmCellularSidebar({ activePath }: { activePath: string[
   const taxonomy = abmCellularTaxonomy as TaxonomyNode[];
 
   return (
-    <div className="relative z-[500] overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div className="relative z-[40] overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-orange-100 bg-orange-50 px-5 py-4">
         <div className="text-base font-semibold text-orange-600">All Products</div>
       </div>
 
       <nav className="max-h-[calc(100vh-170px)] overflow-y-auto p-2 lg:max-h-none lg:overflow-visible" aria-label="ABM product categories">
-        <div className="group/cellular-root relative mb-1">
+        <div className="mb-1">
           <Link
             href={categoryHref(CELLULAR_ROOT)}
             prefetch={false}
-            className="flex min-h-10 items-center justify-between rounded-xl bg-orange-50 px-3 py-2.5 text-[13px] font-semibold text-[#dc5a2b] transition hover:bg-orange-100"
+            className="flex min-h-10 items-center rounded-xl bg-orange-50 px-3 py-2.5 text-[13px] font-semibold text-[#dc5a2b] transition hover:bg-orange-100"
           >
             <span>Cellular Materials</span>
-            <span className="text-orange-500" aria-hidden>
-              <span className="hidden lg:inline">›</span>
-              <span className="lg:hidden">⌃</span>
-            </span>
           </Link>
-
-          <div className="absolute left-full top-0 z-[9997] hidden pl-2 lg:group-hover/cellular-root:block">
-            <FlyoutRows
-              nodes={taxonomy}
-              activePath={activePath}
-              parentPath={CELLULAR_ROOT}
-              parentTitle="Cellular Materials"
-            />
-          </div>
         </div>
 
         <TaxonomyRows nodes={taxonomy} activePath={activePath} />
 
         <div className="mt-2 border-t border-slate-200 pt-2">
           <Link href="/products/abm/general-materials" prefetch={true} className="flex min-h-10 items-center justify-between rounded-xl px-3 py-2.5 text-[13px] font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-[#dc5a2b]">
-            <span>General Materials</span><span aria-hidden>⌄</span>
+            <span>General Materials</span><span aria-hidden>›</span>
           </Link>
           <Link href="/products/abm/genetic-materials" prefetch={true} className="flex min-h-10 items-center justify-between rounded-xl px-3 py-2.5 text-[13px] font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-[#dc5a2b]">
-            <span>Genetic Materials</span><span aria-hidden>⌄</span>
+            <span>Genetic Materials</span><span aria-hidden>›</span>
           </Link>
         </div>
 

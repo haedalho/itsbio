@@ -3,8 +3,11 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
+import { isOfficialAbmVectorUrl } from "@/lib/abm/internal-links";
+
 const ABM_CATEGORY_PATH = /^\/products\/abm\/(?:general-materials|cellular-materials|genetic-materials)(?:\/|$)/i;
 const DIRECT_DOCUMENT_PATH = /\.(?:pdf|docx?|xlsx?|pptx?|csv|zip)(?:$|[?#])/i;
+const CAS9_VECTORS_PATH = "/products/abm/genetic-materials/crispr/cas9-vectors-and-virus";
 
 function collapse(value: string | null | undefined) {
   return String(value || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
@@ -13,7 +16,7 @@ function collapse(value: string | null | undefined) {
 function extractOfficialAbmUrl(href: string) {
   try {
     const url = new URL(href, window.location.origin);
-    if (url.pathname === "/products/abm/legacy") {
+    if (url.pathname === "/products/abm/legacy" || url.pathname === "/products/abm/resolve") {
       const target = url.searchParams.get("u") || "";
       if (target) return target;
     }
@@ -24,6 +27,15 @@ function extractOfficialAbmUrl(href: string) {
     // Resolve from visible product metadata instead.
   }
   return "";
+}
+
+function preserveCas9VectorAnchor(anchor: HTMLAnchorElement, pathname: string) {
+  if (pathname !== CAS9_VECTORS_PATH) return false;
+
+  // Both Cas9 tables are normalized by HtmlContent. The sgRNA table has no
+  // Format column, so a literal "Vector"-cell check misses its C420/C446 rows
+  // and rewrites their verified Cat.No destinations to sku-only resolver URLs.
+  return Boolean(anchor.closest("table.itsbio-cas9-vector-table"));
 }
 
 function catNoFromText(value: string) {
@@ -116,12 +128,30 @@ function rewriteRichProductLinks(pathname: string) {
   if (!ABM_CATEGORY_PATH.test(pathname)) return;
 
   document.querySelectorAll<HTMLAnchorElement>("main .itsbio-html a[href]").forEach((anchor) => {
+    if (preserveCas9VectorAnchor(anchor, pathname)) return;
     if (anchor.dataset.itsbioAbmProductResolved === "true") return;
     if (anchor.dataset.itsbioAbmPreserveLink === "true") return;
 
     const href = collapse(anchor.getAttribute("href"));
-    if (!href || href.startsWith("#") || DIRECT_DOCUMENT_PATH.test(href)) return;
+    if (!href || href.startsWith("#") || /^(?:mailto:|tel:)/i.test(href) || DIRECT_DOCUMENT_PATH.test(href)) return;
+    // If HtmlContent already mapped an ABM category/service to a concrete ITS BIO
+    // route, keep that destination. Only legacy ABM product URLs should continue
+    // through the product resolver.
+    if (/^\/products\/abm\/(?!legacy(?:\/|\?|$))/i.test(href)) {
+      anchor.dataset.itsbioAbmProductResolved = "true";
+      return;
+    }
     if (/^\/products\/abm\/(?:item|staged|resolve)(?:\/|\?|$)/i.test(href)) {
+      anchor.dataset.itsbioAbmProductResolved = "true";
+      return;
+    }
+
+    const sourceUrl = extractOfficialAbmUrl(href);
+    if (sourceUrl && isOfficialAbmVectorUrl(sourceUrl)) {
+      anchor.setAttribute("href", sourceUrl);
+      anchor.setAttribute("target", "_blank");
+      anchor.setAttribute("rel", "noreferrer noopener");
+      anchor.dataset.itsbioAbmPreserveLink = "true";
       anchor.dataset.itsbioAbmProductResolved = "true";
       return;
     }
@@ -133,11 +163,16 @@ function rewriteRichProductLinks(pathname: string) {
     const sku = collapse(context.sku);
     if (!title && !sku) return;
 
-    const sourceUrl = extractOfficialAbmUrl(href);
+    const clickedText = collapse(anchor.textContent);
+    const isSkuLink = Boolean(sku) && clickedText.toLowerCase() === sku.toLowerCase();
     const params = new URLSearchParams();
-    if (title) params.set("title", title);
-    if (sku) params.set("sku", sku);
-    if (sourceUrl) params.set("u", sourceUrl);
+    if (isSkuLink) {
+      params.set("sku", sku);
+    } else {
+      if (title) params.set("title", title);
+      if (sourceUrl) params.set("u", sourceUrl);
+      else if (sku) params.set("sku", sku);
+    }
 
     anchor.setAttribute("href", `/products/abm/resolve?${params.toString()}`);
     anchor.removeAttribute("target");

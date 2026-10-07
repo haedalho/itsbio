@@ -3,10 +3,13 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
+import { isOfficialAbmVectorUrl } from "@/lib/abm/internal-links";
+
 const ABM_ROOTS = new Set(["general-materials", "cellular-materials", "genetic-materials"]);
 const GEL_DOCUMENTATION_PATH = "/products/abm/general-materials/gel-documentation";
 const DNA_STAINS_TARGET = `${GEL_DOCUMENTATION_PATH}#safeview-dna-stains`;
 const GEL_IMAGER_TARGET = "/products/abm/staged/product/E1001";
+const CAS9_VECTORS_PATH = "/products/abm/genetic-materials/crispr/cas9-vectors-and-virus";
 
 type MenuItem = {
   id?: string;
@@ -134,7 +137,7 @@ function ensureGelDocumentationAnchor(pathname: string) {
 function extractOfficialAbmUrl(href: string) {
   try {
     const url = new URL(href, window.location.origin);
-    if (url.pathname === "/products/abm/legacy") {
+    if (url.pathname === "/products/abm/legacy" || url.pathname === "/products/abm/resolve") {
       const target = url.searchParams.get("u") || "";
       if (target) return target;
     }
@@ -192,6 +195,17 @@ function rewriteMegaMenuLinks(menuItems: MenuItem[]) {
     anchor.setAttribute("href", `/products/abm/${root}`);
     anchor.dataset.itsbioAbmCategoryResolved = "false";
   });
+}
+
+function preserveCas9VectorAnchor(anchor: HTMLAnchorElement, pathname: string) {
+  if (pathname !== CAS9_VECTORS_PATH) return false;
+
+  // HtmlContent marks both Cas9 product tables after preserving the three
+  // independent ABM destinations (product, vector map and Cat.No). The sgRNA
+  // table has no Format column, so checking for a literal "Vector" cell misses
+  // rows such as C420/C446 and the generic resolver collapses their Cat.No back
+  // to `/resolve?sku=...`. Preserve every anchor in either marked table.
+  return Boolean(anchor.closest("table.itsbio-cas9-vector-table"));
 }
 
 function catNoFromText(value: string) {
@@ -281,12 +295,30 @@ function rewriteRichProductLinks(pathname: string) {
   if (!pathname.startsWith("/products/abm/")) return;
 
   document.querySelectorAll<HTMLAnchorElement>(".itsbio-html a[href]").forEach((anchor) => {
+    if (preserveCas9VectorAnchor(anchor, pathname)) return;
     if (anchor.dataset.itsbioAbmProductResolved === "true") return;
     if (anchor.dataset.itsbioAbmPreserveLink === "true") return;
 
     const href = collapse(anchor.getAttribute("href"));
-    if (!href || href.startsWith("#") || /\.(?:pdf|docx?|xlsx?|pptx?|csv|zip)(?:$|[?#])/i.test(href)) return;
+    if (!href || href.startsWith("#") || /^(?:mailto:|tel:)/i.test(href) || /\.(?:pdf|docx?|xlsx?|pptx?|csv|zip)(?:$|[?#])/i.test(href)) return;
+    // If HtmlContent already mapped an ABM category/service to a concrete ITS BIO
+    // route, keep that destination. Only legacy ABM product URLs should continue
+    // through the product resolver.
+    if (/^\/products\/abm\/(?!legacy(?:\/|\?|$))/i.test(href)) {
+      anchor.dataset.itsbioAbmProductResolved = "true";
+      return;
+    }
     if (/^\/(?:products\/abm\/(?:item|staged|resolve)\/)/i.test(href)) return;
+
+    const sourceUrl = extractOfficialAbmUrl(href);
+    if (sourceUrl && isOfficialAbmVectorUrl(sourceUrl)) {
+      anchor.setAttribute("href", sourceUrl);
+      anchor.setAttribute("target", "_blank");
+      anchor.setAttribute("rel", "noreferrer noopener");
+      anchor.dataset.itsbioAbmPreserveLink = "true";
+      anchor.dataset.itsbioAbmProductResolved = "true";
+      return;
+    }
 
     const context = findProductContext(anchor);
     if (!context) return;
@@ -295,11 +327,16 @@ function rewriteRichProductLinks(pathname: string) {
     const sku = collapse(context.sku);
     if (!title && !sku) return;
 
-    const sourceUrl = extractOfficialAbmUrl(href);
+    const clickedText = collapse(anchor.textContent);
+    const isSkuLink = Boolean(sku) && clickedText.toLowerCase() === sku.toLowerCase();
     const params = new URLSearchParams();
-    if (title) params.set("title", title);
-    if (sku) params.set("sku", sku);
-    if (sourceUrl) params.set("u", sourceUrl);
+    if (isSkuLink) {
+      params.set("sku", sku);
+    } else {
+      if (title) params.set("title", title);
+      if (sourceUrl) params.set("u", sourceUrl);
+      else if (sku) params.set("sku", sku);
+    }
 
     anchor.setAttribute("href", `/products/abm/resolve?${params.toString()}`);
     anchor.removeAttribute("target");

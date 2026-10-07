@@ -127,19 +127,19 @@ export async function GET(request: NextRequest) {
         } as AbmStagedRecord));
     });
 
-  // The exact clicked source URL is the strongest signal. This matters on ABM
-  // tables where one catalog number can represent a custom service while the
-  // visible vector name points at a separate vector-information page.
-  const exactUrl = sourceUrl
-    ? staged.find((row) => safeOfficialUrl(row.url) === sourceUrl)
-    : undefined;
+  // Cat. No. is the catalog identity key. Several ABM services intentionally
+  // share one editorial source URL, so URL-first matching can collapse C303,
+  // C305 and C307 into whichever record happens to appear first.
   const exactSku = sku
     ? staged.find((row) => normalized(row.sku) === normalized(sku))
+    : undefined;
+  const exactUrl = sourceUrl
+    ? staged.find((row) => safeOfficialUrl(row.url) === sourceUrl)
     : undefined;
   const exactTitle = title
     ? staged.find((row) => normalized(row.title) === normalized(title))
     : undefined;
-  const stagedMatch = exactUrl || exactSku || exactTitle;
+  const stagedMatch = exactSku || exactUrl || exactTitle;
 
   if (stagedMatch) {
     return NextResponse.redirect(new URL(stagedRecordPath(stagedMatch.kind, stagedMatch), request.url), 307);

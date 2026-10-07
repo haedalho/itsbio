@@ -1,0 +1,663 @@
+/* Official ABM CRISPR category content.
+   Keep this scope narrow: the global ITS BIO shell/sidebar stays unchanged. */
+.abm-crispr-official {
+  color: #292929;
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.abm-crispr-official > :first-child {
+  margin-top: 0 !important;
+}
+
+.abm-crispr-official h1,
+.abm-crispr-official h2,
+.abm-crispr-official h3,
+.abm-crispr-official h4 {
+  scroll-margin-top: 104px;
+  color: #222;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.abm-crispr-official h1 {
+  margin: 0 0 18px;
+  font-size: clamp(30px, 3vw, 42px);
+  line-height: 1.16;
+}
+
+.abm-crispr-official h2 {
+  margin: 46px 0 18px;
+  padding-bottom: 9px;
+  border-bottom: 2px solid #ef6331;
+  font-size: clamp(24px, 2.2vw, 31px);
+  line-height: 1.24;
+}
+
+.abm-crispr-official h3 {
+  margin: 30px 0 12px;
+  color: #ef6331;
+  font-size: 21px;
+  line-height: 1.3;
+}
+
+.abm-crispr-official h4 {
+  margin: 24px 0 10px;
+  font-size: 18px;
+}
+
+.abm-crispr-official p {
+  margin: 0 0 16px;
+}
+
+.abm-crispr-official ul,
+.abm-crispr-official ol {
+  margin: 14px 0 20px;
+  padding-left: 1.45rem;
+}
+
+.abm-crispr-official li + li {
+  margin-top: 6px;
+}
+
+.abm-crispr-official a {
+  color: #1386ac;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.abm-crispr-official a:hover {
+  color: #dc5a2b;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.abm-crispr-official img {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.abm-crispr-official figure,
+.abm-crispr-official .image,
+.abm-crispr-official [class*="image-container"] {
+  margin: 22px auto;
+  text-align: center;
+}
+
+.abm-crispr-official figure img {
+  margin-inline: auto;
+}
+
+.abm-crispr-official figcaption {
+  margin-top: 8px;
+  color: #666;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.abm-crispr-official .row {
+  row-gap: 22px;
+}
+
+.abm-crispr-official [class*="card"],
+.abm-crispr-official [class*="feature-box"],
+.abm-crispr-official [class*="system-box"],
+.abm-crispr-official [class*="resource-box"] {
+  border-color: #e4e4e4;
+}
+
+.abm-crispr-official table {
+  width: 100% !important;
+  margin: 22px 0 30px;
+  border-collapse: collapse !important;
+  background: #fff;
+  font-size: 14px;
+}
+
+.abm-crispr-official table th,
+.abm-crispr-official table td {
+  padding: 11px 12px !important;
+  border: 1px solid #ddd !important;
+  vertical-align: top;
+  text-align: left;
+}
+
+.abm-crispr-official table thead th,
+.abm-crispr-official table thead td,
+.abm-crispr-official table tr:first-child > th {
+  background: #ef6331 !important;
+  color: #fff !important;
+  font-weight: 700;
+}
+
+.abm-crispr-official table .abm-table-section-row > th,
+.abm-crispr-official table .abm-table-section-row > td,
+.abm-crispr-official table tr[id^="table-product-mini-category-"] > th,
+.abm-crispr-official table tr[id^="table-product-mini-category-"] > td {
+  background: #f2f2f2 !important;
+  color: #222 !important;
+  font-weight: 700;
+}
+
+.abm-crispr-official details {
+  margin: 10px 0;
+  border: 1px solid #dedede;
+  background: #fff;
+}
+
+.abm-crispr-official details > summary {
+  cursor: pointer;
+  padding: 13px 15px;
+  font-weight: 700;
+}
+
+.abm-crispr-official details > :not(summary) {
+  padding-inline: 15px;
+}
+
+.abm-crispr-official .itsbio-crispr-search {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  margin: 18px 0 28px;
+  max-width: 760px;
+}
+
+.abm-crispr-official .itsbio-crispr-search input {
+  min-width: 0;
+  height: 46px;
+  border: 1px solid #bfc3c7;
+  border-radius: 3px;
+  background: #fff;
+  padding: 0 14px;
+  color: #222;
+  outline: none;
+}
+
+.abm-crispr-official .itsbio-crispr-search input:focus {
+  border-color: #ef6331;
+  box-shadow: 0 0 0 2px rgb(239 99 49 / 12%);
+}
+
+.abm-crispr-official .itsbio-crispr-search button {
+  height: 46px;
+  border: 0;
+  border-radius: 3px;
+  background: #ef6331;
+  padding: 0 22px;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.abm-crispr-official .itsbio-abm-highlight-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0 32px;
+}
+
+.abm-crispr-official .itsbio-abm-highlight-card {
+  display: flex;
+  min-height: 86px;
+  align-items: center;
+  gap: 13px;
+  border: 1px solid #e1e1e1;
+  background: #fff;
+  padding: 14px;
+}
+
+.abm-crispr-official .itsbio-abm-highlight-icon {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  flex: 0 0 54px;
+  place-items: center;
+}
+
+.abm-crispr-official .itsbio-abm-highlight-icon img,
+.abm-crispr-official .itsbio-abm-highlight-icon svg {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.abm-crispr-official .itsbio-abm-highlight-label {
+  color: #222;
+  font-weight: 700;
+}
+
+@media (max-width: 767px) {
+  .abm-crispr-official {
+    font-size: 15px;
+  }
+
+  .abm-crispr-official h2 {
+    margin-top: 36px;
+  }
+
+  .abm-crispr-official .itsbio-crispr-search {
+    grid-template-columns: 1fr;
+  }
+
+  .abm-crispr-official .itsbio-abm-highlight-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .abm-crispr-official table {
+    font-size: 13px;
+  }
+}
+
+
+/* Runtime replacements for source controls that cannot retain ABM's original JS.
+   Values mirror the current source page styling and stay inside the CRISPR roots. */
+#abm-crispr-hub .itsbio-crispr-search,
+#crispr-ko-page .itsbio-crispr-search,
+#abm-crispra-hub .itsbio-crispr-search {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 82px;
+  width: 100%;
+  max-width: none;
+  gap: 0;
+  margin: 12px 0 18px;
+}
+
+#crispr-ko-page .itsbio-crispr-search--with-select {
+  grid-template-columns: minmax(150px, 165px) minmax(0, 1fr) 122px;
+}
+
+#crispr-ko-page .itsbio-crispr-search--with-select select {
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  margin: 0;
+  padding: 0 34px 0 12px;
+  border: 1px solid #f15a24;
+  border-right-color: #cfd8df;
+  border-radius: 8px 0 0 8px;
+  background: #fff;
+  color: #333f48;
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+}
+
+#crispr-ko-page .itsbio-crispr-search--with-select input {
+  border-left: 0;
+  border-radius: 0;
+}
+
+#crispr-ko-page .itsbio-crispr-search--with-select button {
+  width: 122px;
+  padding: 0 10px;
+}
+
+#crispr-ko-page .itsbio-crispr-search--with-select select:focus,
+#crispr-ko-page .itsbio-crispr-search--with-select input:focus {
+  position: relative;
+  z-index: 1;
+  border-color: #f15a24;
+  box-shadow: inset 0 0 0 1px #f15a24;
+}
+
+#abm-crispr-hub .itsbio-crispr-search input,
+#crispr-ko-page .itsbio-crispr-search input,
+#abm-crispra-hub .itsbio-crispr-search input {
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  margin: 0;
+  padding: 0 14px;
+  border: 1px solid #cfd8df;
+  border-right: 0;
+  border-radius: 8px 0 0 8px;
+  background: #fff;
+  box-shadow: none;
+  color: #333f48;
+  font-size: 15px;
+  line-height: 48px;
+}
+
+#abm-crispr-hub .itsbio-crispr-search button,
+#crispr-ko-page .itsbio-crispr-search button,
+#abm-crispra-hub .itsbio-crispr-search button {
+  width: 82px;
+  height: 48px;
+  min-height: 48px;
+  margin: 0;
+  padding: 0 12px;
+  border: 1px solid #f15a24;
+  border-radius: 0 8px 8px 0;
+  background: #f15a24;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+#abm-crispr-hub .itsbio-crispr-search button:hover,
+#crispr-ko-page .itsbio-crispr-search button:hover,
+#abm-crispra-hub .itsbio-crispr-search button:hover {
+  background: #d94b17;
+  border-color: #d94b17;
+}
+
+#crispr-ko-page form.itsbio-crispr-search.itsbio-crispr-search--with-select input {
+  border-left: 0;
+  border-radius: 0;
+}
+
+#crispr-ko-page form.itsbio-crispr-search.itsbio-crispr-search--with-select button {
+  width: 122px;
+  padding: 0 10px;
+}
+
+#crispr-ko-page .itsbio-crispr-vector-note {
+  grid-column: 1 / -1;
+  margin: 6px 0 0;
+  color: #667487;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+#crispr-ko-page .itsbio-crispr-vector-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  margin-top: 4px;
+}
+
+#crispr-ko-page .itsbio-crispr-vector-actions a {
+  color: #d94b17;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+#crispr-ko-page .itsbio-crispr-vector-actions a:hover {
+  text-decoration: underline;
+}
+
+#crispr-ko-page .itsbio-crispr-vector-status {
+  flex: 1 1 100%;
+  min-height: 18px;
+  color: #667487;
+  font-size: 12px;
+}
+
+/* Activation's source FAQ is Bootstrap-collapse based. HtmlContent converts it
+   to native details so it remains usable without importing supplier scripts. */
+#abm-crispra-hub .abm-service-faq-list {
+  margin-top: 12px;
+}
+
+#abm-crispra-hub .abm-service-faq-item {
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid #edf1f3;
+  border-radius: 0;
+  background: transparent;
+}
+
+#abm-crispra-hub .abm-service-faq-item > summary {
+  list-style: none;
+  padding: 12px 0;
+  color: #263746;
+  font-weight: 700;
+}
+
+#abm-crispra-hub .abm-service-faq-item > summary::-webkit-details-marker {
+  display: none;
+}
+
+#abm-crispra-hub .abm-service-faq-answer {
+  padding: 6px 0 12px 37px;
+  color: #536573;
+}
+
+/* Legacy Cas9/Cas-protein source pages rely on ABM's site-wide category CSS,
+   which is not copied into ITS BIO. Rebuild only those source layout primitives. */
+.abm-crispr-official .abm-categories-title-h2 {
+  margin: 0 0 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #ef6331;
+  color: #333;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.abm-crispr-official .abm-container-fluid {
+  width: 100%;
+}
+
+.abm-crispr-official .htmlcontent-home {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.abm-crispr-official .htmlcontent-home > li {
+  min-width: 0;
+  margin: 0;
+}
+
+.abm-crispr-official .htmlcontent-home .banners {
+  height: 100%;
+}
+
+.abm-crispr-official .htmlcontent-home img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  object-fit: contain;
+  background: #fff;
+}
+
+.abm-crispr-official .abm-sub2-category-image-title {
+  margin-top: 10px;
+  color: #333;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.abm-crispr-official .abm-custom-page-product-name {
+  margin: 38px 0 16px;
+  color: #ef6331;
+  font-size: 24px;
+}
+
+@media (max-width: 767px) {
+  #abm-crispr-hub .itsbio-crispr-search,
+  #crispr-ko-page .itsbio-crispr-search,
+  #abm-crispra-hub .itsbio-crispr-search {
+    grid-template-columns: minmax(0, 1fr) 74px;
+  }
+
+  #crispr-ko-page .itsbio-crispr-search--with-select {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  #crispr-ko-page .itsbio-crispr-search--with-select select,
+  #crispr-ko-page .itsbio-crispr-search--with-select input,
+  #crispr-ko-page .itsbio-crispr-search--with-select button {
+    width: 100%;
+    border: 1px solid #cfd8df;
+    border-radius: 7px;
+  }
+
+  #crispr-ko-page .itsbio-crispr-search--with-select select,
+  #crispr-ko-page .itsbio-crispr-search--with-select button {
+    border-color: #f15a24;
+  }
+
+  .abm-crispr-official .htmlcontent-home {
+    grid-template-columns: 1fr;
+  }
+
+  #abm-crispra-hub .abm-service-faq-answer {
+    padding-left: 18px;
+  }
+}
+
+/* Compact handoff for the supplier-maintained gene-specific KO catalog.
+   Keep the official comparison cards untouched; only the search action leaves ITS BIO. */
+#crispr-ko-page .itsbio-crispr-ko-search-heading {
+  margin-top: 22px !important;
+}
+
+#crispr-ko-page .itsbio-crispr-ko-search-link-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin: 12px 0 4px;
+}
+
+#crispr-ko-page .itsbio-crispr-ko-search-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 17px;
+  border: 1px solid #f15a24;
+  border-radius: 7px;
+  background: #f15a24;
+  color: #fff !important;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-decoration: none !important;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+#crispr-ko-page .itsbio-crispr-ko-search-link:hover,
+#crispr-ko-page .itsbio-crispr-ko-search-link:focus-visible {
+  transform: translateY(-1px);
+  border-color: #d94b17;
+  background: #d94b17;
+}
+
+#crispr-ko-page .itsbio-crispr-ko-search-note {
+  color: #667487;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 767px) {
+  #crispr-ko-page .itsbio-crispr-ko-search-link-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  #crispr-ko-page .itsbio-crispr-ko-search-link {
+    width: 100%;
+  }
+}
+
+
+/* CRISPR KO system cards are comparison cards, not a selected tab state.
+   Match each outline to the existing badge/system color. */
+#crispr-ko-page .ko-system-selector > button.ko-system-choice {
+  cursor: default !important;
+  padding: 16px 17px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(1),
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(1).is-selected {
+  border: 1.5px solid var(--ko-orange) !important;
+  background: #fffaf7 !important;
+}
+
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(2),
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(2).is-selected {
+  border: 1.5px solid var(--ko-green) !important;
+  background: #fbfefb !important;
+}
+
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(3),
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(3).is-selected {
+  border: 1.5px solid var(--ko-blue) !important;
+  background: #fbfdff !important;
+}
+
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(1):hover,
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(1):focus-visible {
+  border-color: var(--ko-orange) !important;
+  background: #fffaf7 !important;
+  box-shadow: 0 4px 12px rgba(241,90,36,.06) !important;
+}
+
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(2):hover,
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(2):focus-visible {
+  border-color: var(--ko-green) !important;
+  background: #fbfefb !important;
+  box-shadow: 0 4px 12px rgba(47,168,79,.06) !important;
+}
+
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(3):hover,
+#crispr-ko-page .ko-system-selector > button.ko-system-choice:nth-child(3):focus-visible {
+  border-color: var(--ko-blue) !important;
+  background: #fbfdff !important;
+  box-shadow: 0 4px 12px rgba(23,101,193,.06) !important;
+}
+
+
+/* CRISPR activation sgRNA library is maintained live by ABM.
+   Keep the migrated activation content, but hand the large gene-specific vector search off to ABM. */
+#abm-crispra-hub .itsbio-crispra-search-link-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin: 12px 0 22px;
+}
+
+#abm-crispra-hub .itsbio-crispra-search-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 17px;
+  border: 1px solid #f15a24;
+  border-radius: 7px;
+  background: #f15a24;
+  color: #fff !important;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-decoration: none !important;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+#abm-crispra-hub .itsbio-crispra-search-link:hover,
+#abm-crispra-hub .itsbio-crispra-search-link:focus-visible {
+  transform: translateY(-1px);
+  border-color: #d94b17;
+  background: #d94b17;
+}
+
+#abm-crispra-hub .itsbio-crispra-search-note {
+  color: #667487;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 767px) {
+  #abm-crispra-hub .itsbio-crispra-search-link-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  #abm-crispra-hub .itsbio-crispra-search-link {
+    width: 100%;
+  }
+}

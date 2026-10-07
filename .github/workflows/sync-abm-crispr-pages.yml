@@ -1,0 +1,72 @@
+name: Sync ABM CRISPR category pages
+# Manual fidelity sync: 2026-09-28
+
+on:
+  push:
+    branches:
+      - agent/abm-cellular-category-design
+    paths:
+      - .github/workflows/sync-abm-crispr-pages.yml
+      - scripts/sync-abm-crispr-pages.mjs
+      - lib/abm/rebuild-parser.mjs
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: abm-crispr-category-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 60
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: 9b5twpc8
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: "2025-01-01"
+      SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+      SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+      SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Sync official CRISPR category content and images
+        run: node scripts/sync-abm-crispr-pages.mjs
+
+      - name: Publish synchronized source styles
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          file="app/products/abm/abm-crispr-source.css"
+          current_sha="$(gh api "repos/${GITHUB_REPOSITORY}/contents/${file}?ref=${GITHUB_REF_NAME}" --jq '.sha')"
+          generated_sha="$(git hash-object "${file}")"
+          if [ "${generated_sha}" != "${current_sha}" ]; then
+            content="$(base64 -w0 "${file}")"
+            gh api --method PUT "repos/${GITHUB_REPOSITORY}/contents/${file}" \
+              -f message="Sync official ABM CRISPR source styles" \
+              -f content="${content}" \
+              -f branch="${GITHUB_REF_NAME}" \
+              -f sha="${current_sha}" >/dev/null
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: abm-crispr-category-sync-${{ github.run_id }}
+          path: .cache/abm-crispr-sync/
+          retention-days: 30
+          if-no-files-found: warn

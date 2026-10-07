@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { internalizeAbmHref, isOfficialAbmUrl } from "@/lib/abm/internal-links";
+import { internalizeAbmHref, isOfficialAbmUrl, isOfficialAbmVectorUrl } from "@/lib/abm/internal-links";
 import { abmResourceImagePath } from "@/lib/abm/resource-links";
 
 type Props = {
@@ -10,12 +10,24 @@ type Props = {
   /** legacy 등에서 상대경로(href="/", src="/")를 절대경로로 바꾸기 위한 base */
   baseUrl?: string;
   mode?: "default" | "abm-detail" | "abm-service" | "abm-landing";
+  /** Product Cat.Nos present in the staged inventory for this HTML block. */
+  productCatalogNumbers?: string[];
+  /** ABM tables can mix purchasable products with custom services. */
+  serviceCatalogNumbers?: string[];
 };
 
 const TABLE_WRAP_CLASS = "abm-table-scroll";
 const TABLE_CLASS = "abm-data-table";
 const EXTERNAL_VECTOR_LINK_ATTR = "data-abm-external-vector";
 const DIRECT_DOCUMENT_PATH = /\.(?:pdf|docx?|xlsx?|pptx?|csv|zip)(?:$|[?#])/i;
+const EMPTY_CATALOG_NUMBERS: string[] = [];
+
+type AbmEditorialImage = {
+  src: string;
+  alt: string;
+  title: string;
+  href?: string;
+};
 
 function lower(x: unknown) {
   return String(x ?? "").toLowerCase();
@@ -27,6 +39,316 @@ function collapseWs(s: string) {
   return (s || "").replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
 }
 
+function findHeading(doc: Document, matcher: RegExp) {
+  return Array.from(doc.querySelectorAll<HTMLElement>("h1, h2, h3, h4, h5, h6")).find((heading) =>
+    matcher.test(collapseWs(heading.textContent || ""))
+  );
+}
+
+function createEditorialImage(doc: Document, image: AbmEditorialImage, wide = false) {
+  const figure = doc.createElement("figure");
+  figure.className = wide ? "abm-editorial-image abm-editorial-image--wide" : "abm-editorial-image";
+
+  const img = doc.createElement("img");
+  img.src = abmResourceImagePath(image.src);
+  img.alt = image.alt;
+  img.loading = "lazy";
+  img.decoding = "async";
+
+  if (image.href) {
+    const anchor = doc.createElement("a");
+    anchor.href = image.href;
+    anchor.setAttribute("aria-label", image.title);
+    anchor.appendChild(img);
+    figure.appendChild(anchor);
+  } else {
+    figure.appendChild(img);
+  }
+
+  const caption = doc.createElement("figcaption");
+  caption.textContent = image.title;
+  figure.appendChild(caption);
+  return figure;
+}
+
+function hasEditorialImage(doc: Document, src: string, alt?: string) {
+  const filename = src.split("/").pop()?.replace(/%20/g, " ").toLowerCase() || "";
+  const normalizedAlt = collapseWs(alt || "").toLowerCase();
+  return Array.from(doc.querySelectorAll<HTMLImageElement>("img")).some((img) => {
+    const current = decodeURIComponent(img.getAttribute("src") || "").toLowerCase();
+    const currentAlt = collapseWs(img.getAttribute("alt") || "").toLowerCase();
+    return (Boolean(filename) && current.includes(filename))
+      || (Boolean(normalizedAlt) && currentAlt === normalizedAlt);
+  });
+}
+
+function addEditorialGallery(doc: Document, title: string, images: AbmEditorialImage[]) {
+  const missing = images.filter((image) => !hasEditorialImage(doc, image.src, image.alt));
+  if (!missing.length) return;
+
+  const section = doc.createElement("section");
+  section.className = "abm-editorial-gallery";
+  section.setAttribute("aria-label", title);
+  const heading = doc.createElement("h2");
+  heading.textContent = title;
+  section.appendChild(heading);
+
+  const grid = doc.createElement("div");
+  grid.className = "abm-editorial-gallery-grid";
+  missing.forEach((image) => grid.appendChild(createEditorialImage(doc, image)));
+  section.appendChild(grid);
+  doc.body.appendChild(section);
+}
+
+function restoreGrowthFactorTools(doc: Document) {
+  if (!findHeading(doc, /^Growth Factors and Cytokines$/i)) return;
+
+  const table = Array.from(doc.querySelectorAll<HTMLTableElement>("table"))
+    .filter((candidate) => candidate.querySelectorAll("tr").length > 10)
+    .sort((a, b) => b.querySelectorAll("tr").length - a.querySelectorAll("tr").length)[0];
+
+  if (table && !doc.querySelector(".abm-growth-search")) {
+    table.dataset.abmGrowthCatalog = "true";
+    const initialProductCount = Array.from(table.querySelectorAll("tr")).filter((row) =>
+      !row.classList.contains("abm-table-section-row") && Boolean(row.querySelector("td"))
+    ).length;
+    const search = doc.createElement("section");
+    search.className = "abm-growth-search";
+    search.setAttribute("aria-labelledby", "abm-growth-search-title");
+    const existingHeading = findHeading(doc, /^Search Growth Factor and Cytokine Library$/i);
+    const existingDescription = existingHeading?.nextElementSibling?.matches("p")
+      ? existingHeading.nextElementSibling
+      : null;
+    if (existingHeading) {
+      existingHeading.id = "abm-growth-search-title";
+      existingHeading.parentNode?.insertBefore(search, existingHeading);
+      search.appendChild(existingHeading);
+      if (existingDescription) search.appendChild(existingDescription);
+    } else {
+      const heading = doc.createElement("h2");
+      heading.id = "abm-growth-search-title";
+      heading.textContent = "Search Growth Factor and Cytokine Library";
+      search.appendChild(heading);
+    }
+    if (!existingDescription) {
+      const description = doc.createElement("p");
+      description.textContent = "Search by gene name, symbol, accession number, catalogue number, organism, or source.";
+      search.appendChild(description);
+    }
+    search.insertAdjacentHTML("beforeend", `
+      <div class="abm-growth-search-row">
+        <label class="sr-only" for="abm-growth-search-input">Search products</label>
+        <input id="abm-growth-search-input" data-abm-growth-search type="search" autocomplete="off" placeholder="Gene name, symbol or accession number" />
+        <button type="button" data-abm-growth-reset>Clear</button>
+      </div>
+      <p class="abm-growth-search-count" data-abm-growth-search-count aria-live="polite">${initialProductCount.toLocaleString()} products available</p>
+    `);
+    if (!existingHeading) {
+      const tableContainer = table.closest(".abm-table-scroll") || table;
+      tableContainer.parentNode?.insertBefore(search, tableContainer);
+    }
+  }
+
+  addEditorialGallery(doc, "Growth Factor and Cytokine Resources", [
+    {
+      src: "https://www.abmgood.com/assets/images/wysiwyg/Role-of-Growth-Factors-in-Cell-Differentiation_poster_thumbnail.png",
+      alt: "Cell differentiation and maturation using abm growth factors poster",
+      title: "Role of Growth Factors in Cell Differentiation",
+      href: "https://www.abmgood.com/assets/productdocument/document/r/o/role-of-growth-factors-in-cell-differentiation_abm_digital-poster.pdf",
+    },
+    {
+      src: "https://www.abmgood.com/assets/images/category/growth_factors_and_cytokines/Figure-1.png",
+      alt: "Cell differentiation and maturation using growth factors",
+      title: "Cell Differentiation and Maturation",
+    },
+    {
+      src: "https://www.abmgood.com/assets/images/category/growth_factors_and_cytokines/resources_growth-factors-knowledge-base.png",
+      alt: "Growth factors and cytokines introduction",
+      title: "Growth Factors and Cytokines — An Introduction",
+    },
+    {
+      src: "https://www.abmgood.com/assets/images/category/growth_factors_and_cytokines/resources_growth-factors-brochure.png",
+      alt: "Growth factors and cytokines catalogue",
+      title: "Growth Factors and Cytokines Catalogue",
+      href: "https://www.abmgood.com/assets/images/category/growth_factors_and_cytokines/Growth_Factor_Cytokine_Brochure%20(3).pdf",
+    },
+  ]);
+}
+
+const IMMORTALIZATION_TABS = [
+  ["sv40t", "SV40T + Bundles"],
+  ["htert", "hTERT"],
+  ["additional", "Additional Viruses"],
+  ["services", "Services"],
+] as const;
+
+function restoreImmortalizationTools(doc: Document) {
+  const hasImmortalizationSections = Boolean(
+    findHeading(doc, /Recombinant SV40T Virus/i)
+    && findHeading(doc, /Recombinant hTERT Virus/i)
+    && findHeading(doc, /Additional Immortalization Viruses/i)
+  );
+  if (!hasImmortalizationSections) return;
+
+  const panels = new Map<string, HTMLElement>();
+  doc.querySelectorAll<HTMLElement>("[data-panel]").forEach((panel) => {
+    const key = panel.dataset.panel || "";
+    if (IMMORTALIZATION_TABS.some(([candidate]) => candidate === key)) panels.set(key, panel);
+  });
+
+  if (panels.size >= 3) {
+    let tabList = doc.querySelector<HTMLElement>(".ci-tabs");
+    if (!tabList) {
+      tabList = doc.createElement("div");
+      panels.values().next().value?.parentNode?.insertBefore(tabList, panels.values().next().value || null);
+    }
+    tabList.className = "abm-immortalization-tabs";
+    tabList.setAttribute("role", "tablist");
+    tabList.setAttribute("aria-label", "Cell immortalization product families");
+    tabList.replaceChildren();
+
+    IMMORTALIZATION_TABS.forEach(([key, label], index) => {
+      const panel = panels.get(key);
+      if (!panel) return;
+      const button = doc.createElement("button");
+      button.type = "button";
+      button.id = `abm-immortalization-tab-${key}`;
+      button.dataset.abmImmortalizationTab = key;
+      button.setAttribute("role", "tab");
+      button.setAttribute("aria-controls", panel.id || `abm-immortalization-panel-${key}`);
+      button.setAttribute("aria-selected", index === 0 ? "true" : "false");
+      button.tabIndex = index === 0 ? 0 : -1;
+      button.textContent = label;
+      tabList?.appendChild(button);
+
+      panel.id ||= `abm-immortalization-panel-${key}`;
+      panel.setAttribute("role", "tabpanel");
+      panel.setAttribute("aria-labelledby", button.id);
+      panel.toggleAttribute("hidden", index !== 0);
+    });
+  } else if (!doc.querySelector(".abm-immortalization-jump-nav")) {
+    const headingMap = [
+      ["sv40t", "SV40T + Bundles", /Recombinant SV40T Virus/i],
+      ["htert", "hTERT", /Recombinant hTERT Virus/i],
+      ["additional", "Additional Viruses", /Additional Immortalization Viruses/i],
+    ] as const;
+    const destinations = headingMap.flatMap(([key, label, matcher]) => {
+      const heading = findHeading(doc, matcher);
+      if (!heading) return [];
+      heading.id = `abm-immortalization-${key}`;
+      return [[label, heading.id] as const];
+    });
+    const firstHeading = destinations.length ? doc.getElementById(destinations[0][1]) : null;
+    if (firstHeading) {
+      const nav = doc.createElement("nav");
+      nav.className = "abm-immortalization-jump-nav";
+      nav.setAttribute("aria-label", "Cell immortalization product families");
+      destinations.forEach(([label, id]) => {
+        const anchor = doc.createElement("a");
+        anchor.href = `#${id}`;
+        anchor.textContent = label;
+        nav.appendChild(anchor);
+      });
+      const service = doc.createElement("a");
+      service.href = "/products/abm/services/cell-and-antibody-services/cell-biology-services/cell-immortalization-service";
+      service.textContent = "Services";
+      nav.appendChild(service);
+      firstHeading.parentNode?.insertBefore(nav, firstHeading);
+    }
+  }
+
+  const workflow = "https://www.abmgood.com/assets/images/tinymce/wpCoSYXvsh2v7QPekJJKTpwfxsDR6jEHnetE6lNS.png";
+  if (!hasEditorialImage(doc, workflow)) {
+    const image = createEditorialImage(doc, {
+      src: workflow,
+      alt: "Cell immortalization workflow showing transduction, selection, validation, and cryopreservation",
+      title: "Cell Immortalization Workflow",
+    }, true);
+    const productsHeading = findHeading(doc, /Browse cell immortalization products by method|Recombinant SV40T Virus/i);
+    const productsSection = productsHeading?.closest("section");
+    if (productsSection?.parentNode) productsSection.parentNode.insertBefore(image, productsSection);
+    else productsHeading?.parentNode?.insertBefore(image, productsHeading);
+  }
+
+  const compatibility = "https://www.abmgood.com/assets/images/tinymce/Cell%20Immortalization%20Reagents%20Compatibility%20Chart.png";
+  if (!hasEditorialImage(doc, compatibility, "Cell Immortalization Reagents Compatibility Chart")) {
+    const heading = findHeading(doc, /^Cell Immortalization Reagents Compatibility Chart$/i);
+    const image = createEditorialImage(doc, {
+      src: compatibility,
+      alt: "Cell Immortalization Reagents Compatibility Chart",
+      title: "Cell Immortalization Reagents Compatibility Chart",
+    }, true);
+    const header = heading?.closest(".ci-section-header") || heading;
+    header?.insertAdjacentElement("afterend", image);
+  }
+
+  addEditorialGallery(doc, "Cell Immortalization Resources", [
+    {
+      src: "https://www.abmgood.com/assets/images/category/cell_immort_kits/CRISPR-handbook.png",
+      alt: "Cell Immortalization Handbook",
+      title: "Cell Immortalization Handbook",
+      href: "https://www.abmgood.com/assets/images/category/cell_biology/Cell_Immortalization_Handbook_V7.pdf",
+    },
+    {
+      src: "https://www.abmgood.com/assets/images/category/cell_immort_kits/Cell-Immortalization-Workflow-2.png",
+      alt: "Cell Immortalization Workflow",
+      title: "Cell Immortalization Workflow",
+    },
+    {
+      src: "https://www.abmgood.com/assets/images/category/cell_immort_kits/Custom-Cell-Immortalization-Service-thumbnail-updated.png",
+      alt: "Custom Cell Immortalization Service",
+      title: "Custom Cell Immortalization Service",
+      href: "/products/abm/services/cell-and-antibody-services/cell-biology-services/cell-immortalization-service",
+    },
+  ]);
+}
+
+/** Restore the migrated Cell Immortalization explanation accordions. The
+ * source uses Bootstrap collapse JavaScript, which is intentionally removed
+ * during sanitization; without this conversion the answer table remains as a
+ * large empty panel. */
+function transformImmortalizationCollapses(doc: Document) {
+  const isImmortalizationPage = Boolean(
+    findHeading(doc, /Recombinant SV40T Virus/i)
+    && findHeading(doc, /Recombinant hTERT Virus/i)
+    && findHeading(doc, /Additional Immortalization Viruses/i)
+  );
+  if (!isImmortalizationPage) return;
+
+  const seenTargets = new Set<string>();
+  doc.querySelectorAll<HTMLElement>(".customfaq").forEach((label) => {
+    const trigger = label.closest<HTMLAnchorElement>('a[href^="#"]');
+    const targetId = (trigger?.getAttribute("href") || "").slice(1);
+    if (!targetId || seenTargets.has(targetId)) return;
+
+    const answer = doc.getElementById(targetId);
+    if (!answer || !answer.matches(".panel-collapse,.collapse,.accordion-collapse")) return;
+    const answerBody =
+      answer.querySelector<HTMLElement>(".abm-perfect-faqs-text,.panel-body,.card-body,.accordion-body") || answer;
+    const question = collapseWs(label.textContent || trigger?.textContent || "");
+    if (!question || !collapseWs(answerBody.textContent || "")) return;
+
+    const details = doc.createElement("details");
+    details.className = "abm-service-faq-item abm-immortalization-explanation";
+    const summary = doc.createElement("summary");
+    summary.textContent = question;
+    const content = doc.createElement("div");
+    content.className = "abm-service-faq-answer";
+    content.innerHTML = answerBody.innerHTML.trim();
+    details.append(summary, content);
+
+    const questionTable = trigger?.closest("table");
+    const answerTable = answer.closest("table");
+    const insertionTarget = questionTable || trigger;
+    insertionTarget?.parentNode?.insertBefore(details, insertionTarget);
+    if (questionTable) removeNode(questionTable);
+    else if (trigger) removeNode(trigger);
+    if (answerTable) removeNode(answerTable);
+    else removeNode(answer);
+    seenTargets.add(targetId);
+  });
+}
+
 /**
  * Match only actual commerce column labels. A loose word search here is
  * destructive: specification values commonly contain prose such as
@@ -36,7 +358,10 @@ function collapseWs(s: string) {
 function isCommerceColumnLabel(value: string) {
   const label = collapseWs(value).replace(/[:：]+$/, "").trim();
   if (!label || label.length > 48) return false;
-  return /^(?:price|unit price|list price|sale price|cost|amount|currency|qty|quantity|cart|add to cart|order|order now|msrp|retail(?: price)?|wholesale(?: price)?|price \((?:usd|cad)\)|(?:usd|cad) price|usd|cad)$/i.test(label);
+  // Quantity is also a legitimate static product specification (for example
+  // "1.0 ml"). Interactive cart quantity controls are removed with forms and
+  // inputs, so keeping this header preserves the official pack-size column.
+  return /^(?:price|unit price|list price|sale price|cost|amount|currency|cart|add to cart|order|order now|msrp|retail(?: price)?|wholesale(?: price)?|price \((?:usd|cad)\)|(?:usd|cad) price|usd|cad)$/i.test(label);
 }
 
 function removeEmptyPrimarySpecificationRows(doc: Document) {
@@ -56,6 +381,368 @@ function removeEmptyPrimarySpecificationRows(doc: Document) {
   });
 }
 
+const SPECIAL_COLLECTION_SLUGS = new Map<string, string>([
+  ["sloan kettering tumor collection", "sloan-kettering-tumor-cell-lines"],
+  ["hair follicle cell collection", "hair-follicle-cell-collection"],
+  ["liver cell collection", "liver-cell-collection"],
+  ["blood cell collection", "blood-cell-collection"],
+  ["lung health cell collection", "lung-health-cell-collection"],
+  ["oral cancer cell collection", "oral-cancer-cell-collection"],
+  ["breast cancer cell collection", "breast-cancer-cell-lines"],
+  ["colon cancer cell collection", "colon-cancer-cell-lines"],
+  ["neuronal cell collections", "neuronal-cell-lines"],
+  ["mast cell lines", "mast-cell-lines"],
+  ["dermal papilla cells", "dermal-papilla-cells"],
+  ["pre-adipocytes & dermal fibroblasts", "pre-adipocytes-and-fibroblasts"],
+]);
+
+/** Restore the official collection-card action that was reduced to an empty
+ * anchor during migration. Card names are mapped to the canonical sidebar
+ * routes so stale migrated search URLs cannot leak back into the UI. */
+function restoreCollectionCardActions(doc: Document) {
+  doc.querySelectorAll<HTMLElement>(".collections-page .collection-card").forEach((card) => {
+    const collectionName = collapseWs(card.querySelector(".collection-name")?.textContent || "");
+    const slug = SPECIAL_COLLECTION_SLUGS.get(collectionName.toLowerCase());
+    const anchor = card.querySelector<HTMLAnchorElement>(".card-actions a");
+    if (!slug || !anchor) return;
+
+    const href = `/products/abm/cellular-materials/special-cell-line-collections/${slug}`;
+    anchor.setAttribute("href", href);
+    anchor.removeAttribute("target");
+    anchor.removeAttribute("rel");
+    anchor.textContent = "View Collection";
+    anchor.setAttribute("aria-label", `View ${collectionName}`);
+    card.setAttribute("data-collection-href", href);
+    card.setAttribute("role", "link");
+    card.setAttribute("tabindex", "0");
+    card.setAttribute("aria-label", `View ${collectionName}`);
+  });
+}
+
+function normalizedTableHeader(value: string) {
+  return collapseWs(value)
+    .toLowerCase()
+    .replace(/[.:#()]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isCatalogNumberHeader(value: string) {
+  const header = normalizedTableHeader(value);
+  return /^(?:cat(?:alog)?\s*(?:no|number)?|catalog\s*(?:no|number)|sku|item\s*(?:no|number))$/.test(header);
+}
+
+function isProductNameHeader(value: string) {
+  const header = normalizedTableHeader(value);
+  return /^(?:product(?:\s+(?:name|description))?(?:\s*\/\s*(?:name|description))?|cloning\s+vector|name|description|cell(?:\s+line)?(?:\s+name)?|model(?:\s+name)?)$/.test(header);
+}
+
+function applySemanticTableColumnLayout(table: HTMLTableElement) {
+  const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>("tr"));
+  const headerRow = rows.find((row) => row.querySelector("th"));
+  if (!headerRow) return;
+
+  const headers = Array.from(headerRow.children).map((cell) => collapseWs(cell.textContent || ""));
+  const columnClasses = headers.map((header) => {
+    const normalized = normalizedTableHeader(header);
+    if (isProductNameHeader(header)) return "abm-col-product";
+    if (isCatalogNumberHeader(header)) return "abm-col-catalog";
+    if (/^(?:vector|vector map)$/.test(normalized)) return "abm-col-vector";
+    if (/^(?:application|applications|description|recommended use|recommended uses|use)$/.test(normalized)) {
+      return "abm-col-description";
+    }
+    return "";
+  });
+
+  if (!columnClasses.some(Boolean)) return;
+  table.classList.add(`abm-table-columns-${headers.length}`);
+  if (columnClasses.includes("abm-col-description")) table.classList.add("abm-table-has-description-column");
+
+  rows.forEach((row) => {
+    const cells = Array.from(row.children) as HTMLElement[];
+    cells.forEach((cell, index) => {
+      if (cell.hasAttribute("colspan")) return;
+      const className = columnClasses[index];
+      if (className) cell.classList.add(className);
+    });
+  });
+}
+
+
+function detectAbmProductGroupRows(table: HTMLTableElement) {
+  const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>("tr"));
+  const headerRow = rows.find((row) => row.querySelector("th"));
+  if (!headerRow) return [] as HTMLTableRowElement[];
+
+  const headers = Array.from(headerRow.children).map((cell) => collapseWs(cell.textContent || ""));
+  const hasProductColumn = headers.some(isProductNameHeader);
+  const hasCatalogColumn = headers.some(isCatalogNumberHeader);
+  if (!hasProductColumn || !hasCatalogColumn) return [] as HTMLTableRowElement[];
+
+  return rows.filter((row) => {
+    if (row === headerRow) return false;
+    if (/^table-product-mini-category-/i.test(row.id || "")) return true;
+
+    const cells = Array.from(row.children) as HTMLElement[];
+    if (!cells.length) return false;
+    const populated = cells.filter((cell) => collapseWs(cell.textContent || ""));
+    if (populated.length !== 1) return false;
+
+    const label = collapseWs(populated[0].textContent || "");
+    if (!label || label.length > 90 || validCatalogNumber(label)) return false;
+    if (populated[0].querySelector("a[href], img, input, select, button")) return false;
+
+    const hasExplicitSpan = populated[0].hasAttribute("colspan");
+    const isShortGroupLabel = label.split(/\s+/).length <= 8
+      && !/[.!?]$/.test(label)
+      && !/^(?:product|cat(?:alog)?\.?\s*no|quantity|unit|description)$/i.test(label);
+
+    return hasExplicitSpan || isShortGroupLabel;
+  });
+}
+
+function validCatalogNumber(value: string) {
+  const sku = collapseWs(value).replace(/\s+/g, "");
+  return sku.length >= 2
+    && sku.length <= 64
+    && /\d/.test(sku)
+    && /^[a-z0-9][a-z0-9._+\/-]*$/i.test(sku);
+}
+
+/**
+ * Migrated collection pages contain authoritative product rows, but the
+ * source HTML often renders Cat. No. and Product Name as plain text. Turn
+ * those rows into native internal catalog links, including custom services,
+ * and preserve enough row context for newly published product fallbacks.
+ */
+function unwrapAnchor(anchor: HTMLAnchorElement) {
+  anchor.replaceWith(...Array.from(anchor.childNodes));
+}
+
+function isGeneratedCatalogHref(href: string, sku: string) {
+  try {
+    const url = new URL(href, "https://www.itsbio.co.kr");
+    if (/^\/products\/abm\/staged\/(?:product|service)\//i.test(url.pathname)) return true;
+    return url.pathname === "/products/abm/resolve"
+      && collapseWs(url.searchParams.get("sku") || "").toLowerCase() === collapseWs(sku).toLowerCase()
+      && !url.searchParams.get("u");
+  } catch {
+    return false;
+  }
+}
+
+function removeGeneratedCatalogLinks(cell: HTMLElement | undefined, sku: string, removeAll = false) {
+  if (!cell) return;
+  Array.from(cell.querySelectorAll<HTMLAnchorElement>("a[href]")).forEach((anchor) => {
+    const href = anchor.getAttribute("href") || "";
+    if (removeAll || isGeneratedCatalogHref(href, sku)) unwrapAnchor(anchor);
+  });
+}
+
+function linkAbmProductTableRows(
+  doc: Document,
+  productCatalogNumbers?: readonly string[],
+  serviceCatalogNumbers: readonly string[] = [],
+) {
+  const validateCatalog = Array.isArray(productCatalogNumbers);
+  const productSkus = new Set((productCatalogNumbers || []).map((sku) => collapseWs(sku).toLowerCase()));
+  const serviceSkus = new Set(serviceCatalogNumbers.map((sku) => collapseWs(sku).toLowerCase()));
+  const isCas9ExpressionPage = /Cas9 Expression Vectors and Viruses/i.test(collapseWs(doc.body.textContent || ""));
+
+  doc.querySelectorAll<HTMLTableElement>("table").forEach((table) => {
+    const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>("tr"));
+
+    // Cas9 Vectors & Virus is already an authoritative ABM link table.
+    // Do not rewrite its product names / Cat. No. into staged ITS BIO routes:
+    // verified ABM product and vector-map links must remain direct external
+    // destinations so target="_blank" reliably opens a new tab.
+    const earlyHeaders = rows.slice(0, 6)
+      .flatMap((row) => Array.from(row.children).map((cell) => normalizedTableHeader(collapseWs(cell.textContent || ""))));
+    const isCas9VectorCatalog =
+      earlyHeaders.includes("product name")
+      && earlyHeaders.includes("vector map")
+      && earlyHeaders.includes("format")
+      && earlyHeaders.some((header) => isCatalogNumberHeader(header));
+    if (isCas9ExpressionPage || isCas9VectorCatalog) {
+      table.classList.add("itsbio-cas9-vector-table");
+      return;
+    }
+
+    let headerRow: HTMLTableRowElement | undefined;
+    let headers: string[] = [];
+    let skuIndex = -1;
+    let nameIndex = -1;
+
+    for (const row of rows.slice(0, 6)) {
+      const candidateHeaders = Array.from(row.children).map((cell) => collapseWs(cell.textContent || ""));
+      const candidateSkuIndex = candidateHeaders.findIndex(isCatalogNumberHeader);
+      const candidateNameIndex = candidateHeaders.findIndex(isProductNameHeader);
+      if (candidateSkuIndex >= 0 && candidateNameIndex >= 0 && candidateSkuIndex !== candidateNameIndex) {
+        headerRow = row;
+        headers = candidateHeaders;
+        skuIndex = candidateSkuIndex;
+        nameIndex = candidateNameIndex;
+        break;
+      }
+    }
+
+    // ABM's Lentivirus Bundles use a horizontal comparison matrix. The
+    // product identities live across a "Bundle Cat. No." row rather than in a
+    // normal Cat.No. column, so route each known bundle cell independently.
+    rows.forEach((row) => {
+      const cells = Array.from(row.children) as HTMLElement[];
+      const labels = cells.map((cell) => collapseWs(cell.textContent || ""));
+      const labelIndex = labels.findIndex((value) =>
+        /^(?:bundle\s+cat(?:alog)?\.?\s*(?:no|number)\.?|bundle\s+sku)$/i.test(value),
+      );
+      if (labelIndex < 0) return;
+
+      cells.slice(labelIndex + 1).forEach((cell) => {
+        const sku = collapseWs(cell.textContent || "").replace(/\s+/g, "");
+        if (!validCatalogNumber(sku)) return;
+
+        const skuKey = sku.toLowerCase();
+        const isProduct = productSkus.has(skuKey);
+        const isService = serviceSkus.has(skuKey);
+        if (validateCatalog && !isProduct && !isService) return;
+
+        const query = new URLSearchParams({ name: sku });
+        if (/^\/products\/abm\/(?:cellular-materials|genetic-materials)(?:\/|$)/.test(window.location.pathname)) {
+          query.set("from", window.location.pathname);
+        }
+        const catalogHref = isService
+          ? `/products/abm/staged/service/${encodeURIComponent(sku)}`
+          : `/products/abm/staged/product/${encodeURIComponent(sku)}?${query.toString()}`;
+
+        const anchors = Array.from(cell.querySelectorAll<HTMLAnchorElement>("a"));
+        if (anchors.length) {
+          anchors.forEach((anchor) => {
+            anchor.classList.add("abm-product-table-link");
+            anchor.setAttribute("href", catalogHref);
+            anchor.setAttribute("aria-label", `View ${sku}`);
+            anchor.removeAttribute("target");
+            anchor.removeAttribute("rel");
+            anchor.dataset.itsbioAbmProductResolved = "true";
+          });
+        } else {
+          const anchor = doc.createElement("a");
+          anchor.className = "abm-product-table-link";
+          anchor.setAttribute("href", catalogHref);
+          anchor.setAttribute("aria-label", `View ${sku}`);
+          while (cell.firstChild) anchor.appendChild(cell.firstChild);
+          cell.appendChild(anchor);
+        }
+      });
+    });
+
+    if (!headerRow) return;
+
+    const categoryIndex = headers.findIndex((header) => /^(?:category|model type|cell type|bio system)$/.test(normalizedTableHeader(header)));
+    const unitIndex = headers.findIndex((header) => /^(?:unit|size|format|pack size)$/.test(normalizedTableHeader(header)));
+
+    rows.forEach((row) => {
+      if (row === headerRow || row.classList.contains("abm-table-section-row")) return;
+      const cells = Array.from(row.children) as HTMLElement[];
+      if (cells.length <= Math.max(skuIndex, nameIndex)) return;
+
+      const sku = collapseWs(cells[skuIndex]?.textContent || "").replace(/\s+/g, "");
+      const name = collapseWs(cells[nameIndex]?.textContent || "");
+      if (!validCatalogNumber(sku) || !name) {
+        // Labels such as "By Serotype" are options, not catalog identities.
+        // Never turn them into a resolver link.
+        if (name && sku) removeGeneratedCatalogLinks(cells[skuIndex], sku, true);
+        return;
+      }
+
+      const skuKey = sku.toLowerCase();
+      const isService = serviceSkus.has(skuKey);
+      const isProduct = productSkus.has(skuKey);
+
+      if (validateCatalog && !isProduct && !isService) {
+        // Keep an authoritative source/legacy link when the migrated HTML has
+        // one, but remove generated staged/sku-only links that can only 404 or
+        // bounce to the ABM root. Product-name links may retain their verified
+        // ABM source, but an unresolved Cat.No must remain plain text: the
+        // generic client resolver otherwise turns that source anchor back into
+        // a misleading `/resolve?sku=...` destination.
+        removeGeneratedCatalogLinks(cells[nameIndex], sku);
+        removeGeneratedCatalogLinks(cells[skuIndex], sku, true);
+        row.removeAttribute("data-href");
+        row.classList.remove("abm-product-row");
+        row.removeAttribute("role");
+        row.removeAttribute("tabindex");
+        row.removeAttribute("aria-label");
+        row.dataset.abmUnresolvedSku = sku;
+        return;
+      }
+
+      const query = new URLSearchParams({ name });
+      const category = categoryIndex >= 0 ? collapseWs(cells[categoryIndex]?.textContent || "") : "";
+      const unit = unitIndex >= 0 ? collapseWs(cells[unitIndex]?.textContent || "") : "";
+      if (category) query.set("category", category);
+      if (unit) query.set("unit", unit);
+      if (/^\/products\/abm\/(?:cellular-materials|genetic-materials)(?:\/|$)/.test(window.location.pathname)) {
+        query.set("from", window.location.pathname);
+      }
+      const catalogHref = isService
+        ? `/products/abm/staged/service/${encodeURIComponent(sku)}`
+        : `/products/abm/staged/product/${encodeURIComponent(sku)}?${query.toString()}`;
+
+      row.dataset.href = catalogHref;
+      row.classList.add("abm-product-row");
+      row.setAttribute("role", "link");
+      row.setAttribute("tabindex", "0");
+      row.setAttribute("aria-label", `View ${name} (${sku})`);
+
+      const linkCellToCatalog = (cell: HTMLElement | undefined) => {
+        if (!cell) return;
+        const existingAnchors = Array.from(cell.querySelectorAll<HTMLAnchorElement>("a"));
+        if (existingAnchors.length) {
+          existingAnchors.forEach((anchor) => {
+            anchor.classList.add("abm-product-table-link");
+            anchor.setAttribute("href", catalogHref);
+            anchor.setAttribute("aria-label", `View ${name} (${sku})`);
+            anchor.removeAttribute("target");
+            anchor.removeAttribute("rel");
+          });
+          return;
+        }
+        const anchor = doc.createElement("a");
+        anchor.className = "abm-product-table-link";
+        anchor.setAttribute("href", catalogHref);
+        anchor.setAttribute("aria-label", `View ${name} (${sku})`);
+        while (cell.firstChild) anchor.appendChild(cell.firstChild);
+        cell.appendChild(anchor);
+      };
+
+      const nameCell = cells[nameIndex];
+      const vectorAnchors = Array.from(nameCell?.querySelectorAll<HTMLAnchorElement>("a") || []).filter((anchor) => {
+        const href = anchor.getAttribute("href") || "";
+        const officialTarget = officialAbmTarget(href, "https://www.abmgood.com");
+        return isOfficialAbmVectorUrl(officialTarget);
+      });
+
+      if (vectorAnchors.length) {
+        vectorAnchors.forEach((anchor) => {
+          const officialTarget = officialAbmTarget(anchor.getAttribute("href") || "", "https://www.abmgood.com");
+          anchor.classList.add("abm-product-table-link");
+          anchor.setAttribute("href", officialTarget);
+          anchor.setAttribute("target", "_blank");
+          anchor.setAttribute("rel", "noreferrer noopener");
+          anchor.setAttribute("data-itsbio-abm-preserve-link", "true");
+          anchor.setAttribute("aria-label", `Open ${name} vector map on ABM`);
+        });
+      } else {
+        linkCellToCatalog(nameCell);
+      }
+
+      // Cat. No. is the authoritative ITS BIO identity key even when several
+      // official ABM rows share the same source URL.
+      linkCellToCatalog(cells[skuIndex]);
+    });
+  });
+}
+
 function extractLegacyAbmTarget(href: string) {
   try {
     const url = new URL(href, "https://www.itsbio.co.kr");
@@ -66,10 +753,110 @@ function extractLegacyAbmTarget(href: string) {
   }
 }
 
+function extractResolveAbmTarget(href: string) {
+  try {
+    const url = new URL(href, "https://www.itsbio.co.kr");
+    if (url.pathname !== "/products/abm/resolve") return "";
+    const target = (url.searchParams.get("u") || "").trim();
+    return isOfficialAbmUrl(target) ? target : "";
+  } catch {
+    return "";
+  }
+}
+
 function officialAbmTarget(href: string, baseUrl: string) {
   const legacyTarget = extractLegacyAbmTarget(href);
   const resolved = legacyTarget || (baseUrl ? resolveUrl(href, baseUrl) : href);
   return isOfficialAbmUrl(resolved) ? resolved : "";
+}
+
+function normalizeCas9VectorOutboundLinks(doc: Document) {
+  const isCas9VectorPage = /Cas9 Expression Vectors and Viruses/i.test(collapseWs(doc.body.textContent || ""));
+  if (!isCas9VectorPage) return;
+
+  // Only vector destinations open a new tab. Ordinary ITS BIO navigation and
+  // virus rows stay in the current tab.
+  doc.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((anchor) => {
+    const href = (anchor.getAttribute("href") || "").trim();
+    if (isInternalItsbioHref(href)) {
+      anchor.removeAttribute("target");
+      anchor.removeAttribute("rel");
+    }
+  });
+
+  doc.querySelectorAll<HTMLTableElement>("table").forEach((table) => {
+    const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>("tr"));
+    const candidateHeaderRows = rows.slice(0, 6).map((row) =>
+      Array.from(row.children).map((cell) => normalizedTableHeader(collapseWs(cell.textContent || ""))),
+    );
+    const headerTexts = candidateHeaderRows.flat();
+    const isCas9Catalog =
+      headerTexts.includes("product name")
+      && headerTexts.includes("vector map")
+      && headerTexts.some((header) => isCatalogNumberHeader(header));
+    if (!isCas9Catalog) return;
+
+    const columnHeaders = candidateHeaderRows.find((headers) =>
+      headers.includes("product name") && headers.some((header) => isCatalogNumberHeader(header)),
+    ) || [];
+    const productIndex = columnHeaders.indexOf("product name");
+    const catalogIndex = columnHeaders.findIndex((header) => isCatalogNumberHeader(header));
+
+    table.classList.add("itsbio-cas9-vector-table");
+
+    rows.forEach((row) => {
+      const cells = Array.from(row.children) as HTMLElement[];
+      const productAnchor = productIndex >= 0
+        ? cells[productIndex]?.querySelector<HTMLAnchorElement>("a[href]")
+        : null;
+      const catalogAnchor = catalogIndex >= 0
+        ? cells[catalogIndex]?.querySelector<HTMLAnchorElement>("a[href]")
+        : null;
+      if (productAnchor && catalogAnchor) {
+        const catalogHref = (catalogAnchor.getAttribute("href") || "").trim();
+        const productHref = (productAnchor.getAttribute("href") || "").trim();
+        // On ABM, several Cas9 Cat.No cells intentionally share the product
+        // destination (for example K004, C420 and C446). The generic sanitizer
+        // can reduce those Cat.No anchors to an unresolvable sku-only URL;
+        // restore the verified row product destination instead.
+        if (isGeneratedCatalogHref(catalogHref, collapseWs(catalogAnchor.textContent || "")) && productHref) {
+          catalogAnchor.setAttribute("href", productHref);
+          catalogAnchor.removeAttribute("target");
+          catalogAnchor.removeAttribute("rel");
+        }
+      }
+      const formatCell = cells.find((cell) => /^vector$/i.test(collapseWs(cell.textContent || "")));
+      if (!formatCell) {
+        row.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((anchor) => {
+          const href = (anchor.getAttribute("href") || "").trim();
+          if (isInternalItsbioHref(href)) {
+            anchor.removeAttribute("target");
+            anchor.removeAttribute("rel");
+          }
+        });
+        return;
+      }
+
+      row.dataset.abmVectorRow = "true";
+
+      row.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((anchor) => {
+        const href = (anchor.getAttribute("href") || "").trim();
+        const direct =
+          extractResolveAbmTarget(href)
+          || extractLegacyAbmTarget(href)
+          || (/^https?:/i.test(href) && isOfficialAbmUrl(href) ? href : "");
+        // Preserve only the actual vector-map/designer destination as an
+        // external link. Product-name and Cat.No links must keep their own
+        // source meaning and continue through the ITS BIO legacy resolver.
+        if (!direct || !isOfficialAbmVectorUrl(direct)) return;
+
+        anchor.setAttribute("href", direct);
+        anchor.setAttribute("target", "_blank");
+        anchor.setAttribute("rel", "noopener noreferrer");
+        anchor.setAttribute(EXTERNAL_VECTOR_LINK_ATTR, "true");
+      });
+    });
+  });
 }
 
 function isHeadingAtOrAbove(el: Element, level: number) {
@@ -169,6 +956,48 @@ function transformServiceFaqs(doc: Document) {
     if (!list.children.length) return;
     heading.insertAdjacentElement("afterend", list);
     sources.forEach((source) => removeNode(source));
+  });
+}
+
+function removeCrisprSearchResultsPlaceholder(doc: Document) {
+  const placeholder = "search results will be displayed here";
+
+  const candidates = Array.from(
+    doc.querySelectorAll<HTMLElement>("#outer-box,.result-section,.ko-empty-results,div,p,span,section")
+  ).filter((el) => collapseWs(el.textContent || "").toLowerCase() === placeholder);
+
+  candidates.forEach((el) => {
+    const container =
+      el.closest<HTMLElement>("#outer-box,.result-section,.ko-empty-results")
+      || el;
+    container.remove();
+  });
+
+  // Defensive cleanup for wrappers whose text is only the placeholder plus whitespace.
+  doc.querySelectorAll<HTMLElement>("#outer-box,.result-section,.ko-empty-results").forEach((el) => {
+    if (collapseWs(el.textContent || "").toLowerCase() === placeholder) el.remove();
+  });
+}
+
+function normalizeCrisprContactForms(doc: Document) {
+  const removedIds = new Set<string>();
+
+  doc.querySelectorAll<HTMLElement>(".hs-form-frame").forEach((frame) => {
+    const wrapper =
+      frame.closest<HTMLElement>(".hub-contact-form-wrap,.ko-contact-form-wrap,.contact-form-wrap,[id$='-form']")
+      || frame.parentElement;
+    if (!wrapper) return;
+    if (wrapper.id) removedIds.add(wrapper.id);
+    wrapper.remove();
+  });
+
+  if (!removedIds.size) return;
+  doc.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((anchor) => {
+    const targetId = (anchor.getAttribute("href") || "").slice(1);
+    if (!removedIds.has(targetId)) return;
+    anchor.setAttribute("href", "/contact");
+    anchor.removeAttribute("target");
+    anchor.removeAttribute("rel");
   });
 }
 
@@ -293,7 +1122,10 @@ function improveReadability(doc: Document) {
     return c.includes("row") || c.includes("col-");
   };
 
-  const candidates = Array.from(doc.querySelectorAll("div, section, span"));
+  // Keep inline spans inline. ABM FAQ/reference prose frequently wraps
+  // sentence links in <span><a>...</a></span>; converting those spans into
+  // paragraphs breaks one sentence into multiple lines.
+  const candidates = Array.from(doc.querySelectorAll("div, section"));
   for (const el of candidates) {
     if (!el.parentElement) continue;
     if (el.closest("table, .abm-table-scroll")) continue;
@@ -571,11 +1403,17 @@ function isManagedAbmImage(src: string) {
   }
 }
 
-function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"] = "default") {
+export function sanitizeAndStyle(
+  rawHtml: string,
+  baseUrl?: string,
+  mode: Props["mode"] = "default",
+  productCatalogNumbers?: readonly string[],
+  serviceCatalogNumbers: readonly string[] = [],
+) {
   if (!rawHtml) return "";
 
   // ✅ 0) 문자열 레벨 전처리
-  let html = normalizeMailto(rawHtml);
+  const html = normalizeMailto(rawHtml);
   const isAbmMode = mode === "abm-detail" || mode === "abm-service" || mode === "abm-landing";
   const isAbmLanding = mode === "abm-landing";
 
@@ -586,9 +1424,20 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"]
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
 
+  if (mode === "abm-detail") transformImmortalizationCollapses(doc);
+
+  const officialCrisprLanding = isAbmLanding && /CRISPR Genome Editing Tools and Services|CRISPR Knockout sgRNA Vectors & Viruses|CRISPR Activation & Repression|Cas9 Expression Vectors and Viruses|Cas Proteins & CRISPR Screening/i.test(
+    collapseWs(doc.body.textContent || "")
+  );
+
   if (mode === "abm-service") {
     markExternalVectorSectionLinks(doc, effectiveBase);
     transformServiceFaqs(doc);
+  } else if (officialCrisprLanding) {
+    transformServiceFaqs(doc);
+    normalizeCrisprContactForms(doc);
+    removeCrisprSearchResultsPlaceholder(doc);
+    normalizeCas9VectorOutboundLinks(doc);
   }
 
   // ✅ 0.5) (가장 중요) 이미지/미디어 URL 보정 + lazyload src 복구
@@ -705,11 +1554,19 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"]
       table.setAttribute("class", TABLE_CLASS);
       ["style", "width", "height", "bgcolor", "border", "cellpadding", "cellspacing", "align"].forEach((attribute) => table.removeAttribute(attribute));
       table.querySelectorAll("th").forEach((th) => th.setAttribute("scope", "col"));
-      const sectionRows = Array.from(table.querySelectorAll<HTMLTableRowElement>('tr[id^="table-product-mini-category-"]'));
+      const sectionRows = detectAbmProductGroupRows(table as HTMLTableElement);
+      const visibleColumnCount = Math.max(
+        1,
+        Array.from(table.querySelectorAll<HTMLTableRowElement>("tr"))
+          .find((row) => row.querySelector("th"))
+          ?.children.length || 1,
+      );
       sectionRows.forEach((row) => {
         row.classList.add("abm-table-section-row");
         row.removeAttribute("style");
-        row.querySelectorAll("td, th").forEach((cell) => cell.removeAttribute("style"));
+        const cells = Array.from(row.querySelectorAll<HTMLElement>(":scope > td, :scope > th"));
+        cells.forEach((cell) => cell.removeAttribute("style"));
+        if (cells.length === 1) cells[0].setAttribute("colspan", String(visibleColumnCount));
       });
 
       if (sectionRows.length && !doc.querySelector(".abm-table-anchor-nav")) {
@@ -735,6 +1592,8 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"]
         if (nav.children.length) doc.body.insertBefore(nav, doc.body.firstChild);
       }
 
+      applySemanticTableColumnLayout(table as HTMLTableElement);
+
       const existingWrap = table.parentElement?.classList.contains("models-table-wrap") ? table.parentElement : null;
       if (existingWrap) {
         existingWrap.classList.add(TABLE_WRAP_CLASS);
@@ -756,8 +1615,23 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"]
     }
   });
 
+  if (isAbmMode) {
+    linkAbmProductTableRows(doc, productCatalogNumbers, serviceCatalogNumbers);
+    // Run after the generic ABM table/link pass as well. Some source Cat.No
+    // anchors become sku-only resolver URLs during that pass; Cas9 tables must
+    // restore ABM's verified row destination after every generic rewrite.
+    normalizeCas9VectorOutboundLinks(doc);
+  }
+
   // ✅ 7) 가독성 개선(문단 래핑)
   if (!isAbmLanding) improveReadability(doc);
+
+  if (mode === "abm-detail") {
+    restoreGrowthFactorTools(doc);
+    restoreImmortalizationTools(doc);
+  }
+
+  if (isAbmLanding) restoreCollectionCardActions(doc);
 
   // 8) 빈 요소 정리
   doc.querySelectorAll("p, div, section, span, li").forEach((el) => {
@@ -769,7 +1643,14 @@ function sanitizeAndStyle(rawHtml: string, baseUrl?: string, mode: Props["mode"]
   return doc.body.innerHTML.trim();
 }
 
-export default function HtmlContent({ html, className, baseUrl, mode = "default" }: Props) {
+export default function HtmlContent({
+  html,
+  className,
+  baseUrl,
+  mode = "default",
+  productCatalogNumbers,
+  serviceCatalogNumbers = EMPTY_CATALOG_NUMBERS,
+}: Props) {
   const [renderHtml, setRenderHtml] = useState<string>("");
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -778,16 +1659,16 @@ export default function HtmlContent({ html, className, baseUrl, mode = "default"
 
   useEffect(() => {
     try {
-      setRenderHtml(sanitizeAndStyle(input, base, mode));
+      setRenderHtml(sanitizeAndStyle(input, base, mode, productCatalogNumbers, serviceCatalogNumbers));
     } catch {
       // fallback: 최소한 mailto / p링크만
       const fallback = normalizeMailto(input);
       setRenderHtml(fallback);
     }
-  }, [input, base, mode]);
+  }, [input, base, mode, productCatalogNumbers, serviceCatalogNumbers]);
 
   useEffect(() => {
-    if (mode !== "abm-landing" || !renderHtml) return;
+    if (!mode.startsWith("abm-") || !renderHtml) return;
     const root = contentRef.current;
     if (!root) return;
 
@@ -817,8 +1698,68 @@ export default function HtmlContent({ html, className, baseUrl, mode = "default"
       if (href) window.location.assign(href);
     };
 
+    const filterGrowthCatalog = (query: string) => {
+      const table = root.querySelector<HTMLTableElement>('table[data-abm-growth-catalog="true"]');
+      if (!table) return;
+      const normalized = collapseWs(query).toLowerCase();
+      const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>("tr"));
+      const productRows = rows.filter((row) =>
+        !row.classList.contains("abm-table-section-row") && Boolean(row.querySelector("td"))
+      );
+      let visible = 0;
+
+      productRows.forEach((row) => {
+        const matches = !normalized || collapseWs(row.textContent || "").toLowerCase().includes(normalized);
+        row.toggleAttribute("hidden", !matches);
+        if (matches) visible += 1;
+      });
+
+      rows.filter((row) => row.classList.contains("abm-table-section-row")).forEach((sectionRow) => {
+        let sibling = sectionRow.nextElementSibling as HTMLTableRowElement | null;
+        let hasVisibleProduct = false;
+        while (sibling && !sibling.classList.contains("abm-table-section-row")) {
+          if (productRows.includes(sibling) && !sibling.hidden) hasVisibleProduct = true;
+          sibling = sibling.nextElementSibling as HTMLTableRowElement | null;
+        }
+        sectionRow.toggleAttribute("hidden", Boolean(normalized) && !hasVisibleProduct);
+      });
+
+      const count = root.querySelector<HTMLElement>("[data-abm-growth-search-count]");
+      if (count) count.textContent = normalized
+        ? `${visible.toLocaleString()} matching products`
+        : `${productRows.length.toLocaleString()} products available`;
+    };
+
+    const initialGrowthSearch = root.querySelector<HTMLInputElement>("[data-abm-growth-search]");
+    if (initialGrowthSearch) filterGrowthCatalog(initialGrowthSearch.value);
+
     const onClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
+
+      const resetGrowthSearch = target.closest<HTMLButtonElement>("[data-abm-growth-reset]");
+      if (resetGrowthSearch) {
+        const input = root.querySelector<HTMLInputElement>("[data-abm-growth-search]");
+        if (!input) return;
+        input.value = "";
+        filterGrowthCatalog("");
+        input.focus();
+        return;
+      }
+
+      const immortalizationTab = target.closest<HTMLButtonElement>("[data-abm-immortalization-tab]");
+      if (immortalizationTab) {
+        const key = immortalizationTab.dataset.abmImmortalizationTab || "";
+        root.querySelectorAll<HTMLButtonElement>("[data-abm-immortalization-tab]").forEach((button) => {
+          const active = button === immortalizationTab;
+          button.setAttribute("aria-selected", active ? "true" : "false");
+          button.tabIndex = active ? 0 : -1;
+        });
+        root.querySelectorAll<HTMLElement>("[data-panel]").forEach((panel) => {
+          panel.toggleAttribute("hidden", panel.dataset.panel !== key);
+        });
+        return;
+      }
+
       const toggle = target.closest<HTMLButtonElement>(".validated-lines-toggle");
       if (toggle) {
         const panel = root.querySelector<HTMLElement>("#validated-lines-panel");
@@ -857,7 +1798,21 @@ export default function HtmlContent({ html, className, baseUrl, mode = "default"
       }
 
       const row = target.closest<HTMLElement>("tr[data-href], tr[data-link]");
-      if (row) activateRow(row);
+      if (row && !target.closest("a")) {
+        activateRow(row);
+        return;
+      }
+
+      const collectionCard = target.closest<HTMLElement>(".collections-page .collection-card[data-collection-href]");
+      if (collectionCard && !target.closest("a")) {
+        const href = collectionCard.dataset.collectionHref || "";
+        if (href) window.location.assign(href);
+      }
+    };
+
+    const onInput = (event: Event) => {
+      const input = (event.target as HTMLElement).closest<HTMLInputElement>("[data-abm-growth-search]");
+      if (input) filterGrowthCatalog(input.value);
     };
 
     const onKeyDown = (event: KeyboardEvent) => {
@@ -866,16 +1821,28 @@ export default function HtmlContent({ html, className, baseUrl, mode = "default"
         return;
       }
       if (event.key !== "Enter" && event.key !== " ") return;
-      const row = (event.target as HTMLElement).closest<HTMLElement>("tr[data-href], tr[data-link]");
-      if (!row) return;
-      event.preventDefault();
-      activateRow(row);
+      const target = event.target as HTMLElement;
+      const row = target.closest<HTMLElement>("tr[data-href], tr[data-link]");
+      if (row && !target.closest("a")) {
+        event.preventDefault();
+        activateRow(row);
+        return;
+      }
+
+      const collectionCard = (event.target as HTMLElement).closest<HTMLElement>(".collections-page .collection-card[data-collection-href]");
+      if (collectionCard) {
+        event.preventDefault();
+        const href = collectionCard.dataset.collectionHref || "";
+        if (href) window.location.assign(href);
+      }
     };
 
     root.addEventListener("click", onClick);
+    root.addEventListener("input", onInput);
     root.addEventListener("keydown", onKeyDown);
     return () => {
       root.removeEventListener("click", onClick);
+      root.removeEventListener("input", onInput);
       root.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = "";
     };

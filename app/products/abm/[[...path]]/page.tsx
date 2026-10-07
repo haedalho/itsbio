@@ -24,17 +24,23 @@ import {
   type AbmCatalogGroup,
 } from "@/lib/abm/catalog-taxonomy";
 import {
+  getAbmStagedCatalogNumbers,
   getAbmStagedRecordCount,
   getAbmStagedRecords,
   getAbmStagedServiceLanding,
   isManagedAbmImageUrl,
 } from "@/lib/abm/rebuild-staging";
+import { internalizeAbmHref } from "@/lib/abm/internal-links";
 import {
   abmResourceImagePath,
   abmResourcePagePath,
   isOfficialAbmResourceImageUrl,
 } from "@/lib/abm/resource-links";
+import { extractAbmTableCatalogNumbers } from "@/lib/abm/table-catalog";
 import "../abm-3d-landing.css";
+import "../abm-cellular-category.css";
+import "../abm-crispr-official.css";
+import "../abm-crispr-source.css";
 
 export const revalidate = 300;
 
@@ -46,6 +52,29 @@ const KENT_MENU_TITLE = "General Lab Equipment";
 
 const PAGE_SHELL = "mx-auto max-w-[1320px] px-6";
 const CONTENT_LAYOUT = "grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[296px_minmax(0,1fr)]";
+
+const TARGETED_APOPTOSIS_PATH = [
+  "genetic-materials",
+  "specialized-vectors",
+  "targeted-cell-apoptosis-adenoviruses",
+];
+
+const VERIFIED_TARGETED_APOPTOSIS_HTML = `
+  <p>abm’s unique Adenoviruses provide a targeted clean-up step for iPSC workflows, enabling inducible, selective depletion of non-reprogrammed and off-target cells. These recombinant adenoviruses transiently deliver a construct in which a cell type-specific promoter drives expression of an inducible caspase.</p>
+  <p>After transduction, addition of the small molecule Rimiducid (AP1903) or AP20187 activates apoptosis specifically in targeted cell populations, resulting in efficient depletion of residual somatic cells and enrichment of a purified iPSC population.</p>
+  <table>
+    <thead><tr><th>Product Name</th><th>Cat. No.</th><th>Quantity</th><th>Titer</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://www.abmgood.com/CMV-Control-Apoptosis-Adenovirus-G3000.html">CMV Control Apoptosis Adenovirus</a></td><td><a href="https://www.abmgood.com/CMV-Control-Apoptosis-Adenovirus-G3000.html">G3000</a></td><td>1.0 ml</td><td>1 × 10<sup>6</sup> pfu/ml</td></tr>
+      <tr><td><a href="https://www.abmgood.com/Endothelial-Apoptosis-Adenovirus-G3001.html">Endothelial Apoptosis Adenovirus</a></td><td><a href="https://www.abmgood.com/Endothelial-Apoptosis-Adenovirus-G3001.html">G3001</a></td><td>1.0 ml</td><td>1 × 10<sup>6</sup> pfu/ml</td></tr>
+      <tr><td><a href="https://www.abmgood.com/Epithelial-Apoptosis-Adenovirus-G3002.html">Epithelial Apoptosis Adenovirus</a></td><td><a href="https://www.abmgood.com/Epithelial-Apoptosis-Adenovirus-G3002.html">G3002</a></td><td>1.0 ml</td><td>1 × 10<sup>6</sup> pfu/ml</td></tr>
+    </tbody>
+  </table>
+  <h3>Mechanism</h3>
+  <p><img src="https://www.abmgood.com/assets/images/tinymce/Targeted-Cell-Apoptosis-Adenovirus-Workflow.jpg" alt="Targeted Cell Apoptosis Adenovirus workflow" /></p>
+  <h3>Supporting Data</h3>
+  <p>Coming soon</p>
+`;
 
 type Theme = {
   accentBg: string;
@@ -115,8 +144,7 @@ function stripBrandSuffix(title: string) {
 
 function legacyHref(brandKey: string, url: string) {
   if (brandKey === "abm") {
-    const resourcePath = abmResourcePagePath(url);
-    if (resourcePath) return resourcePath;
+    return internalizeAbmHref(url, "https://www.abmgood.com");
   }
   return `/products/${brandKey}/legacy?u=${encodeURIComponent(url)}`;
 }
@@ -459,6 +487,165 @@ function normalizeAbmCellularSidebar(nodes: TreeNode[]) {
   return build(abmCellularTaxonomy as AbmCellularTaxonomyNode[], ["cellular-materials"]);
 }
 
+
+type AbmGeneticNavSpec = {
+  title: string;
+  aliases?: string[];
+  children?: AbmGeneticNavSpec[];
+};
+
+const ABM_GENETIC_NAV_SPECS: AbmGeneticNavSpec[] = [
+  {
+    title: "Expression-Ready Libraries",
+    aliases: ["Expression Ready Libraries"],
+    children: [
+      { title: "Lentiviral Vectors & Virus", aliases: ["Lentiviral Vectors and Virus", "Lentiviral Vectors and Viruses"] },
+      { title: "AAV Vectors & Virus", aliases: ["AAV Vectors and Virus", "AAV Vectors and Viruses"] },
+      { title: "Adenovirus" },
+      {
+        title: "siRNA",
+        children: [
+          { title: "siRNA Lentivirus" },
+          { title: "siRNA AAV" },
+          { title: "siRNA dsRNA Oligo", aliases: ["siRNA Oligo", "dsRNA Oligo"] },
+        ],
+      },
+      { title: "miRNA", aliases: ["microRNA"] },
+      { title: "ORF Vectors", aliases: ["ORF Vector"] },
+      { title: "circRNA", aliases: ["Circular RNA"] },
+      { title: "Control Vectors & Viruses", aliases: ["Control Vectors and Viruses", "Control Vectors"] },
+    ],
+  },
+  {
+    title: "CRISPR",
+    aliases: ["CRISPR Products for Genome Editing"],
+    children: [
+      {
+        title: "CRISPR KO Vectors & Virus",
+        aliases: [
+          "CRISPR KO Vectors and Virus",
+          "CRISPR KO Vectors and Viruses",
+          "CRISPR Knockout sgRNA Vectors & Viruses",
+          "CRISPR Knockout sgRNA Vectors and Viruses",
+          "CRISPR sgRNA Library",
+          "CRISPR Knockout Library",
+        ],
+      },
+      {
+        title: "CRISPR Activation Vectors",
+        aliases: ["CRISPR Activation", "CRISPR Activation/Repression", "CRISPRa Vectors"],
+      },
+      {
+        title: "Cas9 Vectors & Virus",
+        aliases: [
+          "Cas9 Vectors and Virus",
+          "Cas9 Vectors and Viruses",
+          "Cas9 Expression Vectors and Virus",
+          "Cas9 Expression Vectors and Viruses",
+        ],
+      },
+      {
+        title: "Cas Proteins & CRISPR Screening",
+        aliases: ["Cas Proteins and CRISPR Screening", "Cas9 Proteins", "Cas Proteins"],
+      },
+    ],
+  },
+  {
+    title: "Expression Systems",
+    children: [
+      { title: "Lentiviral Vectors", aliases: ["Lentivirus Expression System"] },
+      { title: "AAV Vectors", aliases: ["AAV Expression System"] },
+      { title: "Adenoviral Vectors", aliases: ["Adenovirus Vectors", "Adenoviral Expression Vectors"] },
+      { title: "Retroviral Vectors", aliases: ["Retrovirus Vectors"] },
+    ],
+  },
+  {
+    title: "Specialized Vectors",
+    aliases: ["Specialized Vectors & Viruses", "Specialized Vectors and Viruses"],
+    children: [
+      { title: "Targeted Cell Apoptosis Adenoviruses", aliases: ["Targeted Cell Apoptosis Adenovirus"] },
+      { title: "iPSC Reporters", aliases: ["iPSC Reporter"] },
+    ],
+  },
+  {
+    title: "Kits for Viral Vectors",
+    aliases: ["Kits Related to Recombinant Virus", "Recombinant Virus Kits"],
+    children: [
+      { title: "Virus Packaging DNA Mixes", aliases: ["Virus Packaging Mixes"] },
+      { title: "qPCR Virus Titer Kits", aliases: ["Virus Titer Kits", "qPCR Viral Titer Kits"] },
+      { title: "Virus Transduction Enhancer", aliases: ["Virus Transduction Enhancers"] },
+      { title: "Virus Purification Kits", aliases: ["Virus Purification Kit"] },
+      { title: "Lentivirus Bundles", aliases: ["Lentiviral Bundles"] },
+    ],
+  },
+];
+
+function normalizeAbmGeneticNavLabel(value: string) {
+  return String(value || "")
+    .normalize("NFKC")
+    .replace(/[™®©]/g, "")
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function normalizeAbmGeneticSidebar(nodes: TreeNode[]) {
+  const arrange = (items: TreeNode[], specs: AbmGeneticNavSpec[]): TreeNode[] => {
+    const remaining = items.map((node) => ({
+      ...node,
+      children: (node.children || []).map((child) => ({ ...child })),
+    }));
+    const ordered: TreeNode[] = [];
+
+    specs.forEach((spec, order) => {
+      const accepted = [spec.title, ...(spec.aliases || [])].map(normalizeAbmGeneticNavLabel);
+      const index = remaining.findIndex((node) => {
+        const title = normalizeAbmGeneticNavLabel(node.title);
+        const slug = normalizeAbmGeneticNavLabel(node.path.at(-1) || "");
+        return accepted.includes(title) || accepted.includes(slug);
+      });
+      if (index < 0) return;
+
+      const [node] = remaining.splice(index, 1);
+      ordered.push({
+        ...node,
+        title: spec.title,
+        order,
+        children: spec.children?.length ? arrange(node.children || [], spec.children) : node.children || [],
+      });
+    });
+
+    return [...ordered, ...remaining];
+  };
+
+  return arrange(nodes, ABM_GENETIC_NAV_SPECS);
+}
+
+function includeVerifiedSpecializedVectorPages(nodes: TreeNode[]): TreeNode[] {
+  return nodes.map((node) => {
+    const children = includeVerifiedSpecializedVectorPages(node.children || []);
+    if (normalizeAbmGeneticNavLabel(node.title) !== normalizeAbmGeneticNavLabel("Specialized Vectors")) {
+      return { ...node, children };
+    }
+
+    const targetKey = TARGETED_APOPTOSIS_PATH.join("/");
+    const target = children.find((child) => child.path.join("/") === targetKey) || {
+      key: targetKey,
+      _id: `verified-${targetKey}`,
+      title: "Targeted Cell Apoptosis Adenoviruses",
+      path: TARGETED_APOPTOSIS_PATH,
+      order: 0,
+      sourceUrl: "https://www.abmgood.com/Targeted-Cell-Apoptosis-Adenoviruses.html",
+      isVirtual: false,
+      children: [],
+    };
+    const others = children.filter((child) => child.path.join("/") !== targetKey);
+    return { ...node, children: [target, ...others] };
+  });
+}
+
 function findTreeNodeByPath(nodes: TreeNode[], path: string[]): TreeNode | undefined {
   const wanted = path.join("/");
   for (const node of nodes) {
@@ -707,7 +894,7 @@ function SideNavTree({
 
               {isOpen ? <TreeRows nodes={node.children} depth={depth + 1} /> : null}
 
-              {hasChildren ? (
+              {hasChildren && !isOpen ? (
                 <div className="absolute left-full top-0 z-[130] hidden pl-2 lg:group-hover/tree-row:block">
                   <FlyoutRows nodes={node.children} parentTitle={node.title} />
                 </div>
@@ -727,15 +914,10 @@ function SideNavTree({
 
       <nav className="max-h-[calc(100vh-170px)] overflow-y-auto p-2 lg:max-h-none lg:overflow-visible" aria-label="Product categories">
         {!isKentMode && activeRoot ? (
-          <div className="group/root relative mb-1">
-            <Link href={buildHref(brandKey, [activeRoot])} prefetch={false} className="flex min-h-10 items-center justify-between rounded-xl bg-orange-50 px-3 py-2.5 text-[13px] font-semibold text-[#dc5a2b]">
-              <span>{stripBrandSuffix(activeRootTitle)}</span><span className="hidden lg:inline" aria-hidden>›</span><span className="lg:hidden" aria-hidden>⌃</span>
+          <div className="mb-1">
+            <Link href={buildHref(brandKey, [activeRoot])} prefetch={false} className="flex min-h-10 items-center rounded-xl bg-orange-50 px-3 py-2.5 text-[13px] font-semibold text-[#dc5a2b]">
+              <span>{stripBrandSuffix(activeRootTitle)}</span>
             </Link>
-            {activeRootTree?.length ? (
-              <div className="absolute left-full top-0 z-[150] hidden pl-2 lg:group-hover/root:block">
-                <FlyoutRows nodes={activeRootTree} parentTitle={activeRootTitle} />
-              </div>
-            ) : null}
           </div>
         ) : null}
 
@@ -745,7 +927,7 @@ function SideNavTree({
           ) : (
             !activeRoot ? roots.map((root) => (
               <Link key={root._id} href={buildHref(brandKey, root.path)} prefetch={true} className="flex min-h-10 items-center justify-between rounded-xl px-3 py-2.5 text-[13px] font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-[#dc5a2b]">
-                <span>{stripBrandSuffix(root.title)}</span><span aria-hidden>⌄</span>
+                <span>{stripBrandSuffix(root.title)}</span><span aria-hidden>{isKentMode ? "⌄" : "›"}</span>
               </Link>
             )) : null
           )}
@@ -761,7 +943,7 @@ function SideNavTree({
                   className="flex min-h-10 items-center justify-between rounded-xl px-3 py-2.5 text-[13px] font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-[#dc5a2b]"
                 >
                   <span className="min-w-0 truncate">{stripBrandSuffix(root.title)}</span>
-                  <span aria-hidden>⌄</span>
+                  <span aria-hidden>›</span>
                 </Link>
             ))}
           </div>
@@ -799,13 +981,16 @@ function normalizeResourceItems(rawItems: any[]) {
       const title = typeof it?.title === "string" ? it.title.trim() : "";
       const subtitle = typeof it?.subtitle === "string" ? it.subtitle.trim() : "";
       const imageUrl = typeof it?.imageUrl === "string" ? it.imageUrl.trim() : "";
+      const verifiedImageUrl = /EOS iPSC Reporters/i.test(title) && /EOS-Reporters\.pdf/i.test(href)
+        ? "https://www.abmgood.com/assets/images/tinymce/j5zfRZ4xL0WljzG25jjKGvpOAC3XvNRB2toUgb8P.png"
+        : imageUrl;
 
       return {
         key: it?._key || `${title}-${href}-${i}`,
         title: title || "(untitled)",
         subtitle,
         href,
-        imageUrl,
+        imageUrl: verifiedImageUrl,
       };
     })
     .filter((x) => x.href);
@@ -853,16 +1038,60 @@ function BulletsSection({ items }: { items: string[] }) {
   );
 }
 
-function HtmlBlock({ html, brandKey, landingVariant = "" }: { html: string; brandKey: string; landingVariant?: "" | "platforms" | "matrix" }) {
+type CellularPresentation = "" | "collections" | "rich" | "catalog" | "editorial" | "article";
+
+function getCellularPresentation(pathStr: string, html: string): CellularPresentation {
+  if (!pathStr.startsWith("cellular-materials")) return "";
+  if (pathStr.startsWith("cellular-materials/3d-and-organoid/3d-culture-platforms")) return "";
+  if (pathStr.startsWith("cellular-materials/3d-and-organoid/3dcelmatrix")) return "";
+
+  // Cell Library pages already have their own bespoke renderer and styling.
+  if (pathStr.startsWith("cellular-materials/cell-library-collections")) return "";
+
+  if (/\bcollections-page\b/i.test(html)) return "collections";
+  if (/\b(?:lp-wrap|coating-page|stem-page)\b/i.test(html)) return "rich";
+  if (/<table\b/i.test(html)) return "catalog";
+  if (/\babm-categories-text\b/i.test(html)) return "editorial";
+  return "article";
+}
+
+function HtmlBlock({
+  html,
+  brandKey,
+  landingVariant = "",
+  cellularPresentation = "",
+  productCatalogNumbers,
+  serviceCatalogNumbers = [],
+}: {
+  html: string;
+  brandKey: string;
+  landingVariant?: "" | "platforms" | "matrix";
+  cellularPresentation?: CellularPresentation;
+  productCatalogNumbers?: string[];
+  serviceCatalogNumbers?: string[];
+}) {
   const cleaned = safeHtmlForRender(html, brandKey);
   if (!cleaned) return null;
   const landingFidelity = Boolean(landingVariant);
+  const embeddedCellularLanding = cellularPresentation === "collections" || cellularPresentation === "rich";
+  const cleanedText = cleaned.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ");
+  const officialCrisprContent = brandKey === "abm" && /CRISPR Genome Editing Tools and Services|CRISPR Knockout sgRNA Vectors & Viruses|CRISPR Activation & Repression|Cas9 Expression Vectors and Viruses|Cas Proteins & CRISPR Screening/i.test(cleanedText);
+  const className = landingFidelity
+    ? `abm-3d-landing abm-3d-${landingVariant}`
+    : cellularPresentation
+      ? `abm-cellular-category abm-cellular-${cellularPresentation}`
+      : officialCrisprContent
+        ? "abm-crispr-official"
+        : undefined;
+
   return (
-    <section className={landingFidelity ? "mt-0" : "mt-8"}>
+    <section className={landingFidelity || embeddedCellularLanding || officialCrisprContent ? "mt-0" : cellularPresentation ? "mt-6" : "mt-8"}>
       <HtmlContent
         html={cleaned}
-        mode={landingFidelity ? "abm-landing" : brandKey === "abm" ? "abm-detail" : "default"}
-        className={landingFidelity ? `abm-3d-landing abm-3d-${landingVariant}` : undefined}
+        mode={landingFidelity || embeddedCellularLanding || officialCrisprContent ? "abm-landing" : brandKey === "abm" ? "abm-detail" : "default"}
+        className={className}
+        productCatalogNumbers={productCatalogNumbers}
+        serviceCatalogNumbers={serviceCatalogNumbers}
       />
     </section>
   );
@@ -942,7 +1171,16 @@ function TopPublicationsSection({
   );
 }
 
-function renderContentBlocks(blocks: any[], brandKey: string, theme: Theme, landingVariant: "" | "platforms" | "matrix" = "") {
+function renderContentBlocks(
+  blocks: any[],
+  brandKey: string,
+  theme: Theme,
+  landingVariant: "" | "platforms" | "matrix" = "",
+  cellularPresentation: CellularPresentation = "",
+  hideResources = false,
+  productCatalogNumbers?: string[],
+  serviceCatalogNumbers: string[] = [],
+) {
   if (!Array.isArray(blocks) || blocks.length === 0) return null;
 
   let renderedHtml = false;
@@ -959,7 +1197,17 @@ function renderContentBlocks(blocks: any[], brandKey: string, theme: Theme, land
           if (renderedHtml) return null;
           renderedHtml = true;
           const html = typeof b?.html === "string" ? b.html : "";
-          return <HtmlBlock key={b._key || "html"} html={html} brandKey={brandKey} landingVariant={landingVariant} />;
+          return (
+            <HtmlBlock
+              key={b._key || "html"}
+              html={html}
+              brandKey={brandKey}
+              landingVariant={landingVariant}
+              cellularPresentation={cellularPresentation}
+              productCatalogNumbers={productCatalogNumbers}
+              serviceCatalogNumbers={serviceCatalogNumbers}
+            />
+          );
         }
 
         if (type === "contentBlockBullets") {
@@ -976,6 +1224,7 @@ function renderContentBlocks(blocks: any[], brandKey: string, theme: Theme, land
         if (type === "contentBlockResources") {
           if (renderedResources) return null;
           renderedResources = true;
+          if (hideResources) return null;
           const items = normalizeResourceItems(b?.items ?? []);
           return (
             <div key={b._key || "resources"}>
@@ -1043,7 +1292,21 @@ export default async function AbmProductsPathPage({
 
   const roots: CatLite[] = Array.isArray(data?.roots) ? data.roots : [];
   const descendants: CatLite[] = Array.isArray(data?.descendants) ? data.descendants : [];
-  const category = data?.category || null;
+  let category = data?.category || null;
+  if (pathStr === TARGETED_APOPTOSIS_PATH.join("/")) {
+    category = {
+      ...(category || {}),
+      _id: category?._id || "verified-targeted-cell-apoptosis-adenoviruses",
+      title: "Targeted Cell Apoptosis Adenoviruses",
+      path: TARGETED_APOPTOSIS_PATH,
+      sourceUrl: "https://www.abmgood.com/Targeted-Cell-Apoptosis-Adenoviruses.html",
+      contentBlocks: [{
+        _key: "verified-targeted-cell-apoptosis-content",
+        _type: "contentBlockHtml",
+        html: VERIFIED_TARGETED_APOPTOSIS_HTML,
+      }],
+    };
+  }
 
   const productsInCategory: Array<{
     _id: string;
@@ -1059,11 +1322,18 @@ export default async function AbmProductsPathPage({
     activeRootTree = buildTreeFromDescendants([activeRoot], descendants);
     if (activeRoot === "cellular-materials") {
       activeRootTree = normalizeAbmCellularSidebar(activeRootTree);
+    } else if (activeRoot === "genetic-materials") {
+      activeRootTree = includeVerifiedSpecializedVectorPages(normalizeAbmGeneticSidebar(activeRootTree));
     }
   }
 
   const activePageNode = path.length > 1 ? findTreeNodeByPath(activeRootTree, path) : undefined;
   const childCategoryNodes = path.length === 1 ? activeRootTree : activePageNode?.children || [];
+  const categoryRailNodes = pathStr === "genetic-materials/crispr"
+    ? childCategoryNodes.map((node) => normalizeAbmGeneticNavLabel(node.title) === normalizeAbmGeneticNavLabel("CRISPR Activation Vectors")
+      ? { ...node, title: "CRISPR Activation/Repression" }
+      : node)
+    : childCategoryNodes;
   const isProductListPage = path.length >= 3 || (path.length > 1 && childCategoryNodes.length === 0);
   const isPrimaryAntibodyPage = pathStr === "general-materials/antibodies/primary-antibodies";
   const stagedProductsInCategory = isProductListPage && ABM_ROOTS.includes(path[0] as (typeof ABM_ROOTS)[number])
@@ -1129,7 +1399,7 @@ export default async function AbmProductsPathPage({
         <div className={PAGE_SHELL}>
           <div className="mt-4"><Breadcrumb items={breadcrumbItems} /></div>
           <div className={`mt-5 pb-14 ${CONTENT_LAYOUT}`}>
-            <aside className="relative z-[70] self-start lg:sticky lg:top-24">
+            <aside className="relative z-[40] self-start lg:sticky lg:top-24">
               <AbmCatalogSideNav
                 mode={stagedKind}
                 activeProductRoot={stagedKind === "product" ? selectedGroup?.slug : ""}
@@ -1237,7 +1507,7 @@ export default async function AbmProductsPathPage({
           </div>
 
           <div className={`mt-5 ${CONTENT_LAYOUT}`}>
-            <aside className="relative z-[70] self-start lg:sticky lg:top-24">
+            <aside className="relative z-[40] self-start lg:sticky lg:top-24">
               <SideNavTree
                 brandKey={brandKey}
                 roots={roots}
@@ -1299,7 +1569,9 @@ export default async function AbmProductsPathPage({
     })),
   ];
 
-  const pageTitle = stripBrandSuffix(category?.title || humanizeSegment(path[path.length - 1] || ""));
+  const pageTitle = pathStr === "genetic-materials/crispr"
+    ? "CRISPR Products for Genome Editing"
+    : stripBrandSuffix(category?.title || humanizeSegment(path[path.length - 1] || ""));
   const is3dLandingFidelity = brandKey === "abm" && [
     "cellular-materials/3d-and-organoid/3d-culture-platforms",
     "cellular-materials/3d-and-organoid/3dcelmatrix",
@@ -1313,12 +1585,56 @@ export default async function AbmProductsPathPage({
     : Array.isArray(category?.blocks)
       ? category.blocks
       : [];
-  const hasEmbeddedProductTable = blocks.some((block: any) => {
+  const legacyHtml = typeof category?.legacyHtml === "string" ? category.legacyHtml.trim() : "";
+  const populatedHtmlBlock = blocks.find(
+    (block: any) => block?._type === "contentBlockHtml" && typeof block?.html === "string" && block.html.trim(),
+  );
+  const primaryHtml = populatedHtmlBlock?.html || legacyHtml;
+  const blocksForRender = populatedHtmlBlock
+    ? blocks
+    : primaryHtml
+      ? [{ _key: "legacy-html-fallback", _type: "contentBlockHtml", html: primaryHtml }, ...blocks]
+      : blocks;
+  const cellularPresentation = getCellularPresentation(pathStr, typeof primaryHtml === "string" ? primaryHtml : "");
+  const hasEmbeddedCellularHero = cellularPresentation === "collections" || cellularPresentation === "rich";
+  const officialCrisprPaths = new Set([
+    "genetic-materials/crispr",
+    "genetic-materials/crispr/crispr-ko-vectors-and-virus",
+    "genetic-materials/crispr/crispr-activation-vectors",
+    "genetic-materials/crispr/cas9-vectors-and-virus",
+    "genetic-materials/crispr/cas-proteins-and-crispr-screening",
+  ]);
+  const primaryText = String(primaryHtml || "").replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&");
+  const hasEmbeddedCrisprHero = officialCrisprPaths.has(pathStr)
+    && /CRISPR Genome Editing Tools and Services|CRISPR Knockout sgRNA Vectors & Viruses|CRISPR Activation & Repression|Cas9 Expression Vectors and Viruses|Cas Proteins & CRISPR Screening/i.test(primaryText);
+  const hasEmbeddedCategoryHero = hasEmbeddedCellularHero || hasEmbeddedCrisprHero;
+  const hideDuplicateCas9Resources = pathStr === "genetic-materials/crispr/cas9-vectors-and-virus";
+  const hasEmbeddedProductTable = blocksForRender.some((block: any) => {
     const html = typeof block?.html === "string" ? block.html : "";
     return /<table\b/i.test(html) && /Product\s+(?:List|Name)|Cat\.?\s*No\.?/i.test(html);
   });
+  const tableHtml = blocksForRender
+    .map((block: any) => typeof block?.html === "string" ? block.html : "")
+    .filter(Boolean)
+    .join("\n");
+  const tableCatalogNumbers = brandKey === "abm" && hasEmbeddedProductTable
+    ? extractAbmTableCatalogNumbers(tableHtml)
+    : [];
+  const tableCatalogKeys = new Set(tableCatalogNumbers.map((sku) => sku.toLowerCase()));
+  const [allProductCatalogNumbers, allServiceCatalogNumbers] = tableCatalogNumbers.length
+    ? await Promise.all([
+        getAbmStagedCatalogNumbers("product"),
+        getAbmStagedCatalogNumbers("service"),
+      ])
+    : [[], []];
+  const productCatalogNumbers = tableCatalogNumbers.length
+    ? allProductCatalogNumbers.filter((sku) => tableCatalogKeys.has(sku.toLowerCase()))
+    : undefined;
+  const serviceCatalogNumbers = tableCatalogNumbers.length
+    ? allServiceCatalogNumbers.filter((sku) => tableCatalogKeys.has(sku.toLowerCase()))
+    : [];
 
-  const fallbackHtmlRaw = blocks.length
+  const fallbackHtmlRaw = blocksForRender.length
     ? ""
     : category?.summary
       ? `<p>${escapeHtml(category.summary)}</p>`
@@ -1336,7 +1652,7 @@ export default async function AbmProductsPathPage({
         </div>
 
         <div className={`mt-5 ${CONTENT_LAYOUT}`}>
-          <aside className="relative z-[70] self-start lg:sticky lg:top-24">
+          <aside className="relative z-[40] self-start lg:sticky lg:top-24">
             {activeRoot === "cellular-materials" ? (
               <AbmCellularSidebar activePath={path} />
             ) : (
@@ -1352,8 +1668,8 @@ export default async function AbmProductsPathPage({
           </aside>
 
           <main className="min-w-0">
-            {!is3dLandingFidelity ? <h1 className="text-3xl font-bold tracking-tight text-neutral-900">{pageTitle}</h1> : null}
-            {!is3dLandingFidelity ? <CategoryLinkRail brandKey={brandKey} nodes={childCategoryNodes} /> : null}
+            {!is3dLandingFidelity && !hasEmbeddedCategoryHero ? <h1 className="text-3xl font-bold tracking-tight text-neutral-900">{pageTitle}</h1> : null}
+            {!is3dLandingFidelity && !hasEmbeddedCellularHero && !hasEmbeddedCrisprHero ? <CategoryLinkRail brandKey={brandKey} nodes={categoryRailNodes} /> : null}
 
             {isKent && productsInCategory.length ? (
               <div className="mt-6">
@@ -1398,8 +1714,17 @@ export default async function AbmProductsPathPage({
               </div>
             ) : null}
 
-            {blocks.length ? (
-              renderContentBlocks(blocks, brandKey, theme, landingVariant)
+            {blocksForRender.length ? (
+              renderContentBlocks(
+                blocksForRender,
+                brandKey,
+                theme,
+                landingVariant,
+                cellularPresentation,
+                hideDuplicateCas9Resources,
+                productCatalogNumbers,
+                serviceCatalogNumbers,
+              )
             ) : fallbackHtml ? (
               <section className="mt-8">
                 <HtmlContent html={fallbackHtml} mode={brandKey === "abm" ? "abm-detail" : "default"} />

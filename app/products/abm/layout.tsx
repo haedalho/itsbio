@@ -126,6 +126,52 @@ const ABM_CATALOG_POLISH_CSS = `
   align-items: flex-start;
 }
 
+
+/* ABM CRISPR source forms are stripped during HTML sanitization. Reinsert a
+   native ITS BIO search control while keeping the migrated source heading and
+   explanatory copy in place. */
+.itsbio-html .itsbio-crispr-search {
+  display: flex;
+  width: min(100%, 760px);
+  gap: 10px;
+  margin: 18px 0 28px;
+}
+
+.itsbio-html .itsbio-crispr-search input[type="search"] {
+  min-width: 0;
+  flex: 1 1 auto;
+  height: 46px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  padding: 0 14px;
+  color: #111827;
+  font-size: 14px;
+  outline: none;
+}
+
+.itsbio-html .itsbio-crispr-search input[type="search"]:focus {
+  border-color: #ef6331;
+  box-shadow: 0 0 0 3px rgba(239, 99, 49, 0.12);
+}
+
+.itsbio-html .itsbio-crispr-search button {
+  height: 46px;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 8px;
+  background: #ef6331;
+  padding: 0 24px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.itsbio-html .itsbio-crispr-search button:hover {
+  background: #d95221;
+}
+
 /* Rebuild ABM's icon-style highlighted product/service list after the supplier
    CSS has been removed. The source list bullets/arrows are intentionally not
    shown; each destination becomes one clean ITS BIO card. */
@@ -204,6 +250,14 @@ const ABM_CATALOG_POLISH_CSS = `
 
   .itsbio-html .itsbio-cas9-vector-table {
     min-width: 760px !important;
+  }
+
+  .itsbio-html .itsbio-crispr-search {
+    flex-direction: column;
+  }
+
+  .itsbio-html .itsbio-crispr-search button {
+    width: 100%;
   }
 
   .itsbio-html .itsbio-abm-highlight-grid {

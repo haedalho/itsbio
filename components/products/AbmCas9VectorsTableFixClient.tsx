@@ -145,10 +145,57 @@ function markPreservedResourceLink(anchor: HTMLAnchorElement) {
   anchor.dataset.itsbioAbmPreserveLink = "true";
 }
 
+function removeDuplicateAdditionalInformationHeading(root: HTMLElement) {
+  const headings = Array.from(root.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6"));
+
+  headings.forEach((heading) => {
+    if (textOf(heading) !== "Additional Information" || heading.closest(`#${ADDITIONAL_ID}`)) return;
+
+    let removable: HTMLElement = heading;
+    while (
+      removable.parentElement
+      && removable.parentElement !== root
+      && removable.parentElement.children.length === 1
+      && textOf(removable.parentElement) === "Additional Information"
+    ) {
+      removable = removable.parentElement;
+    }
+    removable.remove();
+  });
+}
+
 function ensureAdditionalInformation() {
-  if (document.getElementById(ADDITIONAL_ID)) return;
   const root = document.querySelector<HTMLElement>(".itsbio-html");
   if (!root) return;
+
+  const rootText = textOf(root);
+  const hasOfficialAdditionalInformation =
+    /Additional Information/i.test(rootText)
+    && /Workflow/i.test(rootText)
+    && /CRISPR Methods\s*&\s*Tools/i.test(rootText)
+    && /CRISPR dCas9 Gene Regulation/i.test(rootText);
+  if (hasOfficialAdditionalInformation) {
+    const workflow = root.querySelector<HTMLElement>(".abm-category-workflow");
+    const workflowAnchor = workflow?.querySelector<HTMLAnchorElement>("a");
+    if (workflow && !workflow.dataset.itsbioWorkflowRestored && !workflowAnchor?.getAttribute("href")) {
+      workflow.dataset.itsbioWorkflowRestored = "true";
+      workflow.setAttribute("role", "button");
+      workflow.setAttribute("tabindex", "0");
+      workflow.setAttribute("aria-label", "View simplified CRISPR workflow");
+      workflow.style.cursor = "pointer";
+      workflow.addEventListener("click", openWorkflowModal);
+      workflow.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openWorkflowModal();
+        }
+      });
+    }
+    return;
+  }
+
+  removeDuplicateAdditionalInformationHeading(root);
+  if (document.getElementById(ADDITIONAL_ID)) return;
 
   const tables = Array.from(root.querySelectorAll<HTMLTableElement>("table")).filter((table) =>
     /Cas9 Nuclease|sgRNA Only|All-in-One spCas9/i.test(textOf(table)),

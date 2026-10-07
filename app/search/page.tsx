@@ -4,10 +4,12 @@ import { redirect } from "next/navigation";
 import {
   ABM_REBUILD_VERSION,
   getAbmStagedRecord,
+  getAbmStagedDetailPresence,
   stagedRecordPath,
   type AbmStagedRecord,
 } from "@/lib/abm/rebuild-staging";
 import { OFFICIAL_ABM_CELL_MODEL_PRODUCTS } from "@/lib/abm/cell-model-data";
+import { verifiedMissingAbmVectorUrl } from "@/lib/abm/vector-links";
 import { cleaverProductHref, findLocalCleaverProduct, searchLocalCleaverProducts } from "@/lib/cleaver/catalog";
 import { PUBLIC_CATALOG_CACHE, sanityCdnClient } from "@/lib/sanity/sanity.client";
 
@@ -49,6 +51,7 @@ type SearchResult = {
   href: string;
   kind: "Product" | "Service";
   direct: boolean;
+  external?: boolean;
   score: number;
 };
 
@@ -56,6 +59,14 @@ type SearchGroup = {
   key: string;
   label: string;
   items: SearchResult[];
+};
+
+type CrisprSearchScope = "" | "crispr-ko-lentiviral" | "crispr-ko-aav" | "crispr-ko-nonviral";
+
+const CRISPR_SEARCH_SCOPE_LABELS: Record<Exclude<CrisprSearchScope, "">, string> = {
+  "crispr-ko-lentiviral": "sgRNA Lentivector",
+  "crispr-ko-aav": "sgRNA AAV",
+  "crispr-ko-nonviral": "sgRNA Non-Viral Vector",
 };
 
 const FIND_EXACT_CATALOG_NUMBER = `
@@ -195,6 +206,33 @@ function normalizeText(value: string) {
   return value.normalize("NFKC").trim().toLowerCase();
 }
 
+function normalizeCrisprSearchScope(value: string): CrisprSearchScope {
+  const normalized = value.trim().toLowerCase();
+  return normalized === "crispr-ko-lentiviral"
+    || normalized === "crispr-ko-aav"
+    || normalized === "crispr-ko-nonviral"
+    ? normalized
+    : "";
+}
+
+function matchesCrisprSearchScope(result: SearchResult, scope: CrisprSearchScope) {
+  if (!scope) return true;
+  if (result.brandKey !== "abm") return false;
+
+  const haystack = normalizeText(`${result.title} ${result.href}`)
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (scope === "crispr-ko-lentiviral") {
+    return /\blentivector\b|\blentiviral\b|\blentivirus\b/.test(haystack);
+  }
+  if (scope === "crispr-ko-aav") {
+    return /\baav\b/.test(haystack);
+  }
+  return /\bnon viral\b|\bnonviral\b|\bplasmid\b/.test(haystack);
+}
+
 function scoreMatch(title: string, sku: string | undefined, query: string) {
   const q = normalizeText(query);
   const t = normalizeText(title);
@@ -227,9 +265,10 @@ function clampInt(value: unknown, fallback = 1) {
   return Math.max(1, Math.trunc(parsed));
 }
 
-function makeSearchHref(query: string, brand?: string, page?: number) {
+function makeSearchHref(query: string, brand?: string, page?: number, scope?: CrisprSearchScope) {
   const params = new URLSearchParams({ q: query });
   if (brand) params.set("brand", brand);
+  if (scope) params.set("scope", scope);
   if (page && page > 1) params.set("page", String(page));
   return `/search?${params.toString()}`;
 }
@@ -261,25 +300,48 @@ function ResultCard({ result }: { result: SearchResult }) {
       <h3 className="mt-3 text-lg font-semibold leading-7 text-slate-950">{result.title}</h3>
       {result.description ? <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">{result.description}</p> : null}
       <div className="mt-5">
-        <Link
-          href={result.href}
-          className="inline-flex items-center rounded-full bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-700"
-        >
-          {result.direct ? "View product" : "View matching products"}
-        </Link>
+        {result.external ? (
+          <a
+            href={result.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center rounded-full bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-700"
+          >
+            View on ABM ↗
+          </a>
+        ) : (
+          <Link
+            href={result.href}
+            className="inline-flex items-center rounded-full bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-700"
+          >
+            {result.direct ? "View product" : "View matching products"}
+          </Link>
+        )}
       </div>
     </article>
   );
 }
 
-function Pagination({ query, brand, current, total }: { query: string; brand: string; current: number; total: number }) {
+function Pagination({
+  query,
+  brand,
+  current,
+  total,
+  scope,
+}: {
+  query: string;
+  brand: string;
+  current: number;
+  total: number;
+  scope?: CrisprSearchScope;
+}) {
   if (total <= 1) return null;
   const pages = buildPageNumbers(current, total);
 
   return (
     <nav className="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="Search result pages">
       <Link
-        href={makeSearchHref(query, brand, Math.max(1, current - 1))}
+        href={makeSearchHref(query, brand, Math.max(1, current - 1), scope)}
         aria-disabled={current === 1}
         className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
           current === 1
@@ -296,7 +358,7 @@ function Pagination({ query, brand, current, total }: { query: string; brand: st
         ) : (
           <Link
             key={page}
-            href={makeSearchHref(query, brand, page)}
+            href={makeSearchHref(query, brand, page, scope)}
             aria-current={page === current ? "page" : undefined}
             className={`flex h-10 min-w-10 items-center justify-center rounded-full border px-3 text-sm font-semibold transition ${
               page === current
@@ -310,7 +372,7 @@ function Pagination({ query, brand, current, total }: { query: string; brand: st
       )}
 
       <Link
-        href={makeSearchHref(query, brand, Math.min(total, current + 1))}
+        href={makeSearchHref(query, brand, Math.min(total, current + 1), scope)}
         aria-disabled={current === total}
         className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
           current === total
@@ -327,15 +389,18 @@ function Pagination({ query, brand, current, total }: { query: string; brand: st
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ q?: string; brand?: string; page?: string }> | { q?: string; brand?: string; page?: string };
+  searchParams?: Promise<{ q?: string; brand?: string; page?: string; scope?: string }> | { q?: string; brand?: string; page?: string; scope?: string };
 }) {
   const resolvedSearchParams = await Promise.resolve(searchParams);
   const qRaw = (resolvedSearchParams?.q || "").trim();
   const q = qRaw.replace(/\s+/g, " ").trim();
   const selectedBrand = normalizeBrandToken((resolvedSearchParams?.brand || "").trim());
+  const selectedScope = normalizeCrisprSearchScope((resolvedSearchParams?.scope || "").trim());
   const requestedPage = clampInt(resolvedSearchParams?.page);
 
   if (!q) redirect("/products");
+
+  let exactMissingVectorResult: SearchResult | null = null;
 
   const catalogNumber = normalizeCatalogNumber(q);
   if (isCatalogNumberCandidate(catalogNumber)) {
@@ -362,8 +427,36 @@ export default async function SearchPage({
       if (localCleaver) exactTargets.push(cleaverProductHref(localCleaver));
     }
 
-    if (stagedProduct) exactTargets.push(stagedRecordPath("product", stagedProduct));
+    const exactDetailSkus = stagedProduct
+      ? await getAbmStagedDetailPresence("product", [stagedProduct.sku])
+      : new Set<string>();
+    const effectiveStagedProduct = stagedProduct
+      ? { ...stagedProduct, hasDetail: exactDetailSkus.has(stagedProduct.sku) }
+      : undefined;
+    const exactMissingVectorUrl = effectiveStagedProduct
+      ? verifiedMissingAbmVectorUrl(effectiveStagedProduct)
+      : "";
+
+    if (effectiveStagedProduct && !exactMissingVectorUrl) {
+      exactTargets.push(stagedRecordPath("product", effectiveStagedProduct));
+    }
     if (stagedService) exactTargets.push(stagedRecordPath("service", stagedService));
+
+    if (effectiveStagedProduct && exactMissingVectorUrl) {
+      exactMissingVectorResult = {
+        id: `abm-missing-vector:${effectiveStagedProduct.sku || effectiveStagedProduct.url}`,
+        title: effectiveStagedProduct.title,
+        sku: effectiveStagedProduct.sku || undefined,
+        description: effectiveStagedProduct.previewSummary,
+        brandKey: "abm",
+        brandLabel: "ABM",
+        href: exactMissingVectorUrl,
+        kind: "Product",
+        direct: true,
+        external: true,
+        score: 130,
+      };
+    }
 
     if (!stagedProduct && !stagedService) {
       exactTargets.push(
@@ -390,6 +483,7 @@ export default async function SearchPage({
   ]);
 
   const results: SearchResult[] = [];
+  if (exactMissingVectorResult) results.push(exactMissingVectorResult);
 
   for (const row of Array.isArray(liveRows) ? liveRows : []) {
     const title = stringValue(row.title);
@@ -429,10 +523,21 @@ export default async function SearchPage({
   const stagedRows = (Array.isArray(stagedChunks) ? stagedChunks : [])
     .flatMap((chunk) => (Array.isArray(chunk?.matches) ? chunk.matches : []));
 
+  const stagedProductSkus = stagedRows
+    .filter((row) => row.kind === "product")
+    .map((row) => stringValue(row.sku))
+    .filter(Boolean);
+  const stagedDetailSkus = await getAbmStagedDetailPresence("product", stagedProductSkus);
+  const stagedDetailSkuKeys = new Set([...stagedDetailSkus].map((sku) => sku.toLowerCase()));
+
   for (const row of stagedRows) {
     const title = stringValue(row.title);
     if (!title) continue;
     const sku = stringValue(row.sku) || undefined;
+    const effectiveRow = row.kind === "product"
+      ? { ...row, hasDetail: Boolean(sku && stagedDetailSkuKeys.has(sku.toLowerCase())) }
+      : row;
+    const externalVectorUrl = row.kind === "product" ? verifiedMissingAbmVectorUrl(effectiveRow) : "";
     results.push({
       id: `abm-staged:${row.kind}:${sku || row.url}`,
       title,
@@ -440,9 +545,10 @@ export default async function SearchPage({
       description: stringValue(row.previewSummary) || undefined,
       brandKey: "abm",
       brandLabel: "ABM",
-      href: stagedRecordPath(row.kind, row),
+      href: externalVectorUrl || stagedRecordPath(row.kind, row),
       kind: row.kind === "service" ? "Service" : "Product",
       direct: true,
+      external: Boolean(externalVectorUrl),
       score: scoreMatch(title, sku, q) + 2,
     });
   }
@@ -471,8 +577,12 @@ export default async function SearchPage({
     });
   }
 
+  const scopedResults = selectedScope
+    ? results.filter((result) => matchesCrisprSearchScope(result, selectedScope))
+    : results;
+
   const deduped = new Map<string, SearchResult>();
-  for (const result of results.sort((a, b) => b.score - a.score)) {
+  for (const result of scopedResults.sort((a, b) => b.score - a.score)) {
     const key = `${result.brandKey}:${normalizeText(result.sku || result.title)}:${result.kind}`;
     const existing = deduped.get(key);
     if (!existing || result.score > existing.score || (result.direct && !existing.direct)) deduped.set(key, result);
@@ -504,10 +614,15 @@ export default async function SearchPage({
             <div>
               <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Search results</h1>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                Results for <span className="font-semibold text-slate-950">“{q}”</span> are separated by brand so similar product names do not send you to the wrong catalog.
+                Results for <span className="font-semibold text-slate-950">“{q}”</span>
+                {selectedScope ? (
+                  <> in <span className="font-semibold text-orange-700">{CRISPR_SEARCH_SCOPE_LABELS[selectedScope]}</span></>
+                ) : null} are separated by brand so similar product names do not send you to the wrong catalog.
               </p>
             </div>
             <form action="/search" method="get" className="flex w-full max-w-xl gap-2">
+              {selectedBrand ? <input type="hidden" name="brand" value={selectedBrand} /> : null}
+              {selectedScope ? <input type="hidden" name="scope" value={selectedScope} /> : null}
               <input
                 name="q"
                 defaultValue={q}
@@ -526,7 +641,7 @@ export default async function SearchPage({
           <>
             <nav className="mt-6 flex gap-2 overflow-x-auto pb-2" aria-label="Search result brands">
               <Link
-                href={makeSearchHref(q)}
+                href={makeSearchHref(q, undefined, undefined, selectedScope)}
                 className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition ${
                   !selectedBrand
                     ? "border-orange-600 bg-orange-600 text-white"
@@ -538,7 +653,7 @@ export default async function SearchPage({
               {groups.map((group) => (
                 <Link
                   key={group.key}
-                  href={makeSearchHref(q, group.key)}
+                  href={makeSearchHref(q, group.key, undefined, selectedScope)}
                   className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition ${
                     selectedBrand === group.key
                       ? "border-orange-600 bg-orange-600 text-white"
@@ -562,7 +677,7 @@ export default async function SearchPage({
                           <h2 className="mt-1 text-xl font-semibold text-slate-950">{group.label}</h2>
                         </div>
                         {group.items.length > 1 ? (
-                          <Link href={makeSearchHref(q, group.key)} className="text-sm font-semibold text-orange-600 hover:text-orange-700">
+                          <Link href={makeSearchHref(q, group.key, undefined, selectedScope)} className="text-sm font-semibold text-orange-600 hover:text-orange-700">
                             View {group.items.length} matches →
                           </Link>
                         ) : null}
@@ -588,12 +703,12 @@ export default async function SearchPage({
                 <div className="mt-6 grid gap-4 md:grid-cols-2">
                   {pageItems.map((result) => <ResultCard key={result.id} result={result} />)}
                 </div>
-                <Pagination query={q} brand={activeGroup.key} current={currentPage} total={totalPages} />
+                <Pagination query={q} brand={activeGroup.key} current={currentPage} total={totalPages} scope={selectedScope || undefined} />
               </section>
             ) : (
               <section className="mt-5 rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
                 <p className="text-slate-600">That brand has no matching results for this search.</p>
-                <Link href={makeSearchHref(q)} className="mt-4 inline-flex font-semibold text-orange-600 hover:text-orange-700">
+                <Link href={makeSearchHref(q, undefined, undefined, selectedScope)} className="mt-4 inline-flex font-semibold text-orange-600 hover:text-orange-700">
                   View all brands
                 </Link>
               </section>
