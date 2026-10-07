@@ -446,6 +446,73 @@
   margin: 0;
 }
 
+/* Source's col-sm-4 classes must not shrink items again inside the grid. */
+.abm-crispr-official .htmlcontent-home.abm-cas-resources > li {
+  width: 100%;
+  max-width: none;
+  padding: 0;
+}
+
+.abm-crispr-official .abm-cas-resources .abm-cas-resource-preview,
+.abm-crispr-official .abm-cas-resources a {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.abm-crispr-official .abm-cas-resources img {
+  aspect-ratio: 727 / 418;
+}
+
+.abm-crispr-official .abm-cas-resources .abm-sub2-category-image-title {
+  text-align: center;
+}
+
+.abm-crispr-official .abm-cas-resource-dialog {
+  width: min(1100px, calc(100vw - 40px));
+  max-width: none;
+  max-height: 90vh;
+  margin: auto;
+  padding: 20px;
+  border: 0;
+  border-radius: 8px;
+  overflow: auto;
+}
+
+.abm-crispr-official .abm-cas-resource-dialog::backdrop {
+  background: rgb(0 0 0 / 65%);
+}
+
+.abm-crispr-official .abm-cas-resource-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.abm-crispr-official .abm-cas-resource-dialog-header h3 {
+  margin: 0;
+}
+
+.abm-crispr-official .abm-cas-resource-dialog-header button {
+  width: 40px;
+  height: 40px;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.abm-crispr-official .abm-cas-resource-dialog > img {
+  width: auto;
+  max-width: 100%;
+  max-height: 72vh;
+  margin: auto;
+  object-fit: contain;
+}
+
 .abm-crispr-official .htmlcontent-home .banners {
   height: 100%;
 }

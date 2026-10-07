@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { internalizeAbmHref, isOfficialAbmUrl, isOfficialAbmVectorUrl } from "@/lib/abm/internal-links";
-import { abmResourceImagePath } from "@/lib/abm/resource-links";
+import { abmResourceImagePath, abmResourcePagePath } from "@/lib/abm/resource-links";
 
 type Props = {
   html: string;
@@ -1465,6 +1465,52 @@ function isManagedAbmImage(src: string) {
   }
 }
 
+function normalizeCasProteinResources(doc: Document) {
+  if (!findHeading(doc, /^Cas Proteins & CRISPR Screening$/i)) return;
+  const heading = findHeading(doc, /^Resources$/i);
+  const list = heading?.nextElementSibling?.querySelector<HTMLUListElement>("ul.htmlcontent-home");
+  if (!list) return;
+  list.classList.add("abm-cas-resources");
+  const images = Array.from(list.querySelectorAll<HTMLImageElement>("img"));
+  const previews = images.filter((image) => /^(Performance Data|Workflow)$/i.test(image.alt));
+  previews.forEach((image) => {
+    const anchor = image.closest("a");
+    if (!anchor) return;
+    const button = doc.createElement("button");
+    button.type = "button";
+    button.className = "abm-cas-resource-preview";
+    button.setAttribute("data-abm-cas-preview", "true");
+    button.setAttribute("aria-label", `Enlarge ${image.alt}`);
+    button.setAttribute("aria-haspopup", "dialog");
+    button.appendChild(image);
+    anchor.replaceWith(button);
+  });
+  // The legacy migration changed info.abmgood.com into the product hostname.
+  // Restore the knowledge page after all generic product-link rewrites.
+  const knowledgePath = abmResourcePagePath("https://info.abmgood.com/crispr-cas9");
+  doc.querySelectorAll<HTMLAnchorElement>("a").forEach((anchor) => {
+    if (!/^knowledge base(?:\s*→)?$/i.test(collapseWs(anchor.textContent || ""))
+      && anchor.querySelector("img")?.alt !== "Knowledge Base") return;
+    anchor.href = knowledgePath;
+    anchor.removeAttribute("data-itsbio-abm-product-resolved");
+    anchor.removeAttribute("target");
+    anchor.removeAttribute("rel");
+    anchor.setAttribute("aria-label", "CRISPR Cas9 Knowledge Base");
+  });
+  list.querySelectorAll("br").forEach(removeNode);
+
+  if (!previews.length) return;
+  const dialog = doc.createElement("dialog");
+  dialog.className = "abm-cas-resource-dialog";
+  dialog.setAttribute("aria-labelledby", "abm-cas-resource-title");
+  dialog.innerHTML = '<div class="abm-cas-resource-dialog-header"><h3 id="abm-cas-resource-title">Performance Data</h3><button type="button" data-abm-cas-close="true" aria-label="Close resource preview">×</button></div>';
+  const image = doc.createElement("img");
+  image.src = previews[0].src;
+  image.alt = previews[0].alt;
+  dialog.appendChild(image);
+  doc.body.appendChild(dialog);
+}
+
 export function sanitizeAndStyle(
   rawHtml: string,
   baseUrl?: string,
@@ -1698,6 +1744,7 @@ export function sanitizeAndStyle(
   }
 
   if (isAbmLanding) restoreCollectionCardActions(doc);
+  if (isAbmLanding) normalizeCasProteinResources(doc);
 
   // 8) 빈 요소 정리
   doc.querySelectorAll("p, div, section, span, li").forEach((el) => {
@@ -1798,9 +1845,30 @@ export default function HtmlContent({
 
     const initialGrowthSearch = root.querySelector<HTMLInputElement>("[data-abm-growth-search]");
     if (initialGrowthSearch) filterGrowthCatalog(initialGrowthSearch.value);
+    const resourceDialog = root.querySelector<HTMLDialogElement>(".abm-cas-resource-dialog");
+    const onResourceClose = () => { document.body.style.overflow = ""; };
+    resourceDialog?.addEventListener("close", onResourceClose);
 
     const onClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
+
+      const resourcePreview = target.closest<HTMLButtonElement>("[data-abm-cas-preview]");
+      if (resourcePreview && resourceDialog) {
+        const source = resourcePreview.querySelector("img");
+        const image = resourceDialog.querySelector("img");
+        const title = resourceDialog.querySelector("h3");
+        if (!source || !image || !title) return;
+        image.src = source.src;
+        image.alt = source.alt;
+        title.textContent = source.alt;
+        resourceDialog.showModal();
+        document.body.style.overflow = "hidden";
+        return;
+      }
+      if (resourceDialog && (target.closest("[data-abm-cas-close]") || target === resourceDialog)) {
+        resourceDialog.close();
+        return;
+      }
 
       const resetGrowthSearch = target.closest<HTMLButtonElement>("[data-abm-growth-reset]");
       if (resetGrowthSearch) {
@@ -1907,6 +1975,8 @@ export default function HtmlContent({
     root.addEventListener("input", onInput);
     root.addEventListener("keydown", onKeyDown);
     return () => {
+      resourceDialog?.removeEventListener("close", onResourceClose);
+      if (resourceDialog?.open) resourceDialog.close();
       root.removeEventListener("click", onClick);
       root.removeEventListener("input", onInput);
       root.removeEventListener("keydown", onKeyDown);

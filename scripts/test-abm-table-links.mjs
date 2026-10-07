@@ -26,6 +26,25 @@ function render(html, products = [], services = []) {
   return new JSDOM(sanitizeAndStyle(html, "https://www.abmgood.com", "abm-landing", products, services)).window.document;
 }
 
+const casResources = render(`
+  <h2>Cas Proteins &amp; CRISPR Screening</h2>
+  <p>Visit our <a href="https://www.abmgood.com/crispr-cas9">knowledge base</a>.</p>
+  <h3>Resources</h3><div><ul class="htmlcontent-home">
+    <li class="col-sm-4"><a><img src="https://cdn.sanity.io/images/9b5twpc8/production/data.png" alt="Performance Data"></a><br><strong>Performance Data</strong></li>
+    <li class="col-sm-4"><a><img src="https://cdn.sanity.io/images/9b5twpc8/production/workflow.png" alt="Workflow"></a><br><strong>Workflow</strong></li>
+    <li class="col-sm-4"><a href="https://www.abmgood.com/crispr-cas9"><img src="https://cdn.sanity.io/images/9b5twpc8/production/kb.png" alt="Knowledge Base"></a><br><strong>Knowledge Base</strong></li>
+  </ul></div>
+`);
+assert.equal(casResources.querySelectorAll('button[aria-haspopup="dialog"]').length, 2);
+assert.equal(casResources.querySelectorAll('a[aria-label="CRISPR Cas9 Knowledge Base"]').length, 2);
+for (const anchor of casResources.querySelectorAll('a[aria-label="CRISPR Cas9 Knowledge Base"]')) {
+  const href = new URL(anchor.getAttribute("href"), pageUrl);
+  assert.equal(href.pathname, "/products/abm/resource");
+  assert.equal(href.searchParams.get("u"), "https://info.abmgood.com/crispr-cas9");
+}
+assert.equal(casResources.querySelector("dialog")?.getAttribute("aria-labelledby"), casResources.querySelector("dialog h3")?.id);
+assert.equal(casResources.querySelectorAll(".abm-cas-resources br").length, 0);
+
 assert.deepEqual(extractAbmTableCatalogNumbers(`
   <table><tr><th>Product Name</th><th>Cat.No.</th></tr>
   <tr><td>Missing vector</td><td>CIR001</td></tr>
