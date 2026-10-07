@@ -122,6 +122,7 @@ const ABM_CATALOG_POLISH_CSS = `
   text-align: left !important;
 }
 .itsbio-html table[data-itsbio-bundle-table] .itsbio-bundle-catalog-row a {
+  display: inline-block;
   color: #9a3412;
   text-decoration: underline;
   text-underline-offset: 3px;
