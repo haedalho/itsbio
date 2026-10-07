@@ -101,7 +101,15 @@ const ipscReporters = render(`
   <tr><td><a href="https://www.abmgood.com/eos-lentiviral-vector-pl-sin-eos-c3-eip-lv028858.html">EOS Lentiviral Vector (PL-SIN-EOS-C(3)-EiP)</a></td><td>LV028858</td><td>1.0 µg DNA</td></tr>
   <tr><td><a href="https://www.abmgood.com/eos-lentiviral-vector-pl-sin-eos-s4-eip-lv028859.html">EOS Lentiviral Vector (PL-SIN-EOS-S(4)-EiP)</a></td><td>LV028859</td><td>1.0 µg DNA</td></tr></table>
 `, ["000776A", "000774A", "000834A", "000835A", "LV028858", "LV028859"]);
-assert.equal(ipscReporters.querySelectorAll("tbody a[href^='/products/abm/staged/product/']").length, 6);
+const ipscSkus = ["000776A", "000774A", "000834A", "000835A", "LV028858", "LV028859"];
+const ipscRows = Array.from(ipscReporters.querySelectorAll("tbody tr")).filter((row) => row.querySelector("td"));
+assert.equal(ipscRows.length, ipscSkus.length);
+ipscRows.forEach((row, index) => {
+  const nameLink = row.querySelector("td:nth-child(1) a")?.getAttribute("href");
+  const skuLink = row.querySelector("td:nth-child(2) a")?.getAttribute("href");
+  assert.ok(nameLink?.startsWith(`/products/abm/staged/product/${ipscSkus[index]}?`));
+  assert.equal(skuLink, nameLink, `iPSC product name and catalog number must route to the same detail for ${ipscSkus[index]}`);
+});
 
 const lentivirusBundlesHtml = `
   <table>
